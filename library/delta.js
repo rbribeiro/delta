@@ -101,6 +101,14 @@ function globalWrapper() {
       equationWrapper(eq, key + 1);
     });
   }
+
+  const theorems = document.querySelectorAll("theorem");
+  console.log(theorems);
+  if (theorems) {
+    theorems.forEach((theorem, key) => {
+      environmentWrapper(theorem, key);
+    });
+  }
 }
 
 function equationWrapper(eqElement, eqNumber) {
@@ -114,4 +122,16 @@ function equationWrapper(eqElement, eqNumber) {
                                 </div>
                             </div>
                         `;
+}
+
+function environmentWrapper(envElement, number) {
+  const html = envElement.innerHTML;
+  const authors = envElement.getAttribute("authors");
+  const envName = envElement.tagName.toLowerCase();
+  const name = envElement.getAttribute("name");
+
+  const content = `<span class='environment ${envName}'>${envName} ${number + 1}.</span>
+                    <span class='environmentName'>(${name}) </span>${html}
+                    `;
+  envElement.innerHTML = content;
 }
