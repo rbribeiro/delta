@@ -3,6 +3,15 @@ const MyNameSpace = {
 	totalSlides: 0,
 };
 
+window.MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']]
+    },
+    svg: {
+      fontCache: 'global'
+    }
+  };
+
 function updateState(newState) {
 	Object.assign(MyNameSpace, newState);
 
@@ -31,12 +40,6 @@ function goToSlide(slideNumber) {
 
 function init() {
 	document.addEventListener("DOMContentLoaded", (event) => {
-        // Link to CSS
-		const link = document.createElement("link");
-		link.rel = "stylesheet";
-		link.href = "assets/css/default.css";
-		document.head.appendChild(link);
-
 		// Load MathJax
 		const mathJaxScript = document.createElement("script");
 		mathJaxScript.id = "MathJax-script";
@@ -57,6 +60,21 @@ function init() {
 			}
 		});
 
+
+        const slideTitles = document.querySelectorAll('slide-title')
+        if(slideTitles) {
+            slideTitles.forEach(title => {
+                title.innerHTML = "<div class='slideTitle'>"+title.innerHTML+"</div>"
+            })
+        }
+
+        const equations = document.querySelectorAll('equation')
+        if(equations) {
+            equations.forEach((eq,key) => {
+                equationWrapper(eq,key+1)
+            })
+        }
+
 		// Wait for MathJax to load before initial rendering
 		mathJaxScript.onload = () => {
 			if (window.MathJax) {
@@ -64,17 +82,21 @@ function init() {
 			}
 		};
 
-		slides.forEach((slide) => {
-			if (slide.getAttribute("title")) {
-				const title = document.createElement("div");
-				title.classList.add("slide-title");
-				title.innerHTML = slide.getAttribute("title");
-				slide.prepend(title);
-			}
-		});
-
 		updateState({ totalSlides });
 	});
 }
 
 init();
+
+function equationWrapper(eqElement,eqNumber) {
+    const equation = eqElement.innerHTML;
+    eqElement.innerHTML = `<div class="equationContainer">
+                                <div class="equationContent">
+                                   $$ ${equation} $$
+                                </div>
+                                <div class="equationNumber">
+                                    (${eqNumber})
+                                </div>
+                            </div>
+                        `
+}

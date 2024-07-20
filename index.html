@@ -1,10 +1,11 @@
 <head>
-	<title>My Presentation</title>
+    <link role="theme" rel="stylesheet" href="assets/css/default.css">
+    <title>My Presentation</title>
 </head>
 <body>
 	<progress-bar></progress-bar>
-	<slide title="test">
-		<h1>Welcome to the Math Presentation</h1>
+	<slide>
+		<slide-title>Welcome to the Math Presentation $\delta$</slide-title>
 		<p>Here's an equation: $$E = mc^2$$</p>
 	</slide>
 	<slide>
@@ -16,10 +17,13 @@
 		<p>Here's another equation: \(a^2 + b^2 = c^2\)</p>
 	</slide>
 	<slide>
-		<h1>Another Slide 2</h1>
+		<h1>Another Slide 3</h1>
 		<p>Here's another equation: \(a^2 + b^2 = c^2\)</p>
+        <equation label="test">
+            \Delta = b^2 -4ac
+        </equation>
 	</slide>
 
-	<script src="components/progressBar.js"></script>
 	<script src="library/beamer.js"></script>
+	<script src="components/progressBar.js"></script>
 </body>
