@@ -1,29 +1,62 @@
-<head>
-    <link role="theme" rel="stylesheet" href="assets/css/default.css">
-    <title>My Presentation</title>
-</head>
-<body>
-	<progress-bar></progress-bar>
-	<slide>
-		<slide-title>Welcome to the Math Presentation $\delta$</slide-title>
-		<p>Here's an equation: $$E = mc^2$$</p>
-	</slide>
-	<slide>
-		<h1>Another Slide 1</h1>
-		<p>Here's another equation: \(a^2 + b^2 = c^2\)</p>
-	</slide>
-	<slide>
-		<h1>Another Slide 2</h1>
-		<p>Here's another equation: \(a^2 + b^2 = c^2\)</p>
-	</slide>
-	<slide>
-		<h1>Another Slide 3</h1>
-		<p>Here's another equation: \(a^2 + b^2 = c^2\)</p>
-        <equation label="test">
-            \Delta = b^2 -4ac
-        </equation>
-	</slide>
+<link role="theme" rel="stylesheet" href="assets/css/default.css" />
+<title>My Presentation</title>
 
-	<script src="library/beamer.js"></script>
-	<script src="components/progressBar.js"></script>
-</body>
+<header>
+  <progress-bar></progress-bar>
+</header>
+
+<slide class="standout">
+  <h1>$\delta$ DELTA</h1>
+  <h2>Dynamic Engine for Layout and Template Arrangement</h2>
+  <hr />
+  <author>Rodrigo Ribeiro, Ph.D</author>
+  <institution>University of Denver</institution>
+</slide>
+
+<slide>
+  <slide-title> $\delta$ DELTA </slide-title>
+  <p>Here's an equation: $$E = mc^2$$</p>
+  <p>Here is a reference <eq ref="" /></p>
+</slide>
+<slide>
+  <slide-title>Another Slide 1</slide-title>
+  <p>Here's another equation: \(a^2 + b^2 = c^2\)</p>
+</slide>
+<slide>
+  <slide-title>Another Slide 2</slide-title>
+  <p>
+    Here's
+    <a href="#" id="ref" ref-id="lebesgue">this is a reference </a>another
+    equation: \(a^2 + b^2 = c^2\)
+  </p>
+  <p>
+    <equation> F(x) = \int_a^xf(s)ds </equation>
+  </p>
+</slide>
+<slide>
+  <slide-title>Another Slide 3</slide-title>
+  <p>Here's another equation: \(a^2 + b^2 = c^2\)</p>
+  <equation id="test"> \Delta = b^2 -4ac </equation>
+
+  <equation id="test-2"> x = \frac{-b\pm \sqrt{\Delta}}{2a} </equation>
+</slide>
+
+<slide>
+  <slide-title>Latex Environments</slide-title>
+  <theorem id="lebesgue">
+    <theorem-title>Lebesgue's dominated convergence theorem</theorem-title>
+    Nulla laoreet $(f_n)$ purus orci, quisque ullamcorper est vitae ex porta
+    sagittis
+
+    <equation>
+      \lim_{n\to \infty}\int_\Omega f_n d\mu = \int_\Omega f d \mu
+    </equation>
+    eu volutpat eros efficitur sit amet. Nam rutrum ante feugiat pellentesque
+    dapibu
+  </theorem>
+</slide>
+
+<footer>This is a footer</footer>
+
+<script src="library/delta.js"></script>
+<script src="components/progressBar.js"></script>
