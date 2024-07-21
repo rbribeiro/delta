@@ -51,6 +51,10 @@ function init() {
     const urlParams = new URLSearchParams(url.search);
     const currentSlide =
       parseInt(urlParams.get("slide")) || MyNameSpace.currentSlide;
+    // Create tooltip Object
+    const tooltip = document.createElement("div");
+    tooltip.id = "tool_tip_element";
+    document.body.appendChild(tooltip);
 
     // Load MathJax
     const mathJaxScript = document.createElement("script");
@@ -63,9 +67,10 @@ function init() {
     const totalSlides = slides.length;
     slides[currentSlide - 1].classList.add("active");
 
-    // Wrapping custom elements
-    globalWrapper();
-
+    // Handling custom elements
+    buildCustomElements();
+    //add Event Listeners
+    addEventListeners();
     // Wait for MathJax to load before initial rendering
     mathJaxScript.onload = () => {
       if (window.MathJax) {
@@ -73,21 +78,23 @@ function init() {
       }
     };
 
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowRight") {
-        goToSlide(MyNameSpace.currentSlide + 1);
-      } else if (e.key === "ArrowLeft") {
-        goToSlide(MyNameSpace.currentSlide - 1);
-      }
-    });
-
     updateState({ currentSlide, totalSlides });
   });
 }
 
 init();
 
-function globalWrapper() {
+function addEventListeners() {
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowRight") {
+      goToSlide(MyNameSpace.currentSlide + 1);
+    } else if (e.key === "ArrowLeft") {
+      goToSlide(MyNameSpace.currentSlide - 1);
+    }
+  });
+}
+
+function buildCustomElements() {
   const slideTitles = document.querySelectorAll("slide-title");
   if (slideTitles) {
     slideTitles.forEach((title) => {
@@ -125,13 +132,45 @@ function equationWrapper(eqElement, eqNumber) {
 }
 
 function environmentWrapper(envElement, number) {
-  const html = envElement.innerHTML;
-  const authors = envElement.getAttribute("authors");
   const envName = envElement.tagName.toLowerCase();
-  const name = envElement.getAttribute("name");
+  const titleTag = envName + "-title";
+  const title = envElement.querySelectorAll(titleTag);
+
+  if (title) {
+    title[0].innerHTML = `(${title[0].innerHTML})`;
+  }
+  const html = envElement.innerHTML;
 
   const content = `<span class='environment ${envName}'>${envName} ${number + 1}.</span>
-                    <span class='environmentName'>(${name}) </span>${html}
+                    ${html}
                     `;
   envElement.innerHTML = content;
 }
+
+function positionTooltip(event, tooltip) {
+  const tooltipRect = tooltip.getBoundingClientRect();
+  let left = event.pageX + 10;
+  let top = event.pageY + 10;
+
+  // Adjust positioning if the tooltip goes beyond the viewport
+  if (left + tooltipRect.width > window.innerWidth) {
+    left = event.pageX - tooltipRect.width - 10;
+  }
+  if (top + tooltipRect.height > window.innerHeight) {
+    top = event.pageY - tooltipRect.height - 10;
+  }
+
+  tooltip.style.left = left + "px";
+  tooltip.style.top = top + "px";
+}
+document.getElementById("ref").addEventListener("mousemove", (event) => {
+  const refId = event.target.getAttribute("ref-id");
+  const tooltip = document.getElementById("tool_tip_element");
+  if (refId) {
+    tooltip.innerHTML = document.getElementById(refId).innerHTML;
+    tooltip.classList.add("tooltip");
+    tooltip.style.display = "block";
+    event.target.appendChild(tooltip);
+    positionTooltip(event, tooltip);
+  }
+});
