@@ -56,6 +56,16 @@ footer {
   z-index: 99;
 }
 
+.step {
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+}
+
+
+.activeStep {
+  transition: opacity 0.5s ease-in;
+}
+
 author,
 institution {
   margin: 20px 0 20px 0;
