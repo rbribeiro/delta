@@ -150,6 +150,19 @@ function buildCustomElements() {
   }
 }
 
+/*****************************************************
+ *
+ * UTIL FUNCTIONS
+ *
+ *
+ *
+ * *************************************************/
+
+/*******************************************
+ *
+ * update the app's state
+ *
+ * ********************************************/
 function updateState(newState) {
   Object.assign(MyNameSpace, newState);
 
@@ -164,7 +177,11 @@ function updateState(newState) {
 
   document.dispatchEvent(event);
 }
-
+/***********************************
+ *
+ * Go to slide number slideNumber
+ *
+ *******************************/
 function goToSlide(slideNumber) {
   if (slideNumber <= MyNameSpace.totalSlides && slideNumber > 0) {
     const slides = document.querySelectorAll("slide");
@@ -221,12 +238,12 @@ function showToolTip(event) {
 
     event.target.appendChild(tooltip);
     const tooltipRect = tooltip.getBoundingClientRect();
-    let left = event.pageX - xOffset;
+    let left = event.pageX - tooltipRect.width/2;
     let top = event.pageY + 10;
 
     // Adjust positioning if the tooltip goes beyond the viewport
     if (left + tooltipRect.width > window.innerWidth) {
-      left = event.pageX - tooltipRect.width + xOffset;
+      left = event.pageX - tooltipRect.width/2;
     }
     if (top + tooltipRect.height > window.innerHeight) {
       top = event.pageY - tooltipRect.height - 10;
@@ -262,3 +279,52 @@ function referenceClick(event) {
     goToSlide(slideNumber);
   }
 }
+
+
+/***************************
+ * 
+ * COMPONENTS
+ * 
+ ****************/
+class ProgressBar extends HTMLElement {
+  constructor() {
+    super();
+    const link = document.getElementsByTagName("link")[0].cloneNode();
+    const shadow = this.attachShadow({ mode: "open" });
+    shadow.appendChild(link);
+
+    const barContainer = document.createElement("div");
+    barContainer.classList.add("pbContainer");
+
+    const bar = document.createElement("div");
+    bar.classList.add("pb");
+    bar.style.width = "0";
+    bar.style.height = "100%";
+
+    barContainer.appendChild(bar);
+    shadow.appendChild(barContainer);
+
+    this.bar = bar;
+  }
+
+  connectedCallback() {
+    // Listen for the custom event
+    document.addEventListener(
+      "appStateChange",
+      this.handleCustomEvent.bind(this),
+    );
+  }
+
+  handleCustomEvent(event) {
+    this.bar.style.width = `${
+      (100 * event.detail.currentSlide) / event.detail.totalSlides
+    }%`;
+  }
+
+  updateProgress(current, total) {
+    const progress = (current / total) * 100;
+    this.innerHTML = `${progress}%`;
+  }
+}
+
+customElements.define("progress-bar", ProgressBar);
