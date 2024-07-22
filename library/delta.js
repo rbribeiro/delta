@@ -15,35 +15,12 @@ window.MathJax = {
   },
 };
 
-function updateState(newState) {
-  Object.assign(MyNameSpace, newState);
-
-  const event = new CustomEvent("appStateChange", {
-    detail: {
-      currentSlide: MyNameSpace.currentSlide,
-      totalSlides: MyNameSpace.totalSlides,
-    },
-    bubbles: true,
-    composed: true,
-  });
-
-  document.dispatchEvent(event);
-}
-
-function goToSlide(slideNumber) {
-  if (slideNumber <= MyNameSpace.totalSlides && slideNumber > 0) {
-    const slides = document.querySelectorAll("slide");
-    slides[MyNameSpace.currentSlide - 1].classList.remove("active");
-    slides[slideNumber - 1].classList.add("active");
-
-    const url = new URL(window.location.href);
-    url.searchParams.set("slide", slideNumber);
-    window.history.replaceState({}, "", url);
-
-    updateState({ currentSlide: slideNumber });
-  }
-}
-
+/************************************************************************
+ *
+ * INIT Function. This is the function that call all the functions the
+ * DELTA framework needs to build the presentation
+ *
+ * ***********************************************************************/
 function init() {
   document.addEventListener("DOMContentLoaded", (event) => {
     // get slide number on URL
@@ -66,7 +43,9 @@ function init() {
     const slides = document.querySelectorAll("slide");
     const totalSlides = slides.length;
     slides[currentSlide - 1].classList.add("active");
-
+    slides.forEach((slide, key) => {
+      slide.setAttribute("number", key + 1);
+    });
     // Handling custom elements
     buildCustomElements();
     //add Event Listeners
@@ -84,13 +63,41 @@ function init() {
 
 init();
 
+/***********************************
+ *
+ * Add all the event listeners needed
+ *
+ ***********************************/
 function addEventListeners() {
+  window.addEventListener("popstate", (e) => {
+    const url = new URL(window.location.href);
+    const urlParams = new URLSearchParams(url.search);
+    const currentSlide = parseInt(urlParams.get("slide")) || 1;
+
+    goToSlide(currentSlide);
+  });
   document.addEventListener("keydown", (e) => {
     if (e.key === "ArrowRight") {
       goToSlide(MyNameSpace.currentSlide + 1);
     } else if (e.key === "ArrowLeft") {
       goToSlide(MyNameSpace.currentSlide - 1);
     }
+  });
+
+  const eqRefs = document.querySelectorAll("eq-ref") || [];
+
+  eqRefs.forEach((eqRef) => {
+    eqRef.addEventListener("mousemove", showToolTip);
+    eqRef.addEventListener("mouseout", hideToolTip);
+    eqRef.addEventListener("click", referenceClick);
+  });
+
+  const refs = document.querySelectorAll("ref") || [];
+
+  refs.forEach((ref) => {
+    ref.addEventListener("mousemove", showToolTip);
+    ref.addEventListener("mouseout", hideToolTip);
+    ref.addEventListener("click", referenceClick);
   });
 }
 
@@ -110,16 +117,72 @@ function buildCustomElements() {
   }
 
   const theorems = document.querySelectorAll("theorem");
-  console.log(theorems);
   if (theorems) {
     theorems.forEach((theorem, key) => {
-      environmentWrapper(theorem, key);
+      environmentWrapper(theorem, key + 1);
     });
+  }
+
+  const eqRefs = document.querySelectorAll("eq-ref");
+  if (eqRefs) {
+    eqRefs.forEach((eqRef, key) => {
+      const targetId = eqRef.getAttribute("to");
+      if (targetId) {
+        const eqNumber = document
+          .getElementById(targetId)
+          .getAttribute("number");
+        eqRef.innerHTML += ` (${eqNumber})`;
+      }
+    });
+  }
+
+  const refs = document.querySelectorAll("ref");
+  if (refs) {
+    refs.forEach((ref, key) => {
+      const targetId = ref.getAttribute("to");
+      if (targetId) {
+        const refNumber = document
+          .getElementById(targetId)
+          .getAttribute("number");
+        ref.innerHTML += ` ${refNumber}`;
+      }
+    });
+  }
+}
+
+function updateState(newState) {
+  Object.assign(MyNameSpace, newState);
+
+  const event = new CustomEvent("appStateChange", {
+    detail: {
+      currentSlide: MyNameSpace.currentSlide,
+      totalSlides: MyNameSpace.totalSlides,
+    },
+    bubbles: true,
+    composed: true,
+  });
+
+  document.dispatchEvent(event);
+}
+
+function goToSlide(slideNumber) {
+  if (slideNumber <= MyNameSpace.totalSlides && slideNumber > 0) {
+    const slides = document.querySelectorAll("slide");
+    slides[MyNameSpace.currentSlide - 1].classList.remove("active");
+    slides[slideNumber - 1].classList.add("active");
+
+    const url = new URL(window.location.href);
+    window.history.pushState({ path: url.href }, "", url.href);
+    url.searchParams.set("slide", slideNumber);
+    window.history.replaceState({}, "", url);
+
+    updateState({ currentSlide: slideNumber });
   }
 }
 
 function equationWrapper(eqElement, eqNumber) {
   const equation = eqElement.innerHTML;
+  eqElement.setAttribute("number", eqNumber);
   eqElement.innerHTML = `<div class="equationContainer">
                                 <div class="equationContent">
                                    $$ ${equation} $$
@@ -135,42 +198,67 @@ function environmentWrapper(envElement, number) {
   const envName = envElement.tagName.toLowerCase();
   const titleTag = envName + "-title";
   const title = envElement.querySelectorAll(titleTag);
-
+  envElement.setAttribute("number", number);
   if (title) {
     title[0].innerHTML = `(${title[0].innerHTML})`;
   }
   const html = envElement.innerHTML;
 
-  const content = `<span class='environment ${envName}'>${envName} ${number + 1}.</span>
+  const content = `<span class='environment ${envName}'>${envName} ${number}.</span>
                     ${html}
                     `;
   envElement.innerHTML = content;
 }
 
-function positionTooltip(event, tooltip) {
-  const tooltipRect = tooltip.getBoundingClientRect();
-  let left = event.pageX + 10;
-  let top = event.pageY + 10;
-
-  // Adjust positioning if the tooltip goes beyond the viewport
-  if (left + tooltipRect.width > window.innerWidth) {
-    left = event.pageX - tooltipRect.width - 10;
-  }
-  if (top + tooltipRect.height > window.innerHeight) {
-    top = event.pageY - tooltipRect.height - 10;
-  }
-
-  tooltip.style.left = left + "px";
-  tooltip.style.top = top + "px";
-}
-document.getElementById("ref").addEventListener("mousemove", (event) => {
-  const refId = event.target.getAttribute("ref-id");
+function showToolTip(event) {
+  const refId = event.target.getAttribute("to");
   const tooltip = document.getElementById("tool_tip_element");
   if (refId) {
     tooltip.innerHTML = document.getElementById(refId).innerHTML;
     tooltip.classList.add("tooltip");
     tooltip.style.display = "block";
+    const xOffset = parseInt(tooltip.style.width) / 2;
+
     event.target.appendChild(tooltip);
-    positionTooltip(event, tooltip);
+    const tooltipRect = tooltip.getBoundingClientRect();
+    let left = event.pageX - xOffset;
+    let top = event.pageY + 10;
+
+    // Adjust positioning if the tooltip goes beyond the viewport
+    if (left + tooltipRect.width > window.innerWidth) {
+      left = event.pageX - tooltipRect.width + xOffset;
+    }
+    if (top + tooltipRect.height > window.innerHeight) {
+      top = event.pageY - tooltipRect.height - 10;
+    }
+
+    tooltip.style.left = left + "px";
+    tooltip.style.top = top + "px";
   }
-});
+}
+
+function hideToolTip() {
+  document.getElementById("tool_tip_element").style.display = "none";
+}
+
+Node.prototype.findParentByTagName = function (tagName) {
+  let currentElement = this.parentElement;
+  while (currentElement) {
+    if (currentElement.tagName.toLowerCase() === tagName.toLowerCase()) {
+      return currentElement;
+    }
+    currentElement = currentElement.parentElement;
+  }
+  return null;
+};
+
+function referenceClick(event) {
+  const targetId = event.target.getAttribute("to");
+  const target = document.getElementById(targetId);
+  if (target) {
+    const slideNumber = target
+      .findParentByTagName("slide")
+      .getAttribute("number");
+    goToSlide(slideNumber);
+  }
+}

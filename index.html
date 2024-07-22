@@ -14,31 +14,48 @@
 </slide>
 
 <slide>
-  <slide-title> $\delta$ DELTA </slide-title>
-  <p>Here's an equation: $$E = mc^2$$</p>
-  <p>Here is a reference <eq ref="" /></p>
-</slide>
-<slide>
-  <slide-title>Another Slide 1</slide-title>
-  <p>Here's another equation: \(a^2 + b^2 = c^2\)</p>
-</slide>
-<slide>
-  <slide-title>Another Slide 2</slide-title>
+  <slide-title>Paragraphs</slide-title>
+  <p>This is a simple slide with a title and three paragraphs</p>
   <p>
-    Here's
-    <a href="#" id="ref" ref-id="lebesgue">this is a reference </a>another
-    equation: \(a^2 + b^2 = c^2\)
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sodales, dui
+    vitae euismod feugiat, tellus diam lacinia turpis, eget faucibus odio nisl
+    at dolor. Phasellus pharetra massa diam. Vestibulum ante ipsum primis in
+    faucibus orci luctus et ultrices posuere cubilia curae; Mauris cursus nisl
+    eget mi auctor, vel ultricies ligula semper. Vestibulum facilisis ut orci
+    eget finibus. Praesent at malesuada elit. Sed pellentesque eget tellus in
+    dignissim. Curabitur pulvinar ipsum in porta pharetra. Etiam egestas sapien
+    justo, non feugiat nisl faucibus vel. Suspendisse id est sed felis
+    pellentesque mollis. Aliquam a felis id erat iaculis facilisis sit amet sed
+    odio. Fusce ut magna tellus.
   </p>
   <p>
-    <equation> F(x) = \int_a^xf(s)ds </equation>
+    Nulla laoreet purus orci, eu volutpat eros efficitur sit amet. Nam rutrum
+    ante feugiat pellentesque dapibus. Proin lacinia leo quis neque sagittis,
+    vel iaculis est hendrerit. Cras fermentum interdum venenatis. Quisque
+    elementum vulputate purus, sed egestas eros gravida vel. Quisque accumsan
+    placerat urna nec dictum. Ut viverra velit non nisl ullamcorper, ornare
+    convallis lacus porta. Duis et sem ut odio scelerisque molestie. Curabitur
+    posuere lacus elementum turpis pretium, facilisis condimentum sapien
+    ultrices. Duis ut faucibus sapien. Nam et eros quis lorem volutpat dictum
+    quis malesuada ante. Donec mattis in velit in ultrices. Vivamus gravida
+    libero id finibus mattis. Maecenas volutpat lorem a metus pulvinar, at
+    ullamcorper justo condimentum.
   </p>
 </slide>
-<slide>
-  <slide-title>Another Slide 3</slide-title>
-  <p>Here's another equation: \(a^2 + b^2 = c^2\)</p>
-  <equation id="test"> \Delta = b^2 -4ac </equation>
 
-  <equation id="test-2"> x = \frac{-b\pm \sqrt{\Delta}}{2a} </equation>
+<slide>
+  <slide-title> Equations And Refences</slide-title>
+  <p>
+    Here is an inline equation $E = mc^2$. Here is a display equation $$e^{i\pi}
+    + 1 = 0$$
+  </p>
+  <p>
+    Here goes a numbered equation using the
+    <marked>&lt;equation&gt;</marked> tag
+    <equation id="integral"> \int x^2dx = \frac{x^3}{3} + C </equation>
+    Here is a reference to <ref to="lebesgue">Theorem</ref>. Here is a reference
+    to <eq-ref to="eqlim">Equation</eq-ref> in the same theorem.
+  </p>
 </slide>
 
 <slide>
@@ -46,9 +63,9 @@
   <theorem id="lebesgue">
     <theorem-title>Lebesgue's dominated convergence theorem</theorem-title>
     Nulla laoreet $(f_n)$ purus orci, quisque ullamcorper est vitae ex porta
-    sagittis
+    sagitti <eq-ref to="integral">Equation</eq-ref>
 
-    <equation>
+    <equation id="eqlim">
       \lim_{n\to \infty}\int_\Omega f_n d\mu = \int_\Omega f d \mu
     </equation>
     eu volutpat eros efficitur sit amet. Nam rutrum ante feugiat pellentesque

@@ -1,3 +1,36 @@
+:root {
+  --primary-bg-color: #2f3e46;
+  --secondary-bg-color: #354f52;
+  --terciary-bg-color: #52796f;
+  --primary-text-color: #cad2c5;
+  --secondary-text-color: #84a98c;
+  --highlight-color: #ed6a5a;
+
+  --regular-text-size: 48px;
+  --big-text-size: 64px;
+  --small-text-size: 36px;
+  --paragraph-padding: 0px 45px 0px 45px;
+  --drop-shadow: 0 1px 1px hsl(0deg 0% 0% / 0.075),
+    0 2px 2px hsl(0deg 0% 0% / 0.075), 0 4px 4px hsl(0deg 0% 0% / 0.075),
+    0 8px 8px hsl(0deg 0% 0% / 0.075), 0 16px 16px hsl(0deg 0% 0% / 0.075);
+  --tooltip-width: 850px;
+  --tooltip-border-radius: 5px;
+  --tooltip-padding: 15px;
+}
+::selection {
+  background-color: var(--highlight-color); /* Highlight background color */
+  color: var(--primary-bg-color); /* Highlight text color */
+}
+
+::-webkit-selection {
+  background-color: var(--highlight-color); /* Highlight background color */
+  color: var(--primary-bg-color); /* Highlight text color */
+}
+
+::-moz-selection {
+  background-color: var(--highlight-color); /* Highlight background color */
+  color: var(--primary-bg-color); /* Highlight text color */
+}
 body,
 html {
   margin: 0;
@@ -5,7 +38,11 @@ html {
   height: 100%;
   align-items: center;
   overflow: hidden;
-  font-size: larger;
+  font:
+    var(--regular-text-size) "Arial",
+    sans-serif;
+  background-color: var(--primary-bg-color);
+  color: var(--primary-text-color);
 }
 
 header {
@@ -32,26 +69,28 @@ h1 {
 
 hr {
   width: 90%;
-  border: 3px solid blueviolet;
+  border: 3px solid var(--secondary-text-color);
 }
 
 p {
-  font-size: larger;
+  padding: var(--paragraph-padding);
 }
-
+marked {
+  background-color: var(--highlight-color);
+  color: var(--primary-bg-color);
+}
 .slideTitle {
-  background-color: #e0e0e0;
+  background-color: var(--secondary-bg-color);
   width: 100%;
   margin: 0px;
   padding-top: 20px;
   padding-bottom: 20px;
   padding-left: 20px;
-  font-size: 64px;
+  font-size: var(--big-text-size);
+  color: var(--secondary-text-color);
+  box-shadow: var(--drop-shadow);
 }
 
-p {
-  padding: 5ch;
-}
 .standout {
   justify-content: center !important; /* Center horizontally */
   align-items: center !important; /* Center vertically */
@@ -95,28 +134,27 @@ slide.active {
 
 .tooltip {
   position: absolute;
-  background-color: #333;
-  color: #fff;
-  padding: 15px;
-  border-radius: 5px;
+  background-color: var(--secondary-bg-color);
+  color: var(--secondary-text-color) !important;
+  padding: var(--tooltip-padding);
+  border-radius: var(--tooltip-border-radius);
   display: none;
   z-index: 1000; /* Ensure the tooltip is above other elements */
   pointer-events: none; /* Ensure it doesn't interfere with mouse events */
-  border-radius: 5px;
-  width: 600px;
-  font-size: 16px;
+  width: var(--tooltip-width);
+  font-size: var(--small-text-size);
+  box-shadow: var(--drop-shadow);
 }
 
 .pbContainer {
   height: 7px;
-  background-color: #e0e0e0;
+  background-color: var(--terciary-bg-color);
 }
 
 .pb {
-  background-color: blueviolet;
+  background-color: var(--highlight-color);
   transition: width 0.5s ease-in;
 }
-
 /**************************************
 * EQUATION CLASSES
 ****************************************/
@@ -124,9 +162,10 @@ slide.active {
 .equationContainer {
   display: flex;
 }
-.equationContent {
+.equationContent,
+.MathJax,
+.MJ-TEX {
   flex: 1;
-  padding: 10px;
 }
 
 .equationNumber {
@@ -135,6 +174,13 @@ slide.active {
   justify-content: flex-end;
   align-items: center;
   padding-right: 20px; /* Optional padding for spacing */
+}
+
+eq-ref,
+ref {
+  color: var(--secondary-text-color);
+  cursor: pointer;
+  font-weight: bold;
 }
 
 /******************************************
@@ -150,6 +196,7 @@ theorem {
 .theorem {
   text-transform: capitalize;
   font-weight: bold;
+  color: var(--secondary-text-color);
 }
 
 theorem-title {
