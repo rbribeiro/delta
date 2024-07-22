@@ -15,7 +15,7 @@
     0 8px 8px hsl(0deg 0% 0% / 0.075), 0 16px 16px hsl(0deg 0% 0% / 0.075);
   --tooltip-width: 850px;
   --tooltip-border-radius: 5px;
-  --tooltip-padding: 15px;
+  --tooltip-padding: 25px;
 }
 ::selection {
   background-color: var(--highlight-color); /* Highlight background color */
