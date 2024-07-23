@@ -1,6 +1,17 @@
 const MyNameSpace = {
 	currentSlide: 1,
 	totalSlides: 0,
+	drawing: false,
+	annotateMode: false,
+	environmentList: [
+		"theorem",
+		"proof",
+		"proposition",
+		"lemma",
+		"example",
+		"remark",
+		"corollary",
+	],
 };
 
 window.MathJax = {
@@ -23,8 +34,6 @@ window.MathJax = {
  * ***********************************************************************/
 function init() {
 	document.addEventListener("DOMContentLoaded", (event) => {
-		// Call the function to replace \step commands in the whole document
-		replaceStepCommands(document.body);
 		// get slide number on URL
 		const url = new URL(window.location.href);
 		const urlParams = new URLSearchParams(url.search);
@@ -42,15 +51,8 @@ function init() {
 			"https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js";
 		document.head.appendChild(mathJaxScript);
 
-		const slides = document.querySelectorAll("slide");
-		const totalSlides = slides.length;
-		slides[currentSlide - 1].classList.add("active");
-		slides.forEach((slide, key) => {
-			slide.setAttribute("number", key + 1);
-			slide.setAttribute("id", `DELTA_SLIDE_${key + 1}`);
-		});
 		// Handling custom elements
-		buildCustomElements();
+		const totalSlides = buildCustomElements(currentSlide).totalSlides;
 		//add Event Listeners
 		addEventListeners();
 		// Wait for MathJax to load before initial rendering
@@ -104,7 +106,23 @@ function addEventListeners() {
 			} else {
 				goToSlide(MyNameSpace.currentSlide - 1);
 			}
+		} else if (e.key === "a") {
+			const annotateMode = MyNameSpace.annotateMode ? false : true;
+			updateState({ annotateMode });
+			const event = new CustomEvent("toggleAnnotateMode");
+			document.dispatchEvent(event);
 		}
+	});
+
+	canvasListeners();
+
+	document.addEventListener("toggleAnnotateMode", () => {
+		const canvasList = document.querySelectorAll("canvas");
+		canvasList.forEach((canvas) => {
+			canvas.style.pointerEvents = MyNameSpace.annotateMode
+				? "visible"
+				: "none";
+		});
 	});
 
 	const eqRefs = document.querySelectorAll("eq-ref") || [];
@@ -124,13 +142,26 @@ function addEventListeners() {
 	});
 }
 
-function buildCustomElements() {
-	const slideTitles = document.querySelectorAll("slide-title");
-	if (slideTitles) {
-		slideTitles.forEach((title) => {
-			title.innerHTML = "<div class='slideTitle'>" + title.innerHTML + "</div>";
-		});
-	}
+function buildCustomElements(currentSlide) {
+	const slides = document.querySelectorAll("slide");
+	const totalSlides = slides.length;
+	slides[currentSlide - 1].classList.add("active");
+	slides.forEach((slide, key) => {
+		slide.setAttribute("number", key + 1);
+		slide.setAttribute("id", `DELTA_SLIDE_${key + 1}`);
+		const canvas = document.createElement("canvas");
+		slide.appendChild(canvas);
+		const title = Array.from(slide.children).find(
+			(child) => child.tagName.toLowerCase() === "title"
+		);
+		if (title) {
+			const slideTitle = document.createElement("div");
+			slideTitle.classList.add("slideTitle");
+			slideTitle.innerHTML = title.innerHTML;
+			slide.prepend(slideTitle);
+			slide.removeChild(title);
+		}
+	});
 
 	const equations = document.querySelectorAll("equation");
 	if (equations.length > 0) {
@@ -139,12 +170,14 @@ function buildCustomElements() {
 		});
 	}
 
-	const theorems = document.querySelectorAll("theorem");
-	if (theorems.length > 0) {
-		theorems.forEach((theorem, key) => {
-			environmentWrapper(theorem, key + 1);
-		});
-	}
+	MyNameSpace.environmentList.forEach((envName) => {
+		const elements = document.querySelectorAll(envName);
+		if (elements.length > 0) {
+			elements.forEach((element, key) => {
+				environmentWrapper(element, key + 1);
+			});
+		}
+	});
 
 	const eqRefs = document.querySelectorAll("eq-ref");
 	if (eqRefs.length > 0) {
@@ -171,6 +204,9 @@ function buildCustomElements() {
 			}
 		});
 	}
+
+	return {totalSlides}
+
 }
 
 /*****************************************************
@@ -193,6 +229,8 @@ function updateState(newState) {
 		detail: {
 			currentSlide: MyNameSpace.currentSlide,
 			totalSlides: MyNameSpace.totalSlides,
+			annotateMode: MyNameSpace.annotateMode,
+			drawing: MyNameSpace.drawing,
 		},
 		bubbles: true,
 		composed: true,
@@ -235,21 +273,41 @@ function equationWrapper(eqElement, eqNumber) {
 }
 
 function environmentWrapper(envElement, number) {
+	envElement.classList.add("environment");
 	const envName = envElement.tagName.toLowerCase();
-	const titleTag = envName + "-title";
-	const title = envElement.querySelectorAll(titleTag);
-	envElement.setAttribute("number", number);
-	if (title) {
-		title[0].innerHTML = `(${title[0].innerHTML})`;
-	}
-	const html = envElement.innerHTML;
+	const title = Array.from(envElement.children).find(
+		(child) => child.tagName.toLowerCase() === "title"
+	);
 
-	const content = `<span class='environment ${envName}'>${envName} ${number}.</span>
-                    ${html}
+	envElement.setAttribute("number", number);
+
+	if (envName === "proof") {
+		let envTitle = "";
+		if (title) {
+			envTitle = title.innerHTML;
+			envElement.removeChild(title);
+		}
+		const content = `<span class='environment-name ${envName}'>${envTitle}.</span>
+    ${envElement.innerHTML}
+    `;
+		envElement.innerHTML = content;
+	} else {
+		if (title) {
+			const titleElement = document.createElement("span");
+			titleElement.classList.add("environment-title");
+			titleElement.innerHTML = `(${title.innerHTML})`;
+			envElement.prepend(titleElement);
+			envElement.removeChild(title);
+		}
+		const content = `<span class='environment-name ${envName}'>${envName} ${number}.</span>
+                    ${envElement.innerHTML}
                     `;
-	envElement.innerHTML = content;
+		envElement.innerHTML = content;
+	}
 }
 
+
+ 
 function showToolTip(event) {
 	const refId = event.target.getAttribute("to");
 	const tooltip = document.getElementById("tool_tip_element");
@@ -258,7 +316,12 @@ function showToolTip(event) {
 		tooltip.classList.add("tooltip");
 		tooltip.style.display = "block";
 
-		event.target.appendChild(tooltip);
+		const elements = tooltip.querySelectorAll("*");
+		elements.forEach((element) => {
+			element.classList.remove("step");
+			element.classList.remove("activeStep");
+		});
+
 		const tooltipRect = tooltip.getBoundingClientRect();
 		let left = event.pageX - 10;
 		let top = event.pageY + 10;
@@ -291,33 +354,39 @@ function referenceClick(event) {
 	}
 }
 
-function replaceStepCommands(node) {
-  if (node.nodeType === Node.TEXT_NODE) {
-    let content = node.textContent;
-    const parts = content.split('\\step');
-    if (parts.length > 1) {
-        let newContent = '<span class="step">' + parts.join('</span><span class="step">') + '</span>';
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = newContent;
+function canvasListeners() {
+	const canvasList = document.querySelectorAll("canvas");
+	canvasList.forEach((canvas) => {
+		const ctx = canvas.getContext("2d");
+		const ratio = window.devicePixelRatio;
+		canvas.width = window.innerWidth * ratio;
+		canvas.height = window.innerHeight * ratio;
+		canvas.style.width = `${window.innerWidth}px`;
+		canvas.style.height = `${window.innerHeight}px`;
+		ctx.scale(ratio, ratio);
+		ctx.lineWidth = 5;
+		ctx.strokeStyle = "#ed6a5a";
+		ctx.shadowBlur = 1;
+		ctx.shadowColor = "#ed6a5a";
 
-        while (tempDiv.firstChild) {
-            node.parentNode.insertBefore(tempDiv.firstChild, node);
-        }
-        node.parentNode.removeChild(node);
-    }
-} else if (node.nodeType === Node.ELEMENT_NODE) {
-    node.childNodes.forEach(replaceStepCommands);
-    processElement(node);
-}
-}
+		canvas.addEventListener("mousedown", (e) => {
+			if (MyNameSpace.annotateMode) {
+				updateState({ drawing: true });
+				ctx.beginPath();
+			}
+		});
 
-function processElement(element) {
-  let html = element.innerHTML;
-        if (html.includes("\\step")) {
-            html = html.replace(/\\step/g, '</span><span class="step">');
-            html = '<span class="step">' + html + '</span>';
-            element.innerHTML = html;
-        }
+		canvas.addEventListener("mousemove", (e) => {
+			if (MyNameSpace.drawing && MyNameSpace.annotateMode) {
+				ctx.lineTo(e.clientX, e.clientY);
+				ctx.stroke();
+			}
+		});
+
+		canvas.addEventListener("mouseup", () => {
+			updateState({ drawing: false });
+		});
+	});
 }
 
 /***************************

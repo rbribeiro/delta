@@ -1,20 +1,19 @@
 <link role="theme" rel="stylesheet" href="assets/css/default.css" />
-<title>My Presentation</title>
 
 <header>
   <progress-bar></progress-bar>
 </header>
 
 <slide class="standout">
-  <h1>$\delta$ DELTA</h1>
-  <h2>Dynamic Engine for Layout and Template Arrangement</h2>
+  <h1><mark>$\delta$</mark>delta</h1>
+  <h3>Dynamic Engine for Layout and Template Arrangement</h3>
   <hr />
   <author>Rodrigo Ribeiro, Ph.D</author>
   <institution>University of Denver</institution>
 </slide>
 
 <slide>
-  <slide-title>Paragraphs</slide-title>
+  <title>Paragraphs</title>
   <p>This is a simple slide with a title and three paragraphs</p>
   <p>
     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sodales, dui
@@ -35,14 +34,14 @@
 </slide>
 
 <slide>
-  <slide-title> Equations And Refences</slide-title>
+  <title> Equations And References</title>
   <p>
     Here is an inline equation $E = mc^2$. Here is a display equation $$e^{i\pi}
     + 1 = 0$$
   </p>
   <p>
     Here goes a numbered equation using the
-    <marked>&lt;equation&gt;</marked> tag
+    <mark>&lt;equation&gt;</mark> tag
     <equation id="integral"> \int x^2dx = \frac{x^3}{3} + C </equation>
     Here is a reference to <ref to="lebesgue">Theorem</ref>. Here is a reference
     to <eq-ref to="eqlim">Equation</eq-ref> in the same theorem.
@@ -50,12 +49,12 @@
 </slide>
 
 <slide>
-  <slide-title>Latex Environments</slide-title>
+  <title>Latex Environments</title>
   <theorem id="lebesgue">
-    <theorem-title>Lebesgue's dominated convergence theorem</theorem-title>
+    <title>Lebesgue's dominated convergence theorem</title>
     Nulla laoreet  $(f_n)$  purus orci, quisque ullamcorper est vitae ex porta  sagitti  
 
-    <equation id="eqlim">
+    <equation id="eqlim" class="step">
       \lim_{n\to \infty}\int_\Omega f_n d\mu = \int_\Omega f d \mu
     </equation>
     
@@ -67,6 +66,21 @@
 <slide>
   <p>
     This is a slide with no title!
+    <corollary class="step">
+      This is a corollary with a step class. Vestibulum ante ipsum primis in
+      faucibus orci luctus et  ultrices posuere cubilia curae; 
+      <equation class="step">
+        \int_a^bf(x)dx = F(b) - F(a)
+      </equation>
+       
+    </corollary>
+    <proof class="step">
+      <title>Proof of Corollary</title>
+      The proof goes Here
+      <equation>
+        e^{i\pi} + 1 = 0
+      </equation>
+    </proof>
     <ul>
       <li class="step">Hellow</li>
       <li class="step">Hellow 2</li>
@@ -74,6 +88,5 @@
   </p>
 </slide>
 
-<footer>This is a footer</footer>
 
 <script src="./library/delta.js"></script>

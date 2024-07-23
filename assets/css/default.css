@@ -9,7 +9,7 @@
   --regular-text-size: 48px;
   --big-text-size: 64px;
   --small-text-size: 36px;
-  --paragraph-padding: 0px 45px 0px 45px;
+  --paragraph-padding: 0px 80px 0px 80px;
   --drop-shadow: 0 1px 1px hsl(0deg 0% 0% / 0.075),
     0 2px 2px hsl(0deg 0% 0% / 0.075), 0 4px 4px hsl(0deg 0% 0% / 0.075),
     0 8px 8px hsl(0deg 0% 0% / 0.075), 0 16px 16px hsl(0deg 0% 0% / 0.075);
@@ -31,6 +31,18 @@
   background-color: var(--highlight-color); /* Highlight background color */
   color: var(--primary-bg-color); /* Highlight text color */
 }
+
+canvas {
+  position: absolute;
+  top:0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  pointer-events: none;
+}
+
+
 body,
 html {
   margin: 0;
@@ -52,8 +64,15 @@ header {
 
 footer {
   padding: 10px;
-  margin-top: -20px;
+  margin-top: -47px;
   z-index: 99;
+  font-size:medium;
+  width: 100%;
+  background-color: var(--secondary-bg-color);
+}
+
+ol {
+  padding: var(--paragraph-padding);
 }
 
 .step {
@@ -85,9 +104,10 @@ hr {
 p {
   padding: var(--paragraph-padding);
 }
-marked {
+mark {
   background-color: var(--highlight-color);
   color: var(--primary-bg-color);
+  font-weight: bold;
 }
 .slideTitle {
   background-color: var(--secondary-bg-color);
@@ -203,12 +223,20 @@ theorem {
   padding: 30px;
 }
 
-.theorem {
+.proof {
+  font-style: italic;
+}
+
+.environment {
+  display: block;
+}
+
+.theorem, .environment-name {
   text-transform: capitalize;
   font-weight: bold;
   color: var(--secondary-text-color);
 }
 
-theorem-title {
+.environment-title {
   font-style: italic;
 }
