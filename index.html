@@ -1,3 +1,4 @@
+
 <link role="theme" rel="stylesheet" href="assets/css/default.css" />
 
 <header>
@@ -5,17 +6,18 @@
 </header>
 
 <slide class="standout">
-  <h1><mark>$\delta$</mark>delta</h1>
+  <h1><mark>\(\delta\)</mark>delta</h1>
   <h3>Dynamic Engine for Layout and Template Arrangement</h3>
   <hr />
   <author>Rodrigo Ribeiro, Ph.D</author>
   <institution>University of Denver</institution>
 </slide>
 
+
 <slide>
   <title>Paragraphs</title>
-  <p>This is a simple slide with a title and three paragraphs</p>
-  <p>
+  <p class="step">This is a simple slide with a title and two paragraphs</p>
+  <p class="step">
     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sodales, dui
     vitae euismod feugiat,  tellus diam lacinia turpis, eget faucibus odio nisl
     at dolor. Phasellus pharetra massa diam. Vestibulum ante ipsum primis in
@@ -23,26 +25,22 @@
     eget mi auctor, vel ultricies ligula semper. Vestibulum facilisis ut orci
     eget finibus. 
   </p>
-  <p>
-     Nulla laoreet purus \STEPorci, eu volutpat eros efficitur sit amet. Nam rutrum
-    ante feugiat pellentesque dapibus. Proin lacinia leo quis neque sagittis,
-    vel iaculis est hendrerit. Cras fermentum interdum venenatis. Quisque
-    elementum vulputate purus, sed egestas eros gravida vel. Quisque accumsan
-    placerat urna nec dictum. Ut viverra velit non nisl ullamcorper, ornare
-    convallis lacus porta. 
-  </p>
+
 </slide>
+
 
 <slide>
   <title> Equations And References</title>
   <p>
-    Here is an inline equation $E = mc^2$. Here is a display equation $$e^{i\pi}
+    Here is an inline equation \(E = mc^2\). Here is a display equation $$e^{i\pi}
     + 1 = 0$$
   </p>
   <p>
     Here goes a numbered equation using the
     <mark>&lt;equation&gt;</mark> tag
+
     <equation id="integral"> \int x^2dx = \frac{x^3}{3} + C </equation>
+
     Here is a reference to <ref to="lebesgue">Theorem</ref>. Here is a reference
     to <eq-ref to="eqlim">Equation</eq-ref> in the same theorem.
   </p>
@@ -52,7 +50,7 @@
   <title>Latex Environments</title>
   <theorem id="lebesgue">
     <title>Lebesgue's dominated convergence theorem</title>
-    Nulla laoreet  $(f_n)$  purus orci, quisque ullamcorper est vitae ex porta  sagitti  
+    Nulla laoreet  \((f_n)\)  purus orci, quisque ullamcorper est vitae ex porta  sagitti  
 
     <equation id="eqlim" class="step">
       \lim_{n\to \infty}\int_\Omega f_n d\mu = \int_\Omega f d \mu
@@ -76,17 +74,27 @@
     </corollary>
     <proof class="step">
       <title>Proof of Corollary</title>
-      The proof goes Here
+      The proof goes Here. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae
       <equation>
         e^{i\pi} + 1 = 0
       </equation>
+      Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae
     </proof>
-    <ul>
-      <li class="step">Hellow</li>
-      <li class="step">Hellow 2</li>
-    </ul>
   </p>
 </slide>
+
+<slide>
+  <title>New Slide!</title>
+  <p>
+    New paragraph!
+    <lemma>
+      <title>Zorn's Lemma (?)</title>
+      O enunciado vai aqui! Se eu soubesse
+    </lemma>
+    Referencia para equacao <eq-ref to="integral">Equacao</eq-ref>
+  </p>
+</slide>
+
 
 
 <script src="./library/delta.js"></script>

@@ -1,216 +1,233 @@
 :root {
-  --primary-bg-color: #2f3e46;
-  --secondary-bg-color: #354f52;
-  --terciary-bg-color: #52796f;
-  --primary-text-color: #cad2c5;
-  --secondary-text-color: #84a98c;
-  --highlight-color: #ed6a5a;
+	--primary-bg-color: #2f3e46;
+	--secondary-bg-color: #354f52;
+	--terciary-bg-color: #52796f;
+	--primary-text-color: #cad2c5;
+	--secondary-text-color: #84a98c;
+	--highlight-color: #ed6a5a;
 
-  --regular-text-size: 48px;
-  --big-text-size: 64px;
-  --small-text-size: 36px;
-  --paragraph-padding: 0px 80px 0px 80px;
-  --drop-shadow: 0 1px 1px hsl(0deg 0% 0% / 0.075),
-    0 2px 2px hsl(0deg 0% 0% / 0.075), 0 4px 4px hsl(0deg 0% 0% / 0.075),
-    0 8px 8px hsl(0deg 0% 0% / 0.075), 0 16px 16px hsl(0deg 0% 0% / 0.075);
-  --tooltip-width: 850px;
-  --tooltip-border-radius: 5px;
-  --tooltip-padding: 25px;
+	--regular-text-size: 48px;
+	--big-text-size: 64px;
+	--small-text-size: 36px;
+	--paragraph-padding: 0px 80px 0px 80px;
+	--drop-shadow: 0 1px 1px hsl(0deg 0% 0% / 0.075),
+		0 2px 2px hsl(0deg 0% 0% / 0.075), 0 4px 4px hsl(0deg 0% 0% / 0.075),
+		0 8px 8px hsl(0deg 0% 0% / 0.075), 0 16px 16px hsl(0deg 0% 0% / 0.075);
+	--tooltip-width: 850px;
+	--tooltip-border-radius: 5px;
+	--tooltip-padding: 25px;
 }
 ::selection {
-  background-color: var(--highlight-color); /* Highlight background color */
-  color: var(--primary-bg-color); /* Highlight text color */
+	background-color: var(--highlight-color); /* Highlight background color */
+	color: var(--primary-bg-color); /* Highlight text color */
 }
 
 ::-webkit-selection {
-  background-color: var(--highlight-color); /* Highlight background color */
-  color: var(--primary-bg-color); /* Highlight text color */
+	background-color: var(--highlight-color); /* Highlight background color */
+	color: var(--primary-bg-color); /* Highlight text color */
 }
 
 ::-moz-selection {
-  background-color: var(--highlight-color); /* Highlight background color */
-  color: var(--primary-bg-color); /* Highlight text color */
+	background-color: var(--highlight-color); /* Highlight background color */
+	color: var(--primary-bg-color); /* Highlight text color */
+}
+
+
+
+@media print {
+  slide {
+    display: block !important;
+    width: 100vw;
+    height: 100vh; /* Set the height to match the A4 landscape height */
+    page-break-after: always;  /* Ensure each slide ends and starts a new page */
+    box-sizing: border-box;
+  }
+
+  header {
+    display: none;
+  }
+  body,
+html {
+	margin: 0;
+	padding: 0;
+
+}
+
+  body .step {
+    opacity: 1;
+  }
 }
 
 canvas {
-  position: absolute;
-  top:0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 1;
-  pointer-events: none;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	z-index: 1;
+	pointer-events: none;
 }
-
 
 body,
 html {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  align-items: center;
-  overflow: hidden;
-  font:
-    var(--regular-text-size) "Arial",
-    sans-serif;
-  background-color: var(--primary-bg-color);
-  color: var(--primary-text-color);
+	margin: 0;
+	padding: 0;
+  width: 100vw;
+  height: 100vh;
+	align-items: center;
+	font: var(--regular-text-size) "Arial", sans-serif;
+	background-color: var(--primary-bg-color);
+	color: var(--primary-text-color);
 }
 
 header {
-  width: 100vw;
-  z-index: 9999;
+  position: fixed;
+  left: 0;
+  top: 0;
+	width: 100vw;
+	z-index: 9999;
 }
 
 footer {
-  padding: 10px;
-  margin-top: -47px;
-  z-index: 99;
-  font-size:medium;
-  width: 100%;
-  background-color: var(--secondary-bg-color);
-}
-
-ol {
-  padding: var(--paragraph-padding);
-}
-
-.step {
-  opacity: 0;
-  transition: opacity 0.5s ease-out;
-}
-
-
-.activeStep {
-  transition: opacity 0.5s ease-in;
-}
-
-author,
-institution {
-  margin: 20px 0 20px 0;
-  width: 90%;
-  text-align: left;
-  font-size: 32px;
-}
-h1 {
-  margin: 0;
-}
-
-hr {
-  width: 90%;
-  border: 3px solid var(--secondary-text-color);
+	margin-top: -47px;
+	z-index: 99;
+	font-size: medium;
+	width: 100%;
+	background-color: var(--secondary-bg-color);
 }
 
 p {
   padding: var(--paragraph-padding);
 }
+
+.step {
+	opacity: 0;
+	transition: opacity 0.5s ease-out;
+}
+
+.activeStep {
+	transition: opacity 0.5s ease-in;
+}
+
+author,
+institution {
+	width: 90%;
+	text-align: left;
+	font-size: 32px;
+}
+
+
+hr {
+	width: 90%;
+	border: 3px solid var(--secondary-text-color);
+}
+
+
 mark {
-  background-color: var(--highlight-color);
-  color: var(--primary-bg-color);
-  font-weight: bold;
+	background-color: var(--highlight-color);
+	color: var(--primary-bg-color);
+	font-weight: bold;
 }
 .slideTitle {
-  background-color: var(--secondary-bg-color);
-  width: 100%;
-  margin: 0px;
-  padding-top: 20px;
-  padding-bottom: 20px;
-  padding-left: 20px;
-  font-size: var(--big-text-size);
-  color: var(--secondary-text-color);
-  box-shadow: var(--drop-shadow);
+	background-color: var(--secondary-bg-color);
+	width: 100%;
+  padding: 20px 0 20px 0;
+	font-size: var(--big-text-size);
+	color: var(--secondary-text-color);
+	box-shadow: var(--drop-shadow);
 }
 
 .standout {
-  justify-content: center !important; /* Center horizontally */
-  align-items: center !important; /* Center vertically */
-  text-align: center;
-  padding: 0 20px 0 20px;
+	justify-content: center !important; /* Center horizontally */
+	align-items: center !important; /* Center vertically */
+	text-align: center;
 }
 
 slide {
-  display: none;
-  width: 100vw;
-  height: 100%;
-  box-sizing: border-box;
-  opacity: 0;
-  transition: opacity 0.5s ease;
-  flex-direction: column;
-  flex: 1;
+  position: relative;
+	display: none;
+	width: 100vw;
+	height: 100%;
+	box-sizing: border-box;
+	opacity: 1;
+	transition: opacity 0.5s ease;
+	flex-direction: column;
+	flex: 1;
+
 }
 
 slide.active {
-  display: flex;
-  animation: fadeIn 1s forwards;
+	display: flex;
+	animation: fadeIn 1s forwards;
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
 }
 
 @keyframes fadeOut {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
+	from {
+		opacity: 1;
+	}
+	to {
+		opacity: 0;
+	}
 }
 
 .tooltip {
-  position: absolute;
-  background-color: var(--secondary-bg-color);
-  color: var(--secondary-text-color) !important;
-  padding: var(--tooltip-padding);
-  border-radius: var(--tooltip-border-radius);
-  display: none;
-  z-index: 1000; /* Ensure the tooltip is above other elements */
-  pointer-events: none; /* Ensure it doesn't interfere with mouse events */
-  width: var(--tooltip-width);
-  font-size: var(--small-text-size);
-  box-shadow: var(--drop-shadow);
+	position: absolute;
+	background-color: var(--secondary-bg-color);
+	color: var(--secondary-text-color) !important;
+	padding: var(--tooltip-padding);
+	border-radius: var(--tooltip-border-radius);
+	display: none;
+	z-index: 1000; /* Ensure the tooltip is above other elements */
+	pointer-events: none; /* Ensure it doesn't interfere with mouse events */
+	width: var(--tooltip-width);
+	font-size: var(--small-text-size);
+	box-shadow: var(--drop-shadow);
 }
 
-.pbContainer {
-  height: 7px;
-  background-color: var(--terciary-bg-color);
+.pbContainer {  
+	height: 7px;
+	background-color: var(--terciary-bg-color);
 }
 
 .pb {
-  background-color: var(--highlight-color);
-  transition: width 0.5s ease-in;
+	background-color: var(--highlight-color);
+	transition: width 0.5s ease-in;
 }
 /**************************************
 * EQUATION CLASSES
 ****************************************/
 
 .equationContainer {
-  display: flex;
+	display: flex;
 }
 .equationContent,
 .MathJax,
 .MJ-TEX {
-  flex: 1;
+	flex: 1;
 }
 
 .equationNumber {
-  width: 40px;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  padding-right: 20px; /* Optional padding for spacing */
+	width: 40px;
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	padding-right: 20px; /* Optional padding for spacing */
 }
 
 eq-ref,
 ref {
-  color: var(--secondary-text-color);
-  cursor: pointer;
-  font-weight: bold;
+	color: var(--secondary-text-color);
+	cursor: pointer;
+	font-weight: bold;
 }
 
 /******************************************
@@ -220,23 +237,28 @@ ref {
  * *****************************************/
 
 theorem {
-  padding: 30px;
+	padding: 30px;
 }
 
 .proof {
-  font-style: italic;
+	font-style: italic;
 }
 
 .environment {
-  display: block;
+	display: block;
 }
 
-.theorem, .environment-name {
-  text-transform: capitalize;
-  font-weight: bold;
-  color: var(--secondary-text-color);
+.theorem,
+.environment-name {
+	text-transform: capitalize;
+	font-weight: bold;
+	color: var(--secondary-text-color);
 }
 
 .environment-title {
-  font-style: italic;
+	font-style: italic;
+}
+
+.proof-footer {
+	text-align: right;
 }

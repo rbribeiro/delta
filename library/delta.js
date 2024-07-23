@@ -14,17 +14,7 @@ const MyNameSpace = {
 	],
 };
 
-window.MathJax = {
-	tex: {
-		inlineMath: [
-			["$", "$"],
-			["\\(", "\\)"],
-		],
-	},
-	svg: {
-		fontCache: "global",
-	},
-};
+
 
 /************************************************************************
  *
@@ -34,6 +24,12 @@ window.MathJax = {
  * ***********************************************************************/
 function init() {
 	document.addEventListener("DOMContentLoaded", (event) => {
+		window.addEventListener("beforeprint", () => {
+			console.log('buceta')
+			document.documentElement.style.overflow = ""; // Remove overflow from <html>
+			document.body.style.overflow = "";
+		});
+
 		// get slide number on URL
 		const url = new URL(window.location.href);
 		const urlParams = new URLSearchParams(url.search);
@@ -48,19 +44,14 @@ function init() {
 		const mathJaxScript = document.createElement("script");
 		mathJaxScript.id = "MathJax-script";
 		mathJaxScript.src =
-			"https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js";
+			"https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS_CHTML";
 		document.head.appendChild(mathJaxScript);
 
 		// Handling custom elements
 		const totalSlides = buildCustomElements(currentSlide).totalSlides;
 		//add Event Listeners
 		addEventListeners();
-		// Wait for MathJax to load before initial rendering
-		mathJaxScript.onload = () => {
-			if (window.MathJax) {
-				MathJax.typesetPromise();
-			}
-		};
+		
 
 		updateState({ currentSlide, totalSlides });
 	});
@@ -205,8 +196,7 @@ function buildCustomElements(currentSlide) {
 		});
 	}
 
-	return {totalSlides}
-
+	return { totalSlides };
 }
 
 /*****************************************************
@@ -289,6 +279,7 @@ function environmentWrapper(envElement, number) {
 		}
 		const content = `<span class='environment-name ${envName}'>${envTitle}.</span>
     ${envElement.innerHTML}
+	<div class='proof-footer'>&#9632;</div>
     `;
 		envElement.innerHTML = content;
 	} else {
@@ -306,8 +297,6 @@ function environmentWrapper(envElement, number) {
 	}
 }
 
-
- 
 function showToolTip(event) {
 	const refId = event.target.getAttribute("to");
 	const tooltip = document.getElementById("tool_tip_element");
