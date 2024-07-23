@@ -10,6 +10,9 @@
 	--big-text-size: 64px;
 	--small-text-size: 36px;
 	--paragraph-padding: 0px 80px 0px 80px;
+
+  --environment-margin : 20px 0 20px 0;
+
 	--drop-shadow: 0 1px 1px hsl(0deg 0% 0% / 0.075),
 		0 2px 2px hsl(0deg 0% 0% / 0.075), 0 4px 4px hsl(0deg 0% 0% / 0.075),
 		0 8px 8px hsl(0deg 0% 0% / 0.075), 0 16px 16px hsl(0deg 0% 0% / 0.075);
@@ -246,6 +249,7 @@ theorem {
 
 .environment {
 	display: block;
+  margin: var(--environment-margin);
 }
 
 .theorem,

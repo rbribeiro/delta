@@ -24,12 +24,7 @@ const MyNameSpace = {
  * ***********************************************************************/
 function init() {
 	document.addEventListener("DOMContentLoaded", (event) => {
-		window.addEventListener("beforeprint", () => {
-			console.log('buceta')
-			document.documentElement.style.overflow = ""; // Remove overflow from <html>
-			document.body.style.overflow = "";
-		});
-
+	
 		// get slide number on URL
 		const url = new URL(window.location.href);
 		const urlParams = new URLSearchParams(url.search);
@@ -113,6 +108,7 @@ function addEventListeners() {
 			canvas.style.pointerEvents = MyNameSpace.annotateMode
 				? "visible"
 				: "none";
+			canvas.style.cursor = MyNameSpace.annotateMode ? "crosshair" : "default"
 		});
 	});
 
@@ -152,6 +148,7 @@ function buildCustomElements(currentSlide) {
 			slide.prepend(slideTitle);
 			slide.removeChild(title);
 		}
+		
 	});
 
 	const equations = document.querySelectorAll("equation");
@@ -299,9 +296,12 @@ function environmentWrapper(envElement, number) {
 
 function showToolTip(event) {
 	const refId = event.target.getAttribute("to");
+	const targetElement = document.getElementById(refId).cloneNode(true)
+	targetElement.id = ""
 	const tooltip = document.getElementById("tool_tip_element");
 	if (refId) {
-		tooltip.innerHTML = document.getElementById(refId).innerHTML;
+		tooltip.innerHTML = ''
+		tooltip.append(targetElement);
 		tooltip.classList.add("tooltip");
 		tooltip.style.display = "block";
 
