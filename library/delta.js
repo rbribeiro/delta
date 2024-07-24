@@ -78,6 +78,8 @@ function buildCustomElements(currentSlide) {
 			slideTitle.innerHTML = title.innerHTML;
 			slide.prepend(slideTitle);
 			slide.removeChild(title);
+		} else {
+			slide.classList.add("vertically-centered")
 		}
 	});
 

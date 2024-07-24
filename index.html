@@ -1,141 +1,136 @@
-
 <link role="theme" rel="stylesheet" href="assets/css/default.css" />
 
 <header>
-  <progress-bar></progress-bar>
+	<progress-bar></progress-bar>
 </header>
 
 <slide class="standout">
-  <h1><mark>\(\delta\)</mark>delta</h1>
-  <h3>Dynamic Engine for Layout and Template Arrangement</h3>
-  <hr />
-  <author>Rodrigo Ribeiro, Ph.D</author>
-  <institution>University of Denver</institution>
-</slide>
-
-
-<slide>
-  <title>Paragraphs</title>
-  <p class="step">This is a simple slide with a title and two paragraphs</p>
-  <p class="step">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sodales, dui
-    vitae euismod feugiat,  tellus diam lacinia turpis, eget faucibus odio nisl
-    at dolor. Phasellus pharetra massa diam. Vestibulum ante ipsum primis in
-    faucibus orci luctus et  ultrices posuere cubilia curae; Mauris cursus nisl
-    eget mi auctor, vel ultricies ligula semper. Vestibulum facilisis ut orci
-    eget finibus. 
-  </p>
-
-</slide>
-
-
-<slide>
-  <title> Equations And References</title>
-  <p>
-    Here is an inline equation \(E = mc^2\). Here is a display equation $$e^{i\pi}
-    + 1 = 0$$
-  </p>
-  <p>
-    Here goes a numbered equation using the
-    <mark>&lt;equation&gt;</mark> tag
-
-    <equation id="integral"> \int x^2dx = \frac{x^3}{3} + C </equation>
-
-    Here is a reference to <ref to="lebesgue">Theorem</ref>. Here is a reference
-    to <eq-ref to="eqlim">Equation</eq-ref> in the same theorem.
-  </p>
+	<h1><mark>\(\delta\)</mark>delta</h1>
+	<h3>Dynamic Engine for Layout and Template Arrangement</h3>
+	<hr />
+	<author>Rodrigo Ribeiro, Ph.D</author>
+	<institution>University of Denver</institution>
 </slide>
 
 <slide>
-  <title>Latex Environments</title>
-  <theorem id="lebesgue">
-    <title>Lebesgue's dominated convergence theorem</title>
-    Nulla laoreet  \((f_n)\)  purus orci, quisque ullamcorper est vitae ex porta  sagitti  
+	<title>Paragraphs</title>
+	<p class="step">This is a simple slide with a title and two paragraphs</p>
+	<p class="step">
+		Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sodales, dui
+		vitae euismod feugiat, tellus diam lacinia turpis, eget faucibus odio nisl
+		at dolor. Phasellus pharetra massa diam. Vestibulum ante ipsum primis in
+		faucibus orci luctus et ultrices posuere cubilia curae; Mauris cursus nisl
+		eget mi auctor, vel ultricies ligula semper. Vestibulum facilisis ut orci
+		eget finibus.
+	</p>
+</slide>
 
-    <equation id="eqlim" class="step">
-      \lim_{n\to \infty}\int_\Omega f_n d\mu = \int_\Omega f d \mu
-    </equation>
-    
-    eu volutpat eros efficitur sit amet. Nam rutrum ante feugiat pellentesque
-    dapibu
-  </theorem>
+<slide>
+	<title>Equations And References</title>
+	<p>
+		Here is an inline equation \(E = mc^2\). Here is a display equation
+		$$e^{i\pi} + 1 = 0$$
+	</p>
+	<p>
+		Here goes a numbered equation using the
+		<mark>&lt;equation&gt;</mark> tag
+
+		<equation id="integral"> \int x^2dx = \frac{x^3}{3} + C </equation>
+
+		Here is a reference to <ref to="lebesgue">Theorem</ref>. Here is a reference
+		to <eq-ref to="eqlim">Equation</eq-ref> in the same theorem.
+	</p>
+</slide>
+
+<slide>
+	<title>Latex Environments</title>
+	<theorem id="lebesgue">
+		<title>Lebesgue's dominated convergence theorem</title>
+		Nulla laoreet \((f_n)\) purus orci, quisque ullamcorper est vitae ex porta
+		sagitti
+
+		<equation id="eqlim" class="step">
+			\lim_{n\to \infty}\int_\Omega f_n d\mu = \int_\Omega f d \mu
+		</equation>
+
+		eu volutpat eros efficitur sit amet. Nam rutrum ante feugiat pellentesque
+		dapibu
+	</theorem>
 </slide>
 
 <slide class="vertically-centered">
-  <p>
-    This is a slide with no title!
-    <corollary class="step">
-      This is a corollary with a step class. Vestibulum ante ipsum primis in
-      faucibus orci luctus et  ultrices posuere cubilia curae; 
-      <equation class="step">
-        \int_a^bf(x)dx = F(b) - F(a)
-      </equation>
-       
-    </corollary>
-    <proof class="step">
-      <title>Proof of Corollary</title>
-      The proof goes Here. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae
-      <equation>
-        e^{i\pi} + 1 = 0
-      </equation>
-      Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae
-    </proof>
-  </p>
+	<p>
+		This is a slide with no title!
+		<corollary class="step">
+			This is a corollary with a step class. Vestibulum ante ipsum primis in
+			faucibus orci luctus et ultrices posuere cubilia curae;
+			<equation class="step"> \int_a^bf(x)dx = F(b) - F(a) </equation>
+		</corollary>
+		<proof class="step">
+			<title>Proof of Corollary</title>
+			The proof goes Here. Vestibulum ante ipsum primis in faucibus orci luctus
+			et ultrices posuere cubilia curae
+			<equation> e^{i\pi} + 1 = 0 </equation>
+			Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere
+			cubilia curae
+		</proof>
+	</p>
 </slide>
 
 <slide>
-  <title>New Slide!</title>
-  <p>
-    New paragraph!
-    <lemma>
-      <title>Zorn's Lemma (?)</title>
-      O enunciado vai aqui! Se eu soubesse
-    </lemma>
-    Referencia para equacao <eq-ref to="integral">Equacao</eq-ref>
-  </p>
+	<title>New Slide!</title>
+	<p>
+		New paragraph!
+		<lemma>
+			<title>Zorn's Lemma (?)</title>
+			O enunciado vai aqui! Se eu soubesse
+		</lemma>
+		Referencia para equacao <eq-ref to="integral">Equacao</eq-ref>
+	</p>
 </slide>
 
-<slide>
-  <title>Columns</title>
+<section>
+	<slide>
+		<title>Columns</title>
 
-  <p>
-    <columns>
-      <column width="65%">
-        Duis commodo sed libero vitae gravida. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Aenean accumsan in ante sit amet pharetra. Aenean tincidunt accumsan mi, at venenatis velit consectetur nec. Nulla in iaculis eros. Ut porta, mi a mattis consectetur, sem sem ornare sem, nec scelerisque purus lectus ut mauris. Mauris a leo mauris. Pellentesque lobortis nibh ac pellentesque condimentum.
+		<p>
+			<columns>
+				<column width="65%">
+					Duis commodo sed libero vitae gravida. Vestibulum ante ipsum primis in
+					faucibus orci luctus et ultrices posuere cubilia curae; Aenean
+					accumsan in ante sit amet pharetra. Aenean tincidunt accumsan mi, at
+					venenatis velit consectetur nec. Nulla in iaculis eros. Ut porta, mi a
+					mattis consectetur, sem sem ornare sem, nec scelerisque purus lectus
+					ut mauris. Mauris a leo mauris. Pellentesque lobortis nibh ac
+					pellentesque condimentum.
+				</column>
 
+				<column>
+					<img src="assets/images/piechart.png" width="100%" />
+				</column>
+			</columns>
+		</p>
+	</slide>
 
-          
-      </column>
-    
-      <column>
-        <img src="assets/images/piechart.png" width="100%">
-      </column>
-    
-    </columns>
-  </p>
-  
+	<slide>
+		<p>
+			<columns>
+				<column width="65%">
+					Duis commodo sed libero vitae gravida. Vestibulum ante ipsum primis in
+					faucibus orci luctus et ultrices posuere cubilia curae; Aenean
+					accumsan in ante sit amet pharetra. Aenean tincidunt accumsan mi, at
+					venenatis velit consectetur nec. Nulla in iaculis eros. Ut porta, mi a
+					mattis consectetur, sem sem ornare sem, nec scelerisque purus lectus
+					ut mauris. Mauris a leo mauris. Pellentesque lobortis nibh ac
+					pellentesque condimentum.
+				</column>
 
-</slide>
-
-<slide class="vertically-centered">
-  <p>
-    <columns>
-      <column width="65%">
-        <br><br><br>
-        Duis commodo sed libero vitae gravida. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Aenean accumsan in ante sit amet pharetra. Aenean tincidunt accumsan mi, at venenatis velit consectetur nec. Nulla in iaculis eros. Ut porta, mi a mattis consectetur, sem sem ornare sem, nec scelerisque purus lectus ut mauris. Mauris a leo mauris. Pellentesque lobortis nibh ac pellentesque condimentum.
-
-
-          
-      </column>
-    
-      <column>
-        <img src="assets/images/piechart.png" width="100%">
-      </column>
-    
-    </columns>
-  </p>
-</slide>
-
-
+				<column>
+					<img src="assets/images/piechart.png" width="100%" />
+				</column>
+			</columns>
+		</p>
+	</slide>
+</section>
 
 <script src="./library/delta.js"></script>

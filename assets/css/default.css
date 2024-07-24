@@ -91,7 +91,6 @@ html {
 	padding: 0;
 	width: 100vw;
 	height: 100vh;
-	align-items: center;
 	font: var(--regular-text-size) "Arial", sans-serif;
 	background-color: var(--primary-bg-color);
 	color: var(--primary-text-color);
@@ -162,6 +161,7 @@ slide.active {
 	}
 }
 
+
 .step {
 	opacity: 0;
 	transition: opacity 0.5s ease-out;
@@ -184,6 +184,7 @@ institution {
 
 .vertically-centered {
 	justify-content: center !important;
+	align-items: center !important;
 }
 
 .slide-title {
