@@ -9,13 +9,16 @@
 	--regular-text-size: 48px;
 	--big-text-size: 64px;
 	--small-text-size: 36px;
+
+	--slide-title-padding: 40px;
 	--paragraph-padding: 0px 80px 0px 80px;
 
-  --environment-margin : 20px 0 20px 0;
+	--environment-margin: 40px 0 40px 0;
 
 	--drop-shadow: 0 1px 1px hsl(0deg 0% 0% / 0.075),
 		0 2px 2px hsl(0deg 0% 0% / 0.075), 0 4px 4px hsl(0deg 0% 0% / 0.075),
 		0 8px 8px hsl(0deg 0% 0% / 0.075), 0 16px 16px hsl(0deg 0% 0% / 0.075);
+
 	--tooltip-width: 850px;
 	--tooltip-border-radius: 5px;
 	--tooltip-padding: 25px;
@@ -36,42 +39,40 @@
 }
 
 @page {
-  size : auto;
-  margin : 0
+	size: auto;
+	margin: 0;
 }
 
 @media print {
-  slide {
-    position: relative !important;
-    display: block !important;
-    width: 100vw;
-    height: 100vh; /* Set the height to match the A4 landscape height */
-    page-break-after: always;  /* Ensure each slide ends and starts a new page */
-    box-sizing: border-box;
-  }
+	slide {
+		position: relative !important;
+		display: block !important;
+		width: 100vw;
+		height: 100vh; /* Set the height to match the A4 landscape height */
+		page-break-after: always; /* Ensure each slide ends and starts a new page */
+		box-sizing: border-box;
+	}
 
-  header {
-    display: none;
-  }
-  body,
-html {
-	margin: 0;
-	padding: 0;
+	header {
+		display: none;
+	}
+	body,
+	html {
+		margin: 0;
+		padding: 0;
+	}
 
-}
+	body .step {
+		opacity: 1;
+	}
 
-  body .step {
-    opacity: 1;
-  }
-
-  canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100% !important;
-    height: 100% !important;
-  }
-  
+	canvas {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100% !important;
+		height: 100% !important;
+	}
 }
 
 canvas {
@@ -88,22 +89,18 @@ body,
 html {
 	margin: 0;
 	padding: 0;
-  width: 100vw;
-  height: 100vh;
+	width: 100vw;
+	height: 100vh;
 	align-items: center;
 	font: var(--regular-text-size) "Arial", sans-serif;
 	background-color: var(--primary-bg-color);
 	color: var(--primary-text-color);
 }
 
-.hiddenOverFlow {
-	overflow: hidden;
-}
-
 header {
-  position: fixed;
-  left: 0;
-  top: 0;
+	position: fixed;
+	left: 0;
+	top: 0;
 	width: 100vw;
 	z-index: 9999;
 }
@@ -117,54 +114,22 @@ footer {
 }
 
 p {
-  padding: var(--paragraph-padding);
+	padding: var(--paragraph-padding);
 }
-
-.step {
-	opacity: 0;
-	transition: opacity 0.5s ease-out;
-}
-
-.activeStep {
-	transition: opacity 0.5s ease-in;
-}
-
-author,
-institution {
-	width: 90%;
-	text-align: left;
-	font-size: 32px;
-}
-
 
 hr {
 	width: 90%;
 	border: 3px solid var(--secondary-text-color);
 }
 
-
 mark {
 	background-color: var(--highlight-color);
 	color: var(--primary-bg-color);
 	font-weight: bold;
 }
-.slideTitle {
-	background-color: var(--secondary-bg-color);
-	width: 100%;
-  padding: 20px 0 20px 0;
-	font-size: var(--big-text-size);
-	color: var(--secondary-text-color);
-	box-shadow: var(--drop-shadow);
-}
-
-.standout {
-	justify-content: center !important; /* Center horizontally */
-	align-items: center !important; /* Center vertically */
-	text-align: center;
-}
 
 slide {
-  position: relative;
+	position: relative;
 	display: none;
 	width: 100vw;
 	height: 100%;
@@ -172,8 +137,6 @@ slide {
 	opacity: 1;
 	transition: opacity 0.5s ease;
 	flex-direction: column;
-	flex: 1;
-
 }
 
 slide.active {
@@ -199,6 +162,47 @@ slide.active {
 	}
 }
 
+.step {
+	opacity: 0;
+	transition: opacity 0.5s ease-out;
+}
+
+.activeStep {
+	transition: opacity 0.5s ease-in;
+}
+
+.hidden-overflow {
+	overflow: hidden;
+}
+
+author,
+institution {
+	width: 90%;
+	text-align: left;
+	font-size: 32px;
+}
+
+.vertically-centered {
+	justify-content: center !important;
+}
+
+.slide-title {
+	background-color: var(--secondary-bg-color);
+	width: 100%;
+	padding: var(--slide-title-padding);
+	font-size: var(--big-text-size);
+	color: var(--secondary-text-color);
+	box-shadow: var(--drop-shadow);
+}
+
+.standout {
+	justify-content: center !important; /* Center horizontally */
+	align-items: center !important; /* Center vertically */
+	text-align: center;
+}
+
+
+
 .tooltip {
 	position: absolute;
 	background-color: var(--secondary-bg-color);
@@ -213,7 +217,7 @@ slide.active {
 	box-shadow: var(--drop-shadow);
 }
 
-.pbContainer {  
+.pb-container {
 	height: 7px;
 	background-color: var(--terciary-bg-color);
 }
@@ -226,15 +230,15 @@ slide.active {
 * EQUATION CLASSES
 ****************************************/
 
-.equationContainer {
+.equation-container {
 	display: flex;
 }
-.equationContent,
+.equation-content,
 .MJ-TEX {
 	flex: 1;
 }
 
-.equationNumber {
+.equation-number {
 	width: 40px;
 	display: flex;
 	justify-content: flex-end;
@@ -265,7 +269,7 @@ theorem {
 
 .environment {
 	display: block;
-  margin: var(--environment-margin);
+	margin: var(--environment-margin);
 }
 
 .theorem,
@@ -281,5 +285,5 @@ theorem {
 
 .proof-footer {
 	text-align: right;
-  font-size: var(--big-text-size);
+	font-size: var(--big-text-size);
 }
