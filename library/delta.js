@@ -24,7 +24,7 @@ const Delta = {
  * ***********************************************************************/
 function init() {
 	document.addEventListener("DOMContentLoaded", () => {
-		document.body.classList.add("hiddenOverFlow");
+		document.body.classList.add("hidden-overflow");
 		const currentSlide = getSlideFromURL() || 1;
 		// Create tooltip Object
 		const tooltip = document.createElement("div");
@@ -74,17 +74,17 @@ function buildCustomElements(currentSlide) {
 		);
 		if (title) {
 			const slideTitle = document.createElement("div");
-			slideTitle.classList.add("slideTitle");
+			slideTitle.classList.add("slide-title");
 			slideTitle.innerHTML = title.innerHTML;
 			slide.prepend(slideTitle);
 			slide.removeChild(title);
 		}
 	});
 
-	const columnsList = document.querySelectorAll("columns")
-	columnsList.forEach(columns => {
-		columnsBuilder(columns)
-	})
+	const columnsList = document.querySelectorAll("columns");
+	columnsList.forEach((columns) => {
+		columnsBuilder(columns);
+	});
 
 	const equations = document.querySelectorAll("equation");
 	if (equations.length > 0) {
@@ -148,11 +148,18 @@ function windowListeners() {
 	});
 
 	window.addEventListener("beforeprint", (e) => {
-		document.body.classList.remove("hiddenOverFlow");
+		document.body.classList.remove("hidden-overflow");
 	});
 
 	window.addEventListener("afterprint", () => {
-		document.body.classList.add("hiddenOverFlow");
+		document.body.classList.add("hidden-overflow");
+	});
+
+	window.addEventListener("resize", (e) => {
+		const canvasList = document.querySelectorAll("canvas");
+		canvasList.forEach((canvas) => {
+			resizeCanvas(canvas);
+		});
 	});
 }
 function documentListeners() {
@@ -175,19 +182,9 @@ function documentListeners() {
 function canvasListeners() {
 	const canvasList = document.querySelectorAll("canvas");
 	canvasList.forEach((canvas) => {
-		const ctx = canvas.getContext("2d");
-		const ratio = window.devicePixelRatio;
-		canvas.width = window.innerWidth * ratio;
-		canvas.height = window.innerHeight * ratio;
-		canvas.style.width = `${window.innerWidth}px`;
-		canvas.style.height = `${window.innerHeight}px`;
-		ctx.scale(ratio, ratio);
-		ctx.lineWidth = 5;
-		ctx.strokeStyle = "#ed6a5a";
-		ctx.shadowBlur = 1;
-		ctx.shadowColor = "#ed6a5a";
-
+		canvasBuilder(canvas)
 		canvas.addEventListener("mousedown", (e) => {
+			const ctx = e.target.getContext("2d")
 			if (Delta.state.annotateMode) {
 				updateState({ drawing: true });
 				ctx.beginPath();
@@ -195,6 +192,7 @@ function canvasListeners() {
 		});
 
 		canvas.addEventListener("mousemove", (e) => {
+			const ctx = e.target.getContext("2d")
 			if (Delta.state.drawing && Delta.state.annotateMode) {
 				ctx.lineTo(e.clientX, e.clientY);
 				ctx.stroke();
@@ -232,6 +230,59 @@ function refListeners() {
  *
  *
  * *************************************************/
+
+function canvasBuilder(canvas) {
+	const ctx = canvas.getContext("2d");
+	const ratio = window.devicePixelRatio;
+	canvas.width = window.innerWidth * ratio;
+	canvas.height = window.innerHeight * ratio;
+	ctx.scale(ratio, ratio);
+	ctx.lineWidth = 5;
+	ctx.strokeStyle = "#ed6a5a";
+	ctx.shadowBlur = 2;
+	ctx.shadowColor = "#ed6a5a";
+}
+
+function resizeCanvas(canvas) {
+	const ratio = window.devicePixelRatio;
+	const ctx = canvas.getContext("2d")
+	const {lineWidth, strokeStyle, shadowColor, shadowBlur} = ctx
+	const newWidth = window.innerWidth * ratio;
+	const newHeight = window.innerHeight * ratio;
+
+	// Save the current canvas content
+	let tempCanvas = document.createElement("canvas");
+	const tempContext = tempCanvas.getContext("2d");
+	tempCanvas.width = canvas.width;
+	tempCanvas.height = canvas.height;
+	tempContext.drawImage(canvas, 0, 0);
+
+	// Resize the canvas
+	canvas.width = newWidth;
+	canvas.height = newHeight;
+
+	// Calculate the scaling factors
+	const scaleX = newWidth / tempCanvas.width;
+	const scaleY = newHeight / tempCanvas.height;
+
+	// Redraw the saved content with scaling
+	ctx.setTransform(scaleX, 0, 0, scaleY, 0, 0);
+	ctx.drawImage(tempCanvas, 0, 0);
+
+
+	// Reset the transformation matrix to default
+	ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+	ctx.lineWidth = lineWidth;
+	ctx.strokeStyle = strokeStyle;
+	ctx.shadowBlur = shadowBlur;
+	ctx.shadowColor = shadowColor;
+
+
+	// Explicitly set tempCanvas to null to help with garbage collection
+	tempCanvas.width = tempCanvas.height = 0;
+	tempCanvas = null;
+}
 
 /*******************************************
  *
@@ -283,11 +334,11 @@ function goToSlide(slideNumber) {
 function equationBuilder(eqElement, eqNumber) {
 	const equation = eqElement.innerHTML;
 	eqElement.setAttribute("number", eqNumber);
-	eqElement.innerHTML = `<div class="equationContainer">
-                                <div class="equationContent">
+	eqElement.innerHTML = `<div class="equation-container">
+                                <div class="equation-content">
                                    $$ ${equation} $$
                                 </div>
-                                <div class="equationNumber">
+                                <div class="equation-number">
                                     (${eqNumber})
                                 </div>
                             </div>
@@ -332,25 +383,25 @@ function environmentBuilder(envElement, number) {
 function columnsBuilder(columns) {
 	const widths = [];
 	const columnList = columns.querySelectorAll("column");
-	const totalColumns = columnList.length
+	const totalColumns = columnList.length;
 	// Getting the widths
 	columnList.forEach((column) => {
-		if(column.parentElement === columns) {
-		widths.push(parseInt(column.getAttribute("width") || 0));
+		if (column.parentElement === columns) {
+			widths.push(parseInt(column.getAttribute("width") || 0));
 		}
 	});
 	// Computing the width of unspecified columns
-	const totalWidth = widths.reduce((acc,cv) => acc + cv, 0)
-	const diff = 100 - totalWidth
-	const nonWidths = widths.reduce((acc,cv) => acc += cv == 0 ? 1:0,0)
-	if(nonWidths > 0) {
-		widths.forEach((w,i) => {
-			widths[i] = w == 0 ? diff/nonWidths : w
-		})
+	const totalWidth = widths.reduce((acc, cv) => acc + cv, 0);
+	const diff = 100 - totalWidth;
+	const nonWidths = widths.reduce((acc, cv) => (acc += cv == 0 ? 1 : 0), 0);
+	if (nonWidths > 0) {
+		widths.forEach((w, i) => {
+			widths[i] = w == 0 ? diff / nonWidths : w;
+		});
 	}
-	const gridTemplate = widths.join("% ")+"%"
+	const gridTemplate = widths.join("% ") + "%";
 	columns.style.display = "grid";
-	columns.style['grid-template-columns'] = gridTemplate;
+	columns.style["grid-template-columns"] = gridTemplate;
 }
 
 function getSlideFromURL() {
@@ -468,7 +519,6 @@ Node.prototype.findParentByTagName = function (tagName) {
 	return null;
 };
 
-
 class ProgressBar extends HTMLElement {
 	constructor() {
 		super();
@@ -477,7 +527,7 @@ class ProgressBar extends HTMLElement {
 		shadow.appendChild(link);
 
 		const barContainer = document.createElement("div");
-		barContainer.classList.add("pbContainer");
+		barContainer.classList.add("pb-container");
 
 		const bar = document.createElement("div");
 		bar.classList.add("pb");
