@@ -14,6 +14,16 @@ const Delta = {
 			"corollary",
 		],
 	},
+	plugins: [
+		{
+			id: "testPlugin",
+			src: "./plugins/testPlugin/testPlugin.js",
+		},
+		{
+			id: "MathJax-script",
+			src: "https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS_CHTML",
+		},
+	],
 };
 
 /************************************************************************
@@ -22,28 +32,25 @@ const Delta = {
  * DELTA framework needs to build the presentation
  *
  * ***********************************************************************/
-function init() {
-	document.addEventListener("DOMContentLoaded", () => {
-		document.body.classList.add("hidden-overflow");
-		const currentSlide = getSlideFromURL() || 1;
-		// Create tooltip Object
-		const tooltip = document.createElement("div");
-		tooltip.id = "tool_tip_element";
-		document.body.appendChild(tooltip);
 
-		const mathJaxScript = loadMathJax();
-		document.head.appendChild(mathJaxScript);
+document.addEventListener("DOMContentLoaded", () => {
+	document.body.classList.add("hidden-overflow");
+	const currentSlide = getSlideFromURL() || 1;
+	// Create tooltip Object
+	const tooltip = document.createElement("div");
+	tooltip.id = "tool_tip_element";
+	document.body.appendChild(tooltip);
 
+	loadPlugins(Delta.plugins).then(() => {
 		// Handling custom elements
 		const totalSlides = buildCustomElements(currentSlide).totalSlides;
 		//add Event Listeners
 		createEventListeners();
-
 		updateState({ currentSlide, totalSlides });
-	});
-}
-
-init();
+	}).catch((error) => {
+		document.write(error)
+	})
+});
 
 /***********************************
  *
@@ -58,6 +65,25 @@ function createEventListeners() {
 	canvasListeners();
 
 	refListeners();
+}
+
+function loadPlugins(plugins) {
+	return Promise.all(
+		plugins.map((plugin) => {
+			return new Promise((resolve, reject) => {
+				const script = document.createElement("script");
+				script.src = plugin.src;
+				script.async = true;
+				script.id = plugin.id;
+				script.onload = resolve;
+				script.onerror = () => {
+					console.error(`Failed to load script: ${plugin.id}`);
+					reject(new Error(`Failed to load plugin: ${plugin.id}`));
+				};
+				document.head.appendChild(script);
+			});
+		})
+	);
 }
 
 function buildCustomElements(currentSlide) {
@@ -79,7 +105,7 @@ function buildCustomElements(currentSlide) {
 			slide.prepend(slideTitle);
 			slide.removeChild(title);
 		} else {
-			slide.classList.add("vertically-centered")
+			slide.classList.add("vertically-centered");
 		}
 	});
 
@@ -184,9 +210,9 @@ function documentListeners() {
 function canvasListeners() {
 	const canvasList = document.querySelectorAll("canvas");
 	canvasList.forEach((canvas) => {
-		canvasBuilder(canvas)
+		canvasBuilder(canvas);
 		canvas.addEventListener("mousedown", (e) => {
-			const ctx = e.target.getContext("2d")
+			const ctx = e.target.getContext("2d");
 			if (Delta.state.annotateMode) {
 				updateState({ drawing: true });
 				ctx.beginPath();
@@ -194,7 +220,7 @@ function canvasListeners() {
 		});
 
 		canvas.addEventListener("mousemove", (e) => {
-			const ctx = e.target.getContext("2d")
+			const ctx = e.target.getContext("2d");
 			if (Delta.state.drawing && Delta.state.annotateMode) {
 				ctx.lineTo(e.clientX, e.clientY);
 				ctx.stroke();
@@ -247,8 +273,8 @@ function canvasBuilder(canvas) {
 
 function resizeCanvas(canvas) {
 	const ratio = window.devicePixelRatio;
-	const ctx = canvas.getContext("2d")
-	const {lineWidth, strokeStyle, shadowColor, shadowBlur} = ctx
+	const ctx = canvas.getContext("2d");
+	const { lineWidth, strokeStyle, shadowColor, shadowBlur } = ctx;
 	const newWidth = window.innerWidth * ratio;
 	const newHeight = window.innerHeight * ratio;
 
@@ -271,7 +297,6 @@ function resizeCanvas(canvas) {
 	ctx.setTransform(scaleX, 0, 0, scaleY, 0, 0);
 	ctx.drawImage(tempCanvas, 0, 0);
 
-
 	// Reset the transformation matrix to default
 	ctx.setTransform(1, 0, 0, 1, 0, 0);
 
@@ -279,7 +304,6 @@ function resizeCanvas(canvas) {
 	ctx.strokeStyle = strokeStyle;
 	ctx.shadowBlur = shadowBlur;
 	ctx.shadowColor = shadowColor;
-
 
 	// Explicitly set tempCanvas to null to help with garbage collection
 	tempCanvas.width = tempCanvas.height = 0;
@@ -410,16 +434,6 @@ function getSlideFromURL() {
 	const url = new URL(window.location.href);
 	const urlParams = new URLSearchParams(url.search);
 	return parseInt(urlParams.get("slide"));
-}
-
-function loadMathJax() {
-	// Load MathJax
-	const mathJaxScript = document.createElement("script");
-	mathJaxScript.id = "MathJax-script";
-	mathJaxScript.src =
-		"https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS_CHTML";
-
-	return mathJaxScript;
 }
 
 function stepForward() {
