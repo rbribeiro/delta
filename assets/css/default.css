@@ -96,6 +96,10 @@ html {
 	color: var(--primary-text-color);
 }
 
+.hiddenOverFlow {
+	overflow: hidden;
+}
+
 header {
   position: fixed;
   left: 0;
@@ -226,7 +230,6 @@ slide.active {
 	display: flex;
 }
 .equationContent,
-.MathJax,
 .MJ-TEX {
 	flex: 1;
 }

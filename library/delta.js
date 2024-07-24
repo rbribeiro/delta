@@ -24,7 +24,8 @@ const Delta = {
  * ***********************************************************************/
 function init() {
 	document.addEventListener("DOMContentLoaded", () => {
-		const currentSlide = getSlideFromURL() || 1
+		document.body.classList.add("hiddenOverFlow");
+		const currentSlide = getSlideFromURL() || 1;
 		// Create tooltip Object
 		const tooltip = document.createElement("div");
 		tooltip.id = "tool_tip_element";
@@ -50,9 +51,8 @@ init();
  *
  ***********************************/
 function createEventListeners() {
+	windowListeners();
 
-	windowListeners()
-	
 	documentListeners();
 
 	canvasListeners();
@@ -80,6 +80,11 @@ function buildCustomElements(currentSlide) {
 			slide.removeChild(title);
 		}
 	});
+
+	const columnsList = document.querySelectorAll("columns")
+	columnsList.forEach(columns => {
+		columnsBuilder(columns)
+	})
 
 	const equations = document.querySelectorAll("equation");
 	if (equations.length > 0) {
@@ -134,7 +139,6 @@ function buildCustomElements(currentSlide) {
  *
  * *************************************************/
 function windowListeners() {
-
 	window.addEventListener("popstate", (e) => {
 		const url = new URL(window.location.href);
 		const urlParams = new URLSearchParams(url.search);
@@ -143,7 +147,13 @@ function windowListeners() {
 		goToSlide(currentSlide);
 	});
 
+	window.addEventListener("beforeprint", (e) => {
+		document.body.classList.remove("hiddenOverFlow");
+	});
 
+	window.addEventListener("afterprint", () => {
+		document.body.classList.add("hiddenOverFlow");
+	});
 }
 function documentListeners() {
 	document.addEventListener("keydown", (e) => {
@@ -319,6 +329,30 @@ function environmentBuilder(envElement, number) {
 	}
 }
 
+function columnsBuilder(columns) {
+	const widths = [];
+	const columnList = columns.querySelectorAll("column");
+	const totalColumns = columnList.length
+	// Getting the widths
+	columnList.forEach((column) => {
+		if(column.parentElement === columns) {
+		widths.push(parseInt(column.getAttribute("width") || 0));
+		}
+	});
+	// Computing the width of unspecified columns
+	const totalWidth = widths.reduce((acc,cv) => acc + cv, 0)
+	const diff = 100 - totalWidth
+	const nonWidths = widths.reduce((acc,cv) => acc += cv == 0 ? 1:0,0)
+	if(nonWidths > 0) {
+		widths.forEach((w,i) => {
+			widths[i] = w == 0 ? diff/nonWidths : w
+		})
+	}
+	const gridTemplate = widths.join("% ")+"%"
+	columns.style.display = "grid";
+	columns.style['grid-template-columns'] = gridTemplate;
+}
+
 function getSlideFromURL() {
 	const url = new URL(window.location.href);
 	const urlParams = new URLSearchParams(url.search);
@@ -402,12 +436,8 @@ function hideToolTip() {
 function toggleAnnotateMode() {
 	const canvasList = document.querySelectorAll("canvas");
 	canvasList.forEach((canvas) => {
-		canvas.style.pointerEvents = Delta.state.annotateMode
-			? "visible"
-			: "none";
-		canvas.style.cursor = Delta.state.annotateMode
-			? "crosshair"
-			: "default";
+		canvas.style.pointerEvents = Delta.state.annotateMode ? "visible" : "none";
+		canvas.style.cursor = Delta.state.annotateMode ? "crosshair" : "default";
 	});
 }
 
@@ -437,6 +467,7 @@ Node.prototype.findParentByTagName = function (tagName) {
 	}
 	return null;
 };
+
 
 class ProgressBar extends HTMLElement {
 	constructor() {
@@ -468,14 +499,11 @@ class ProgressBar extends HTMLElement {
 	}
 
 	handleStateChange(e) {
-		this.updateProgress(e.detail.currentSlide,e.detail.totalSlides)
+		this.updateProgress(e.detail.currentSlide, e.detail.totalSlides);
 	}
 
 	updateProgress(current, total) {
-		this.bar.style.width = `${
-			(100 * current) / total
-		}%`;
-
+		this.bar.style.width = `${(100 * current) / total}%`;
 	}
 }
 
