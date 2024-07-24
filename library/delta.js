@@ -1,20 +1,20 @@
-const MyNameSpace = {
-	currentSlide: 1,
-	totalSlides: 0,
-	drawing: false,
-	annotateMode: false,
-	environmentList: [
-		"theorem",
-		"proof",
-		"proposition",
-		"lemma",
-		"example",
-		"remark",
-		"corollary",
-	],
+const Delta = {
+	state: {
+		currentSlide: 0,
+		totalSlides: 0,
+		drawing: false,
+		annotateMode: false,
+		environmentList: [
+			"theorem",
+			"proof",
+			"proposition",
+			"lemma",
+			"example",
+			"remark",
+			"corollary",
+		],
+	},
 };
-
-
 
 /************************************************************************
  *
@@ -23,30 +23,20 @@ const MyNameSpace = {
  *
  * ***********************************************************************/
 function init() {
-	document.addEventListener("DOMContentLoaded", (event) => {
-	
-		// get slide number on URL
-		const url = new URL(window.location.href);
-		const urlParams = new URLSearchParams(url.search);
-		const currentSlide =
-			parseInt(urlParams.get("slide")) || MyNameSpace.currentSlide;
+	document.addEventListener("DOMContentLoaded", () => {
+		const currentSlide = getSlideFromURL() || 1
 		// Create tooltip Object
 		const tooltip = document.createElement("div");
 		tooltip.id = "tool_tip_element";
 		document.body.appendChild(tooltip);
 
-		// Load MathJax
-		const mathJaxScript = document.createElement("script");
-		mathJaxScript.id = "MathJax-script";
-		mathJaxScript.src =
-			"https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS_CHTML";
+		const mathJaxScript = loadMathJax();
 		document.head.appendChild(mathJaxScript);
 
 		// Handling custom elements
 		const totalSlides = buildCustomElements(currentSlide).totalSlides;
 		//add Event Listeners
-		addEventListeners();
-		
+		createEventListeners();
 
 		updateState({ currentSlide, totalSlides });
 	});
@@ -59,74 +49,15 @@ init();
  * Add all the event listeners needed
  *
  ***********************************/
-function addEventListeners() {
-	window.addEventListener("popstate", (e) => {
-		const url = new URL(window.location.href);
-		const urlParams = new URLSearchParams(url.search);
-		const currentSlide = parseInt(urlParams.get("slide")) || 1;
+function createEventListeners() {
 
-		goToSlide(currentSlide);
-	});
-	document.addEventListener("keydown", (e) => {
-		if (e.key === "ArrowRight") {
-			const steps = document
-				.getElementById(`DELTA_SLIDE_${MyNameSpace.currentSlide}`)
-				.querySelectorAll(".step");
-			if (steps.length > 0) {
-				steps[0].classList.remove("step");
-				steps[0].classList.add("activeStep");
-			} else {
-				goToSlide(MyNameSpace.currentSlide + 1);
-			}
-		} else if (e.key === "ArrowLeft") {
-			const activatedSteps = document
-				.getElementById(`DELTA_SLIDE_${MyNameSpace.currentSlide}`)
-				.querySelectorAll(".activeStep");
-
-			if (activatedSteps.length > 0) {
-				activatedSteps[activatedSteps.length - 1].classList.remove(
-					"activeStep"
-				);
-
-				activatedSteps[activatedSteps.length - 1].classList.add("step");
-			} else {
-				goToSlide(MyNameSpace.currentSlide - 1);
-			}
-		} else if (e.key === "a") {
-			const annotateMode = MyNameSpace.annotateMode ? false : true;
-			updateState({ annotateMode });
-			const event = new CustomEvent("toggleAnnotateMode");
-			document.dispatchEvent(event);
-		}
-	});
+	windowListeners()
+	
+	documentListeners();
 
 	canvasListeners();
 
-	document.addEventListener("toggleAnnotateMode", () => {
-		const canvasList = document.querySelectorAll("canvas");
-		canvasList.forEach((canvas) => {
-			canvas.style.pointerEvents = MyNameSpace.annotateMode
-				? "visible"
-				: "none";
-			canvas.style.cursor = MyNameSpace.annotateMode ? "crosshair" : "default"
-		});
-	});
-
-	const eqRefs = document.querySelectorAll("eq-ref") || [];
-
-	eqRefs.forEach((eqRef) => {
-		eqRef.addEventListener("mousemove", showToolTip);
-		eqRef.addEventListener("mouseout", hideToolTip);
-		eqRef.addEventListener("click", referenceClick);
-	});
-
-	const refs = document.querySelectorAll("ref") || [];
-
-	refs.forEach((ref) => {
-		ref.addEventListener("mousemove", showToolTip);
-		ref.addEventListener("mouseout", hideToolTip);
-		ref.addEventListener("click", referenceClick);
-	});
+	refListeners();
 }
 
 function buildCustomElements(currentSlide) {
@@ -148,21 +79,20 @@ function buildCustomElements(currentSlide) {
 			slide.prepend(slideTitle);
 			slide.removeChild(title);
 		}
-		
 	});
 
 	const equations = document.querySelectorAll("equation");
 	if (equations.length > 0) {
 		equations.forEach((eq, key) => {
-			equationWrapper(eq, key + 1);
+			equationBuilder(eq, key + 1);
 		});
 	}
 
-	MyNameSpace.environmentList.forEach((envName) => {
+	Delta.state.environmentList.forEach((envName) => {
 		const elements = document.querySelectorAll(envName);
 		if (elements.length > 0) {
 			elements.forEach((element, key) => {
-				environmentWrapper(element, key + 1);
+				environmentBuilder(element, key + 1);
 			});
 		}
 	});
@@ -198,6 +128,95 @@ function buildCustomElements(currentSlide) {
 
 /*****************************************************
  *
+ * LISTENERS
+ *
+ *
+ *
+ * *************************************************/
+function windowListeners() {
+
+	window.addEventListener("popstate", (e) => {
+		const url = new URL(window.location.href);
+		const urlParams = new URLSearchParams(url.search);
+		const currentSlide = parseInt(urlParams.get("slide")) || 1;
+
+		goToSlide(currentSlide);
+	});
+
+
+}
+function documentListeners() {
+	document.addEventListener("keydown", (e) => {
+		if (e.key === "ArrowRight") {
+			stepForward();
+		} else if (e.key === "ArrowLeft") {
+			stepBack();
+		} else if (e.key === "a") {
+			const annotateMode = Delta.state.annotateMode ? false : true;
+			updateState({ annotateMode });
+		}
+	});
+
+	document.addEventListener("stateChange:annotateMode", () => {
+		toggleAnnotateMode();
+	});
+}
+
+function canvasListeners() {
+	const canvasList = document.querySelectorAll("canvas");
+	canvasList.forEach((canvas) => {
+		const ctx = canvas.getContext("2d");
+		const ratio = window.devicePixelRatio;
+		canvas.width = window.innerWidth * ratio;
+		canvas.height = window.innerHeight * ratio;
+		canvas.style.width = `${window.innerWidth}px`;
+		canvas.style.height = `${window.innerHeight}px`;
+		ctx.scale(ratio, ratio);
+		ctx.lineWidth = 5;
+		ctx.strokeStyle = "#ed6a5a";
+		ctx.shadowBlur = 1;
+		ctx.shadowColor = "#ed6a5a";
+
+		canvas.addEventListener("mousedown", (e) => {
+			if (Delta.state.annotateMode) {
+				updateState({ drawing: true });
+				ctx.beginPath();
+			}
+		});
+
+		canvas.addEventListener("mousemove", (e) => {
+			if (Delta.state.drawing && Delta.state.annotateMode) {
+				ctx.lineTo(e.clientX, e.clientY);
+				ctx.stroke();
+			}
+		});
+
+		canvas.addEventListener("mouseup", () => {
+			updateState({ drawing: false });
+		});
+	});
+}
+
+function refListeners() {
+	const eqRefs = document.querySelectorAll("eq-ref") || [];
+
+	eqRefs.forEach((eqRef) => {
+		eqRef.addEventListener("mousemove", showToolTip);
+		eqRef.addEventListener("mouseout", hideToolTip);
+		eqRef.addEventListener("click", handleReferenceClick);
+	});
+
+	const refs = document.querySelectorAll("ref") || [];
+
+	refs.forEach((ref) => {
+		ref.addEventListener("mousemove", showToolTip);
+		ref.addEventListener("mouseout", hideToolTip);
+		ref.addEventListener("click", handleReferenceClick);
+	});
+}
+
+/*****************************************************
+ *
  * UTIL FUNCTIONS
  *
  *
@@ -210,20 +229,26 @@ function buildCustomElements(currentSlide) {
  *
  * ********************************************/
 function updateState(newState) {
-	Object.assign(MyNameSpace, newState);
+	const changedProperties = {};
 
-	const event = new CustomEvent("appStateChange", {
-		detail: {
-			currentSlide: MyNameSpace.currentSlide,
-			totalSlides: MyNameSpace.totalSlides,
-			annotateMode: MyNameSpace.annotateMode,
-			drawing: MyNameSpace.drawing,
-		},
-		bubbles: true,
-		composed: true,
-	});
+	for (const key in newState) {
+		if (newState[key] != Delta.state[key]) {
+			changedProperties[key] = newState[key];
+			Delta.state[key] = newState[key];
+		}
+	}
 
-	document.dispatchEvent(event);
+	//Dispatching events now that all the state has been
+	// updated
+	for (const key in changedProperties) {
+		const event = new CustomEvent(`stateChange:${key}`, {
+			detail: Delta.state,
+			bubbles: true,
+			composed: true,
+		});
+
+		document.dispatchEvent(event);
+	}
 }
 /***********************************
  *
@@ -231,9 +256,9 @@ function updateState(newState) {
  *
  *******************************/
 function goToSlide(slideNumber) {
-	if (slideNumber <= MyNameSpace.totalSlides && slideNumber > 0) {
+	if (slideNumber <= Delta.state.totalSlides && slideNumber > 0) {
 		const slides = document.querySelectorAll("slide");
-		slides[MyNameSpace.currentSlide - 1].classList.remove("active");
+		slides[Delta.state.currentSlide - 1].classList.remove("active");
 		slides[slideNumber - 1].classList.add("active");
 
 		const url = new URL(window.location.href);
@@ -245,7 +270,7 @@ function goToSlide(slideNumber) {
 	}
 }
 
-function equationWrapper(eqElement, eqNumber) {
+function equationBuilder(eqElement, eqNumber) {
 	const equation = eqElement.innerHTML;
 	eqElement.setAttribute("number", eqNumber);
 	eqElement.innerHTML = `<div class="equationContainer">
@@ -259,7 +284,7 @@ function equationWrapper(eqElement, eqNumber) {
                         `;
 }
 
-function environmentWrapper(envElement, number) {
+function environmentBuilder(envElement, number) {
 	envElement.classList.add("environment");
 	const envName = envElement.tagName.toLowerCase();
 	const title = Array.from(envElement.children).find(
@@ -294,13 +319,55 @@ function environmentWrapper(envElement, number) {
 	}
 }
 
+function getSlideFromURL() {
+	const url = new URL(window.location.href);
+	const urlParams = new URLSearchParams(url.search);
+	return parseInt(urlParams.get("slide"));
+}
+
+function loadMathJax() {
+	// Load MathJax
+	const mathJaxScript = document.createElement("script");
+	mathJaxScript.id = "MathJax-script";
+	mathJaxScript.src =
+		"https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS_CHTML";
+
+	return mathJaxScript;
+}
+
+function stepForward() {
+	const steps = document
+		.getElementById(`DELTA_SLIDE_${Delta.state.currentSlide}`)
+		.querySelectorAll(".step");
+	if (steps.length > 0) {
+		steps[0].classList.remove("step");
+		steps[0].classList.add("activeStep");
+	} else {
+		goToSlide(parseInt(Delta.state.currentSlide) + 1);
+	}
+}
+
+function stepBack() {
+	const activatedSteps = document
+		.getElementById(`DELTA_SLIDE_${Delta.state.currentSlide}`)
+		.querySelectorAll(".activeStep");
+
+	if (activatedSteps.length > 0) {
+		activatedSteps[activatedSteps.length - 1].classList.remove("activeStep");
+
+		activatedSteps[activatedSteps.length - 1].classList.add("step");
+	} else {
+		goToSlide(Delta.state.currentSlide - 1);
+	}
+}
+
 function showToolTip(event) {
 	const refId = event.target.getAttribute("to");
-	const targetElement = document.getElementById(refId).cloneNode(true)
-	targetElement.id = ""
+	const targetElement = document.getElementById(refId).cloneNode(true);
+	targetElement.id = "";
 	const tooltip = document.getElementById("tool_tip_element");
 	if (refId) {
-		tooltip.innerHTML = ''
+		tooltip.innerHTML = "";
 		tooltip.append(targetElement);
 		tooltip.classList.add("tooltip");
 		tooltip.style.display = "block";
@@ -332,7 +399,19 @@ function hideToolTip() {
 	document.getElementById("tool_tip_element").style.display = "none";
 }
 
-function referenceClick(event) {
+function toggleAnnotateMode() {
+	const canvasList = document.querySelectorAll("canvas");
+	canvasList.forEach((canvas) => {
+		canvas.style.pointerEvents = Delta.state.annotateMode
+			? "visible"
+			: "none";
+		canvas.style.cursor = Delta.state.annotateMode
+			? "crosshair"
+			: "default";
+	});
+}
+
+function handleReferenceClick(event) {
 	const targetId = event.target.getAttribute("to");
 	const target = document.getElementById(targetId);
 	if (target) {
@@ -341,41 +420,6 @@ function referenceClick(event) {
 			.getAttribute("number");
 		goToSlide(slideNumber);
 	}
-}
-
-function canvasListeners() {
-	const canvasList = document.querySelectorAll("canvas");
-	canvasList.forEach((canvas) => {
-		const ctx = canvas.getContext("2d");
-		const ratio = window.devicePixelRatio;
-		canvas.width = window.innerWidth * ratio;
-		canvas.height = window.innerHeight * ratio;
-		canvas.style.width = `${window.innerWidth}px`;
-		canvas.style.height = `${window.innerHeight}px`;
-		ctx.scale(ratio, ratio);
-		ctx.lineWidth = 5;
-		ctx.strokeStyle = "#ed6a5a";
-		ctx.shadowBlur = 1;
-		ctx.shadowColor = "#ed6a5a";
-
-		canvas.addEventListener("mousedown", (e) => {
-			if (MyNameSpace.annotateMode) {
-				updateState({ drawing: true });
-				ctx.beginPath();
-			}
-		});
-
-		canvas.addEventListener("mousemove", (e) => {
-			if (MyNameSpace.drawing && MyNameSpace.annotateMode) {
-				ctx.lineTo(e.clientX, e.clientY);
-				ctx.stroke();
-			}
-		});
-
-		canvas.addEventListener("mouseup", () => {
-			updateState({ drawing: false });
-		});
-	});
 }
 
 /***************************
@@ -416,22 +460,22 @@ class ProgressBar extends HTMLElement {
 	}
 
 	connectedCallback() {
-		// Listen for the custom event
+		// Listen for change in the current slide
 		document.addEventListener(
-			"appStateChange",
-			this.handleCustomEvent.bind(this)
+			"stateChange:currentSlide",
+			this.handleStateChange.bind(this)
 		);
 	}
 
-	handleCustomEvent(event) {
-		this.bar.style.width = `${
-			(100 * event.detail.currentSlide) / event.detail.totalSlides
-		}%`;
+	handleStateChange(e) {
+		this.updateProgress(e.detail.currentSlide,e.detail.totalSlides)
 	}
 
 	updateProgress(current, total) {
-		const progress = (current / total) * 100;
-		this.innerHTML = `${progress}%`;
+		this.bar.style.width = `${
+			(100 * current) / total
+		}%`;
+
 	}
 }
 
