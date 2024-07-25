@@ -2,8 +2,6 @@ const Delta = {
 	state: {
 		currentSlide: 0,
 		totalSlides: 0,
-		drawing: false,
-		annotateMode: false,
 		environmentList: [
 			"theorem",
 			"proof",
@@ -16,11 +14,15 @@ const Delta = {
 	},
 	plugins: [
 		{
-			id: "testPlugin",
-			src: "./plugins/testPlugin/testPlugin.js",
+			id: "progressBar",
+			src: "./library/plugins/progressBar/progressBar.js",
 		},
 		{
-			id: "MathJax-script",
+			id : "annotation",
+			src : "./library/plugins/annotation/annotation.js"
+		},
+		{
+			id: "MathJax",
 			src: "https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS_CHTML",
 		},
 	],
@@ -33,41 +35,43 @@ const Delta = {
  *
  * ***********************************************************************/
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
 	document.body.classList.add("hidden-overflow");
-	const currentSlide = getSlideFromURL() || 1;
+	const currentSlide = Delta.getSlideFromURL() || 1;
 	// Create tooltip Object
 	const tooltip = document.createElement("div");
 	tooltip.id = "tool_tip_element";
 	document.body.appendChild(tooltip);
 
-	loadPlugins(Delta.plugins).then(() => {
+	try {
+		await Delta.loadPlugins(Delta.plugins);
 		// Handling custom elements
-		const totalSlides = buildCustomElements(currentSlide).totalSlides;
+		const totalSlides = Delta.buildCustomElements(currentSlide).totalSlides;
 		//add Event Listeners
-		createEventListeners();
-		updateState({ currentSlide, totalSlides });
-	}).catch((error) => {
-		document.write(error)
-	})
+		Delta.createEventListeners();
+		Delta.updateState({ currentSlide, totalSlides });
+	} catch (error) {
+		document.write(`<h1>${error}</h1>`);
+	}
 });
+
+
 
 /***********************************
  *
  * Add all the event listeners needed
  *
  ***********************************/
-function createEventListeners() {
-	windowListeners();
+Delta.createEventListeners = function () {
+	Delta.windowListeners();
 
-	documentListeners();
+	Delta.documentListeners();
 
-	canvasListeners();
 
-	refListeners();
+	Delta.refListeners();
 }
 
-function loadPlugins(plugins) {
+Delta.loadPlugins = async function(plugins) {
 	return Promise.all(
 		plugins.map((plugin) => {
 			return new Promise((resolve, reject) => {
@@ -77,8 +81,8 @@ function loadPlugins(plugins) {
 				script.id = plugin.id;
 				script.onload = resolve;
 				script.onerror = () => {
-					console.error(`Failed to load script: ${plugin.id}`);
-					reject(new Error(`Failed to load plugin: ${plugin.id}`));
+					console.error(`Failed to load plugin ${plugin.id}`);
+					reject(new Error(`Failed to load plugin ${plugin.id}`));
 				};
 				document.head.appendChild(script);
 			});
@@ -86,15 +90,13 @@ function loadPlugins(plugins) {
 	);
 }
 
-function buildCustomElements(currentSlide) {
+Delta.buildCustomElements = function(currentSlide) {
 	const slides = document.querySelectorAll("slide");
 	const totalSlides = slides.length;
 	slides[currentSlide - 1].classList.add("active");
 	slides.forEach((slide, key) => {
 		slide.setAttribute("number", key + 1);
 		slide.setAttribute("id", `DELTA_SLIDE_${key + 1}`);
-		const canvas = document.createElement("canvas");
-		slide.appendChild(canvas);
 		const title = Array.from(slide.children).find(
 			(child) => child.tagName.toLowerCase() === "title"
 		);
@@ -111,13 +113,13 @@ function buildCustomElements(currentSlide) {
 
 	const columnsList = document.querySelectorAll("columns");
 	columnsList.forEach((columns) => {
-		columnsBuilder(columns);
+		Delta.columnsBuilder(columns);
 	});
 
 	const equations = document.querySelectorAll("equation");
 	if (equations.length > 0) {
 		equations.forEach((eq, key) => {
-			equationBuilder(eq, key + 1);
+			Delta.equationBuilder(eq, key + 1);
 		});
 	}
 
@@ -125,7 +127,7 @@ function buildCustomElements(currentSlide) {
 		const elements = document.querySelectorAll(envName);
 		if (elements.length > 0) {
 			elements.forEach((element, key) => {
-				environmentBuilder(element, key + 1);
+			Delta.environmentBuilder(element, key + 1);
 			});
 		}
 	});
@@ -166,88 +168,51 @@ function buildCustomElements(currentSlide) {
  *
  *
  * *************************************************/
-function windowListeners() {
+Delta.windowListeners = function() {
 	window.addEventListener("popstate", (e) => {
 		const url = new URL(window.location.href);
 		const urlParams = new URLSearchParams(url.search);
 		const currentSlide = parseInt(urlParams.get("slide")) || 1;
 
-		goToSlide(currentSlide);
+		Delta.goToSlide(currentSlide);
 	});
 
 	window.addEventListener("beforeprint", (e) => {
 		document.body.classList.remove("hidden-overflow");
 	});
-
+	
 	window.addEventListener("afterprint", () => {
 		document.body.classList.add("hidden-overflow");
 	});
 
-	window.addEventListener("resize", (e) => {
-		const canvasList = document.querySelectorAll("canvas");
-		canvasList.forEach((canvas) => {
-			resizeCanvas(canvas);
-		});
-	});
 }
-function documentListeners() {
+
+Delta.documentListeners = function() {
 	document.addEventListener("keydown", (e) => {
 		if (e.key === "ArrowRight") {
-			stepForward();
+			Delta.stepForward();
 		} else if (e.key === "ArrowLeft") {
-			stepBack();
-		} else if (e.key === "a") {
-			const annotateMode = Delta.state.annotateMode ? false : true;
-			updateState({ annotateMode });
-		}
-	});
-
-	document.addEventListener("stateChange:annotateMode", () => {
-		toggleAnnotateMode();
+			Delta.stepBack();
+		} 
 	});
 }
 
-function canvasListeners() {
-	const canvasList = document.querySelectorAll("canvas");
-	canvasList.forEach((canvas) => {
-		canvasBuilder(canvas);
-		canvas.addEventListener("mousedown", (e) => {
-			const ctx = e.target.getContext("2d");
-			if (Delta.state.annotateMode) {
-				updateState({ drawing: true });
-				ctx.beginPath();
-			}
-		});
 
-		canvas.addEventListener("mousemove", (e) => {
-			const ctx = e.target.getContext("2d");
-			if (Delta.state.drawing && Delta.state.annotateMode) {
-				ctx.lineTo(e.clientX, e.clientY);
-				ctx.stroke();
-			}
-		});
-
-		canvas.addEventListener("mouseup", () => {
-			updateState({ drawing: false });
-		});
-	});
-}
-
-function refListeners() {
+Delta.refListeners = function() {
 	const eqRefs = document.querySelectorAll("eq-ref") || [];
 
 	eqRefs.forEach((eqRef) => {
-		eqRef.addEventListener("mousemove", showToolTip);
-		eqRef.addEventListener("mouseout", hideToolTip);
-		eqRef.addEventListener("click", handleReferenceClick);
+		eqRef.addEventListener("mousemove", Delta.showToolTip);
+		eqRef.addEventListener("mouseout", Delta.hideToolTip);
+		eqRef.addEventListener("click", Delta.handleReferenceClick);
 	});
 
 	const refs = document.querySelectorAll("ref") || [];
 
 	refs.forEach((ref) => {
-		ref.addEventListener("mousemove", showToolTip);
-		ref.addEventListener("mouseout", hideToolTip);
-		ref.addEventListener("click", handleReferenceClick);
+		ref.addEventListener("mousemove", Delta.showToolTip);
+		ref.addEventListener("mouseout", Delta.hideToolTip);
+		ref.addEventListener("click", Delta.handleReferenceClick);
 	});
 }
 
@@ -259,63 +224,12 @@ function refListeners() {
  *
  * *************************************************/
 
-function canvasBuilder(canvas) {
-	const ctx = canvas.getContext("2d");
-	const ratio = window.devicePixelRatio;
-	canvas.width = window.innerWidth * ratio;
-	canvas.height = window.innerHeight * ratio;
-	ctx.scale(ratio, ratio);
-	ctx.lineWidth = 5;
-	ctx.strokeStyle = "#ed6a5a";
-	ctx.shadowBlur = 2;
-	ctx.shadowColor = "#ed6a5a";
-}
-
-function resizeCanvas(canvas) {
-	const ratio = window.devicePixelRatio;
-	const ctx = canvas.getContext("2d");
-	const { lineWidth, strokeStyle, shadowColor, shadowBlur } = ctx;
-	const newWidth = window.innerWidth * ratio;
-	const newHeight = window.innerHeight * ratio;
-
-	// Save the current canvas content
-	let tempCanvas = document.createElement("canvas");
-	const tempContext = tempCanvas.getContext("2d");
-	tempCanvas.width = canvas.width;
-	tempCanvas.height = canvas.height;
-	tempContext.drawImage(canvas, 0, 0);
-
-	// Resize the canvas
-	canvas.width = newWidth;
-	canvas.height = newHeight;
-
-	// Calculate the scaling factors
-	const scaleX = newWidth / tempCanvas.width;
-	const scaleY = newHeight / tempCanvas.height;
-
-	// Redraw the saved content with scaling
-	ctx.setTransform(scaleX, 0, 0, scaleY, 0, 0);
-	ctx.drawImage(tempCanvas, 0, 0);
-
-	// Reset the transformation matrix to default
-	ctx.setTransform(1, 0, 0, 1, 0, 0);
-
-	ctx.lineWidth = lineWidth;
-	ctx.strokeStyle = strokeStyle;
-	ctx.shadowBlur = shadowBlur;
-	ctx.shadowColor = shadowColor;
-
-	// Explicitly set tempCanvas to null to help with garbage collection
-	tempCanvas.width = tempCanvas.height = 0;
-	tempCanvas = null;
-}
-
 /*******************************************
  *
  * update the app's state
  *
  * ********************************************/
-function updateState(newState) {
+Delta.updateState = function(newState) {
 	const changedProperties = {};
 
 	for (const key in newState) {
@@ -342,7 +256,7 @@ function updateState(newState) {
  * Go to slide number slideNumber
  *
  *******************************/
-function goToSlide(slideNumber) {
+Delta.goToSlide = function(slideNumber) {
 	if (slideNumber <= Delta.state.totalSlides && slideNumber > 0) {
 		const slides = document.querySelectorAll("slide");
 		slides[Delta.state.currentSlide - 1].classList.remove("active");
@@ -353,11 +267,11 @@ function goToSlide(slideNumber) {
 		url.searchParams.set("slide", slideNumber);
 		window.history.replaceState({}, "", url);
 
-		updateState({ currentSlide: slideNumber });
+		Delta.updateState({ currentSlide: slideNumber });
 	}
 }
 
-function equationBuilder(eqElement, eqNumber) {
+Delta.equationBuilder = function(eqElement, eqNumber) {
 	const equation = eqElement.innerHTML;
 	eqElement.setAttribute("number", eqNumber);
 	eqElement.innerHTML = `<div class="equation-container">
@@ -371,7 +285,7 @@ function equationBuilder(eqElement, eqNumber) {
                         `;
 }
 
-function environmentBuilder(envElement, number) {
+Delta.environmentBuilder = function(envElement, number) {
 	envElement.classList.add("environment");
 	const envName = envElement.tagName.toLowerCase();
 	const title = Array.from(envElement.children).find(
@@ -406,7 +320,7 @@ function environmentBuilder(envElement, number) {
 	}
 }
 
-function columnsBuilder(columns) {
+Delta.columnsBuilder = function(columns) {
 	const widths = [];
 	const columnList = columns.querySelectorAll("column");
 	const totalColumns = columnList.length;
@@ -430,13 +344,13 @@ function columnsBuilder(columns) {
 	columns.style["grid-template-columns"] = gridTemplate;
 }
 
-function getSlideFromURL() {
+Delta.getSlideFromURL = function() {
 	const url = new URL(window.location.href);
 	const urlParams = new URLSearchParams(url.search);
 	return parseInt(urlParams.get("slide"));
 }
 
-function stepForward() {
+Delta.stepForward = function() {
 	const steps = document
 		.getElementById(`DELTA_SLIDE_${Delta.state.currentSlide}`)
 		.querySelectorAll(".step");
@@ -444,11 +358,11 @@ function stepForward() {
 		steps[0].classList.remove("step");
 		steps[0].classList.add("activeStep");
 	} else {
-		goToSlide(parseInt(Delta.state.currentSlide) + 1);
+		Delta.goToSlide(parseInt(Delta.state.currentSlide) + 1);
 	}
 }
 
-function stepBack() {
+Delta.stepBack = function() {
 	const activatedSteps = document
 		.getElementById(`DELTA_SLIDE_${Delta.state.currentSlide}`)
 		.querySelectorAll(".activeStep");
@@ -458,11 +372,11 @@ function stepBack() {
 
 		activatedSteps[activatedSteps.length - 1].classList.add("step");
 	} else {
-		goToSlide(Delta.state.currentSlide - 1);
+		Delta.goToSlide(Delta.state.currentSlide - 1);
 	}
 }
 
-function showToolTip(event) {
+Delta.showToolTip = function(event) {
 	const refId = event.target.getAttribute("to");
 	const targetElement = document.getElementById(refId).cloneNode(true);
 	targetElement.id = "";
@@ -496,26 +410,19 @@ function showToolTip(event) {
 	}
 }
 
-function hideToolTip() {
+Delta.hideToolTip = function() {
 	document.getElementById("tool_tip_element").style.display = "none";
 }
 
-function toggleAnnotateMode() {
-	const canvasList = document.querySelectorAll("canvas");
-	canvasList.forEach((canvas) => {
-		canvas.style.pointerEvents = Delta.state.annotateMode ? "visible" : "none";
-		canvas.style.cursor = Delta.state.annotateMode ? "crosshair" : "default";
-	});
-}
 
-function handleReferenceClick(event) {
+Delta.handleReferenceClick = function(event) {
 	const targetId = event.target.getAttribute("to");
 	const target = document.getElementById(targetId);
 	if (target) {
 		const slideNumber = target
 			.findParentByTagName("slide")
 			.getAttribute("number");
-		goToSlide(slideNumber);
+		Delta.goToSlide(slideNumber);
 	}
 }
 
@@ -535,42 +442,3 @@ Node.prototype.findParentByTagName = function (tagName) {
 	return null;
 };
 
-class ProgressBar extends HTMLElement {
-	constructor() {
-		super();
-		const link = document.getElementsByTagName("link")[0].cloneNode();
-		const shadow = this.attachShadow({ mode: "open" });
-		shadow.appendChild(link);
-
-		const barContainer = document.createElement("div");
-		barContainer.classList.add("pb-container");
-
-		const bar = document.createElement("div");
-		bar.classList.add("pb");
-		bar.style.width = "0";
-		bar.style.height = "100%";
-
-		barContainer.appendChild(bar);
-		shadow.appendChild(barContainer);
-
-		this.bar = bar;
-	}
-
-	connectedCallback() {
-		// Listen for change in the current slide
-		document.addEventListener(
-			"stateChange:currentSlide",
-			this.handleStateChange.bind(this)
-		);
-	}
-
-	handleStateChange(e) {
-		this.updateProgress(e.detail.currentSlide, e.detail.totalSlides);
-	}
-
-	updateProgress(current, total) {
-		this.bar.style.width = `${(100 * current) / total}%`;
-	}
-}
-
-customElements.define("progress-bar", ProgressBar);
