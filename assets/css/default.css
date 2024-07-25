@@ -1,7 +1,7 @@
 :root {
 	--primary-bg-color: #2f3e46;
 	--secondary-bg-color: #354f52;
-	--terciary-bg-color: #52796f;
+	--tertiary-bg-color: #52796f;
 	--primary-text-color: #cad2c5;
 	--secondary-text-color: #84a98c;
 	--highlight-color: #ed6a5a;
@@ -9,12 +9,19 @@
 	--regular-text-size: 48px;
 	--big-text-size: 64px;
 	--small-text-size: 36px;
+	--blockquote-border-left : 15px solid var(--highlight-color);
+	--blockquote-font-style : italic;
+	--blockquote-padding : var(--paragraph-padding);
+	--blockquote-margin : 0 200px 0 200px;
 
 	--slide-title-padding: 40px;
 	--paragraph-padding: 0px 80px 0px 80px;
 	--footer-padding : 5px 0px 5px 0;
 
+
 	--environment-margin: 40px 0 40px 0;
+
+	--columns-gap : 10px;
 
 	--drop-shadow: 0 1px 1px hsl(0deg 0% 0% / 0.075),
 		0 2px 2px hsl(0deg 0% 0% / 0.075), 0 4px 4px hsl(0deg 0% 0% / 0.075),
@@ -116,7 +123,26 @@ footer {
 }
 
 p {
-	padding: var(--paragraph-padding);
+	padding: var(--paragraph-padding) !important;
+	box-sizing: border-box;
+	width: inherit;
+}
+
+h1,h2,h3,h4,h5,h6 {
+	padding: var(--paragraph-padding)
+}
+
+strike,s,u {
+	text-decoration-color: var(--highlight-color);
+	text-decoration-thickness: 5px;
+	animation: textDecorationColor 2s forwards;
+}
+
+blockquote {
+	border-left: var(--blockquote-border-left);
+	font-style: var(--blockquote-font-style);
+	padding: var(--blockquote-padding);
+	margin: var(--blockquote-margin);
 }
 
 hr {
@@ -129,6 +155,7 @@ mark {
 	color: var(--primary-bg-color);
 	font-weight: bold;
 }
+
 
 slide {
 	position: relative;
@@ -146,6 +173,9 @@ slide.active {
 	animation: fadeIn 1s forwards;
 }
 
+
+
+
 @keyframes fadeIn {
 	from {
 		opacity: 0;
@@ -162,6 +192,15 @@ slide.active {
 	to {
 		opacity: 0;
 	}
+}
+
+@keyframes textDecorationColor {
+    from {
+        text-decoration-color: rgba(255, 255, 255, 0); /* Initial transparent color */
+    }
+    to {
+        text-decoration-color: var(--highlight-color); /* Final opaque color */
+    }
 }
 
 @keyframes colorChange {
@@ -200,6 +239,7 @@ institution {
 	align-items: center !important;
 }
 
+
 .slide-title {
 	background-color: var(--secondary-bg-color);
 	width: 100%;
@@ -233,13 +273,18 @@ institution {
 	text-align: right;
 	justify-content: right;
 }
+
+.align-center {
+	text-align: center;
+	justify-content: center;
+}
 /**************************************************
 ** PROGRESS BAR
 *****************************************/
 
 .pb-container {
 	height: 7px;
-	background-color: var(--terciary-bg-color);
+	background-color: var(--tertiary-bg-color);
 }
 
 .pb {
@@ -252,7 +297,7 @@ institution {
 
 .equation-container {
 	display: flex;
-	width: 100vw;
+	width: inherit !important;
 }
 .equation-content,
 .MJ-TEX {
@@ -280,9 +325,7 @@ ref {
  *
  * *****************************************/
 
-theorem {
-	padding: 30px;
-}
+
 
 .proof {
 	font-style: italic;
@@ -291,6 +334,7 @@ theorem {
 .environment {
 	display: block;
 	margin: var(--environment-margin);
+	box-sizing: border-box;
 }
 
 .theorem,
