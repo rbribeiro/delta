@@ -360,6 +360,7 @@ Delta.columnsBuilder = function (columns) {
 	const gridTemplate = widths.join("% ") + "%";
 	columns.style.display = "grid";
 	columns.style["grid-template-columns"] = gridTemplate;
+	columns.style["gap"] = "var(--columns-gap)"
 };
 
 Delta.blockquoteBuilder = function (quote) {
