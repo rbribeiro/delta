@@ -342,12 +342,14 @@ Delta.sectionBuilder = function (section) {
 		section.children[0].tagName.toLowerCase() == "title"
 	) {
 		const titleSlide = document.createElement("slide");
-		const sectionTitle = section.children[0].innerHTML;
+		let sectionTitle = section.children[0].innerHTML;
+		const textArea = document.createElement("textarea")
+		textArea.innerHTML = sectionTitle
+		sectionTitle = textArea.value
 		titleSlide.innerHTML = `<h1>${sectionTitle}</h1>
 								<hr />
 								`;
 		section.removeChild(section.children[0]);
-		section.setAttribute("title",section)
 		section.prepend(titleSlide);
 	}
 };
