@@ -1,9 +1,15 @@
 class ProgressBar extends HTMLElement {
 	constructor() {
 		super();
-		const link = document.getElementsByTagName("link")[0].cloneNode();
+		const links = document.getElementsByTagName("link")
 		const shadow = this.attachShadow({ mode: "open" });
-		shadow.appendChild(link);
+
+		Array.from(links).forEach(link => {
+			if(link.getAttribute("role") == "theme") {
+				shadow.appendChild(link.cloneNode())
+			}
+		});
+		
 
 		const barContainer = document.createElement("div");
 		barContainer.classList.add("pb-container");

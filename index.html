@@ -4,7 +4,7 @@
 	<progress-bar></progress-bar>
 </header>
 
-<slide class="standout">
+<slide>
 	<h1><mark>\(\delta\)</mark>delta</h1>
 	<h3>Dynamic Engine for Layout and Template Arrangement</h3>
 	<hr />
@@ -14,8 +14,8 @@
 
 <slide>
 	<title>Paragraphs</title>
-	<p class="step">This is a simple slide with a title and two paragraphs</p>
-	<p class="step">
+	<p>This is a simple slide with a title and two paragraphs</p>
+	<p>
 		Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sodales, dui
 		vitae euismod feugiat, tellus diam lacinia turpis, eget faucibus odio nisl
 		at dolor. Phasellus pharetra massa diam. Vestibulum ante ipsum primis in
@@ -24,6 +24,19 @@
 		eget finibus.
 	</p>
 </slide>
+
+<slide>
+	<title>Text sizes</title>
+	<p>
+    <h1>This is extra huge</h1>
+    <h2>This is huge</h2>
+    <h3>This is big</h3>
+    <h4>This is regular</h4>
+    <h5>This is small</h5>
+    <h6>This is smaller </h6>
+	</p>
+</slide>
+
 
 <slide>
 	<title>Equations And References</title>
@@ -58,13 +71,14 @@
 	</theorem>
 </slide>
 
-<slide class="vertically-centered">
+<slide>
 	<p>
 		This is a slide with no title!
 		<corollary class="step">
 			This is a corollary with a step class. Vestibulum ante ipsum primis in
 			faucibus orci luctus et ultrices posuere cubilia curae;
-			<equation class="step"> \int_a^bf(x)dx = F(b) - F(a) </equation>
+			<equation class="step"> \int_a^bf(x)dx = {F(b) {-} {F(a)}} </equation>
+			<equation animate> {f(x)\;} { = \;} { x^{{2x}{+3}}} {\iff} {g({x})=2x} </equation>
 		</corollary>
 		<proof class="step">
 			<title>Proof of Corollary</title>
@@ -89,52 +103,71 @@
 	</p>
 </slide>
 
-<section>
-	<slide>
-		<title>Columns</title>
+<slide>
+	<title>Columns</title>
 
-		<p>
-			<columns>
-				<column width="65%">
-					Duis commodo sed libero vitae gravida. Vestibulum ante ipsum primis in
-					faucibus orci luctus et ultrices posuere cubilia curae; Aenean
-					accumsan in ante sit amet pharetra. Aenean tincidunt accumsan mi, at
-					venenatis velit consectetur nec. Nulla in iaculis eros. Ut porta, mi a
-					mattis consectetur, sem sem ornare sem, nec scelerisque purus lectus
-					ut mauris. Mauris a leo mauris. Pellentesque lobortis nibh ac
-					pellentesque condimentum.
-				</column>
+	<p>
+		<columns>
+			<column width="65%">
+				Duis commodo sed libero vitae gravida. Vestibulum ante ipsum primis in
+				faucibus orci luctus et ultrices posuere cubilia curae; Aenean accumsan
+				in ante sit amet pharetra. Aenean tincidunt accumsan mi, at venenatis
+				velit consectetur nec. Nulla in iaculis eros. Ut porta, mi a mattis
+				consectetur, sem sem ornare sem, nec scelerisque purus lectus ut mauris.
+				Mauris a leo mauris. Pellentesque lobortis nibh ac pellentesque
+				condimentum.
+			</column>
 
-				<column>
-					<img src="assets/images/piechart.png" width="100%" />
-				</column>
-			</columns>
-		</p>
-	</slide>
+			<column>
+				<img src="assets/images/piechart.png" width="100%" />
+			</column>
+		</columns>
+	</p>
+</slide>
 
-	<slide>
-		<p>
-			<columns>
-				<column width="65%">
-					Duis commodo sed libero vitae gravida. Vestibulum ante ipsum primis in
-					faucibus orci luctus et ultrices posuere cubilia curae; Aenean
-					accumsan in ante sit amet pharetra. Aenean tincidunt accumsan mi, at
-					venenatis velit consectetur nec. Nulla in iaculis eros. Ut porta, mi a
-					mattis consectetur, sem sem ornare sem, nec scelerisque purus lectus
-					ut mauris. Mauris a leo mauris. Pellentesque lobortis nibh ac
-					pellentesque condimentum.
-				</column>
+<slide>
+	<p>
+		<columns class="vertically-centered">
+			<column width="65%">
+				Duis commodo sed libero vitae gravida. Vestibulum ante ipsum primis in
+				faucibus orci luctus et ultrices posuere cubilia curae; Aenean accumsan
+				in ante sit amet pharetra. Aenean tincidunt accumsan mi, at venenatis
+				velit consectetur nec. Nulla in iaculis eros. Ut porta, mi a mattis
+				consectetur, sem sem ornare sem, nec scelerisque purus lectus ut mauris.
+				Mauris a leo mauris. Pellentesque lobortis nibh ac pellentesque
+				condimentum.
+			</column>
 
-				<column>
-					<img src="assets/images/piechart.png" width="100%" />
-				</column>
-        <my-tag>
+			<column>
+				<img src="assets/images/piechart.png" width="100%" />
+			</column>
+		</columns>
+	</p>
+</slide>
 
-        </my-tag>
-			</columns>
-		</p>
-    <my-tag></my-tag>
-	</slide>
-</section>
+<slide>
+
+  <equation animate>
+
+    \begin{align}
+      {a} & { \; = b + c} \\
+       & { \; = e + f } \\
+        & {= h + i}
+    \end{align}
+
+  </equation>
+
+</slide>
+
+<footer>
+  <columns>
+    <column>
+      Made with \(\delta\)<b>-delta</b>
+    </column>
+    <column class="align-right">
+        <slide-counter></slide-counter>
+    </column>
+  </columns>
+</footer>
 
 <script src="./library/delta.js"></script>

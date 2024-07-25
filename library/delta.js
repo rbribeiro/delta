@@ -18,8 +18,12 @@ const Delta = {
 			src: "./library/plugins/progressBar/progressBar.js",
 		},
 		{
-			id : "annotation",
-			src : "./library/plugins/annotation/annotation.js"
+			id: "annotation",
+			src: "./library/plugins/annotation/annotation.js",
+		},
+		{
+			id: "slideCounter",
+			src: "./library/plugins/counter/counter.js",
 		},
 		{
 			id: "MathJax",
@@ -50,12 +54,23 @@ document.addEventListener("DOMContentLoaded", async () => {
 		//add Event Listeners
 		Delta.createEventListeners();
 		Delta.updateState({ currentSlide, totalSlides });
+		MathJax.Hub.Queue(function () {
+			const equations = document.querySelectorAll("equation");
+			equations.forEach((eq) => {
+				if (eq.hasAttribute("animate")) {
+					const atoms = eq.querySelectorAll(".mjx-texatom");
+					atoms.forEach((atom) => {
+						if (atom.parentNode.classList.contains("mjx-mrow")) {
+							atom.classList.add("step");
+						}
+					});
+				}
+			});
+		});
 	} catch (error) {
 		document.write(`<h1>${error}</h1>`);
 	}
 });
-
-
 
 /***********************************
  *
@@ -67,11 +82,10 @@ Delta.createEventListeners = function () {
 
 	Delta.documentListeners();
 
-
 	Delta.refListeners();
-}
+};
 
-Delta.loadPlugins = async function(plugins) {
+Delta.loadPlugins = async function (plugins) {
 	return Promise.all(
 		plugins.map((plugin) => {
 			return new Promise((resolve, reject) => {
@@ -88,9 +102,9 @@ Delta.loadPlugins = async function(plugins) {
 			});
 		})
 	);
-}
+};
 
-Delta.buildCustomElements = function(currentSlide) {
+Delta.buildCustomElements = function (currentSlide) {
 	const slides = document.querySelectorAll("slide");
 	const totalSlides = slides.length;
 	slides[currentSlide - 1].classList.add("active");
@@ -127,7 +141,7 @@ Delta.buildCustomElements = function(currentSlide) {
 		const elements = document.querySelectorAll(envName);
 		if (elements.length > 0) {
 			elements.forEach((element, key) => {
-			Delta.environmentBuilder(element, key + 1);
+				Delta.environmentBuilder(element, key + 1);
 			});
 		}
 	});
@@ -159,7 +173,7 @@ Delta.buildCustomElements = function(currentSlide) {
 	}
 
 	return { totalSlides };
-}
+};
 
 /*****************************************************
  *
@@ -168,7 +182,7 @@ Delta.buildCustomElements = function(currentSlide) {
  *
  *
  * *************************************************/
-Delta.windowListeners = function() {
+Delta.windowListeners = function () {
 	window.addEventListener("popstate", (e) => {
 		const url = new URL(window.location.href);
 		const urlParams = new URLSearchParams(url.search);
@@ -180,25 +194,23 @@ Delta.windowListeners = function() {
 	window.addEventListener("beforeprint", (e) => {
 		document.body.classList.remove("hidden-overflow");
 	});
-	
+
 	window.addEventListener("afterprint", () => {
 		document.body.classList.add("hidden-overflow");
 	});
+};
 
-}
-
-Delta.documentListeners = function() {
+Delta.documentListeners = function () {
 	document.addEventListener("keydown", (e) => {
 		if (e.key === "ArrowRight") {
 			Delta.stepForward();
 		} else if (e.key === "ArrowLeft") {
 			Delta.stepBack();
-		} 
+		}
 	});
-}
+};
 
-
-Delta.refListeners = function() {
+Delta.refListeners = function () {
 	const eqRefs = document.querySelectorAll("eq-ref") || [];
 
 	eqRefs.forEach((eqRef) => {
@@ -214,7 +226,7 @@ Delta.refListeners = function() {
 		ref.addEventListener("mouseout", Delta.hideToolTip);
 		ref.addEventListener("click", Delta.handleReferenceClick);
 	});
-}
+};
 
 /*****************************************************
  *
@@ -229,7 +241,7 @@ Delta.refListeners = function() {
  * update the app's state
  *
  * ********************************************/
-Delta.updateState = function(newState) {
+Delta.updateState = function (newState) {
 	const changedProperties = {};
 
 	for (const key in newState) {
@@ -250,13 +262,13 @@ Delta.updateState = function(newState) {
 
 		document.dispatchEvent(event);
 	}
-}
+};
 /***********************************
  *
  * Go to slide number slideNumber
  *
  *******************************/
-Delta.goToSlide = function(slideNumber) {
+Delta.goToSlide = function (slideNumber) {
 	if (slideNumber <= Delta.state.totalSlides && slideNumber > 0) {
 		const slides = document.querySelectorAll("slide");
 		slides[Delta.state.currentSlide - 1].classList.remove("active");
@@ -269,23 +281,24 @@ Delta.goToSlide = function(slideNumber) {
 
 		Delta.updateState({ currentSlide: slideNumber });
 	}
-}
+};
 
-Delta.equationBuilder = function(eqElement, eqNumber) {
+Delta.equationBuilder = function (eqElement, eqNumber) {
 	const equation = eqElement.innerHTML;
+	const stepClass = eqElement.hasAttribute("animate") ? "step" : ""
 	eqElement.setAttribute("number", eqNumber);
 	eqElement.innerHTML = `<div class="equation-container">
                                 <div class="equation-content">
                                    $$ ${equation} $$
                                 </div>
-                                <div class="equation-number">
+                                <div class="equation-number ${stepClass}">
                                     (${eqNumber})
                                 </div>
                             </div>
                         `;
-}
+};
 
-Delta.environmentBuilder = function(envElement, number) {
+Delta.environmentBuilder = function (envElement, number) {
 	envElement.classList.add("environment");
 	const envName = envElement.tagName.toLowerCase();
 	const title = Array.from(envElement.children).find(
@@ -318,9 +331,9 @@ Delta.environmentBuilder = function(envElement, number) {
                     `;
 		envElement.innerHTML = content;
 	}
-}
+};
 
-Delta.columnsBuilder = function(columns) {
+Delta.columnsBuilder = function (columns) {
 	const widths = [];
 	const columnList = columns.querySelectorAll("column");
 	const totalColumns = columnList.length;
@@ -342,15 +355,15 @@ Delta.columnsBuilder = function(columns) {
 	const gridTemplate = widths.join("% ") + "%";
 	columns.style.display = "grid";
 	columns.style["grid-template-columns"] = gridTemplate;
-}
+};
 
-Delta.getSlideFromURL = function() {
+Delta.getSlideFromURL = function () {
 	const url = new URL(window.location.href);
 	const urlParams = new URLSearchParams(url.search);
 	return parseInt(urlParams.get("slide"));
-}
+};
 
-Delta.stepForward = function() {
+Delta.stepForward = function () {
 	const steps = document
 		.getElementById(`DELTA_SLIDE_${Delta.state.currentSlide}`)
 		.querySelectorAll(".step");
@@ -360,9 +373,9 @@ Delta.stepForward = function() {
 	} else {
 		Delta.goToSlide(parseInt(Delta.state.currentSlide) + 1);
 	}
-}
+};
 
-Delta.stepBack = function() {
+Delta.stepBack = function () {
 	const activatedSteps = document
 		.getElementById(`DELTA_SLIDE_${Delta.state.currentSlide}`)
 		.querySelectorAll(".activeStep");
@@ -374,9 +387,9 @@ Delta.stepBack = function() {
 	} else {
 		Delta.goToSlide(Delta.state.currentSlide - 1);
 	}
-}
+};
 
-Delta.showToolTip = function(event) {
+Delta.showToolTip = function (event) {
 	const refId = event.target.getAttribute("to");
 	const targetElement = document.getElementById(refId).cloneNode(true);
 	targetElement.id = "";
@@ -408,14 +421,13 @@ Delta.showToolTip = function(event) {
 		tooltip.style.left = left + "px";
 		tooltip.style.top = top + "px";
 	}
-}
+};
 
-Delta.hideToolTip = function() {
+Delta.hideToolTip = function () {
 	document.getElementById("tool_tip_element").style.display = "none";
-}
+};
 
-
-Delta.handleReferenceClick = function(event) {
+Delta.handleReferenceClick = function (event) {
 	const targetId = event.target.getAttribute("to");
 	const target = document.getElementById(targetId);
 	if (target) {
@@ -424,7 +436,7 @@ Delta.handleReferenceClick = function(event) {
 			.getAttribute("number");
 		Delta.goToSlide(slideNumber);
 	}
-}
+};
 
 /***************************
  *
@@ -441,4 +453,3 @@ Node.prototype.findParentByTagName = function (tagName) {
 	}
 	return null;
 };
-

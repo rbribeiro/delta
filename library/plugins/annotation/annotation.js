@@ -1,44 +1,43 @@
-const annotation = {}
+const annotation = {};
 
-annotation.init = function() {
-    const slides = document.querySelectorAll("slide")
-    slides.forEach(slide => {
-        const canvas = document.createElement("canvas");
-	    slide.appendChild(canvas);
-    });
-
-    Delta.updateState({drawing : false, annotateMode : false})
-    annotation.canvasListeners()
-}
-
-
-window.addEventListener("resize", () => {
-	const canvasList = document.querySelectorAll("canvas");
-	canvasList.forEach((canvas) => {
-		annotation.resizeCanvas(canvas);
+annotation.init = function () {
+	const slides = document.querySelectorAll("slide");
+	slides.forEach((slide) => {
+		const canvas = document.createElement("canvas");
+		slide.appendChild(canvas);
 	});
-});
+	window.addEventListener("resize", () => {
+		const canvasList = document.querySelectorAll("canvas");
+		canvasList.forEach((canvas) => {
+			annotation.resizeCanvas(canvas);
+		});
+	});
 
-document.addEventListener("keydown", (e) => {
-	if (e.key === "a") {
-		const annotateMode = Delta.state.annotateMode ? false : true;
-		Delta.updateState({ annotateMode });
-	}
-});
+	document.addEventListener("keydown", (e) => {
+		if (e.key === "a") {
+			const annotateMode = Delta.state.annotateMode ? false : true;
+			Delta.updateState({ annotateMode });
+		}
+	});
 
+	document.addEventListener("stateChange:annotateMode", () => {
+		annotation.toggleAnnotateMode();
+	});
 
-document.addEventListener("stateChange:annotateMode", () => {
-	annotation.toggleAnnotateMode();
-});
+	annotation.canvasListeners();
 
-annotation.toggleAnnotateMode = function() {
+	Delta.updateState({ drawing: false, annotateMode: false });
+};
+
+annotation.toggleAnnotateMode = function () {
 	const canvasList = document.querySelectorAll("canvas");
 	canvasList.forEach((canvas) => {
 		canvas.style.pointerEvents = Delta.state.annotateMode ? "visible" : "none";
 		canvas.style.cursor = Delta.state.annotateMode ? "crosshair" : "default";
 	});
-}
-annotation.canvasListeners = function() {
+};
+
+annotation.canvasListeners = function () {
 	const canvasList = document.querySelectorAll("canvas");
 	canvasList.forEach((canvas) => {
 		annotation.canvasBuilder(canvas);
@@ -62,9 +61,9 @@ annotation.canvasListeners = function() {
 			Delta.updateState({ drawing: false });
 		});
 	});
-}
+};
 
-annotation.canvasBuilder = function(canvas) {
+annotation.canvasBuilder = function (canvas) {
 	const ctx = canvas.getContext("2d");
 	const ratio = window.devicePixelRatio;
 	canvas.width = window.innerWidth * ratio;
@@ -74,9 +73,9 @@ annotation.canvasBuilder = function(canvas) {
 	ctx.strokeStyle = "#ed6a5a";
 	ctx.shadowBlur = 2;
 	ctx.shadowColor = "#ed6a5a";
-}
+};
 
-annotation.resizeCanvas = function(canvas) {
+annotation.resizeCanvas = function (canvas) {
 	const ratio = window.devicePixelRatio;
 	const ctx = canvas.getContext("2d");
 	const { lineWidth, strokeStyle, shadowColor, shadowBlur } = ctx;
@@ -113,6 +112,6 @@ annotation.resizeCanvas = function(canvas) {
 	// Explicitly set tempCanvas to null to help with garbage collection
 	tempCanvas.width = tempCanvas.height = 0;
 	tempCanvas = null;
-}
+};
 
-annotation.init()
+annotation.init();

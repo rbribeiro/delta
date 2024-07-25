@@ -12,6 +12,7 @@
 
 	--slide-title-padding: 40px;
 	--paragraph-padding: 0px 80px 0px 80px;
+	--footer-padding : 5px 0px 5px 0;
 
 	--environment-margin: 40px 0 40px 0;
 
@@ -105,11 +106,13 @@ header {
 }
 
 footer {
-	margin-top: -47px;
+	padding: var(--footer-padding) ;
+	height: 40px;
+	margin-top: -30px;
 	z-index: 99;
 	font-size: medium;
 	width: 100%;
-	background-color: var(--secondary-bg-color);
+	background-color: var(--primary-bg-color);
 }
 
 p {
@@ -161,6 +164,15 @@ slide.active {
 	}
 }
 
+@keyframes colorChange {
+	from {
+	  color: var(--highlight-color);
+	}
+	to {
+	  color: var(--primary-text-color);
+	}
+  }
+
 
 .step {
 	opacity: 0;
@@ -170,6 +182,7 @@ slide.active {
 .activeStep {
 	transition: opacity 0.5s ease-in;
 }
+
 
 .hidden-overflow {
 	overflow: hidden;
@@ -196,12 +209,6 @@ institution {
 	box-shadow: var(--drop-shadow);
 }
 
-.standout {
-	justify-content: center !important; /* Center horizontally */
-	align-items: center !important; /* Center vertically */
-	text-align: center;
-}
-
 
 
 .tooltip {
@@ -218,6 +225,18 @@ institution {
 	box-shadow: var(--drop-shadow);
 }
 
+/**************************************
+* TEXT CLASSES
+****************************************/
+
+.align-right {
+	text-align: right;
+	justify-content: right;
+}
+/**************************************************
+** PROGRESS BAR
+*****************************************/
+
 .pb-container {
 	height: 7px;
 	background-color: var(--terciary-bg-color);
@@ -233,6 +252,7 @@ institution {
 
 .equation-container {
 	display: flex;
+	width: 100vw;
 }
 .equation-content,
 .MJ-TEX {
