@@ -29,6 +29,14 @@ const Delta = {
 			id: "MathJax",
 			src: "https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS_CHTML",
 		},
+		{
+			id: "tableOfContents",
+			src: "./library/plugins/tableOfContents/tableOfContents.js",
+		},
+		{
+			id : "autogenerateSectionSlides",
+			src : "./library/plugins/autogenerateSectionSlides/autogenerateSectionSlides.js"
+		}
 	],
 };
 
@@ -105,12 +113,7 @@ Delta.loadPlugins = async function (plugins) {
 };
 
 Delta.buildCustomElements = function (currentSlide) {
-	const sections = document.querySelectorAll("section") || [];
-
-	sections.forEach((section) => {
-		Delta.sectionBuilder(section);
-	});
-
+	
 	const slides = document.querySelectorAll("slide") || [];
 	const totalSlides = slides.length;
 	slides[currentSlide - 1].classList.add("active");
@@ -165,15 +168,15 @@ Delta.buildCustomElements = function (currentSlide) {
 	});
 
 	const refs = document.querySelectorAll("ref") || [];
-		refs.forEach(ref => {
-			const targetId = ref.getAttribute("to");
-			if (targetId) {
-				const refNumber = document
-					.getElementById(targetId)
-					.getAttribute("number");
-				ref.innerHTML += ` ${refNumber}`;
-			}
-		});
+	refs.forEach((ref) => {
+		const targetId = ref.getAttribute("to");
+		if (targetId) {
+			const refNumber = document
+				.getElementById(targetId)
+				.getAttribute("number");
+			ref.innerHTML += ` ${refNumber}`;
+		}
+	});
 
 	return { totalSlides };
 };
@@ -336,23 +339,7 @@ Delta.environmentBuilder = function (envElement, number) {
 	}
 };
 
-Delta.sectionBuilder = function (section) {
-	if (
-		section.children &&
-		section.children[0].tagName.toLowerCase() == "title"
-	) {
-		const titleSlide = document.createElement("slide");
-		let sectionTitle = section.children[0].innerHTML;
-		const textArea = document.createElement("textarea")
-		textArea.innerHTML = sectionTitle
-		sectionTitle = textArea.value
-		titleSlide.innerHTML = `<h1>${sectionTitle}</h1>
-								<hr />
-								`;
-		section.removeChild(section.children[0]);
-		section.prepend(titleSlide);
-	}
-};
+
 
 Delta.columnsBuilder = function (columns) {
 	const widths = [];
