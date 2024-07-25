@@ -125,6 +125,11 @@ Delta.buildCustomElements = function (currentSlide) {
 		}
 	});
 
+	const blockquotes = document.querySelectorAll("blockquote")
+	blockquotes.forEach(quote => {
+		Delta.blockquoteBuilder(quote)
+	})
+
 	const columnsList = document.querySelectorAll("columns");
 	columnsList.forEach((columns) => {
 		Delta.columnsBuilder(columns);
@@ -285,7 +290,7 @@ Delta.goToSlide = function (slideNumber) {
 
 Delta.equationBuilder = function (eqElement, eqNumber) {
 	const equation = eqElement.innerHTML;
-	const stepClass = eqElement.hasAttribute("animate") ? "step" : ""
+	const stepClass = eqElement.hasAttribute("animate") ? "step" : "";
 	eqElement.setAttribute("number", eqNumber);
 	eqElement.innerHTML = `<div class="equation-container">
                                 <div class="equation-content">
@@ -355,6 +360,15 @@ Delta.columnsBuilder = function (columns) {
 	const gridTemplate = widths.join("% ") + "%";
 	columns.style.display = "grid";
 	columns.style["grid-template-columns"] = gridTemplate;
+};
+
+Delta.blockquoteBuilder = function (quote) {
+	if (quote.getAttribute("source")) {
+		const sourceElement = document.createElement("div");
+		sourceElement.classList.add("align-right");
+		sourceElement.innerHTML = quote.getAttribute("source");
+		quote.appendChild(sourceElement);
+	}
 };
 
 Delta.getSlideFromURL = function () {
