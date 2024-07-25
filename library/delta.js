@@ -105,7 +105,13 @@ Delta.loadPlugins = async function (plugins) {
 };
 
 Delta.buildCustomElements = function (currentSlide) {
-	const slides = document.querySelectorAll("slide");
+	const sections = document.querySelectorAll("section") || [];
+
+	sections.forEach((section) => {
+		Delta.sectionBuilder(section);
+	});
+
+	const slides = document.querySelectorAll("slide") || [];
 	const totalSlides = slides.length;
 	slides[currentSlide - 1].classList.add("active");
 	slides.forEach((slide, key) => {
@@ -125,22 +131,20 @@ Delta.buildCustomElements = function (currentSlide) {
 		}
 	});
 
-	const blockquotes = document.querySelectorAll("blockquote")
-	blockquotes.forEach(quote => {
-		Delta.blockquoteBuilder(quote)
-	})
+	const blockquotes = document.querySelectorAll("blockquote") || [];
+	blockquotes.forEach((quote) => {
+		Delta.blockquoteBuilder(quote);
+	});
 
-	const columnsList = document.querySelectorAll("columns");
+	const columnsList = document.querySelectorAll("columns") || [];
 	columnsList.forEach((columns) => {
 		Delta.columnsBuilder(columns);
 	});
 
-	const equations = document.querySelectorAll("equation");
-	if (equations.length > 0) {
-		equations.forEach((eq, key) => {
-			Delta.equationBuilder(eq, key + 1);
-		});
-	}
+	const equations = document.querySelectorAll("equation") || [];
+	equations.forEach((eq, key) => {
+		Delta.equationBuilder(eq, key + 1);
+	});
 
 	Delta.state.environmentList.forEach((envName) => {
 		const elements = document.querySelectorAll(envName);
@@ -151,22 +155,17 @@ Delta.buildCustomElements = function (currentSlide) {
 		}
 	});
 
-	const eqRefs = document.querySelectorAll("eq-ref");
-	if (eqRefs.length > 0) {
-		eqRefs.forEach((eqRef, key) => {
-			const targetId = eqRef.getAttribute("to");
-			if (targetId) {
-				const eqNumber = document
-					.getElementById(targetId)
-					.getAttribute("number");
-				eqRef.innerHTML += ` (${eqNumber})`;
-			}
-		});
-	}
+	const eqRefs = document.querySelectorAll("eq-ref") || [];
+	eqRefs.forEach((eqRef) => {
+		const targetId = eqRef.getAttribute("to");
+		if (targetId) {
+			const eqNumber = document.getElementById(targetId).getAttribute("number");
+			eqRef.innerHTML += ` (${eqNumber})`;
+		}
+	});
 
-	const refs = document.querySelectorAll("ref");
-	if (refs.length > 0) {
-		refs.forEach((ref, key) => {
+	const refs = document.querySelectorAll("ref") || [];
+		refs.forEach(ref => {
 			const targetId = ref.getAttribute("to");
 			if (targetId) {
 				const refNumber = document
@@ -175,7 +174,6 @@ Delta.buildCustomElements = function (currentSlide) {
 				ref.innerHTML += ` ${refNumber}`;
 			}
 		});
-	}
 
 	return { totalSlides };
 };
@@ -338,6 +336,22 @@ Delta.environmentBuilder = function (envElement, number) {
 	}
 };
 
+Delta.sectionBuilder = function (section) {
+	if (
+		section.children &&
+		section.children[0].tagName.toLowerCase() == "title"
+	) {
+		const titleSlide = document.createElement("slide");
+		const sectionTitle = section.children[0].innerHTML;
+		titleSlide.innerHTML = `<h1>${sectionTitle}</h1>
+								<hr />
+								`;
+		section.removeChild(section.children[0]);
+		section.setAttribute("title",section)
+		section.prepend(titleSlide);
+	}
+};
+
 Delta.columnsBuilder = function (columns) {
 	const widths = [];
 	const columnList = columns.querySelectorAll("column");
@@ -360,7 +374,7 @@ Delta.columnsBuilder = function (columns) {
 	const gridTemplate = widths.join("% ") + "%";
 	columns.style.display = "grid";
 	columns.style["grid-template-columns"] = gridTemplate;
-	columns.style["gap"] = "var(--columns-gap)"
+	columns.style["gap"] = "var(--columns-gap)";
 };
 
 Delta.blockquoteBuilder = function (quote) {
