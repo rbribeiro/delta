@@ -116,7 +116,7 @@ footer {
 	box-sizing: border-box;
 	padding: var(--footer-padding) ;
 	height: 40px;
-	margin-top: -30px;
+	margin-top: -40px;
 	z-index: 99;
 	font-size: medium;
 	width: 100%;
