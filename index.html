@@ -12,6 +12,8 @@
 	<institution>University of Denver</institution>
 </slide>
 
+<section>
+<title>Paragraphs and Text formatting</title>
 <slide>
 	<title>Paragraphs</title>
 	<p>This is a simple slide with a title and two paragraphs</p>
@@ -23,119 +25,115 @@
 		eget mi auctor, vel ultricies ligula semper. Vestibulum facilisis ut orci
 		eget finibus.
 	</p>
+  This text is not in a new a paragraph
 </slide>
+
 
 <slide>
 	<title>Text sizes</title>
-	<p>
     <h1>This is extra huge</h1>
     <h2>This is huge</h2>
     <h3>This is big</h3>
-    <h4>This is regular</h4>
+    <h4>This is regular but bold</h4>
     <h5>This is small</h5>
     <h6>This is smaller </h6>
-	</p>
-</slide>
-
-
-<slide>
-	<title>Equations And References</title>
-	<p>
-		Here is an inline equation \(E = mc^2\). Here is a display equation
-		$$e^{i\pi} + 1 = 0$$
-	</p>
-	<p>
-		Here goes a numbered equation using the
-		<mark>&lt;equation&gt;</mark> tag
-
-		<equation id="integral"> \int x^2dx = \frac{x^3}{3} + C </equation>
-
-		Here is a reference to <ref to="lebesgue">Theorem</ref>. Here is a reference
-		to <eq-ref to="eqlim">Equation</eq-ref> in the same theorem.
-	</p>
+    <p>
+      this is just a text in a new paragraph
+    </p>
 </slide>
 
 <slide>
-	<title>Latex Environments</title>
-	<theorem id="lebesgue">
-		<title>Lebesgue's dominated convergence theorem</title>
-		Nulla laoreet \((f_n)\) purus orci, quisque ullamcorper est vitae ex porta
-		sagitti
+  <title>Text formatting</title>
+  <p>
+    Texts can be <i>italic</i> or <b>bold</b> or <u>underlined</u> or <mark>highlighted</mark> or <s>strike</s> or <code>look like code</code>. 
+    
+    Or combinations of that: <i><b>italic bold</b></i>, <s><b>text</b></s> and so on...
+  </p>
+  <p>
+    You can manually break <br>
+    lines <br>
+    using <mark>&lt;br&gt;</mark> tag
+  </p>
+  <p>
+    Quote is easy and beautiful
+    <blockquote source="John Doe">
+      Duis commodo sed libero vitae gravida. Vestibulum ante ipsum primis in
+				faucibus orci luctus et ultrices posuere cubilia curae 
+        
+    </blockquote>
 
-		<equation id="eqlim" class="step">
-			\lim_{n\to \infty}\int_\Omega f_n d\mu = \int_\Omega f d \mu
-		</equation>
+  </p>
 
-		eu volutpat eros efficitur sit amet. Nam rutrum ante feugiat pellentesque
-		dapibu
-	</theorem>
 </slide>
+</section>
 
+
+<section>
+<title>Layout and Alignment</title>
 <slide>
-	<p>
-		This is a slide with no title!
-		<corollary class="step">
-			This is a corollary with a step class. Vestibulum ante ipsum primis in
-			faucibus orci luctus et ultrices posuere cubilia curae;
-			<equation class="step"> \int_a^bf(x)dx = {F(b) {-} {F(a)}} </equation>
-			<equation animate> {f(x)\;} { = \;} { x^{{2x}{+3}}} {\iff} {g({x})=2x} </equation>
-		</corollary>
-		<proof class="step">
-			<title>Proof of Corollary</title>
-			The proof goes Here. Vestibulum ante ipsum primis in faucibus orci luctus
-			et ultrices posuere cubilia curae
-			<equation> e^{i\pi} + 1 = 0 </equation>
-			Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere
-			cubilia curae
-		</proof>
-	</p>
+  <title>Alignment</title>
+  <p>
+    This paragraphs are aligned at the left by default.
+  </p>
+  <p class="align-center">
+      But you can also align them at the center
+  </p>
+  <p class="align-right">
+      Or at the right...
+  </p>
 </slide>
-
 <slide>
-	<title>New Slide!</title>
-	<p>
-		New paragraph!
-		<lemma>
-			<title>Zorn's Lemma (?)</title>
-			O enunciado vai aqui! Se eu soubesse
-		</lemma>
-		Referencia para equacao <eq-ref to="integral">Equacao</eq-ref>
-	</p>
+  <p>
+    Slides with no <i>title tag</i> are centered by default.
+    <equation>
+      \vec{F} = m\cdot \vec{a}
+    </equation>
+  </p>
 </slide>
 
 <slide>
 	<title>Columns</title>
-
-	<p>
+    <h3>
+      Creating columns is easy as well:
+    </h3>
 		<columns>
-			<column width="65%">
-				Duis commodo sed libero vitae gravida. Vestibulum ante ipsum primis in
-				faucibus orci luctus et ultrices posuere cubilia curae; Aenean accumsan
-				in ante sit amet pharetra. Aenean tincidunt accumsan mi, at venenatis
-				velit consectetur nec. Nulla in iaculis eros. Ut porta, mi a mattis
-				consectetur, sem sem ornare sem, nec scelerisque purus lectus ut mauris.
-				Mauris a leo mauris. Pellentesque lobortis nibh ac pellentesque
-				condimentum.
+			<column>
+        <p>
+        Here we are dividing this paragraph into two columns.
+
+        </p>
+        <p>
+          Duis commodo sed libero vitae gravida. Vestibulum ante ipsum primis in
+          faucibus orci luctus et ultrices posuere cubilia curae; Aenean accumsan
+          in ante sit amet pharetra. Aenean tincidunt accumsan mi, at venenatis
+          velit consectetur nec. Nulla in iaculis eros. Ut porta, mi a mattis
+          consectetur, sem sem ornare sem, nec scelerisque purus lectus ut mauris.
+          Mauris a leo mauris. Pellentesque lobortis nibh ac pellentesque
+          condimentum.
+        </p>
+          
 			</column>
 
 			<column>
-				<img src="assets/images/piechart.png" width="100%" />
-			</column>
+        <p>
+        Each with 50% of the screen and both aligned at the left.
+
+        </p>
+        <p>
+          Ut porta, mi a mattis
+          consectetur, sem sem ornare sem, nec scelerisque purus lectus ut mauris.
+          Mauris a leo mauris. Pellentesque lobortis nibh ac pellentesque
+          condimentum.
+        </p>
+      </column>
 		</columns>
-	</p>
 </slide>
 
 <slide>
 	<p>
 		<columns class="vertically-centered">
 			<column width="65%">
-				Duis commodo sed libero vitae gravida. Vestibulum ante ipsum primis in
-				faucibus orci luctus et ultrices posuere cubilia curae; Aenean accumsan
-				in ante sit amet pharetra. Aenean tincidunt accumsan mi, at venenatis
-				velit consectetur nec. Nulla in iaculis eros. Ut porta, mi a mattis
-				consectetur, sem sem ornare sem, nec scelerisque purus lectus ut mauris.
-				Mauris a leo mauris. Pellentesque lobortis nibh ac pellentesque
-				condimentum.
+				Columns can have their <code>width</code> manually specified. This column has <code>65%</code> width. Additionally, these two columns are vertically centered. 
 			</column>
 
 			<column>
@@ -144,20 +142,108 @@
 		</columns>
 	</p>
 </slide>
+</section>
+
+<section>
+  <title>Math and <i>LaTeX</i></title>
 
 <slide>
+	<title>Equations</title>
+	<p>
+		Here is an inline equation \(E = mc^2\). Here is a non-umbered display equation
+		$$e^{i\pi} + 1 = 0$$
+		Here goes a numbered equation using the
+		<mark>&lt;equation&gt;</mark> tag
 
-  <equation animate>
-
-    \begin{align}
-      {a} & { \; = b + c} \\
-       & { \; = e + f } \\
-        & {= h + i}
+		<equation id="eq:integral"> \int x^2dx = \frac{x^3}{3} + C </equation>
+    The <mark>&lt;equation&gt;</mark> tag accepts <u>align</u> in it so you can display a well-aligned list of equations
+    <equation>
+      \begin{align}
+      a &  = b + c \\
+       b &  = e + f  \\
+        &   = h + i 
     \end{align}
+    </equation>
+	</p>
+</slide>
 
-  </equation>
+<slide>
+  <title>LaTeX Environments</title>
+  <p>
+    Yes, we have environments.
+    <theorem id="thm">
+      This is a theorem with no title. You can add inline math \((f_n)_n\) and equations
+      $$
+        F = \frac{|q_1||q_2|}{d^2}
+      $$
+    </theorem>
+    <proposition>
+      <title>Proposition title</title>
+      Enviroments can have <code>title</code> as well.
+    </proposition>
+    <proof>
+			<title>Proof of Proposition</title>
+			The proof goes Here. Vestibulum ante ipsum primis in faucibus orci luctus
+			et ultrices posuere cubilia curae
+			<equation> e^{i\pi} + 1 = 0 </equation>
+			Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere
+			cubilia curae
+		</proof>
+  </p>
+</slide>
+
+
+
+</section>
+
+<section>
+  <title>References and Citation</title>
+  <slide>
+    <title>References</title>
+    <p>
+      We can make references to equations and environments.
+    </p>
+    <p>
+      This is a reference to <ref to="thm">Theorem</ref>.
+      And this is a reference to <eq-ref to="eq:integral">Equation</eq-ref>
+    </p>
+  </slide>
+</section>
+
+
+
+
+<section>
+  <title>Animation</title>
+<slide>
+  <title>Animation with equations</title>
+  <p>
+  Inside a LaTex command, use <i>{ }</i> to define the order in which the objects appear.
+  
+  <example>
+    For instance, the equation <i>{x^2} { + 2x } {7} {=} {0} </i> shows things in the order we see the <i>{ }'s</i>, that is, \(x^2\), \(+2x\), \(+7\), \(=\) and finally \(0\).
+    <equation animate>
+      {x^2} { + 2x } {+7} {=} {0}
+    </equation>
+  </example>
+  <p class="step">
+    It also works with <i>align</i>
+    <equation animate>
+
+      \begin{align}
+        {a} & { \; = b + c} \\
+         & { \; = e + f } \\
+          & {= h + i}
+      \end{align}
+  
+    </equation>
+  </p>
+
+  
 
 </slide>
+</section>
+
 
 <footer>
   <columns>
