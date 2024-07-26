@@ -307,6 +307,21 @@ Delta.equationBuilder = function (eqElement, eqNumber) {
                         `;
 };
 
+Delta.goToElementById = function(id) {
+	const element = document.getElementById(id)
+	if(element) {
+		if(element.tagName.toLocaleLowerCase() == "section") {
+			const slide = element.children[0]
+			const slideNumber = parseInt(slide.getAttribute("number")) || 1
+			Delta.goToSlide(slideNumber)
+		} else {
+			const slide = element.findParentByTagName("slide")
+			const slideNumber = parseInt(slide.getAttribute("number")) || 1
+			Delta.goToSlide(slideNumber)
+		}
+	}
+}
+
 Delta.environmentBuilder = function (envElement, number) {
 	envElement.classList.add("environment");
 	const envName = envElement.tagName.toLowerCase();
