@@ -9,19 +9,18 @@
 	--regular-text-size: 48px;
 	--big-text-size: 64px;
 	--small-text-size: 36px;
-	--blockquote-border-left : 15px solid var(--highlight-color);
-	--blockquote-font-style : italic;
-	--blockquote-padding : var(--paragraph-padding);
-	--blockquote-margin : 0 200px 0 200px;
+	--blockquote-border-left: 15px solid var(--highlight-color);
+	--blockquote-font-style: italic;
+	--blockquote-padding: var(--paragraph-padding);
+	--blockquote-margin: 0 200px 0 200px;
 
 	--slide-title-padding: 40px;
 	--paragraph-padding: 0px 80px 0px 80px;
-	--footer-padding : 15px;
-
+	--footer-padding: 15px;
 
 	--environment-margin: 40px 0 40px 0;
 
-	--columns-gap : 10px;
+	--columns-gap: 10px;
 
 	--drop-shadow: 0 1px 1px hsl(0deg 0% 0% / 0.075),
 		0 2px 2px hsl(0deg 0% 0% / 0.075), 0 4px 4px hsl(0deg 0% 0% / 0.075),
@@ -47,41 +46,42 @@
 }
 
 @page {
-	size: auto;
+	size: auto landscape;
 	margin: 0;
 }
 
 @media print {
 	slide {
-		position: relative !important;
-		display: block !important;
+		position: relative;
 		width: 100vw;
-		height: 100vh; /* Set the height to match the A4 landscape height */
-		page-break-after: always; /* Ensure each slide ends and starts a new page */
+		height: 100%;
 		box-sizing: border-box;
+		opacity: 1;
+		flex-direction: column;
+		display: flex !important;
+		page-break-after: always; /* Ensure each slide ends and starts a new page */
 	}
 
-	header {
+	header,footer {
 		display: none;
-	}
-	body,
-	html {
-		margin: 0;
-		padding: 0;
 	}
 
 	body .step {
 		opacity: 1;
 	}
 
-	canvas {
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100% !important;
-		height: 100% !important;
+	.slide-title {
+		background-color: var(--secondary-bg-color);
+		width: 100%;
+		padding: var(--slide-title-padding);
+		font-size: var(--big-text-size);
+		color: var(--secondary-text-color);
+		box-shadow: var(--drop-shadow);
 	}
 }
+
+
+
 
 canvas {
 	position: absolute;
@@ -114,7 +114,7 @@ header {
 
 footer {
 	box-sizing: border-box;
-	padding: var(--footer-padding) ;
+	padding: var(--footer-padding);
 	height: 40px;
 	margin-top: -40px;
 	z-index: 99;
@@ -129,11 +129,18 @@ p {
 	width: inherit;
 }
 
-h1,h2,h3,h4,h5,h6 {
-	padding: var(--paragraph-padding)
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	padding: var(--paragraph-padding);
 }
 
-strike,s,u {
+strike,
+s,
+u {
 	text-decoration-color: var(--highlight-color);
 	text-decoration-thickness: 5px;
 	animation: textDecorationColor 2s forwards;
@@ -157,7 +164,6 @@ mark {
 	font-weight: bold;
 }
 
-
 slide {
 	position: relative;
 	display: none;
@@ -173,9 +179,6 @@ slide.active {
 	display: flex;
 	animation: fadeIn 1s forwards;
 }
-
-
-
 
 @keyframes fadeIn {
 	from {
@@ -196,23 +199,27 @@ slide.active {
 }
 
 @keyframes textDecorationColor {
-    from {
-        text-decoration-color: rgba(255, 255, 255, 0); /* Initial transparent color */
-    }
-    to {
-        text-decoration-color: var(--highlight-color); /* Final opaque color */
-    }
+	from {
+		text-decoration-color: rgba(
+			255,
+			255,
+			255,
+			0
+		); /* Initial transparent color */
+	}
+	to {
+		text-decoration-color: var(--highlight-color); /* Final opaque color */
+	}
 }
 
 @keyframes colorChange {
 	from {
-	  color: var(--highlight-color);
+		color: var(--highlight-color);
 	}
 	to {
-	  color: var(--primary-text-color);
+		color: var(--primary-text-color);
 	}
-  }
-
+}
 
 .step {
 	opacity: 0;
@@ -222,7 +229,6 @@ slide.active {
 .activeStep {
 	transition: opacity 0.5s ease-in;
 }
-
 
 .hidden-overflow {
 	overflow: hidden;
@@ -240,7 +246,6 @@ institution {
 	align-items: center !important;
 }
 
-
 .slide-title {
 	background-color: var(--secondary-bg-color);
 	width: 100%;
@@ -249,8 +254,6 @@ institution {
 	color: var(--secondary-text-color);
 	box-shadow: var(--drop-shadow);
 }
-
-
 
 .tooltip {
 	position: absolute;
@@ -325,8 +328,6 @@ ref {
  * MATH ENVIRONMENTS
  *
  * *****************************************/
-
-
 
 .proof {
 	font-style: italic;
