@@ -178,6 +178,9 @@ Delta.buildCustomElements = function (currentSlide) {
 		}
 	});
 
+	const eventBuiltDone = new Event("customElementsBuilt")
+	document.dispatchEvent(eventBuiltDone)
+
 	return { totalSlides };
 };
 
