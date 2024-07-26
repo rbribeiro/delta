@@ -1,17 +1,11 @@
 class tableOfContents extends HTMLElement {
 	constructor() {
 		super();
-		const shadow = this.attachShadow({ mode: "open" });
-		const links = document.getElementsByTagName("link");
+		const ol = document.createElement("ol");
+		this.ol = ol;
+		this.appendChild(ol);
+		
 
-		Array.from(links).forEach((link) => {
-			if (link.getAttribute("role") == "theme") {
-				shadow.appendChild(link.cloneNode());
-			}
-		});
-		const ul = document.createElement("ul");
-		shadow.appendChild(ul);
-		this.ul = ul;
 	}
 
 	connectedCallback() {
@@ -30,9 +24,10 @@ class tableOfContents extends HTMLElement {
 
 		titles.forEach((title,key) => {
 			const li = document.createElement("li");
+			if(this.hasAttribute("animate")) li.classList.add("step")
             const sectionId = `DELTA_SECTION_${key+1}`
 			li.innerHTML = `<a href="#${sectionId}">${title}</a>`;
-			this.ul.appendChild(li);
+			this.ol.appendChild(li);
 		});
 	}
 }
