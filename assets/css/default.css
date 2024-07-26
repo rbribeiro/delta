@@ -9,16 +9,28 @@
 	--regular-text-size: 48px;
 	--big-text-size: 64px;
 	--small-text-size: 36px;
+	--paragraph-padding: 0px 80px 0px 80px;
+
+
 	--blockquote-border-left: 15px solid var(--highlight-color);
 	--blockquote-font-style: italic;
 	--blockquote-padding: var(--paragraph-padding);
 	--blockquote-margin: 0 200px 0 200px;
 
 	--slide-title-padding: 40px;
-	--paragraph-padding: 0px 80px 0px 80px;
-	--footer-padding: 15px;
 
+	--footer-padding: 15px;
+	
+	--list-item-margin: 80px 0px 0px 0px;
+
+	--link-decoration: none var(--highlight-color);
+	--link-bg-color : var(--highlight-color);
+
+	--ref-text-color : var(--secondary-text-color);	
+
+	--environment-name-text-color : var(--secondary-text-color);
 	--environment-margin: 40px 0 40px 0;
+	--environment-title-text-color : var(--secondary-text-color);
 
 	--columns-gap: 10px;
 
@@ -162,6 +174,19 @@ mark {
 	background-color: var(--highlight-color);
 	color: var(--primary-bg-color);
 	font-weight: bold;
+}
+
+li {
+	margin: var(--list-item-margin);
+}
+
+a:link,a:visited {
+	color : var(--primary-text-color);
+	text-decoration : var(--link-decoration);
+}
+
+a:hover {
+	background-color: var(--link-bg-color);
 }
 
 slide {
@@ -318,7 +343,7 @@ institution {
 
 eq-ref,
 ref {
-	color: var(--secondary-text-color);
+	color: var(--ref-text-color);
 	cursor: pointer;
 	font-weight: bold;
 }
@@ -343,11 +368,12 @@ ref {
 .environment-name {
 	text-transform: capitalize;
 	font-weight: bold;
-	color: var(--secondary-text-color);
+	color: var(--environment-name-text-color);
 }
 
 .environment-title {
 	font-style: italic;
+	color: var(--environment-title-text-color);
 }
 
 .proof-footer {
