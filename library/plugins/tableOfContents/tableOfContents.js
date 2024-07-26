@@ -24,11 +24,20 @@ class tableOfContents extends HTMLElement {
 
 		titles.forEach((title,key) => {
 			const li = document.createElement("li");
+			const a = document.createElement("a")
 			if(this.hasAttribute("animate")) li.classList.add("step")
             const sectionId = `DELTA_SECTION_${key+1}`
-			li.innerHTML = `<a href="#${sectionId}">${title}</a>`;
+			a.addEventListener("click", () => {
+				this.handleClick(sectionId)
+			})
+			a.innerHTML = title
+			li.appendChild(a)
 			this.ol.appendChild(li);
 		});
+	}	
+
+	handleClick (id) {
+		Delta.goToElementById(id)
 	}
 }
 

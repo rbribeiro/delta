@@ -180,9 +180,10 @@ li {
 	margin: var(--list-item-margin);
 }
 
-a:link,a:visited {
+a,a:link,a:visited {
 	color : var(--primary-text-color);
 	text-decoration : var(--link-decoration);
+	cursor: pointer;
 }
 
 a:hover {
