@@ -301,14 +301,14 @@ Delta.imgBuilder = function (img, imgNumber) {
   const wrapper = document.createElement("div");
   const rotationAngle = img.getAttribute("rotate") || 0;
   const caption = img.getAttribute("caption");
-  imgNumber = img.hasAttribute("numbered") ? `${imgNumber}` : "";
+  imgNumber = img.hasAttribute("numbered") ? ` ${imgNumber}.` : ".";
   img.style.transform = `rotate(${rotationAngle}deg)`;
   const imgId = img.id;
   if (caption || img.hasAttribute("numbered")) {
     wrapper.classList.add("img-wrapper");
     const captionContainer = document.createElement("div");
     captionContainer.classList.add("caption-container");
-    captionContainer.innerHTML = `<span class='figure-name'>Figure${imgNumber}.</span> <span class='caption-text'>${caption}</span>`;
+    captionContainer.innerHTML = `<span class='figure-name'>Figure${imgNumber}</span> <span class='caption-text'>${caption}</span>`;
     if (imgId) {
       wrapper.id = img.id;
       img.id = "";
