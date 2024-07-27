@@ -114,4 +114,5 @@ annotation.resizeCanvas = function (canvas) {
 	tempCanvas = null;
 };
 
-annotation.init();
+document.addEventListener("deltaIsReady", annotation.init)
+
