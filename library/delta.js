@@ -56,8 +56,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.body.appendChild(tooltip);
 
   try {
+    // loading plugins
     await Delta.loadPlugins(Delta.plugins);
-    // Handling custom elements
+    // Building the native delta elements
     const totalSlides = Delta.buildCustomElements(currentSlide).totalSlides;
     //add Event Listeners
     Delta.createEventListeners();
@@ -117,6 +118,8 @@ Delta.buildCustomElements = function (currentSlide) {
   const totalSlides = slides.length;
   slides[currentSlide - 1].classList.add("active");
   slides.forEach((slide, key) => {
+    const slideBodyWrapper = document.createElement("div")
+    slideBodyWrapper.classList.add('slide-body')
     slide.setAttribute("number", key + 1);
     slide.setAttribute("id", `DELTA_SLIDE_${key + 1}`);
     const title = Array.from(slide.children).find(
@@ -126,8 +129,13 @@ Delta.buildCustomElements = function (currentSlide) {
       const slideTitle = document.createElement("div");
       slideTitle.classList.add("slide-title");
       slideTitle.innerHTML = title.innerHTML;
-      slide.prepend(slideTitle);
       slide.removeChild(title);
+      while(slide.firstChild) {
+        slideBodyWrapper.appendChild(slide.firstChild)
+      }
+      slide.prepend(slideTitle)
+      slide.appendChild(slideBodyWrapper)
+
     } else {
       slide.classList.add("vertically-centered");
     }
@@ -183,7 +191,7 @@ Delta.buildCustomElements = function (currentSlide) {
     }
   });
 
-  const eventBuiltDone = new Event("customElementsBuilt");
+  const eventBuiltDone = new Event("deltaIsReady");
   document.dispatchEvent(eventBuiltDone);
 
   return { totalSlides };
