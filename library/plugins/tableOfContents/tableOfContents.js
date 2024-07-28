@@ -4,9 +4,6 @@ class tableOfContents extends HTMLElement {
     const ol = document.createElement("ol");
     this.ol = ol;
     this.appendChild(ol);
-  }
-
-  connectedCallback() {
     const titles = [];
     const sections = document.querySelectorAll("section") || [];
     sections.forEach((section) => {
@@ -37,6 +34,10 @@ class tableOfContents extends HTMLElement {
       li.appendChild(a);
       this.ol.appendChild(li);
     });
+  }
+
+  connectedCallback() {
+    
   }
 
   handleClick(id) {

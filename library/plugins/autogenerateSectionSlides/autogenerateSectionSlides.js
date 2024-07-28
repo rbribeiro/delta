@@ -6,6 +6,10 @@ autogenerateSectionSlides.init = function () {
   sections.forEach((section, key) => {
     autogenerateSectionSlides.sectionBuilder(section, key + 1);
   });
+
+  const totalSlides = document.querySelectorAll("slide").length
+  Delta.updateState({totalSlides : totalSlides})
+
 };
 
 autogenerateSectionSlides.sectionBuilder = function (section, number) {
@@ -28,4 +32,7 @@ autogenerateSectionSlides.sectionBuilder = function (section, number) {
   }
 };
 
-autogenerateSectionSlides.init();
+document.addEventListener("deltaIsReady", () => {
+  autogenerateSectionSlides.init()
+
+})

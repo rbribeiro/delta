@@ -1,6 +1,6 @@
 const Delta = {
   state: {
-    currentSlide: 0,
+    currentSlide: 1,
     totalSlides: 0,
     environmentList: [
       "theorem",
@@ -30,8 +30,8 @@ const Delta = {
       src: "https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS_CHTML",
     },
     {
-      id: "tableOfContents",
-      src: "./library/plugins/tableOfContents/tableOfContents.js",
+      id : "tableContents",
+      src : "./library/plugins/tableOfContents/tableOfContents.js"
     },
     {
       id: "autogenerateSectionSlides",
@@ -48,21 +48,25 @@ const Delta = {
  * ***********************************************************************/
 
 document.addEventListener("DOMContentLoaded", async () => {
-  document.body.classList.add("hidden-overflow");
-  const currentSlide = Delta.getSlideFromURL() || 1;
+ 
+  // Dynamically add this class. This is need for the print layout to work
+  document.body.classList.add("hidden-overflow")
   // Create tooltip Object
   const tooltip = document.createElement("div");
   tooltip.id = "tool_tip_element";
   document.body.appendChild(tooltip);
+  // //This is causing an error with navigation when there are slides being created dynamically
+  // const currentSlide = Delta.getSlideFromURL() || 1;
+  // Delta.state.currentSlide =  currentSlide
 
   try {
     // loading plugins
     await Delta.loadPlugins(Delta.plugins);
     // Building the native delta elements
-    const totalSlides = Delta.buildCustomElements(currentSlide).totalSlides;
+    Delta.render()
     //add Event Listeners
     Delta.createEventListeners();
-    Delta.updateState({ currentSlide, totalSlides });
+    // Add step classes to the equations for animation
     MathJax.Hub.Queue(function () {
       const equations = document.querySelectorAll("equation");
       equations.forEach((eq) => {
@@ -76,6 +80,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
       });
     });
+    const eventBuiltDone = new Event("deltaIsReady");
+    document.dispatchEvent(eventBuiltDone);
   } catch (error) {
     document.write(`<h1>${error}</h1>`);
   }
@@ -88,9 +94,7 @@ document.addEventListener("DOMContentLoaded", async () => {
  ***********************************/
 Delta.createEventListeners = function () {
   Delta.windowListeners();
-
   Delta.documentListeners();
-
   Delta.refListeners();
 };
 
@@ -113,10 +117,9 @@ Delta.loadPlugins = async function (plugins) {
   );
 };
 
-Delta.buildCustomElements = function (currentSlide) {
+Delta.render = function () {
   const slides = document.querySelectorAll("slide") || [];
-  const totalSlides = slides.length;
-  slides[currentSlide - 1].classList.add("active");
+
   slides.forEach((slide, key) => {
     const slideBodyWrapper = document.createElement("div")
     slideBodyWrapper.classList.add('slide-body')
@@ -138,6 +141,10 @@ Delta.buildCustomElements = function (currentSlide) {
 
     } else {
       slide.classList.add("vertically-centered");
+      while(slide.firstChild) {
+        slideBodyWrapper.appendChild(slide.firstChild)
+      }
+      slide.appendChild(slideBodyWrapper)
     }
   });
 
@@ -191,10 +198,6 @@ Delta.buildCustomElements = function (currentSlide) {
     }
   });
 
-  const eventBuiltDone = new Event("deltaIsReady");
-  document.dispatchEvent(eventBuiltDone);
-
-  return { totalSlides };
 };
 
 /*****************************************************
@@ -230,6 +233,22 @@ Delta.documentListeners = function () {
       Delta.stepBack();
     }
   });
+
+  document.addEventListener("stateChange:totalSlides", (e) => {
+    const slides = document.querySelectorAll("slide") || []
+    slides.forEach((slide,key) => {
+      slide.id = `DELTA_SLIDE_${key+1}`
+      slide.setAttribute("number",key+1)
+    })
+
+    const currentSlideURL = Delta.getSlideFromURL()
+      Delta.goToSlide(currentSlideURL)
+  })
+
+  document.addEventListener("deltaIsReady", () => {
+    const currentSlide = Delta.getSlideFromURL() || 1
+    Delta.goToSlide(currentSlide)
+  })
 };
 
 Delta.refListeners = function () {
@@ -272,7 +291,6 @@ Delta.updateState = function (newState) {
       Delta.state[key] = newState[key];
     }
   }
-
   //Dispatching events now that all the state has been
   // updated
   for (const key in changedProperties) {
@@ -285,6 +303,8 @@ Delta.updateState = function (newState) {
     document.dispatchEvent(event);
   }
 };
+
+
 /***********************************
  *
  * Go to slide number slideNumber

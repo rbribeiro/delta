@@ -16,9 +16,13 @@ class ProgressBar extends HTMLElement {
 	}
 
 	connectedCallback() {
-		// Listen for change in the current slide
+		// Listen for change in the current slide or total slides
 		document.addEventListener(
 			"stateChange:currentSlide",
+			this.handleStateChange.bind(this)
+		);
+		document.addEventListener(
+			"stateChange:totalSlides",
 			this.handleStateChange.bind(this)
 		);
 	}
