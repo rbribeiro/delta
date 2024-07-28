@@ -10,7 +10,7 @@
   --regular-text-size: 32px;
   --big-text-size: 48px;
   --small-text-size: 28px;
-  --paragraph-padding: 0px 80px 0px 80px;
+  --slide-body-padding: 0px 80px 0px 80px;
 
   --drop-shadow: 0 1px 1px hsl(0deg 0% 0% / 0.075),
     0 2px 2px hsl(0deg 0% 0% / 0.075), 0 4px 4px hsl(0deg 0% 0% / 0.075),
@@ -18,12 +18,14 @@
 
   --blockquote-border-left: 15px solid var(--highlight-color);
   --blockquote-font-style: italic;
-  --blockquote-padding: var(--paragraph-padding);
+  --blockquote-padding: var(--slide-body-padding);
   --blockquote-margin: 0 200px 0 200px;
 
   --slide-title-padding: 40px;
 
   --footer-padding: 15px;
+
+  --paragraph-margin-bottom : 20px;
 
   --list-item-margin: 80px 0px 0px 0px;
 
@@ -143,11 +145,6 @@ footer {
   background-color: var(--primary-bg-color);
 }
 
-p {
-  padding: var(--paragraph-padding) !important;
-  box-sizing: border-box;
-  width: inherit;
-}
 
 h1,
 h2,
@@ -188,6 +185,10 @@ li {
   margin: var(--list-item-margin);
 }
 
+p {
+  margin-bottom: var(--paragraph-margin-bottom);
+}
+
 a,
 a:link,
 a:visited {
@@ -219,6 +220,18 @@ slide {
 slide.active {
   display: flex;
   animation: fadeIn 1s forwards;
+}
+
+.slide-body {
+  padding: var(--slide-body-padding);
+  width: inherit;
+  box-sizing: border-box;
+}
+
+.section-intro {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 @keyframes fadeIn {
