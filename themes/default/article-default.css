@@ -1,0 +1,502 @@
+:root {
+	--primary-bg-color: #fff;
+	--secondary-bg-color: #f4f1de;
+	--tertiary-bg-color: #81b29a;
+	--primary-text-color: #000;
+	--secondary-text-color: #313131;
+	--highlight-color: #3d405b;
+	--primary-border-color: #fff;
+
+	--regular-text-size: 1rem;
+	--big-text-size: 48px;
+	--small-text-size: 28px;
+	--slide-body-padding: 2rem 1.25rem;
+
+	--drop-shadow: 0 1px 1px hsl(0deg 0% 0% / 0.075),
+		0 2px 2px hsl(0deg 0% 0% / 0.075), 0 4px 4px hsl(0deg 0% 0% / 0.075),
+		0 8px 8px hsl(0deg 0% 0% / 0.075), 0 16px 16px hsl(0deg 0% 0% / 0.075);
+
+	--blockquote-border-left: 15px solid var(--highlight-color);
+	--blockquote-font-style: italic;
+	--blockquote-padding: var(--slide-body-padding);
+	--blockquote-margin: 0 200px 0 200px;
+
+	--slide-title-padding: 40px;
+
+	--footer-padding: 15px;
+
+	--paragraph-margin-bottom: 20px;
+
+	--list-item-margin: 0;
+
+	--link-decoration: none var(--secondary-bg-color);
+	--link-bg-color: var(--secondary-bg-color);
+
+	--ref-text-color: var(--highlight-color);
+
+	--rounded-border: 5px;
+	--thick-border: 15px solid;
+
+	--img-border-color: var(--tertiary-bg-color);
+	--img-border: 0;
+	--img-border-radius: 0;
+	--img-drop-shadow: var(--drop-shadow);
+
+	--environment-name-text-color: var(--secondary-text-color);
+	--environment-margin: 0;
+	--environment-title-text-color: var(--secondary-text-color);
+
+	--columns-gap: 10px;
+
+	--tooltip-width: 700px;
+	--tooltip-border-radius: 5px;
+	--tooltip-padding: 25px;
+}
+::selection {
+	background-color: var(--highlight-color); /* Highlight background color */
+	color: var(--primary-bg-color); /* Highlight text color */
+}
+
+::-webkit-selection {
+	background-color: var(--highlight-color); /* Highlight background color */
+	color: var(--primary-bg-color); /* Highlight text color */
+}
+
+::-moz-selection {
+	background-color: var(--highlight-color); /* Highlight background color */
+	color: var(--primary-bg-color); /* Highlight text color */
+}
+
+@page {
+	size: auto landscape;
+	margin: 0;
+}
+
+@font-face {
+	font-family: "Latin Modern";
+	font-style: normal;
+	font-weight: normal;
+	font-display: swap;
+	src: url("../fonts/LM-regular.woff2") format("woff2"),
+		url("../fonts/LM-regular.woff") format("woff"),
+		url("../fonts/LM-regular.ttf") format("truetype");
+}
+
+@font-face {
+	font-family: "Latin Modern";
+	font-style: italic;
+	font-weight: normal;
+	font-display: swap;
+	src: url("../fonts/LM-italic.woff2") format("woff2"),
+		url("../fonts/LM-italic.woff") format("woff"),
+		url("../fonts/LM-italic.ttf") format("truetype");
+}
+
+@font-face {
+	font-family: "Latin Modern";
+	font-style: normal;
+	font-weight: bold;
+	font-display: swap;
+	src: url("../fonts/LM-bold.woff2") format("woff2"),
+		url("../fonts/LM-bold.woff") format("woff"),
+		url("../fonts/LM-bold.ttf") format("truetype");
+}
+
+@font-face {
+	font-family: "Latin Modern";
+	font-style: italic;
+	font-weight: bold;
+	font-display: swap;
+	src: url("../fonts/LM-bold-italic.woff2") format("woff2"),
+		url("../fonts/LM-bold-italic.woff") format("woff"),
+		url("../fonts/LM-bold-italic.ttf") format("truetype");
+}
+
+@font-face {
+	font-family: "Libertinus";
+	font-style: normal;
+	font-weight: normal;
+	font-display: swap;
+	src: url("../fonts/Libertinus-regular.woff2") format("woff2");
+}
+
+@font-face {
+	font-family: "Libertinus";
+	font-style: italic;
+	font-weight: normal;
+	font-display: swap;
+	src: url("../fonts/Libertinus-italic.woff2") format("woff2");
+}
+
+@font-face {
+	font-family: "Libertinus";
+	font-style: normal;
+	font-weight: bold;
+	font-display: swap;
+	src: url("../fonts/Libertinus-bold.woff2") format("woff2");
+}
+
+@font-face {
+	font-family: "Libertinus";
+	font-style: italic;
+	font-weight: bold;
+	font-display: swap;
+	src: url("../fonts/Libertinus-bold-italic.woff2") format("woff2");
+}
+
+@font-face {
+	font-family: "Libertinus";
+	font-style: normal;
+	font-weight: 600;
+	font-display: swap;
+	src: url("../fonts/Libertinus-semibold.woff2") format("woff2");
+}
+
+@font-face {
+	font-family: "Libertinus";
+	font-style: italic;
+	font-weight: 600;
+	font-display: swap;
+	src: url("../fonts/Libertinus-semibold-italic.woff2") format("woff2");
+}
+
+/* @media print {
+    slide {
+      position: relative;
+      width: 100vw;
+      height: 100%;
+      box-sizing: border-box;
+      opacity: 1;
+      flex-direction: column;
+      display: flex !important;
+      page-break-after: always; 
+    }
+  
+    header,
+    footer {
+      display: none;
+    }
+  
+  
+    .slide-title {
+      display: none;
+    }
+  } 
+  
+  canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1;
+    pointer-events: none;
+  } */
+
+body {
+  margin: 0 auto;
+	padding: var(--slide-body-padding);
+	font-family: "Latin Modern", Georgia, Cambria, "Times New Roman", Times, serif;
+	font-size: var(--regular-text-size);
+	background-color: var(--primary-bg-color);
+	color: var(--primary-text-color);
+	line-height: 1.8;
+	max-width: 80ch;
+	min-height: 100vh;
+	overflow-x: hidden;
+	text-rendering: optimizeLegibility;
+}
+
+/* Heading typography */
+h1 {
+	font-size: 2.5rem;
+	line-height: 3.25rem;
+	margin-bottom: 1.625rem;
+}
+
+h2 {
+	font-size: 1.7rem;
+	line-height: 2rem;
+	margin-top: 3rem;
+}
+
+h3 {
+	font-size: 1.4rem;
+	margin-top: 2.5rem;
+}
+
+h4 {
+	font-size: 1.2rem;
+	margin-top: 2rem;
+}
+
+h5 {
+	font-size: 1rem;
+	margin-top: 1.8rem;
+}
+
+h6 {
+	font-size: 1rem;
+	font-style: italic;
+	font-weight: normal;
+	margin-top: 2.5rem;
+}
+
+h3,
+h4,
+h5,
+h6 {
+	line-height: 1.625rem;
+}
+
+h1 + h2 {
+	margin-top: 1.625rem;
+}
+
+h2 + h3,
+h3 + h4,
+h4 + h5 {
+	margin-top: 0.8rem;
+}
+
+h5 + h6 {
+	margin-top: -0.8rem;
+}
+
+h2,
+h3,
+h4,
+h5,
+h6 {
+	margin-bottom: 0.8rem;
+}
+
+strike,
+s,
+u {
+	text-decoration-color: var(--highlight-color);
+	text-decoration-thickness: 5px;
+	animation: textDecorationColor 2s forwards;
+}
+
+blockquote {
+	border-left: var(--blockquote-border-left);
+	font-style: var(--blockquote-font-style);
+	padding: var(--blockquote-padding);
+}
+
+mark {
+	background-color: var(--highlight-color);
+	color: var(--primary-bg-color);
+	font-weight: bold;
+}
+
+p {
+	text-align: justify;
+	hyphens: auto;
+	-webkit-hyphens: auto;
+	-moz-hyphens: auto;
+	margin-top: 1rem;
+}
+
+a,
+a:link,
+a:visited {
+	color: var(--primary-text-color);
+	text-decoration: var(--link-decoration);
+	cursor: pointer;
+}
+
+a:hover {
+	background-color: var(--link-bg-color);
+}
+
+img {
+	border: var(--img-border);
+	border-radius: var(--img-border-radius);
+}
+
+section {
+	margin-bottom: 0;
+}
+
+
+author,
+institution {
+	width: 90%;
+	text-align: left;
+	font-size: 32px;
+}
+
+/******
+
+SLIDES CLASSES 
+
+***********/
+.slide-body {
+	width: inherit;
+	box-sizing: border-box;
+}
+
+.section-intro {
+	align-items: center;
+	justify-content: center;
+}
+
+slide > hr {
+	display: none;
+}
+
+
+.slide-title {
+	display: none;
+}
+
+.tooltip {
+	position: absolute;
+	background-color: var(--secondary-bg-color);
+	color: var(--secondary-text-color) !important;
+	padding: var(--tooltip-padding);
+	border-radius: var(--tooltip-border-radius);
+	display: none;
+	z-index: 1000; /* Ensure the tooltip is above other elements */
+	pointer-events: none; /* Ensure it doesn't interfere with mouse events */
+	width: var(--tooltip-width);
+	font-size: var(--small-text-size);
+	box-shadow: var(--drop-shadow);
+}
+
+/*******************************************
+   *
+   * GENERAL CLASSES
+   *
+   * ****************************************/
+
+.caption-container {
+	text-align: center;
+	padding: 10px;
+	box-sizing: border-box;
+}
+
+.vertically-centered {
+	justify-content: center !important;
+	align-items: center !important;
+}
+
+.rounded {
+	border-radius: var(--rounded-border);
+}
+
+.thick-border {
+	border: var(--thick-border);
+}
+
+.drop-shadow {
+	box-shadow: var(--drop-shadow);
+}
+
+/**************************************
+  * TEXT CLASSES
+  ****************************************/
+
+.align-right {
+	text-align: right;
+	justify-content: right;
+}
+
+.align-center {
+	text-align: center;
+	justify-content: center;
+}
+/**************************************************
+  ** PROGRESS BAR
+  *****************************************/
+
+.pb-container {
+	height: 7px;
+	background-color: var(--tertiary-bg-color);
+}
+
+.pb {
+	background-color: var(--highlight-color);
+	transition: width 0.5s ease-in;
+}
+/**************************************
+  * EQUATION CLASSES
+  ****************************************/
+
+.equation-container {
+	display: flex;
+	width: inherit !important;
+}
+.equation-content,
+.MJ-TEX {
+	flex: 1;
+}
+
+.equation-number {
+	width: 40px;
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	padding-right: 20px; /* Optional padding for spacing */
+}
+
+eq-ref,
+ref {
+	color: var(--ref-text-color);
+	cursor: pointer;
+	font-weight: bold;
+}
+
+/*********************************************
+   *
+   * GENERAL ENVIRONMENTS
+   *
+   * *********************************************/
+
+.img-wrapper {
+	text-align: center;
+	justify-content: center;
+}
+
+.caption-text {
+	font-style: italic;
+}
+
+.figure-name {
+	font-weight: bold;
+}
+
+/******************************************
+   *
+   * MATH ENVIRONMENTS
+   *
+   * *****************************************/
+
+.proof {
+	font-style: italic;
+}
+
+.environment {
+	display: block;
+	margin: var(--environment-margin);
+	box-sizing: border-box;
+}
+
+.theorem,
+.environment-name {
+	text-transform: capitalize;
+	font-weight: bold;
+	color: var(--environment-name-text-color);
+}
+
+.environment-title {
+	font-style: italic;
+	color: var(--environment-title-text-color);
+}
+
+.proof-footer {
+	text-align: right;
+	font-size: var(--big-text-size);
+}
