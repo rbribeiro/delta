@@ -7,7 +7,7 @@
     --highlight-color: #ed6a5a;
     --primary-border-color: #fff;
   
-    --regular-text-size: 18px;
+    --regular-text-size: 1rem;
     --big-text-size: 48px;
     --small-text-size: 28px;
     --slide-body-padding: 0px 80px 0px 80px;
@@ -27,7 +27,7 @@
   
     --paragraph-margin-bottom : 20px;
   
-    --list-item-margin: 80px 0px 0px 0px;
+    --list-item-margin: 0px 0px 0px 0px;
   
     --link-decoration: none var(--highlight-color);
     --link-bg-color: var(--highlight-color);
@@ -71,6 +71,94 @@
     size: auto landscape;
     margin: 0;
   }
+
+  @font-face {
+    font-family: 'Latin Modern';
+    font-style: normal;
+    font-weight: normal;
+    font-display: swap;
+    src: url('./fonts/LM-regular.woff2') format('woff2'),
+      url('./fonts/LM-regular.woff') format('woff'),
+      url('./fonts/LM-regular.ttf') format('truetype');
+  }
+  
+  @font-face {
+    font-family: 'Latin Modern';
+    font-style: italic;
+    font-weight: normal;
+    font-display: swap;
+    src: url('./fonts/LM-italic.woff2') format('woff2'),
+      url('./fonts/LM-italic.woff') format('woff'),
+      url('./fonts/LM-italic.ttf') format('truetype');
+  }
+  
+  @font-face {
+    font-family: 'Latin Modern';
+    font-style: normal;
+    font-weight: bold;
+    font-display: swap;
+    src: url('./fonts/LM-bold.woff2') format('woff2'),
+      url('./fonts/LM-bold.woff') format('woff'),
+      url('./fonts/LM-bold.ttf') format('truetype');
+  }
+  
+  @font-face {
+    font-family: 'Latin Modern';
+    font-style: italic;
+    font-weight: bold;
+    font-display: swap;
+    src: url('./fonts/LM-bold-italic.woff2') format('woff2'),
+      url('./fonts/LM-bold-italic.woff') format('woff'),
+      url('./fonts/LM-bold-italic.ttf') format('truetype');
+  }
+  
+  @font-face {
+    font-family: 'Libertinus';
+    font-style: normal;
+    font-weight: normal;
+    font-display: swap;
+    src: url('./fonts/Libertinus-regular.woff2') format('woff2');
+  }
+  
+  @font-face {
+    font-family: 'Libertinus';
+    font-style: italic;
+    font-weight: normal;
+    font-display: swap;
+    src: url('./fonts/Libertinus-italic.woff2') format('woff2');
+  }
+  
+  @font-face {
+    font-family: 'Libertinus';
+    font-style: normal;
+    font-weight: bold;
+    font-display: swap;
+    src: url('./fonts/Libertinus-bold.woff2') format('woff2');
+  }
+  
+  @font-face {
+    font-family: 'Libertinus';
+    font-style: italic;
+    font-weight: bold;
+    font-display: swap;
+    src: url('./fonts/Libertinus-bold-italic.woff2') format('woff2');
+  }
+  
+  @font-face {
+    font-family: 'Libertinus';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('./fonts/Libertinus-semibold.woff2') format('woff2');
+  }
+  
+  @font-face {
+    font-family: 'Libertinus';
+    font-style: italic;
+    font-weight: 600;
+    font-display: swap;
+    src: url('./fonts/Libertinus-semibold-italic.woff2') format('woff2');
+  }
   
   /* @media print {
     slide {
@@ -106,16 +194,20 @@
   } */
   
   
-  html, body {
+  body {
     margin: 0;
     padding: var(--slide-body-padding);
-    /* width: 100vw;
-    height: 100vh; */
-    font:
-      var(--regular-text-size) "Arial",
-      sans-serif;
+    font-family: 'Latin Modern', Georgia, Cambria, 'Times New Roman', Times, serif;
+    font-size: var(--regular-text-size);
     background-color: var(--primary-bg-color);
     color: var(--primary-text-color);
+    line-height: 1.8;
+    max-width: 80ch;
+    min-height: 100vh;
+    overflow-x: hidden;
+    margin: 0 auto;
+    padding: 2rem 1.25rem;
+    text-rendering: optimizeLegibility;
   }
   
   /* header {
@@ -216,67 +308,16 @@
   .section-intro {
     align-items: center;
     justify-content: center;
-    text-align: center;
+  }
+
+  slide > hr {
+    display: none;
   }
 
   section {
     margin-bottom: 10%;
   }
   
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-  
-  @keyframes fadeOut {
-    from {
-      opacity: 1;
-    }
-    to {
-      opacity: 0;
-    }
-  }
-  
-  @keyframes textDecorationColor {
-    from {
-      text-decoration-color: rgba(
-        255,
-        255,
-        255,
-        0
-      ); /* Initial transparent color */
-    }
-    to {
-      text-decoration-color: var(--highlight-color); /* Final opaque color */
-    }
-  }
-  
-  @keyframes colorChange {
-    from {
-      color: var(--highlight-color);
-    }
-    to {
-      color: var(--primary-text-color);
-    }
-  }
-  
-  /* .step {
-    opacity: 0;
-    transition: opacity 0.5s ease-out;
-  }
-  
-  .activeStep {
-    transition: opacity 0.5s ease-in;
-  } 
-  
-  .hidden-overflow {
-    overflow: hidden;
-  }
-    */
   
   author,
   institution {
