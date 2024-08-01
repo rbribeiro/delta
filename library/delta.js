@@ -1,45 +1,3 @@
-const Delta = {
-  state: {
-    currentSlide: 1,
-    totalSlides: 0,
-    environmentList: [
-      "theorem",
-      "proof",
-      "proposition",
-      "lemma",
-      "example",
-      "remark",
-      "corollary",
-    ],
-  },
-  plugins: [
-    {
-      id: "progressBar",
-      src: "./library/plugins/progressBar/progressBar.js",
-    },
-    {
-      id: "annotation",
-      src: "./library/plugins/annotation/annotation.js",
-    },
-    {
-      id: "slideCounter",
-      src: "./library/plugins/counter/counter.js",
-    },
-    {
-      id: "MathJax",
-      src: "https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS_CHTML",
-    },
-    {
-      id : "tableContents",
-      src : "./library/plugins/tableOfContents/tableOfContents.js"
-    },
-    {
-      id: "autogenerateSectionSlides",
-      src: "./library/plugins/autogenerateSectionSlides/autogenerateSectionSlides.js",
-    },
-  ],
-};
-
 /************************************************************************
  *
  * INIT Function. This is the function that call all the functions the
@@ -226,13 +184,6 @@ Delta.windowListeners = function () {
 };
 
 Delta.documentListeners = function () {
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowRight") {
-      Delta.stepForward();
-    } else if (e.key === "ArrowLeft") {
-      Delta.stepBack();
-    }
-  });
 
   document.addEventListener("stateChange:totalSlides", (e) => {
     const slides = document.querySelectorAll("slide") || []
