@@ -160,38 +160,7 @@
 	src: url("../fonts/Libertinus-semibold-italic.woff2") format("woff2");
 }
 
-/* @media print {
-    slide {
-      position: relative;
-      width: 100vw;
-      height: 100%;
-      box-sizing: border-box;
-      opacity: 1;
-      flex-direction: column;
-      display: flex !important;
-      page-break-after: always; 
-    }
-  
-    header,
-    footer {
-      display: none;
-    }
-  
-  
-    .slide-title {
-      display: none;
-    }
-  } 
-  
-  canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 1;
-    pointer-events: none;
-  } */
+/* Tags Style */
 
 body {
   margin: 0 auto;
@@ -207,7 +176,6 @@ body {
 	text-rendering: optimizeLegibility;
 }
 
-/* Heading typography */
 h1 {
 	font-size: 2.5rem;
 	line-height: 3.25rem;
@@ -328,6 +296,12 @@ institution {
 	font-size: 32px;
 }
 
+abstract{
+  padding: 2.25rem !important;
+  display: block;
+
+}
+
 /******
 
 SLIDES CLASSES 
@@ -352,6 +326,7 @@ slide > hr {
 	display: none;
 }
 
+/* Tooltip */
 .tooltip {
 	position: absolute;
 	background-color: var(--secondary-bg-color);
@@ -449,6 +424,11 @@ ref {
 	font-weight: bold;
 }
 
+eq-ref:hover,
+ref:hover {
+	cursor: pointer;
+	background-color: var(--link-bg-color);
+}
 /*********************************************
    *
    * GENERAL ENVIRONMENTS
@@ -484,7 +464,6 @@ ref {
 	box-sizing: border-box;
 }
 
-.theorem,
 .environment-name {
 	text-transform: capitalize;
 	font-weight: bold;
@@ -496,6 +475,9 @@ ref {
 	color: var(--environment-title-text-color);
 }
 
+.proof {
+	text-transform: none !important;
+}
 .proof-footer {
 	text-align: right;
 	font-size: var(--big-text-size);
