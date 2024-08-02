@@ -13,15 +13,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   const tooltip = document.createElement("div");
   tooltip.id = "tool_tip_element";
   document.body.appendChild(tooltip);
-  // //This is causing an error with navigation when there are slides being created dynamically
-  // const currentSlide = Delta.getSlideFromURL() || 1;
-  // Delta.state.currentSlide =  currentSlide
-
   try {
     // loading plugins
     await Delta.loadPlugins(Delta.plugins);
     // Building the native delta elements
-    Delta.render()
+    Delta.render(document)
     //add Event Listeners
     Delta.createEventListeners();
     // Add step classes to the equations for animation
@@ -64,7 +60,7 @@ Delta.loadPlugins = async function (plugins) {
         script.src = plugin.src;
         script.async = true;
         script.id = plugin.id;
-        script.onload = resolve;
+        script.onload = plugin.onload || resolve;
         script.onerror = () => {
           console.error(`Failed to load plugin ${plugin.id}`);
           reject(new Error(`Failed to load plugin ${plugin.id}`));
@@ -75,8 +71,8 @@ Delta.loadPlugins = async function (plugins) {
   );
 };
 
-Delta.render = function () {
-  const slides = document.querySelectorAll("slide") || [];
+Delta.render = function (parent) {
+  const slides = parent.querySelectorAll("slide") || [];
 
   slides.forEach((slide, key) => {
     const slideBodyWrapper = document.createElement("div")
@@ -106,29 +102,29 @@ Delta.render = function () {
     }
   });
 
-  const imgs = document.querySelectorAll("img") || [];
+  const imgs = parent.querySelectorAll("img") || [];
 
   imgs.forEach((img, key) => {
     Delta.imgBuilder(img, key);
   });
 
-  const blockquotes = document.querySelectorAll("blockquote") || [];
+  const blockquotes = parent.querySelectorAll("blockquote") || [];
   blockquotes.forEach((quote) => {
     Delta.blockquoteBuilder(quote);
   });
 
-  const columnsList = document.querySelectorAll("columns") || [];
+  const columnsList = parent.querySelectorAll("columns") || [];
   columnsList.forEach((columns) => {
     Delta.columnsBuilder(columns);
   });
 
-  const equations = document.querySelectorAll("equation") || [];
+  const equations = parent.querySelectorAll("equation") || [];
   equations.forEach((eq, key) => {
     Delta.equationBuilder(eq, key + 1);
   });
 
   Delta.state.environmentList.forEach((envName) => {
-    const elements = document.querySelectorAll(envName);
+    const elements = parent.querySelectorAll(envName);
     if (elements.length > 0) {
       elements.forEach((element, key) => {
         Delta.environmentBuilder(element, key + 1);
@@ -136,16 +132,16 @@ Delta.render = function () {
     }
   });
 
-  const eqRefs = document.querySelectorAll("eq-ref") || [];
+  const eqRefs = parent.querySelectorAll("eq-ref") || [];
   eqRefs.forEach((eqRef) => {
     const targetId = eqRef.getAttribute("to");
     if (targetId) {
-      const eqNumber = document.getElementById(targetId).getAttribute("number");
+      const eqNumber = parent.getElementById(targetId).getAttribute("number");
       eqRef.innerHTML += ` (${eqNumber})`;
     }
   });
 
-  const refs = document.querySelectorAll("ref") || [];
+  const refs = parent.querySelectorAll("ref") || [];
   refs.forEach((ref) => {
     const targetId = ref.getAttribute("to");
     if (targetId) {
@@ -341,7 +337,10 @@ Delta.environmentBuilder = function (envElement, number) {
   if (envName === "proof") {
     let envTitle = "";
     if (title) {
-      envTitle = title.innerHTML;
+      // trick to parse html
+      const textArea = document.createElement("textarea")
+      textArea.innerHTML = title.innerHTML
+      envTitle = textArea.value;
       envElement.removeChild(title);
     }
     const content = `<span class='environment-name ${envName}'>${envTitle}.</span>
@@ -353,7 +352,9 @@ Delta.environmentBuilder = function (envElement, number) {
     if (title) {
       const titleElement = document.createElement("span");
       titleElement.classList.add("environment-title");
-      titleElement.innerHTML = `(${title.innerHTML})`;
+      const textArea = document.createElement("textarea")
+      textArea.innerHTML = title.innerHTML
+      titleElement.innerHTML = `(${textArea.value})`;
       envElement.prepend(titleElement);
       envElement.removeChild(title);
     }
