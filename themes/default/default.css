@@ -170,7 +170,15 @@ blockquote {
   padding: var(--blockquote-padding);
   margin: var(--blockquote-margin);
 }
-
+author {
+  display: block;
+  margin-top: 30px;
+}
+institution {
+  font-size: var(--small-text-size) !important;
+  display: block;
+  font-style: italic;
+}
 blockquote > author {
   display: block;
   width: inherit;

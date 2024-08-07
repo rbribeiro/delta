@@ -1,297 +1,49 @@
 <link role="theme" rel="stylesheet" href="themes/default/default.css" />
 
 <header>
-	<progress-bar></progress-bar>
+  <progress-bar></progress-bar>
 </header>
 
-<slide>
-	<h1><mark>\(\delta\)</mark>delta</h1>
-	<h3>Dynamic Engine for Layout and Template Arrangement</h3>
-	<hr />
-	<author>Rodrigo Ribeiro, Ph.D</author>
-	<institution>University of Denver</institution>
+<slide class="align-center">
+  <content>
+    <h1><mark>$\delta$</mark>DELTA</h1>
+    <h3>Dynamic Engine for Layout and Template Arrangement</h3>
+    <hr />
+    <author>Rodrigo Ribeiro, Ph.D</author>
+    <br />
+    <institution>University of Denver</institution>
+  </content>
 </slide>
 
-<section>
-<title>Paragraphs and Text formatting</title>
-<slide>
-	<title>Paragraphs</title>
-	<p>This is a simple slide with a title and two paragraphs</p>
-	<p>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sodales, dui
-		vitae euismod feugiat, tellus diam lacinia turpis, eget faucibus odio nisl
-		at dolor. Phasellus pharetra massa diam. Vestibulum ante ipsum primis in
-		faucibus orci luctus et ultrices posuere cubilia curae; Mauris cursus nisl
-		eget mi auctor, vel ultricies ligula semper. Vestibulum facilisis ut orci
-		eget finibus.
-	</p>
-  This text is not in a new a paragraph
-</slide>
-
-
-<slide>
-	<title>Text sizes</title>
-    <h1>This is extra huge</h1>
-    <h2>This is huge</h2>
-    <h3>This is big</h3>
-    <h4>This is regular but bold</h4>
-    <h5>This is small</h5>
-    <h6>This is smaller </h6>
-    <p>
-      this is just a text in a new paragraph
-    </p>
+<slide class="align-center">
+  <content>
+    <h2>Math Environments and Equations</h2>
+    <hr />
+  </content>
 </slide>
 
 <slide>
-  <title>Text formatting</title>
-  <p>
-    Texts can be <i>italic</i> or <b>bold</b> or <u>underlined</u> or <mark>highlighted</mark> or <s>strike</s> or <code>look like code</code>. 
-    
-    Or combinations of that: <i><b>italic bold</b></i>, <s><b>text</b></s> and so on...
-  </p>
-  <p>
-    You can manually break <br>
-    lines <br>
-    using <mark>&lt;br&gt;</mark> tag
-  </p>
-  <p>
-    Quote is easy and beautiful
-    <blockquote>
-      Duis commodo sed libero vitae gravida. Vestibulum ante ipsum primis in
-				faucibus orci luctus et ultrices posuere cubilia curae 
-        <author>John Doe</author>
-    </blockquote>
-
-  </p>
-
-</slide>
-</section>
-
-
-<section>
-<title>Layout and Alignment</title>
-<slide>
-  <title>Alignment</title>
-  <p>
-    This paragraphs are aligned at the left by default.
-  </p>
-  <p class="align-center">
-      But you can also align them at the center
-  </p>
-  <p class="align-right">
-      Or at the right...
-  </p>
-</slide>
-<slide>
-  <p>
-    Slides with no <i>title tag</i> are centered by default.
-    <equation>
-      \vec{F} = m\cdot \vec{a}
-    </equation>
-  </p>
-</slide>
-
-<slide>
-	<title>Columns</title>
-    <h3>
-      Creating columns is easy as well:
-    </h3>
-		<columns>
-			<column>
-        <p>
-        Here we are dividing this paragraph into two columns.
-
-        </p>
-        <p>
-          Duis commodo sed libero vitae gravida. Vestibulum ante ipsum primis in
-          faucibus orci luctus et ultrices posuere cubilia curae; Aenean accumsan
-          in ante sit amet pharetra. Aenean tincidunt accumsan mi, at venenatis
-          velit consectetur nec. Nulla in iaculis eros. Ut porta, mi a mattis
-          consectetur, sem sem ornare sem, nec scelerisque purus lectus ut mauris.
-          Mauris a leo mauris. Pellentesque lobortis nibh ac pellentesque
-          condimentum.
-        </p>
-          
-			</column>
-
-			<column>
-        <p>
-        Each with 50% of the screen and both aligned at the left.
-
-        </p>
-        <p>
-          Ut porta, mi a mattis
-          consectetur, sem sem ornare sem, nec scelerisque purus lectus ut mauris.
-          Mauris a leo mauris. Pellentesque lobortis nibh ac pellentesque
-          condimentum.
-        </p>
-      </column>
-		</columns>
-</slide>
-
-<slide>
-	<p>
-		<columns class="vertically-centered">
-			<column width="65%">
-				Columns can have their <code>width</code> manually specified. This column has <code>65%</code> width. Additionally, these two columns are vertically centered. 
-			</column>
-
-			<column>
-				<img src="themes/images/piechart.png" width="100%" />
-			</column>
-		</columns>
-	</p>
-</slide>
-</section>
-
-<section>
-  <title>The <i>img</i> tag</title>
-  <slide>
-    <title>The img tag </title>
-    <p>
-      Images can have border, shadow, caption and be rotated
-    </p>
-    <p>
-    <columns>
-      <column><img src="./themes/images/piechart.png" width="260px"></column>
-      <column><img src="./themes/images/piechart.png" width="260px" caption="This image has a caption" ></column>
-      <column><img src="./themes/images/piechart.png" width="260px" class="rounded thick-border drop-shadow" rotate="10" caption="This has other features"></column>
-      <column><img src="./themes/images/piechart.png" width="260px" class="rounded thick-border drop-shadow" rotate="-2" caption="This one is also numbered" numbered></column>
-    </columns>
-      </p>
-  </slide>
-</section>
-
-<section>
-  <title>Math and <i>LaTeX</i></title>
-
-<slide>
-	<title>Equations</title>
-	<p>
-		Here is an inline equation \(E = mc^2\). Here is a non-umbered display equation
-		$$e^{i\pi} + 1 = 0$$
-		Here goes a numbered equation using the
-		<mark>&lt;equation&gt;</mark> tag
-
-		<equation id="eq:integral"> \int x^2dx = \frac{x^3}{3} + C </equation>
-    The <mark>&lt;equation&gt;</mark> tag accepts <u>align</u> in it so you can display a well-aligned list of equations
-    <equation>
-      \begin{align}
-      a &  = b + c \\
-       b &  = e + f  \\
-        &   = h + i 
-    \end{align}
-    </equation>
-	</p>
-</slide>
-
-<slide>
-  <title>LaTeX Environments</title>
-  <p>
-    Yes, we have environments.
-    <theorem-block id="thm">
-      This is a theorem with no title. You can add inline math \((f_n)_n\) and equations
-      $$
-        F = \frac{|q_1||q_2|}{d^2}
-      $$
+  <title>Math Environments</title>
+  <content>
+    <theorem-block id="thm" class="step">
+      <title>Theorem's title</title>
+      The statement goes here.
+      <equation-block> \int_a^bf(x) = {\rm d}x = F(b) - F(a) </equation-block>
     </theorem-block>
-    <proposition-block>
-      <title>Proposition title</title>
-      Enviroments can have <code>title</code> as well.
+    <proposition-block id="prop" class="step">
+      The statement goes here.
+      <align-block> a & = b+c \\ & = d+e </align-block>
     </proposition-block>
-    <proof>
-			<title>Proof of Proposition</title>
-			The proof goes Here. Vestibulum ante ipsum primis in faucibus orci luctus
-			et ultrices posuere cubilia curae
-			<equation> e^{i\pi} + 1 = 0 </equation>
-			Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere
-			cubilia curae
-		</proof>
-  </p>
+  </content>
 </slide>
-
-
-
-</section>
-
-<section>
-  <title>References and Citation</title>
-  <slide>
-    <title>References</title>
-    <p>
-      We can make references to equations and environments.
-    </p>
-    <p>
-      This is a reference to <a-ref to="thm">Theorem</a-ref>.
-      And this is a reference to <eq-ref to="eq:integral">Equation</eq-ref>
-    </p>
-  </slide>
-</section>
-
-
-
-
-<section>
-  <title>Animation</title>
-<slide>
-  <title>Animation with equations</title>
-  <p>
-  Inside a LaTex command, use <i>{ }</i> to define the order in which the objects appear.
-  
-  <example>
-    For instance, the equation <i>{x^2} { + 2x } {7} {=} {0} </i> shows things in the order we see the <i>{ }'s</i>, that is, \(x^2\), \(+2x\), \(+7\), \(=\) and finally \(0\).
-    <equation animate>
-      {x^2} { + 2x } {+7} {=} {0}
-    </equation>
-  </example>
-  <p class="step">
-    It also works with <i>align</i>
-    <equation animate>
-
-      \begin{align}
-        {a} & { \; = b + c} \\
-         & { \; = e + f } \\
-          & {\; = h + i}
-      \end{align}
-  
-    </equation>
-  </p>
-
-  
-
-</slide> </section>
-
-<section>
-
-  <slide>
-    <p>
-        Testing new tags
-    </p>
-    <p>
-        <custom-env name="theorem">
-          <title>This is a title</title>
-          This is a custom element  
-      </custom-env>
-    </p>
-    <p>
-      <theorem id="myTheorem">
-          <title>this is the title</title>
-        this is the statement
-      </theorem>
-    </p>
-  </slide>
-</section>
-
 
 <footer>
-  <columns>
-    <column>
-      Made with \(\delta\)<b>-delta</b>
-    </column>
+  <column-block>
+    <column> Made with \(\delta\)<b>-delta</b> </column>
     <column class="align-right">
-        <slide-counter></slide-counter>
+      <slide-counter></slide-counter>
     </column>
-  </columns>
+  </column-block>
 </footer>
 
 <script src="./library/config.js"></script>
