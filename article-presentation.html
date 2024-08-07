@@ -201,12 +201,12 @@
         F = \frac{|q_1||q_2|}{d^2}
       $$
     </theorem>
-    <proposition>
+    <proposition id="prop">
       <title>Proposition title</title>
       Enviroments can have <code>title</code> as well.
     </proposition>
     <proof>
-			<title>Proof of Proposition</title>
+			<title>Proof of <ref to="prop">Proposition</ref></title>
 			The proof goes Here. Vestibulum ante ipsum primis in faucibus orci luctus
 			et ultrices posuere cubilia curae
 			<equation> e^{i\pi} + 1 = 0 </equation>
@@ -296,10 +296,6 @@
       ],
     },
     plugins: [
-      {
-        id : "navigation",
-        src : "./library/plugins/navigation/navigation.js"
-      },
       {
         id: "MathJax",
         src: "https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS_CHTML",

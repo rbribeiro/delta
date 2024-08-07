@@ -12,12 +12,6 @@
 	<institution>University of Denver</institution>
 </slide>
 
-<slide>
-  <table-contents animate>
-    <h1>Table of Contents</h1>
-  </table-contents>
-</slide>
-
 <section>
 <title>Paragraphs and Text formatting</title>
 <slide>
@@ -62,10 +56,10 @@
   </p>
   <p>
     Quote is easy and beautiful
-    <blockquote source="John Doe">
+    <blockquote>
       Duis commodo sed libero vitae gravida. Vestibulum ante ipsum primis in
 				faucibus orci luctus et ultrices posuere cubilia curae 
-        
+        <author>John Doe</author>
     </blockquote>
 
   </p>
@@ -195,16 +189,16 @@
   <title>LaTeX Environments</title>
   <p>
     Yes, we have environments.
-    <theorem id="thm">
+    <theorem-block id="thm">
       This is a theorem with no title. You can add inline math \((f_n)_n\) and equations
       $$
         F = \frac{|q_1||q_2|}{d^2}
       $$
-    </theorem>
-    <proposition>
+    </theorem-block>
+    <proposition-block>
       <title>Proposition title</title>
       Enviroments can have <code>title</code> as well.
-    </proposition>
+    </proposition-block>
     <proof>
 			<title>Proof of Proposition</title>
 			The proof goes Here. Vestibulum ante ipsum primis in faucibus orci luctus
@@ -228,7 +222,7 @@
       We can make references to equations and environments.
     </p>
     <p>
-      This is a reference to <ref to="thm">Theorem</ref>.
+      This is a reference to <a-ref to="thm">Theorem</a-ref>.
       And this is a reference to <eq-ref to="eq:integral">Equation</eq-ref>
     </p>
   </slide>
@@ -265,7 +259,27 @@
 
   
 
-</slide>
+</slide> </section>
+
+<section>
+
+  <slide>
+    <p>
+        Testing new tags
+    </p>
+    <p>
+        <custom-env name="theorem">
+          <title>This is a title</title>
+          This is a custom element  
+      </custom-env>
+    </p>
+    <p>
+      <theorem id="myTheorem">
+          <title>this is the title</title>
+        this is the statement
+      </theorem>
+    </p>
+  </slide>
 </section>
 
 

@@ -1,3 +1,23 @@
+class EventDispatcher extends EventTarget {
+  constructor() {
+    super();
+  }
+
+  on(eventType, callBack) {
+    this.addEventListener(eventType, callBack);
+  }
+
+  off(eventType, callBack) {
+    this.removeEventListener(eventType, callBack);
+  }
+
+  trigger(eventType, detail = {}) {
+    this.dispatchEvent(new CustomEvent(eventType, { detail }));
+  }
+}
+
+Delta.eventDispatcher = new EventDispatcher();
+
 /************************************************************************
  *
  * INIT Function. This is the function that call all the functions the
@@ -6,9 +26,8 @@
  * ***********************************************************************/
 
 document.addEventListener("DOMContentLoaded", async () => {
- 
   // Dynamically add this class. This is need for the print layout to work
-  document.body.classList.add("hidden-overflow")
+  document.body.classList.add("hidden-overflow");
   // Create tooltip Object
   const tooltip = document.createElement("div");
   tooltip.id = "tool_tip_element";
@@ -17,7 +36,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     // loading plugins
     await Delta.loadPlugins(Delta.plugins);
     // Building the native delta elements
-    Delta.render(document)
+    Delta.render(document);
+
     //add Event Listeners
     Delta.createEventListeners();
     // Add step classes to the equations for animation
@@ -35,6 +55,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     });
     const eventBuiltDone = new Event("deltaIsReady");
+    Delta.eventDispatcher.trigger("deltaIsReady");
     document.dispatchEvent(eventBuiltDone);
   } catch (error) {
     document.write(`<h1>${error}</h1>`);
@@ -49,10 +70,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 Delta.createEventListeners = function () {
   Delta.windowListeners();
   Delta.documentListeners();
-  Delta.refListeners();
 };
 
 Delta.loadPlugins = async function (plugins) {
+  const mathJaxConfig = document.createElement("script");
+
+  mathJaxConfig.type = "text/x-mathjax-config";
+  mathJaxConfig[window.opera ? "innerHTML" : "text"] =
+    "MathJax.Hub.Config({\n" +
+    "  tex2jax: { inlineMath: [['$','$'], ['\\\\(','\\\\)']] },\n" +
+    "TeX: { equationNumbers: { autoNumber: 'AMS' } }\n" +
+    "});";
+  document.head.appendChild(mathJaxConfig);
+
   return Promise.all(
     plugins.map((plugin) => {
       return new Promise((resolve, reject) => {
@@ -72,45 +102,19 @@ Delta.loadPlugins = async function (plugins) {
 };
 
 Delta.render = function (parent) {
-  const slides = parent.querySelectorAll("slide") || [];
-
-  slides.forEach((slide, key) => {
-    const slideBodyWrapper = document.createElement("div")
-    slideBodyWrapper.classList.add('slide-body')
-    slide.setAttribute("number", key + 1);
-    slide.setAttribute("id", `DELTA_SLIDE_${key + 1}`);
-    const title = Array.from(slide.children).find(
-      (child) => child.tagName.toLowerCase() === "title",
-    );
-    if (title) {
-      const slideTitle = document.createElement("div");
-      slideTitle.classList.add("slide-title");
-      slideTitle.innerHTML = title.innerHTML;
-      slide.removeChild(title);
-      while(slide.firstChild) {
-        slideBodyWrapper.appendChild(slide.firstChild)
-      }
-      slide.prepend(slideTitle)
-      slide.appendChild(slideBodyWrapper)
-
-    } else {
-      slide.classList.add("vertically-centered");
-      while(slide.firstChild) {
-        slideBodyWrapper.appendChild(slide.firstChild)
-      }
-      slide.appendChild(slideBodyWrapper)
-    }
-  });
-
   const imgs = parent.querySelectorAll("img") || [];
 
   imgs.forEach((img, key) => {
     Delta.imgBuilder(img, key);
   });
 
-  const blockquotes = parent.querySelectorAll("blockquote") || [];
-  blockquotes.forEach((quote) => {
-    Delta.blockquoteBuilder(quote);
+  Delta.state.environmentList.forEach((env, key) => {
+    const envList = parent.querySelectorAll(env) || [];
+
+    envList.forEach((envElement, key) => {
+      envElement.setAttribute("name", env);
+      Delta.environmentBuilder(envElement, key);
+    });
   });
 
   const columnsList = parent.querySelectorAll("columns") || [];
@@ -122,36 +126,6 @@ Delta.render = function (parent) {
   equations.forEach((eq, key) => {
     Delta.equationBuilder(eq, key + 1);
   });
-
-  Delta.state.environmentList.forEach((envName) => {
-    const elements = parent.querySelectorAll(envName);
-    if (elements.length > 0) {
-      elements.forEach((element, key) => {
-        Delta.environmentBuilder(element, key + 1);
-      });
-    }
-  });
-
-  const eqRefs = parent.querySelectorAll("eq-ref") || [];
-  eqRefs.forEach((eqRef) => {
-    const targetId = eqRef.getAttribute("to");
-    if (targetId) {
-      const eqNumber = parent.getElementById(targetId).getAttribute("number");
-      eqRef.innerHTML += ` (${eqNumber})`;
-    }
-  });
-
-  const refs = parent.querySelectorAll("ref") || [];
-  refs.forEach((ref) => {
-    const targetId = ref.getAttribute("to");
-    if (targetId) {
-      const refNumber = document
-        .getElementById(targetId)
-        .getAttribute("number");
-      ref.innerHTML += ` ${refNumber}`;
-    }
-  });
-
 };
 
 /*****************************************************
@@ -162,14 +136,6 @@ Delta.render = function (parent) {
  *
  * *************************************************/
 Delta.windowListeners = function () {
-  window.addEventListener("popstate", (e) => {
-    const url = new URL(window.location.href);
-    const urlParams = new URLSearchParams(url.search);
-    const currentSlide = parseInt(urlParams.get("slide")) || 1;
-
-    Delta.goToSlide(currentSlide);
-  });
-
   window.addEventListener("beforeprint", (e) => {
     document.body.classList.remove("hidden-overflow");
   });
@@ -180,39 +146,20 @@ Delta.windowListeners = function () {
 };
 
 Delta.documentListeners = function () {
-
   document.addEventListener("stateChange:totalSlides", (e) => {
-    const slides = document.querySelectorAll("slide") || []
-    slides.forEach((slide,key) => {
-      slide.id = `DELTA_SLIDE_${key+1}`
-      slide.setAttribute("number",key+1)
-    })
+    const slides = document.querySelectorAll("slide") || [];
+    slides.forEach((slide, key) => {
+      slide.id = `DELTA_SLIDE_${key + 1}`;
+      slide.setAttribute("number", key + 1);
+    });
 
-    const currentSlideURL = Delta.getSlideFromURL()
-      Delta.goToSlide(currentSlideURL)
-  })
-
-  document.addEventListener("deltaIsReady", () => {
-    const currentSlide = Delta.getSlideFromURL() || 1
-    Delta.goToSlide(currentSlide)
-  })
-};
-
-Delta.refListeners = function () {
-  const eqRefs = document.querySelectorAll("eq-ref") || [];
-
-  eqRefs.forEach((eqRef) => {
-    eqRef.addEventListener("mousemove", Delta.showToolTip);
-    eqRef.addEventListener("mouseout", Delta.hideToolTip);
-    eqRef.addEventListener("click", Delta.handleReferenceClick);
+    const currentSlideURL = Delta.getSlideFromURL();
+    Delta.goToSlide(currentSlideURL);
   });
 
-  const refs = document.querySelectorAll("ref") || [];
-
-  refs.forEach((ref) => {
-    ref.addEventListener("mousemove", Delta.showToolTip);
-    ref.addEventListener("mouseout", Delta.hideToolTip);
-    ref.addEventListener("click", Delta.handleReferenceClick);
+  document.addEventListener("deltaIsReady", () => {
+    const currentSlide = Delta.getSlideFromURL() || 1;
+    Delta.goToSlide(currentSlide);
   });
 };
 
@@ -247,10 +194,10 @@ Delta.updateState = function (newState) {
       composed: true,
     });
 
-    document.dispatchEvent(event);
+    Delta.eventDispatcher.dispatchEvent(event);
+    document.dispatchEvent(event); // needs to be removed latter
   }
 };
-
 
 /***********************************
  *
@@ -326,43 +273,15 @@ Delta.goToElementById = function (id) {
 };
 
 Delta.environmentBuilder = function (envElement, number) {
-  envElement.classList.add("environment");
-  const envName = envElement.tagName.toLowerCase();
-  const title = Array.from(envElement.children).find(
-    (child) => child.tagName.toLowerCase() === "title",
-  );
-
-  envElement.setAttribute("number", number);
-
-  if (envName === "proof") {
-    let envTitle = "";
-    if (title) {
-      // trick to parse html
-      const textArea = document.createElement("textarea")
-      textArea.innerHTML = title.innerHTML
-      envTitle = textArea.value;
-      envElement.removeChild(title);
-    }
-    const content = `<span class='environment-name ${envName}'>${envTitle}.</span>
-    ${envElement.innerHTML}
-	<div class='proof-footer'>&#9632;</div>
-    `;
-    envElement.innerHTML = content;
-  } else {
-    if (title) {
-      const titleElement = document.createElement("span");
-      titleElement.classList.add("environment-title");
-      const textArea = document.createElement("textarea")
-      textArea.innerHTML = title.innerHTML
-      titleElement.innerHTML = `(${textArea.value})`;
-      envElement.prepend(titleElement);
-      envElement.removeChild(title);
-    }
-    const content = `<span class='environment-name ${envName}'>${envName} ${number}.</span>
-                    ${envElement.innerHTML}
-                    `;
-    envElement.innerHTML = content;
+  const customEnv = document.createElement("custom-env");
+  Array.from(envElement.attributes).forEach((attr) => {
+    customEnv.setAttribute(attr.name, attr.value);
+  });
+  while (envElement.firstChild) {
+    customEnv.appendChild(envElement.firstChild);
   }
+
+  envElement.replaceWith(customEnv);
 };
 
 Delta.columnsBuilder = function (columns) {
@@ -388,15 +307,6 @@ Delta.columnsBuilder = function (columns) {
   columns.style.display = "grid";
   columns.style["grid-template-columns"] = gridTemplate;
   columns.style["gap"] = "var(--columns-gap)";
-};
-
-Delta.blockquoteBuilder = function (quote) {
-  if (quote.getAttribute("source")) {
-    const sourceElement = document.createElement("div");
-    sourceElement.classList.add("align-right");
-    sourceElement.innerHTML = quote.getAttribute("source");
-    quote.appendChild(sourceElement);
-  }
 };
 
 Delta.getSlideFromURL = function () {
@@ -431,12 +341,11 @@ Delta.stepBack = function () {
   }
 };
 
-Delta.showToolTip = function (event) {
-  const refId = event.target.getAttribute("to");
-  const targetElement = document.getElementById(refId).cloneNode(true);
+Delta.showToolTip = function (id) {
+  const targetElement = document.getElementById(id).cloneNode(true);
   targetElement.id = "";
   const tooltip = document.getElementById("tool_tip_element");
-  if (refId) {
+  if (id) {
     tooltip.innerHTML = "";
     tooltip.append(targetElement);
     tooltip.classList.add("tooltip");
@@ -495,3 +404,249 @@ Node.prototype.findParentByTagName = function (tagName) {
   }
   return null;
 };
+/**
+ * Reference is a custom HTML element class for creating interactive reference links.
+ * This class extends HTMLElement and provides functionality for observing a target element,
+ * updating its content based on the target's attributes, and handling user interactions.
+ *
+ * The custom element class provides:
+ * - Constructor: Initializes the element by adding a span, setting up event listeners for mouse movements,
+ *   mouse out events, and clicks, and adding a class.
+ * - observedAttributes: Specifies the attributes to observe for changes ("to").
+ * - attributeChangedCallback: Called whenever one of the observed attributes ("to") is changed,
+ *   triggering the observeTarget method.
+ * - connectedCallback: Called when the element is added to the DOM, triggering an initial render and observing the target.
+ * - observeTarget: Sets up a MutationObserver to watch the target element specified by the "to" attribute.
+ * - findEquationTag: Searches for an equation tag within the target element and clones it if found.
+ * - render: Updates the element's content based on the target element's attributes and child elements.
+ *
+ * Example usage:
+ * <a-ref to="equation1"></reference>
+ *
+ * The example above creates a reference link that observes the element with id "equation1" and updates its content
+ * dynamically based on the target element's state and attributes.
+ */
+class Reference extends HTMLElement {
+  constructor() {
+    super();
+    this.innerHTML += "<span></span>";
+    this.observer = null;
+    this.classList.add("ref");
+    this.addEventListener("mousemove", () => {
+      Delta.showToolTip(this.getAttribute("to"));
+    });
+    this.addEventListener("mouseout", () => {
+      Delta.hideToolTip(this.getAttribute("to"));
+    });
+    this.addEventListener("click", () => {
+      Delta.handleReferenceClick(this.getAttribute("to"));
+    });
+  }
+
+  static get observedAttributes() {
+    return ["to"];
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name == "to") {
+      this.observeTarget(newValue);
+    }
+  }
+
+  connectedCallback() {
+    this.render();
+    const to = this.getAttribute("to");
+
+    if (to) {
+      this.observeTarget(to);
+    }
+  }
+
+  observeTarget(id) {
+    if (this.observer) {
+      this.observer.disconnect();
+    }
+
+    const target = document.getElementById(id);
+
+    if (target) {
+      this.observer = new MutationObserver(() => this.render());
+      this.observer.observe(target, { attributes: true, childList: true });
+      this.render();
+    }
+  }
+
+  findEquationTag(id) {
+    const target = document.getElementById(id);
+    if (target) {
+      const spans = target.querySelectorAll(".mjx-mtd") || [];
+
+      for (let span of spans) {
+        if (span.id.includes("mjx-eqn")) {
+          const s = span.cloneNode({ deep: true });
+          s.id = "";
+          return s;
+        }
+      }
+    }
+    return null;
+  }
+
+  render() {
+    const targetId = this.getAttribute("to");
+    const target = document.getElementById(targetId);
+    if (target) {
+      if (!this.hasAttribute("nonumber")) {
+        const n = target.getAttribute("number") || "";
+        const span = this.querySelector("span");
+        if (span) {
+          const tagName = this.tagName.toLowerCase();
+          if (tagName == "a-ref") {
+            span.innerText = ` ${n}`;
+          } else {
+            const eqNumber = this.findEquationTag(targetId);
+            if (eqNumber) span.appendChild(eqNumber);
+          }
+        }
+      }
+    }
+  }
+}
+
+class EquationReference extends Reference {}
+
+customElements.define("a-ref", Reference);
+customElements.define("eq-ref", EquationReference);
+
+/**
+ * Delta.createEquationClass is a function that generates a custom HTML element class
+ * for handling and rendering mathematical equations. The generated class extends
+ * HTMLElement and adds wrappers around the content if they are not already present.
+ *
+ * @param {string} leftWrapper - The string to be added to the left of the element's content.
+ * @param {string} rightWrapper - The string to be added to the right of the element's content.
+ * @returns {class} - A custom HTML element class.
+ *
+ * The generated custom element class:
+ * - Checks if the element's inner text already includes the leftWrapper, rightWrapper, or "$$".
+ * - If none of these wrappers are present, it wraps the element's content with the leftWrapper and rightWrapper.
+ * - The render method is called during the construction of the custom element to ensure the content is properly wrapped.
+ *
+ * Example usage:
+ * const EquationElement = Delta.createEquationClass('(', ')');
+ * customElements.define('equation-element', EquationElement);
+ */
+Delta.createEquationClass = function (leftWrapper, rightWrapper) {
+  return class extends HTMLElement {
+    constructor() {
+      super();
+      this.render();
+    }
+
+    render() {
+      const left = this.innerText.includes(leftWrapper);
+      const right = this.innerText.includes(rightWrapper);
+      const dollarSign = this.innerText.includes("$$");
+
+      if (!(left || right) && !dollarSign) {
+        const nn = this.hasAttribute("no-number");
+        this.innerHTML = nn
+          ? `$$ ${this.innerHTML} $$`
+          : `${leftWrapper} ${this.innerHTML} ${rightWrapper}`;
+      }
+    }
+  };
+};
+
+customElements.define(
+  "equation-block",
+  Delta.createEquationClass("\\begin{equation}", "\\end{equation}"),
+);
+
+customElements.define(
+  "align-block",
+  Delta.createEquationClass("\\begin{align}", "\\end{align}"),
+);
+/**
+ * Delta.createMathEnvironment is a function that generates a custom HTML element class
+ * for creating and rendering styled mathematical environments. The generated class extends
+ * HTMLElement and ensures that the content is dynamically rendered with the specified environment name.
+ *
+ * @param {string} envName - The default name for the math environment if not specified by the element's attributes.
+ * @returns {class} - A custom HTML element class.
+ *
+ * The generated custom element class:
+ * - Constructor: Calls the superclass constructor to initialize the custom element.
+ * - connectedCallback: Called when the element is added to the DOM, triggering the initial render.
+ * - render: Dynamically updates the element's content. If the element doesn't already contain the necessary
+ *   span elements for the environment name and title, it creates and prepends them. It then sets the content
+ *   of the environment name span based on the `envName` parameter or the element's attributes, and processes
+ *   any <title> child element to display it within the environment title span.
+ *
+ * Example usage:
+ * const MathEnvironmentElement = Delta.createMathEnvironment('Theorem');
+ * customElements.define('math-environment', MathEnvironmentElement);
+ *
+ * <math-environment number="1">
+ *   <title>Title of the theorem</title>
+ *   Content of the theorem.
+ * </math-environment>
+ *
+ * The example above would render:
+ * Theorem 1. (Title of the theorem) Content of the theorem.
+ */
+Delta.createMathEnvironment = function (envName) {
+  return class extends HTMLElement {
+    constructor() {
+      super();
+    }
+
+    connectedCallback() {
+      this.render();
+    }
+
+    render() {
+      if (!this.querySelector(".environment-name")) {
+        const nameElement = document.createElement("span");
+        const titleElement = document.createElement("span");
+        nameElement.classList.add("environment-name");
+        titleElement.classList.add("environment-title");
+
+        this.classList.add("environment");
+        this.prepend(titleElement);
+        this.prepend(nameElement);
+      }
+      const name = envName || this.getAttribute("name") || "Math Environment";
+      const number = this.getAttribute("number") || "";
+      const nameElement = this.querySelector(".environment-name");
+      const titleTag = this.querySelector("title");
+      const titleElement = this.querySelector(".environment-title");
+
+      if (titleTag) {
+        titleElement.innerHTML = titleTag ? `(${titleTag.innerHTML})` : "";
+        this.removeChild(titleTag);
+      }
+
+      if (nameElement.innerText == "") {
+        nameElement.innerText = `${name}${number}. `;
+      }
+    }
+  };
+};
+
+customElements.define("custom-env", Delta.createMathEnvironment());
+customElements.define("theorem-block", Delta.createMathEnvironment("theorem"));
+customElements.define(
+  "definition-block",
+  Delta.createMathEnvironment("definition"),
+);
+customElements.define(
+  "proposition-block",
+  Delta.createMathEnvironment("proposition"),
+);
+customElements.define("lemma-block", Delta.createMathEnvironment("lemma"));
+customElements.define("example-block", Delta.createMathEnvironment("example"));
+customElements.define(
+  "counter-example-block",
+  Delta.createMathEnvironment("counter-example"),
+);

@@ -10,7 +10,7 @@
   --regular-text-size: 32px;
   --big-text-size: 48px;
   --small-text-size: 28px;
-  --slide-body-padding: 0px 80px 0px 80px;
+  --slide-body-padding: 80px 80px 0px 80px;
 
   --drop-shadow: 0 1px 1px hsl(0deg 0% 0% / 0.075),
     0 2px 2px hsl(0deg 0% 0% / 0.075), 0 4px 4px hsl(0deg 0% 0% / 0.075),
@@ -25,7 +25,7 @@
 
   --footer-padding: 15px;
 
-  --paragraph-margin-bottom : 20px;
+  --paragraph-margin-bottom: 20px;
 
   --list-item-margin: 80px 0px 0px 0px;
 
@@ -43,8 +43,10 @@
   --img-drop-shadow: var(--drop-shadow);
 
   --environment-name-text-color: var(--secondary-text-color);
+  --environment-name-font-weight: bold;
   --environment-margin: 40px 0 40px 0;
   --environment-title-text-color: var(--secondary-text-color);
+  --environment-title-font-style: italic;
 
   --columns-gap: 10px;
 
@@ -145,7 +147,6 @@ footer {
   background-color: var(--primary-bg-color);
 }
 
-
 h1,
 h2,
 h3,
@@ -170,8 +171,14 @@ blockquote {
   margin: var(--blockquote-margin);
 }
 
+blockquote > author {
+  display: block;
+  width: inherit;
+  text-align: right;
+}
+
 hr {
-  width: 90%;
+  width: 100%;
   border: 3px solid var(--secondary-text-color);
 }
 
@@ -222,7 +229,17 @@ slide.active {
   animation: fadeIn 1s forwards;
 }
 
-.slide-body {
+slide > title {
+  display: block;
+  background-color: var(--secondary-bg-color);
+  width: 100%;
+  padding: var(--slide-title-padding);
+  font-size: var(--big-text-size);
+  color: var(--secondary-text-color);
+  box-shadow: var(--drop-shadow);
+}
+
+slide > content {
   padding: var(--slide-body-padding);
   width: inherit;
   box-sizing: border-box;
@@ -298,15 +315,6 @@ institution {
 .vertically-centered {
   justify-content: center !important;
   align-items: center !important;
-}
-
-.slide-title {
-  background-color: var(--secondary-bg-color);
-  width: 100%;
-  padding: var(--slide-title-padding);
-  font-size: var(--big-text-size);
-  color: var(--secondary-text-color);
-  box-shadow: var(--drop-shadow);
 }
 
 .caption-container {
