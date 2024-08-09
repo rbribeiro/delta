@@ -1,0 +1,132 @@
+<link role="theme" rel="stylesheet" href="themes/default/article-default.css" />
+
+<abstract>
+  In this work we investigate a class of random walks that interacts with its
+  environment called Tree Builder Random Walk (TBRW). In our settings, at each
+  step, the walker adds a random number of vertices to its position sampled
+  according to a distribution \(Q\). Previous works showed that the walker is
+  ballistic with a well-defined speed, and that the TBRW admits a renewal
+  structure, meaning that the process can be split into i.i.d epochs. We show
+  that the first renewal time has exponential tail. Moreover, we leverage this
+  light tail and also show a large deviation result for the distance of the
+  walker from the root.
+</abstract>
+
+<section>
+  <h1>Introduction</h1>
+  <p>
+    We investigate a class of random walks in which the walker interacts with
+    its environment by modifying the underlying graph. In this model, the walker
+    can add a random number of vertices to its position as it walks. This
+    ability to alter the structure of the environment introduces a feedback
+    mechanism, distinguishing this class of random walk from the classical
+    Random Walk on Random Environment model [cite ??] and from more recent
+    models where the walker changes its environment but keeping the underlying
+    graph structure unchanged, here we have reinforced random walks (cite ??).
+    In random walk theory, one of the main questions regards
+    transience/recurrence of the walker. When it comes to transient random
+    walks, one possible reason for the walker not visit its initial position
+    infinitely often is that it ``escapes to infinity''. That is, its distance
+    from its initial position goes to infinity. Notice that notion of distance
+    comes naturally from the graph structure of the environment, then we can
+    also quantify ``how fast'' the walker escapes to infinity by introducing a
+    notion of speed at a given time which is naturally defined as $$
+    \frac{{\text{distance of the walker from a fixed point at time }n}}{n}. $$
+    The notion of speed lead us to class of
+    <i>ballistic</i> random walks. A random walk is <i>ballistic </i> if
+    <equation-block id="eq:ballistic">
+      \liminf_{n\to \infty}\frac{{\text{distance of the walker from fixedpoint
+      at time }n}}{n} >0,
+    </equation-block>
+    almost surely. Ballistic walkers are moving away from their initial position
+    at a linear speed.
+  </p>
+  <p>
+    Not all transient walkers are ballistic, the classical example being the
+    simple symmetrical random walk on \(\mathbb{Z}^d\) for \(d\ge 3\). In this
+    case, the walker can wander too much over the environment, exhibiting a
+    diffusive behavior. The relation between transience and ballisticity can be
+    a truly hard problem. In the classical theory of RWRE, the question whether
+    directional transience implies ballisticity, even in the most standard
+    settings, remains open since the influential work of Solomon in the 1970's
+    and the works of Sniztman in the end of the 90s. In [??] Sniztman
+    conjectured that for RWRE in \(\mathbb{Z}^d\), a directional random walk on
+    a random variable under the so-called uniformly elliptic condition is
+    ballistic.
+  </p>
+
+  <subsection>
+    <h2>Main Results</h2>
+    <theorem-block id="t:tautail">
+      <title>Exponential tail of \(\tau_1\)</title>
+      Consider a TBRW with leaf distribution \(Q\) and fix \(\kappa\in (0,1]\),
+      then there exists a constant \(c\) depending on \(\kappa\) only, such that
+      $$ \sup_{Q \in \mathcal{Q}_\kappa}P_Q(\tau_1 \ge n) \le e^{-cn}. $$
+    </theorem-block>
+  </subsection>
+</section>
+<section>
+  <h1>Proof of <a-ref to="t:tautail"></a-ref></h1>
+
+  <p>
+    n \cite{ribeiro2023}, the authors construct a renewal structure for the
+    BGRW, which makes it possible to analyze the process as i.i.d epochs. In
+    this part, we will define this renewal structure and show that the first
+    renewal time has exponential tail.
+  </p>
+  <p>
+    Before we define the renewal structure, let us say a couple words about the
+    markovian nature of the TBRW. Observe that the TBRW itself is a Markov
+    process on the space of rooted trees, even though each of its components
+    separately are not. In some proofs, it will be useful to make use of the
+    (Strong) Markov Properties. For that, we will denote the shift operator of
+    length \(n\) by \(\theta_n\). In light of the Markov Properties, it is
+    important to point out that when the TBRW is shifted by \(n\) steps and
+    \(\mathcal{L}_n = Q\) for all \(n\), the shifted process is a TBRW that
+    starts from a random initial state \((T_n,X_n)\) and with the exact same
+    sequence of laws \(\{\mathcal{L}_n\}_n\). More formally, if \(\phi: \Omega
+    \to \mathbb{R}\) is \(\mathcal{F}\)-measurable, then the Simple Markov
+    Property works as follows $$ E_{T_0,X_0;Q}\left [\phi\circ \theta_n \;
+    \middle | \; \mathcal{F}_n\right] = E_{T_n,X_n;Q}\left [\phi\right]. $$
+  </p>
+</section>
+
+<section>
+  <h1>New Section</h1>
+
+  <p>
+    <align-block>
+      a & = b+c \label{eq1} \\ & = d+e \notag \\ & = f+g \label{eq2}
+    </align-block>
+  </p>
+  <p>
+    <equation-block>
+      \Gamma(s,x) = \int_0^x t^{s-1}e^{-t}{\rm d}t \tag{UE}
+    </equation-block>
+  </p>
+  <p>Equation <eq-ref to="UE"></eq-ref></p>
+</section>
+
+<script>
+  const deltaConfig = {
+    state: {},
+    type: "paper",
+    environmentEnumeration: "section",
+    environments: [
+      "theorem",
+      "proof",
+      "proposition",
+      "lemma",
+      "example",
+      "remark",
+      "corollary",
+    ],
+    plugins: [
+      {
+        id: "annotation",
+        src: "./library/plugins/annotation/annotation.js",
+      },
+    ],
+  };
+</script>
+<script src="./library/delta.js"></script>

@@ -25,15 +25,31 @@
 <slide>
   <title>Math Environments</title>
   <content>
-    <theorem-block id="thm" class="step">
+    <theorem-block id="thm" class="step" number="1">
       <title>Theorem's title</title>
       The statement goes here.
-      <equation-block> \int_a^bf(x) = {\rm d}x = F(b) - F(a) </equation-block>
+      <equation-block> \int_a^bf(x) {\rm d}x = F(b) - F(a) </equation-block>
     </theorem-block>
     <proposition-block id="prop" class="step">
       The statement goes here.
-      <align-block> a & = b+c \\ & = d+e </align-block>
+      <align-block> a & = b+c \\ & = d+e\label{eq} </align-block>
     </proposition-block>
+  </content>
+</slide>
+
+<slide class="align-center">
+  <content>
+    <h2>Reference and Citations</h2>
+    <hr />
+  </content>
+</slide>
+
+<slide>
+  <title>References</title>
+  <content>
+    References are beautiful! This is a reference to
+    <a-ref to="prop"></a-ref>. And this is a reference to equation
+    <eq-ref to="eq"></eq-ref>
   </content>
 </slide>
 

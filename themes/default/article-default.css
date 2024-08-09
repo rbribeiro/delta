@@ -11,6 +11,8 @@
   --big-text-size: 48px;
   --small-text-size: 28px;
   --slide-body-padding: 2rem 1.25rem;
+  --h1-size: 2.5rem;
+  --h2-size: 1.7rem;
 
   --drop-shadow: 0 1px 1px hsl(0deg 0% 0% / 0.075),
     0 2px 2px hsl(0deg 0% 0% / 0.075), 0 4px 4px hsl(0deg 0% 0% / 0.075),
@@ -291,8 +293,15 @@ img {
 section {
   margin-bottom: 0;
 }
-section:first-child {
-  font-size: var(--big-text-size);
+
+section > title {
+  display: block;
+  font-size: var(--h1-size);
+}
+
+subsection > title {
+  display: block;
+  font-size: var(--h2-size);
 }
 
 author,
@@ -421,12 +430,11 @@ slide > hr {
   padding-right: 20px; /* Optional padding for spacing */
 }
 
-.ref,
-eq-ref,
-ref {
+.ref {
   color: var(--ref-text-color);
   cursor: pointer;
   font-weight: bold;
+  text-transform: capitalize;
 }
 
 .ref:hover,

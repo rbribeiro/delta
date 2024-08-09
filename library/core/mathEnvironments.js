@@ -21,6 +21,7 @@ MathEnv.createEquationClass = function (leftWrapper, rightWrapper) {
   return class extends HTMLElement {
     constructor() {
       super();
+      this.classList.add("equation");
       this.render();
     }
 
@@ -73,7 +74,15 @@ MathEnv.createEnvironmentClass = function (envName) {
       super();
     }
 
+    static get observedAttributes() {
+      return ["number", "no-number"];
+    }
+
     connectedCallback() {
+      this.render();
+    }
+
+    attributeChangedCallback(name, oldValue, newValue) {
       this.render();
     }
 
@@ -89,7 +98,9 @@ MathEnv.createEnvironmentClass = function (envName) {
         this.prepend(nameElement);
       }
       const name = envName || this.getAttribute("name") || "Math Environment";
-      const number = this.getAttribute("number") || "";
+      const number = this.getAttribute("number")
+        ? ` ${this.getAttribute("number")}`
+        : "";
       const nameElement = this.querySelector(".environment-name");
       const titleTag = this.querySelector("title");
       const titleElement = this.querySelector(".environment-title");
@@ -99,9 +110,7 @@ MathEnv.createEnvironmentClass = function (envName) {
         this.removeChild(titleTag);
       }
 
-      if (nameElement.innerText == "") {
-        nameElement.innerText = `${name}${number}. `;
-      }
+      nameElement.innerText = `${name}${number}. `;
     }
   };
 };

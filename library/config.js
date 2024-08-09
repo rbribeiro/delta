@@ -1,6 +1,7 @@
 const deltaConfig = {
   state: {},
   type: "presentation",
+  environmentEnumeration: "default",
   environments: [
     "theorem",
     "proof",

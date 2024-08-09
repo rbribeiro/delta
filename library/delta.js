@@ -16,6 +16,8 @@ class EventDispatcher extends EventTarget {
   }
 }
 
+// TODO: Check events and order in which things are being rendered
+
 class Delta {
   constructor(config) {
     if (Delta.instance) {
@@ -68,6 +70,8 @@ class Delta {
       this.onTotalSlidesChange,
     );
 
+    this.eventDispatcher.on("deltaIsReady", this.updateEqRefs);
+
     Delta.instance = this;
   }
 
@@ -85,11 +89,28 @@ class Delta {
 
       this.render();
 
+      // Add step classes to the equations for animation
+      MathJax.Hub.Queue(function () {
+        const equations = document.querySelectorAll("equation-block");
+        equations.forEach((eq) => {
+          if (eq.hasAttribute("animate")) {
+            const atoms = eq.querySelectorAll(".mjx-texatom");
+            atoms.forEach((atom) => {
+              if (atom.parentNode.classList.contains("mjx-mrow")) {
+                atom.classList.add("step");
+              }
+            });
+          }
+        });
+        Delta.instance.updateEqRefs();
+      });
+
       this.eventDispatcher.trigger("deltaIsReady");
     } catch (error) {
       console.error(error);
     }
   }
+
   createCustomElements() {
     // Layout Elements
     customElements.define("column-block", Columns);
@@ -100,7 +121,7 @@ class Delta {
     );
     customElements.define(
       "eq-ref",
-      Reference.createReferenceClass(this.showToolTip, this.hideToolTip),
+      Reference.createEqRefClass(this.showToolTip, this.hideToolTip),
     );
     // Defining environment tags
     // environment-name-block
@@ -127,6 +148,103 @@ class Delta {
     customElements.define("progress-bar", ProgressBar);
   }
 
+  enumerateEnvironments() {
+    const envList = document.querySelectorAll(".environment");
+    if (envList.length > 0) {
+      switch (this.environmentEnumeration) {
+        case "sequential":
+          envList.forEach((env, key) => {
+            if (!env.hasAttribute("no-number")) {
+              env.setAttribute("number", key + 1);
+            }
+          });
+
+          break;
+
+        case "section":
+          const sections = document.querySelectorAll("section");
+          if (sections.length > 0) {
+            sections.forEach((section, key) => {
+              const envSecList = section.querySelectorAll(".environment");
+
+              if (envSecList.length > 0) {
+                const counters = {};
+                envSecList.forEach((env) => {
+                  if (!counters[env.tagName]) {
+                    counters[env.tagName] = 0;
+                  }
+
+                  if (!env.hasAttribute("no-number")) {
+                    counters[env.tagName]++;
+                    env.setAttribute(
+                      "number",
+                      `${key + 1}.${counters[env.tagName]}`,
+                    );
+                  }
+                });
+              }
+            });
+          }
+          break;
+
+        default:
+          const counters = {};
+          envList.forEach((env) => {
+            if (!counters[env.tagName]) {
+              counters[env.tagName] = 0;
+            }
+
+            if (!env.hasAttribute("no-number")) {
+              counters[env.tagName]++;
+              env.setAttribute("number", counters[env.tagName]);
+            }
+          });
+          break;
+      }
+    }
+  }
+
+  enumerateSections() {
+    // Initialize counters
+    let sectionCounter = 0;
+    let subsectionCounter = 0;
+    let subsubsectionCounter = 0;
+    const elements = document.querySelectorAll(
+      "section, subsection, subsubsection",
+    );
+
+    elements.forEach((element) => {
+      const tagName = element.tagName.toLowerCase();
+
+      if (tagName === "section") {
+        // Increment section counter and reset others
+        sectionCounter++;
+        subsectionCounter = 0;
+        subsubsectionCounter = 0;
+        element.setAttribute("number", `${sectionCounter}`);
+        const title = element.querySelector("h1");
+        if (title) title.innerHTML = `${sectionCounter} ${title.innerHTML}`;
+      } else if (tagName === "subsection") {
+        // Increment subsection counter and reset subsubsection counter
+        subsectionCounter++;
+        subsubsectionCounter = 0;
+        element.setAttribute(
+          "number",
+          `${sectionCounter}.${subsectionCounter}`,
+        );
+        const title = element.querySelector("h2");
+        if (title)
+          title.innerHTML = `${sectionCounter}.${subsectionCounter} ${title.innerHTML}`;
+      } else if (tagName === "subsubsection") {
+        // Increment subsubsection counter
+        subsubsectionCounter++;
+        element.setAttribute(
+          "number",
+          `${sectionCounter}.${subsectionCounter}.${subsubsectionCounter}`,
+        );
+      }
+    });
+  }
   static getInstance() {
     if (!Delta.instance) {
       Delta.instance = new Delta();
@@ -248,40 +366,66 @@ class Delta {
 
     const totalSlides = document.querySelectorAll("slide").length;
 
+    this.enumerateEnvironments();
+
+    if (this.type == "paper") {
+      this.enumerateSections();
+    }
+
     this.updateState({ currentSlide, totalSlides });
   }
 
   showToolTip(id) {
-    const targetElement = document.getElementById(id).cloneNode(true);
-    targetElement.id = "";
+    let target = document.getElementById(id);
     const tooltip = document.getElementById("DELTA_tooltip");
-    if (id) {
-      tooltip.innerHTML = "";
+    tooltip.innerHTML = "";
+    if (target) {
+      const targetElement = document.getElementById(id).cloneNode(true);
+      targetElement.id = "";
       tooltip.append(targetElement);
-      tooltip.classList.add("tooltip");
-      tooltip.style.display = "block";
-
-      const elements = tooltip.querySelectorAll("*");
-      elements.forEach((element) => {
-        element.classList.remove("step");
-        element.classList.remove("activeStep");
-      });
-
-      const tooltipRect = tooltip.getBoundingClientRect();
-      let left = event.pageX - 10;
-      let top = event.pageY + 10;
-
-      // Adjust positioning if the tooltip goes beyond the viewport
-      if (left + tooltipRect.width > window.innerWidth) {
-        left = event.pageX - tooltipRect.width + 10;
+    } else {
+      // the reference might be pointing to a MathJax element
+      target = document.getElementById(`mjx-eqn-${id}`);
+      if (target) {
+        const eqElement = target.findParentByClass("equation");
+        if (eqElement) {
+          const eq = eqElement.cloneNode(true);
+          eq.id = "";
+          tooltip.append(eq);
+        }
       }
-      if (top + tooltipRect.height > window.innerHeight) {
-        top = event.pageY - tooltipRect.height - 10;
-      }
-
-      tooltip.style.left = left + "px";
-      tooltip.style.top = top + "px";
     }
+
+    tooltip.classList.add("tooltip");
+    tooltip.style.display = "block";
+
+    const elements = tooltip.querySelectorAll("*");
+    elements.forEach((element) => {
+      element.classList.remove("step");
+      element.classList.remove("activeStep");
+    });
+
+    const tooltipRect = tooltip.getBoundingClientRect();
+    let left = event.pageX - 10;
+    let top = event.pageY + 10;
+
+    // Adjust positioning if the tooltip goes beyond the viewport
+    if (left + tooltipRect.width > window.innerWidth) {
+      left = event.pageX - tooltipRect.width + 10;
+    }
+    if (top + tooltipRect.height > window.innerHeight) {
+      top = event.pageY - tooltipRect.height - 10;
+    }
+
+    tooltip.style.left = left + "px";
+    tooltip.style.top = top + "px";
+  }
+
+  updateEqRefs() {
+    const eqRefs = document.querySelectorAll("eq-ref");
+    eqRefs.forEach((eqRef) => {
+      eqRef.render();
+    });
   }
 
   updateState(newState) {

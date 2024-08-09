@@ -410,11 +410,11 @@ institution {
   padding-right: 20px; /* Optional padding for spacing */
 }
 
-eq-ref,
-ref {
+.ref {
   color: var(--ref-text-color);
   cursor: pointer;
   font-weight: bold;
+  text-transform: capitalize;
 }
 
 /*********************************************
