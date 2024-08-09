@@ -16,5 +16,13 @@ const deltaConfig = {
       id: "annotation",
       src: "./library/plugins/annotation/annotation.js",
     },
+    {
+      id: "ChartJS",
+      src: "https://cdn.jsdelivr.net/npm/chart.js",
+    },
+    {
+      id: "functionPlot",
+      src: "./library/plugins/functionPlot/functionPlot.js",
+    },
   ],
 };

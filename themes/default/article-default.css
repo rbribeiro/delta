@@ -9,7 +9,7 @@
 
   --regular-text-size: 1rem;
   --big-text-size: 48px;
-  --small-text-size: 28px;
+  --small-text-size: 0.75rem;
   --slide-body-padding: 2rem 1.25rem;
   --h1-size: 2.5rem;
   --h2-size: 1.7rem;
@@ -290,6 +290,13 @@ img {
   border-radius: var(--img-border-radius);
 }
 
+iframe {
+  text-align: center;
+  width: 100%;
+  border-radius: 10px;
+  box-shadow: var(--drop-shadow);
+}
+
 section {
   margin-bottom: 0;
 }
@@ -302,6 +309,66 @@ section > title {
 subsection > title {
   display: block;
   font-size: var(--h2-size);
+}
+header > title {
+  display: block;
+  text-align: center;
+  font-size: var(--h2-size);
+  font-weight: bold;
+}
+header > authors,
+header > author {
+  text-transform: uppercase;
+  text-align: center;
+  display: block;
+}
+
+header > abstract {
+  font-size: var(--small-text-size);
+  justify-content: right;
+  text-justify: inter-word;
+  text-align: justify;
+}
+header > abstract:before {
+  content: "ABSTRACT.";
+}
+
+.bib-list {
+  list-style: none; /* Remove default list numbering */
+  counter-reset: list-counter; /* Initialize counter */
+}
+
+.bib-list li {
+  counter-increment: list-counter; /* Increment counter */
+  margin-bottom: 5px;
+}
+
+.bib-list li::before {
+  content: "[" counter(list-counter) "] "; /* Display counter in brackets */
+}
+.bib-item {
+  justify-content: right;
+}
+
+.bib-item > title {
+  display: inline;
+}
+.bib-item > journal {
+  font-style: italic;
+}
+
+.bib-item > authors:after,
+.bib-item > year:after {
+  content: ". ";
+}
+
+.bib-item > journal:before {
+  font-style: italic;
+  content: ".  ";
+}
+.bib-item > journal:after {
+  font-style: italic;
+  content: ", ";
 }
 
 author,

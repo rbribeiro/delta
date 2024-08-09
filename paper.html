@@ -1,17 +1,20 @@
 <link role="theme" rel="stylesheet" href="themes/default/article-default.css" />
 
-<abstract>
-  In this work we investigate a class of random walks that interacts with its
-  environment called Tree Builder Random Walk (TBRW). In our settings, at each
-  step, the walker adds a random number of vertices to its position sampled
-  according to a distribution \(Q\). Previous works showed that the walker is
-  ballistic with a well-defined speed, and that the TBRW admits a renewal
-  structure, meaning that the process can be split into i.i.d epochs. We show
-  that the first renewal time has exponential tail. Moreover, we leverage this
-  light tail and also show a large deviation result for the distance of the
-  walker from the root.
-</abstract>
-
+<header>
+  <title>A Renewal Structure for the TBRW</title>
+  <authors> Rodrigo Ribeiro</authors>
+  <abstract>
+    In this work we investigate a class of random walks that interacts with its
+    environment called Tree Builder Random Walk (TBRW). In our settings, at each
+    step, the walker adds a random number of vertices to its position sampled
+    according to a distribution \(Q\). Previous works showed that the walker is
+    ballistic with a well-defined speed, and that the TBRW admits a renewal
+    structure, meaning that the process can be split into i.i.d epochs. We show
+    that the first renewal time has exponential tail. Moreover, we leverage this
+    light tail and also show a large deviation result for the distance of the
+    walker from the root.
+  </abstract>
+</header>
 <section>
   <h1>Introduction</h1>
   <p>
@@ -69,10 +72,10 @@
   <h1>Proof of <a-ref to="t:tautail"></a-ref></h1>
 
   <p>
-    n \cite{ribeiro2023}, the authors construct a renewal structure for the
-    BGRW, which makes it possible to analyze the process as i.i.d epochs. In
-    this part, we will define this renewal structure and show that the first
-    renewal time has exponential tail.
+    In <cite-work ids="osmar,paper2,work"></cite-work>, the authors construct a
+    renewal structure for the BGRW, which makes it possible to analyze the
+    process as i.i.d epochs. In this part, we will define this renewal structure
+    and show that the first renewal time has exponential tail.
   </p>
   <p>
     Before we define the renewal structure, let us say a couple words about the
@@ -92,20 +95,99 @@
 </section>
 
 <section>
-  <h1>New Section</h1>
-
+  <h1>Central Limit Theorem</h1>
+  <p>
+    Maecenas nunc ante, ultrices id fringilla a, euismod nec purus. Nam
+    ultricies vel purus nec blandit. Pellentesque fringilla, lectus ut gravida
+    tincidunt, velit urna tincidunt enim, eu euismod magna sapien ullamcorper
+    nibh. Phasellus aliquet suscipit aliquam. Integer quis lectus efficitur,
+    rhoncus justo vitae, dapibus velit. Nam auctor tempus sapien vel mollis.
+    Aliquam porttitor leo nisl, vitae faucibus diam rhoncus nec. Phasellus vel
+    mollis erat. Donec eu imperdiet nisl.
+  </p>
+  <iframe
+    width="560"
+    height="415"
+    src="https://www.youtube.com/embed/zeJD6dqJ5lo?si=18jtPYLyyaJ3TQbF"
+    title="YouTube video player"
+    frameborder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    referrerpolicy="strict-origin-when-cross-origin"
+    allowfullscreen
+  ></iframe>
   <p>
     <align-block>
       a & = b+c \label{eq1} \\ & = d+e \notag \\ & = f+g \label{eq2}
     </align-block>
   </p>
   <p>
+    Phasellus aliquet suscipit aliquam. Integer quis lectus efficitur, rhoncus
+    justo vitae, dapibus velit.
     <equation-block>
       \Gamma(s,x) = \int_0^x t^{s-1}e^{-t}{\rm d}t \tag{UE}
     </equation-block>
   </p>
   <p>Equation <eq-ref to="UE"></eq-ref></p>
+  <subsection>
+    <h2>Interacting with elements</h2>
+    <p>
+      Nam auctor tempus sapien vel mollis. Aliquam porttitor leo nisl, vitae
+      faucibus diam rhoncus nec.
+      <function-plot
+        function="Math.sin(x)"
+        xmin="0"
+        xmax="6"
+        step="0.3"
+      ></function-plot>
+    </p>
+  </subsection>
 </section>
+
+<h1>References</h1>
+
+<the-bibliography>
+  <bib-item id="osmar">
+    <authors>C. Alves and R. Ribeiro</authors>
+    <year>2020</year>
+    <journal>Journal of Statistical Physics</journal>
+    <title>On Mechanical Waves</title>
+  </bib-item>
+  <bib-item id="paper2">
+    <authors>J. Smith and M. Johnson</authors>
+    <year>2018</year>
+    <journal>Physical Review Letters</journal>
+    <title>The Nature of Quantum Entanglement</title>
+  </bib-item>
+
+  <bib-item>
+    <authors>A. Lee and P. Zhang</authors>
+    <year>2021</year>
+    <journal>Journal of Applied Mechanics</journal>
+    <title>Advances in Thermodynamic Processes</title>
+  </bib-item>
+
+  <bib-item>
+    <authors>L. Gonzalez and K. Patel</authors>
+    <year>2019</year>
+    <journal>International Journal of Computational Fluid Dynamics</journal>
+    <title>Numerical Simulations of Turbulent Flows</title>
+  </bib-item>
+
+  <bib-item>
+    <authors>R. Martinez and B. Wilson</authors>
+    <year>2022</year>
+    <journal>Journal of Theoretical Biology</journal>
+    <title>Modeling Population Dynamics in Ecology</title>
+  </bib-item>
+
+  <bib-item id="work">
+    <authors>D. Nguyen and S. Davis</authors>
+    <year>2017</year>
+    <journal>Journal of Chemical Physics</journal>
+    <title>Molecular Interactions in Complex Systems</title>
+    <type>Arxiv</type>
+  </bib-item>
+</the-bibliography>
 
 <script>
   const deltaConfig = {
@@ -123,8 +205,12 @@
     ],
     plugins: [
       {
-        id: "annotation",
-        src: "./library/plugins/annotation/annotation.js",
+        id: "ChartJS",
+        src: "https://cdn.jsdelivr.net/npm/chart.js",
+      },
+      {
+        id: "functionPlot",
+        src: "./library/plugins/functionPlot/functionPlot.js",
       },
     ],
   };

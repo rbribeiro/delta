@@ -1,3 +1,40 @@
+const core = [
+  {
+    id: "Utils",
+    src: "library/core/utils.js",
+  },
+  {
+    id: "Navigation",
+    src: "library/core/navigation.js",
+  },
+  {
+    id: "Citation",
+    src: "library/core/citation.js",
+  },
+
+  {
+    id: "ReferenceClass",
+    src: "library/core/references.js",
+  },
+  {
+    id: "MathEnv",
+    src: "library/core/mathEnvironments.js",
+  },
+  {
+    id: "Progress",
+    src: "library/core/progress.js",
+  },
+  {
+    id: "Layout",
+    src: "library/core/layout.js",
+  },
+
+  {
+    id: "MathJax",
+    src: "https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS_CHTML",
+  },
+];
+
 class EventDispatcher extends EventTarget {
   constructor() {
     super();
@@ -25,38 +62,7 @@ class Delta {
     }
     Object.assign(this, config);
     this.eventDispatcher = new EventDispatcher();
-    this.core = [
-      {
-        id: "Utils",
-        src: "library/core/utils.js",
-      },
-      {
-        id: "Navigation",
-        src: "library/core/navigation.js",
-      },
-      {
-        id: "ReferenceClass",
-        src: "library/core/references.js",
-      },
-      {
-        id: "MathEnv",
-        src: "library/core/mathEnvironments.js",
-      },
-      {
-        id: "Progress",
-        src: "library/core/progress.js",
-      },
-      {
-        id: "Layout",
-        src: "library/core/layout.js",
-      },
-
-      {
-        id: "MathJax",
-        src: "https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS_CHTML",
-      },
-    ];
-
+    this.core = core;
     const tooltip = document.createElement("div");
     tooltip.id = "DELTA_tooltip";
     document.body.append(tooltip);
@@ -76,13 +82,14 @@ class Delta {
   }
 
   async initialize() {
+    document.body.classList.add("hidden-overflow");
     try {
       await this.loadCore();
       await this.loadPlugins();
       console.log("Core and Plugins loaded...");
 
       this.createCustomElements();
-      console.log("Math Environment created..");
+      console.log("Custom Elements created..");
 
       this.navigation();
       console.log("Navigation system added");
@@ -102,6 +109,7 @@ class Delta {
             });
           }
         });
+        //Update the label of the equation references
         Delta.instance.updateEqRefs();
       });
 
@@ -143,6 +151,10 @@ class Delta {
       MathEnv.createEquationClass("\\begin{align}", "\\end{align}"),
     );
 
+    //Bibliography elements
+    customElements.define("bib-item", BibItem);
+    customElements.define("the-bibliography", Bibliography);
+    customElements.define("cite-work", Citation);
     // Progress elements
     customElements.define("slide-counter", SlideCounter);
     customElements.define("progress-bar", ProgressBar);
@@ -360,7 +372,6 @@ class Delta {
   }
 
   render() {
-    document.body.classList.add("hidden-overflow");
     const currentSlide =
       this.getSlideNumFromURL() || this.state.currentSlide || 1;
 
