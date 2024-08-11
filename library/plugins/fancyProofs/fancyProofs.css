@@ -68,7 +68,7 @@ step-proof > p:nth-child(odd) {
   }
   & > .fancy-proofs-button-div {
     text-align: right;
-    left: 24.2px;
+    left: 24.3px;
   }
 }
 step-proof > p:nth-child(even) {
@@ -81,7 +81,7 @@ step-proof > p:nth-child(even) {
   }
   & > .fancy-proofs-button-div {
     text-align: left;
-    left: -24.2px;
+    left: -24.3px;
   }
 }
 step-proof > p:first-child {
