@@ -29,7 +29,7 @@ class FunctionPlot extends HTMLElement {
 
     // Plot the data using Chart.js
     new Chart(canvas, {
-      type: "scatter",
+      type: "line",
       data: {
         datasets: [
           {
@@ -64,12 +64,12 @@ class FunctionPlot extends HTMLElement {
   }
 
   evaluateFunction(expression, x) {
-    // Simple evaluation, you might want to use something like math.js for more complex expressions
+    // TODO: Use math.js for more complex expressions and better syntax
     return eval(expression.replace(/x/g, `(${x})`));
   }
 }
 
-// Define the custom element
+// Define the custom element after the DELTA framework is ready
 Delta.getInstance().eventDispatcher.on("deltaIsReady", () => {
   customElements.define("function-plot", FunctionPlot);
 });
