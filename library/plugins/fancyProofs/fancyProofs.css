@@ -24,6 +24,7 @@
   color: var(--num-color);
   font-size: 1em;
   font-weight: bold;
+  border: 0 none;
 }
 
 step-proof > p {
