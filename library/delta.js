@@ -166,6 +166,16 @@ class Delta {
     }
   }
 
+  /**
+ * This method selects all unordered (`<ul>`) and ordered (`<ol>`) lists
+ * in the document and checks if they have the "animate" attribute. 
+ * If a list has the "animate" attribute, it iterates through all 
+ * its `<li>` (list item) elements and adds the "step" class to each.
+ * 
+ * The "step" class can be used to apply CSS animations or styles 
+ * for list items, allowing them to be revealed or animated step by step.
+ */
+
   animateLists() {
     const lists = document.querySelectorAll("ul, ol")
 
@@ -707,6 +717,7 @@ class Delta {
       this.getSlideNumFromURL() || this.state.currentSlide || 1;
 
     const totalSlides = document.querySelectorAll("slide").length;
+    console.log(totalSlides)
 
     this.animateLists()
     console.log("Lists rendered...")
