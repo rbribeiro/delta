@@ -1,0 +1,52 @@
+.interactive-question {
+  display: block;
+  border-radius: var(--tooltip-border-radius);
+  box-shadow: var(--drop-shadow);
+}
+.question-title {
+  display: block;
+  font-size: var(--regular-text-size);
+  width: 100%;
+  border-radius: 5px 5px 0 0;
+  background-color: var(--tertiary-bg-color) !important;
+  color: white;
+  box-sizing: border-box;
+  padding: 5px;
+}
+.interactive-question > div > p {
+  padding: var(--tooltip-padding);
+}
+
+label.option:hover {
+  background-color: var(--secondary-bg-color);
+}
+
+label.option {
+  display: block;
+  box-sizing: border-box;
+  margin: 10px;
+}
+
+.correct {
+  background-color: "green";
+}
+
+.incorrect {
+  background-color: "red";
+}
+
+.interactive-question > div > form {
+  padding: var(--tooltip-padding);
+}
+
+.controls-wrapper {
+  text-align: right;
+  padding: var(--tooltip-padding);
+}
+
+.question-check-answer {
+  background-color: var(--tertiary-bg-color);
+  font-size: 1.2rem;
+  border-radius: var(--tooltip-border-radius);
+  color: white;
+}
