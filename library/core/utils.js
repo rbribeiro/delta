@@ -23,6 +23,10 @@ Node.prototype.findParentByClass = function (className) {
 class GetElement extends HTMLElement {
 	constructor() {
 		super();
+
+		const targetId = this.getAttribute("target");
+    this.observeTarget(targetId)
+
 	}
 
 	observedAttributes() {
@@ -41,7 +45,7 @@ class GetElement extends HTMLElement {
 
 	render() {
 		this.innerHTML = "";
-		const targetId = this.target;
+		const targetId = this.getAttribute("target");
 		const target = document.getElementById(targetId);
 
 		if (target) {
