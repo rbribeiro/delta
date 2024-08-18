@@ -9,7 +9,7 @@
 
   --regular-text-size: 1rem;
   --big-text-size: 48px;
-  --small-text-size: 0.75rem;
+  --small-text-size: 0.85rem;
   --slide-body-padding: 2rem 1.25rem;
   --h1-size: 2.5rem;
   --h2-size: 1.7rem;
@@ -331,6 +331,35 @@ header > abstract {
 }
 header > abstract:before {
   content: "ABSTRACT.";
+}
+
+.table-content-item:hover {
+  background-color: var(--secondary-bg-color);
+  cursor: pointer;
+}
+/* Initialize counter for the top-level list */
+ol.top-level {
+  counter-reset: section; /* Reset section counter for the top level */
+}
+
+ol.top-level > li {
+  counter-increment: section; /* Increment the section counter */
+}
+
+ol.top-level > li::marker {
+  content: counters(section, ".") " "; /* Display the section number */
+}
+
+ol.top-level > li > ol {
+  counter-reset: subsection; /* Reset subsection counter for nested lists */
+}
+
+ol.top-level > li > ol > li {
+  counter-increment: subsection; /* Increment the subsection counter */
+}
+
+ol.top-level > li > ol > li::marker {
+  content: counters(section, ".") "." counters(subsection, ".") " "; /* Display section.subsection number */
 }
 
 .bib-list {
