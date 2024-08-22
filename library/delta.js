@@ -39,6 +39,14 @@ const core = [
   },
 ];
 
+//TODO: add PAUSE attribute
+// TODO: math-env/math-block tag
+/* <math-env align>
+</math-env> */
+// TODO: replace title by name/ slide-title
+// TODO: tags slide-title, section-title, subsection-title
+// TODO: add type attr custom-env
+
 /**
  * EventDispatcher class extends `EventTarget` to provide a simple interface for managing custom events.
  *
