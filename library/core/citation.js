@@ -127,5 +127,4 @@ class Citation extends HTMLElement {
     }
   }
 
-  handleMouseHover() {}
 }
