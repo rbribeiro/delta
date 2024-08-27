@@ -167,27 +167,27 @@ class Delta {
   }
 
   /**
- * This method selects all unordered (`<ul>`) and ordered (`<ol>`) lists
- * in the document and checks if they have the "animate" attribute. 
- * If a list has the "animate" attribute, it iterates through all 
- * its `<li>` (list item) elements and adds the "step" class to each.
- * 
- * The "step" class can be used to apply CSS animations or styles 
- * for list items, allowing them to be revealed or animated step by step.
- */
+   * This method selects all unordered (`<ul>`) and ordered (`<ol>`) lists
+   * in the document and checks if they have the "animate" attribute.
+   * If a list has the "animate" attribute, it iterates through all
+   * its `<li>` (list item) elements and adds the "step" class to each.
+   *
+   * The "step" class can be used to apply CSS animations or styles
+   * for list items, allowing them to be revealed or animated step by step.
+   */
 
   animateLists() {
-    const lists = document.querySelectorAll("ul, ol")
+    const lists = document.querySelectorAll("ul, ol");
 
-    if(lists) {
-     lists.forEach(list => {
-      if(list.hasAttribute("animate")) {
-        const items = list.querySelectorAll("li")
-        items.forEach(item => {
-          item.classList.add("step")
-        })
-      }
-     }) 
+    if (lists) {
+      lists.forEach((list) => {
+        if (list.hasAttribute("animate")) {
+          const items = list.querySelectorAll("li");
+          items.forEach((item) => {
+            item.classList.add("step");
+          });
+        }
+      });
     }
   }
 
@@ -717,10 +717,10 @@ class Delta {
       this.getSlideNumFromURL() || this.state.currentSlide || 1;
 
     const totalSlides = document.querySelectorAll("slide").length;
-    console.log(totalSlides)
+    console.log(totalSlides);
 
-    this.animateLists()
-    console.log("Lists rendered...")
+    this.animateLists();
+    console.log("Lists rendered...");
 
     this.enumerateEnvironments();
     console.log("Environments enumerated...");
@@ -729,6 +729,11 @@ class Delta {
       this.enumerateSections();
       console.log("Sections enumerated...");
     }
+
+    const pauseElements = document.querySelectorAll("[pause]");
+    pauseElements.forEach((el) => {
+      el.classList.add("step");
+    });
 
     this.updateState({ currentSlide, totalSlides });
   }
