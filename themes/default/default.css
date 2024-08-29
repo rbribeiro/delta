@@ -240,6 +240,7 @@ slide.active {
 slide > title,
 slide > h1 {
   display: block;
+  text-transform: uppercase;
   box-sizing: border-box;
   background-color: var(--secondary-bg-color);
   width: 100%;
