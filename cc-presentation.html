@@ -1,0 +1,134 @@
+<link rel="stylesheet" href="./themes/default/default.css" />
+<style>
+#kbGraph {
+width : 100%;
+height : 100%;
+}
+</style>
+
+<header>
+  <progress-bar></progress-bar>
+</header>
+
+<slide class="align-center">
+  <content>
+    <h2>Preferential Attachment Random Graphs with Edge-Steps</h2>
+    <hr />
+    <author>Rodrigo Ribeiro, Ph.D</author>
+    <institution>University of Denver</institution>
+  </content>
+</slide>
+
+<slide>
+  <content>
+    <h2>Organization</h2>
+    <ol animate>
+      <li id="sec1">Seven Bridges of Königsberg</li>
+      <li id="sec2">Graphs</li>
+      <li id="sec3">Why graphs?</li>
+      <li id="sec4">Preferential Attachment Graphs</li>
+    </ol>
+  </content>
+</slide>
+
+<slide class="align-center">
+  <content>
+    <h2><get-elem target="sec1"></get-elem></h2>
+    <progress-bar></progress-bar>
+  </content>
+</slide>
+
+<slide>
+  <h1><get-elem target="sec1"></get-elem></h1>
+  <content>
+    <column-block>
+      <column class="align-center">
+        <figure>
+          <img
+            width="50%"
+            class="rounded drop-shadow thick-border"
+            src="./themes/images/Konigsberg_bridges.png"
+          />
+          <fig-caption pause>
+            Map of Königsberg showing the actual layout of the
+            seven bridges, highlighting the river Pregel and the bridges.
+          </fig-caption>
+        </figure>
+      </column>
+      <column>
+        <p pause>
+          The city of Königsberg in Prussia (now Kaliningrad, Russia) was set on
+          both sides of the Pregel River, and included two large
+          islands which were connected to each other, and to
+          the two mainland portions of the city, by seven bridges. The problem
+          was to walk through the city in a way that would cross each of those
+          bridges once and only once.
+        </p>
+        <p >
+          <ul animate>
+            <li>reaching an island or mainland bank other than via one of the bridges, or</li>
+            <li>accessing any bridge without crossing to its other end are explicitly unacceptable.</li>
+          </ul>
+        </p>
+      </column>
+    </column-block>
+  </content>
+</slide>
+
+
+<slide>
+  <h1><get-elem target="sec1"></get-elem></h1>
+  <content>
+    
+    <column-block>
+      <column class="align-center">
+        <figure>
+          <img
+            width="50%"
+            class="rounded drop-shadow thick-border"
+            src="./themes/images/Konigsberg_bridges.png"
+          />
+        </figure>
+      </column>
+      
+      <column>
+       <div id="kbGraph"></div> 
+      </column>
+    </column-block>
+  </content>
+</slide>
+
+<slide class="align-center">
+  <content>
+    <h2><get-elem target="sec2"></get-elem></h2>
+    <progress-bar></progress-bar>
+  </content>
+</slide>
+
+<slide class="align-center">
+  <content>
+    <h2><get-elem target="sec3"></get-elem></h2>
+    <progress-bar></progress-bar>
+  </content>
+</slide>
+
+<slide class="align-center">
+  <content>
+    <h2><get-elem target="sec4"></get-elem></h2>
+    <progress-bar></progress-bar>
+  </content>
+</slide>
+
+<footer>
+  <column-block>
+    <column>Made with <mark>$\delta$</mark>-delta</column>
+    <column class="align-right">
+      <slide-counter></slide-counter>
+    </column>
+  </column-block>
+</footer>
+
+<script src="./library/config.js"></script>
+<script src="./library/delta.js"></script>
+<script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+<script src="./edge-step.js"></script>
