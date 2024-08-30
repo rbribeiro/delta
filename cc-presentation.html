@@ -12,7 +12,8 @@ height : 100%;
 
 <slide class="align-center">
   <content>
-    <h2>Preferential Attachment Random Graphs with Edge-Steps</h2>
+    <h2>Preferential Attachment Random Graphs:</h2>
+    <h3>A confluence of computer science, mathematics and statistics</h3>
     <hr />
     <author>Rodrigo Ribeiro, Ph.D</author>
     <institution>University of Denver</institution>
@@ -23,13 +24,19 @@ height : 100%;
   <content>
     <h2>Organization</h2>
     <ol animate>
-      <li id="sec1">Seven Bridges of Königsberg</li>
-      <li id="sec2">Graphs</li>
-      <li id="sec3">Why graphs?</li>
-      <li id="sec4">Preferential Attachment Graphs</li>
+      <li id="sec1">Graphs</li>
+      <li id="sec2">History of Graphs</li>
+      <li id="sec3">Combinatorics</li>
+      <li id="sec4">Adding a probability layer</li>
+      <li id="sec5">Modeling the real world</li>
+      <li id="sec6">Different Perspectives on graphs</li>
     </ol>
   </content>
 </slide>
+
+
+
+
 
 <slide class="align-center">
   <content>
@@ -37,6 +44,55 @@ height : 100%;
     <progress-bar></progress-bar>
   </content>
 </slide>
+
+
+
+
+<slide>
+  <h1><get-elem target="sec1"></get-elem></h1>
+  <content>
+    <column-block>
+      <column class="align-center">
+        <figure>
+          <img
+            width="40%"
+            src="./themes/images/graph.png"
+          />
+        </figure>
+      </column>
+      <column>
+        <ul animate>
+          <li> Dots are vertices, connections are edges </li>
+			    <li> The degree of a vertex is the number of neighbors it has</li>
+			    <li> The distance between two vertices is the length (number of edges) of the shortest path connecting them;</li>
+			    <li> The diameter is the maximum distance, that is, $\max_{u,v}{\rm dist}(u,v)$;</li>
+        </ul>
+      </column>
+    </column-block>
+  </content>
+</slide>
+
+
+
+<slide class="align-center">
+  <content>
+    <h2><get-elem target="sec2"></get-elem></h2>
+    <progress-bar></progress-bar>
+  </content>
+</slide>
+
+
+<slide>
+  <h1><get-elem target="sec2"></get-elem></h1>
+  <content>
+    <ul animate>
+      <li> Graph theory traces its roots to the 18th century.</li>
+      <li> Founded by the Swiss mathematician, Leonhard Euler.</li>
+      <li> Started with the solution to the Königsberg Bridge Problem in 1736.</li>
+    </ul>
+  </content>
+</slide>
+
 
 <slide>
   <h1><get-elem target="sec1"></get-elem></h1>
@@ -156,6 +212,69 @@ height : 100%;
     <progress-bar></progress-bar>
   </content>
 </slide>
+
+<!--
+
+    <slide class="align-center">
+        <content>
+          <h2><span id="pm">Adding a Probabilistic Layer</span></h2>
+          <progress-bar></progress-bar>
+        </content>
+    </slide>
+
+
+    <slide>
+
+        <h1><get-elem target="pm"></get-elem></h1>
+<content>
+
+        The Probabilistic Method:  
+       
+        <ul animate>
+            <li> A non-constructive method in combinatorics. </li>
+            <li> Introduced by Paul Erdős in the 1940s. </li>
+            <li> Shows the existence of a combinatorial object with certain properties. </li>
+            <li> The method proves existence  by showing that the probability  of a randomly chosen object  having the desired property  is non-zero. </li>
+        </ul>
+    </content>
+</slide>
+
+    <slide class="align-center">
+        <content>
+          <h2><span id="rn">Ramsey Numbers</span></h2>
+          <progress-bar></progress-bar>
+        </content>
+    </slide>
+
+    <slide>
+        
+        <h1><get-elem target="pm"></get-elem>:<get-elem target="rn"></get-elem></h1>
+<content>
+        Let $K_n$ be the complete graph on $n$ vertices.  That is, $K_n$ is the graph on $n$ vertices,  such that all pair of vertices  are connected to each other. 
+
+        The {\it Ramsey Number} $R(k,\ell)$  is the smallest integer $n$  such that in any two-coloring of the edges of $K_n$,  either  there is a $K_k$ {\bf red}  or a $K_\ell$  {\bf blue}. 
+
+        In 1929, Ramsey showed that $R(k,\ell)$ is finite for any pair $(k,\ell)$. 
+    </content>
+</slide>
+
+    <slide>
+        <h1><get-elem target="pm"></get-elem>:<get-elem target="rn"></get-elem></h1>
+<content>
+        <theorem-block> 
+            <title>Erdos</title>
+            If $\binom{n}{k}\cdot 2^{1- \binom{k}{2}} < 1$, then $R(k,k) > n$. Thus, $R(k,k) > \left \lfloor 2^{k/2} \right \rfloor$ for all $k \ge 3$.
+            
+        </theorem-block>
+         
+        <proof-block>
+            Let's paint edges randomly!  An edge is painted red with probability $0.5$  and painted blue otherwise.
+        </proof-block>
+
+    </content>
+</slide>
+
+-->
 
 <footer>
   <column-block>

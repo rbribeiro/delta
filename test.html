@@ -1,0 +1,579 @@
+<link rel="stylesheet" href="./themes/default/default.css" />
+<style>
+#kbGraph, #graphExample {
+width : 90%;
+height : 90%;
+display: block;
+}
+#ERModel, #UAModel {
+width : 90%;
+height: 50%;
+}
+iframe {
+    display: block;
+    margin: 2em;
+    border: none;
+    background-color: var(--secondary-bg-color);
+}
+</style>
+
+<header>
+  <progress-bar></progress-bar>
+</header>
+
+<slide class="align-center">
+    <content>
+      <h2>Preferential Attachment Random Graphs:</h2>
+      <h3>A confluence of computer science, mathematics and statistics</h3>
+      <hr />
+      <author>Rodrigo Ribeiro, Ph.D</author>
+      <institution>University of Denver</institution>
+    </content>
+  </slide>
+
+  <slide>
+    <content>
+      <h2>Organization</h2>
+      <ol animate>
+        <li id="sec1">Graphs</li>
+        <li id="sec2">History of Graphs</li>
+        <li id="sec3">Combinatorics</li>
+        <li id="sec4">Adding a probability layer</li>
+        <li id="sec5">Modeling the real world</li>
+        <li id="sec6">Different Perspectives on graphs</li>
+        <li>A different way to generate graphs</li>
+      </ol>
+    </content>
+  </slide>
+  
+
+
+
+  <slide class="align-center">
+    <content>
+      <h2><get-elem target="sec1"></get-elem></h2>
+      <progress-bar></progress-bar>
+    </content>
+  </slide>
+  
+
+<slide>
+    <h1><get-elem target="sec1"></get-elem></h1>
+    <content>
+    It is better if we all know what a graph is!
+	<column-block>
+		<column>
+            <figure>
+                <img width="50%" src="themes/images/graph.png">
+            </figure>
+		</column>
+
+		<column width="70">
+            <ol animate>
+                <li> Dots are vertices, connections are edges </li>
+                <li> The degree of a vertex is the number of neighbors it has</li>
+                <li> The distance between two vertices is the length (number of edges) of the shortest path connecting them;</li>
+                <li> The diameter is the maximum distance, that is, $\max_{u,v}{\rm dist}(u,v)$;</li>
+			</ol>
+		</column>
+	</column-block>
+</content>
+</slide>
+
+<slide class="align-center">
+    <content>
+      <h2><get-elem target="sec2"></get-elem></h2>
+      <progress-bar></progress-bar>
+    </content>
+</slide>
+  
+
+<slide>
+    <h1><get-elem target="sec2"></get-elem></h1>
+<content>
+    <ul animate>
+        <li> Graph theory traces its roots to the 18th century.</li>
+        <li> Founded by the Swiss mathematician, Leonhard Euler.</li>
+        <li> Started with the solution to the Königsberg Bridge Problem in 1736.</li>
+    </ul>
+    </content>
+</slide>
+    
+<slide>
+        <h1><get-elem target="sec2"></get-elem>: The Königsberg Bridge Problem</h1>
+        <content> 
+            <column-block>
+                <column>
+                    <ul animate>
+                        <li> Königsberg was built around the Pregel River.</li>
+                        <li> It included two large islands connected to each other and the mainland by seven bridges.</li>
+                        <li> Challenge: Find a walk through the city crossing each bridge once and only once.</li>
+                    </ul>
+                </column>
+                <column class="align-center">
+                    <figure>
+                        <img
+                          width="70%"
+                          class="rounded drop-shadow thick-border"
+                          style="transform: rotate(10deg);"
+                          src="./themes/images/Konigsberg_bridges.png"
+                        />
+                      </figure>
+                </column>
+            </column-block>
+            
+        </content>
+</slide>
+
+    
+<slide>
+        <h1><get-elem target="sec2"></get-elem>: Euler's Representation</h1> 
+    <content>    
+        Euler's approach to solving the problem:
+        <ul animate>
+            <li> Represent the land masses as nodes (or vertices). </li>
+            <li> Represent the bridges as edges (or arcs). </li>
+            <li> Resulted in the creation of a graph. </li>
+        </ul>
+        <column-block>
+            <column class="align-center" pause>
+              <figure>
+                <img
+                  width="50%"
+                  class="rounded drop-shadow thick-border"
+                  src="./themes/images/Konigsberg_bridges.png"
+                />
+              </figure>
+            </column>
+            
+            <column pause>
+             <div id="kbGraph"></div> 
+            </column>
+          </column-block>
+    </content>
+</slide>
+    
+<slide>
+    <h1><get-elem target="sec2"></get-elem>: Euler's Insight</h1>
+    <content> 
+        Using the graph:
+        <ul animate>
+            <li> Euler noted the number of bridges touching each land mass. </li>
+            <li> Proved that for a walk to cross each bridge once:
+                <ul animate>
+                    <li> All vertices (except possibly the start and end) must have an even number of edges.
+                    </li>
+                </ul>
+            </li>
+            <li> Königsberg did not meet this criteria. </li>
+        </ul>
+    </content>
+</slide>
+    
+<slide>
+        <h1><get-elem target="sec2"></get-elem></h1>
+    <content>
+        <ul animate>
+            <li> Euler's solution to the Königsberg Bridge Problem is recognized as the formal beginning of graph theory. </li>
+            <li> It showcased the potential of representing and solving real-world problems using graphs.</li>
+        </ul>
+    </content>
+</slide>
+    
+
+    <slide class="align-center">
+        <content>
+          <h2>Math and Graphs: <span pause> Combinatorics </span></h2>
+          <progress-bar></progress-bar>
+        </content>
+    </slide>
+
+
+    <slide>
+        <h1>Math and Graphs: Combinatorics</h1>
+<content>
+
+        We can do math with graphs only!  
+        <ol animate>
+            <li> <b>Enumerative Combinatorics: </b> Counting specific types of graph structures,  like the number of labeled trees on $n$ vertices  or the number of ways to embed a smaller graph into a larger one.   </li>
+            <li> <b> Existence Problems:</b> Questions like 
+                <blockquote pause>
+                    Does a graph with certain properties exist?
+                </blockquote>  
+                
+                <br>
+
+                <example-block pause>
+                        <title> Four Color Theorem</title>
+                        Any planar graph  can be colored with no more than four colors  so that no two adjacent vertices  share the same color.
+                </example-block>
+                
+                </li>
+        </ol> 
+
+    </content>
+</slide>
+    
+
+
+    <slide class="align-center">
+        <content>
+          <h2><span id="w">Using graphs to model the world!</span></h2>
+          <progress-bar></progress-bar>
+        </content>
+    </slide>
+
+<slide>
+    <h1><get-elem target="w"></get-elem></h1>
+<content>
+    <column-block>
+     <column>
+            <ol animate>
+            <li> Vertices can be people and edges represent friendship (social networks) </li>
+            <li> Vertices can be power stations and edges are wires connecting them </li>
+            <li> Vertices can be neurons and edges are connections between them </li>
+            <li> In general, a graph can be used to model set of things with relation between those things. </li>
+            </ol>
+            
+      </column>
+        <column>
+            <figure>
+                <img width="40%" src="themes/images/graph.png">
+            </figure>
+      </column>
+    </column-block>
+</content>
+</slide>
+
+
+<slide class="align-center">
+    <content>
+        <h2 pause>In real-life, networks can be governed by some randomness  and can change over time.</h2>
+        <h3 pause>So we need graphs that are random <span pause>(that possibly change over time).</span></h3>
+    </content>
+</slide>
+
+
+<slide class="align-center">
+    <content>
+      <h2><span id="rg">Random Graphs</span></h2>
+      <progress-bar></progress-bar>
+    </content>
+</slide>
+
+<slide>
+    <h1><get-elem target="rg"></get-elem></h1>
+    <content>
+
+    <ol animate>
+        <li> <b> Static models. </b> <span pause>We add a probability distribution over a set $\mathcal{G}$ containing graphs and sample from it. <br>
+            Examples: <i> Erdős-Reyni, Configuration model, Strogattz-Watts</i>;  </span>
+        </li>
+        <li> <b> Dynamic models.</b>   <span pause>We can inductively change our graphs according to some random rule.  This generates a vector or a sequence of random graphs.  <i> Barabasi-Albert, Dynamic Configuration Model.</i></span> </li>
+    </ol>
+</content>
+</slide>
+
+<slide>
+    <h1><get-elem target="rg"></get-elem></h1>
+    <content>
+        <column-block>
+            <column pause>
+                <example-block>
+                    <title>Erdős-Reyni $G(n,p)$</title>
+                    <ol animate>
+                        <li> Start with $n$ vertices with no degree; </li>
+                        <li> Connect each pair of vertices with probability $p$ and independently of each other.</li>
+                    </ol>
+                    <div id="ERModel" ondblclick="edgeStep.ERModel(10,0.4)" pause></div>
+                    
+                </example-block>
+  </column>
+    <column pause>
+        <example-block>
+            <title>Uniform Attachment</title>
+            <ol animate>
+                <li> At each time step $n$, generate $G_n$ from $G_{n-1}$ as follows:
+                    <ol animate>
+                        <li> Add a new vertex $v_n$ to $G_{n-1}$.
+                        <li> Connect $v_n$ to a uniformly selected vertex $u \in G_{n-1}$.
+                    </ol>
+                </li>
+                <li> We obtain a Markov Chain $\{G_n\}_{n \in \mathbb{N}}$.</li>
+                </ol>
+            <div id="UAModel" ondblclick="edgeStep.UAModel(10)" pause></div>
+        </example-block>
+        
+  </column>
+    </column-block>
+</content>
+</slide>
+
+<slide class="align-center">
+    <content>
+      <h2><span id="df">Different Perspectives</span></h2>
+      <progress-bar></progress-bar>
+    </content>
+</slide>
+
+<slide class="align-center">
+
+    <h2>Graphs and Random Graphs are widely used in different branches of Science and Mathematics.  <span pause>However,  different areas might approach  </span> <span pause>and use these objects  in different ways </span><span pause> and might have different  goals. </span></h2>
+    
+
+</content>
+</slide>
+
+<slide>
+    <h1><get-elem target="df"></get-elem></h1>
+    <content>
+    <column-block>
+        <column width="33">
+            <b> Computer Science</b>
+            <ol animate>
+                <li> Propose New models </li>
+                <li> Study via Simulations </li>
+                <li> Model <i> v.s.</i> Emp. data </li>
+                <li> Estimates of properties of real-life networks </li>
+            </ol>
+      </column>
+
+        <column width="33">
+            <b> Mathematics </b>
+            <ol animate>
+                <li> Propose New models </li>
+                <li> Theoretical Results </li>
+                <li> -- </li>
+                <li> Estimates of properties of real-life networks </li>
+            </ol>
+      </column>
+
+        <column width="33">
+            <b> Statistics </b>
+            <ol animate>
+                <li> Propose New models </li>
+                <li> Theoretical and "Simulational" Results </li>
+                <li> Model <i> v.s. </i> Emp. data </li>
+                <li> Estimates of properties of real-life networks </li>
+                <li> Inference </li>
+            </ol>
+      </column>
+    </column-block>
+</content>
+</slide>
+
+<slide class="align-center">
+    <content>
+      <h2><get-elem target="df"></get-elem>: Notion of "good model"</h2>
+      <progress-bar></progress-bar>
+    </content>
+</slide>
+
+<slide>
+    <h1><get-elem target="df"></get-elem>: Notion of "good model"</h1>
+    <content>
+    <column-block>
+        <column>
+            <b> Computer Science/Statistics </b>
+            <ol animate>
+                <li> Simple to state and simulate </li>
+                <li> Small number of parameters </li>
+                <li> It must be capable of capturing properties observed in real-life networks </li>
+            </ol>   
+        </column>
+        <column>
+            <b> Mathematics </b>
+            <ol animate>
+                <li> <s>Simple to state and simulate </s> </li>
+                <li> <s>Small number of parameters </s> <span pause>(as long as it is tractable ) </span>  </li>
+                <li> <s>It must be capable of capturing properties observed in real-life networks</s> </li>
+                <li> It is about the challenge! </li>
+            </ol>   
+      </column>
+    </column-block>
+</content>
+</slide>
+
+<slide class="align-center">
+    <content>
+      <h2><span>Can we have a bit of both worlds?</span></h2>
+      <progress-bar></progress-bar>
+    </content>
+</slide>
+
+
+<slide class="align-center">
+    <content>
+      <h2><span id="pa">A model to Networks: The Preferential Attachment model</span></h2>
+      <progress-bar></progress-bar>
+    </content>
+</slide>
+
+
+<slide>
+    <h1><get-elem target="pa"></get-elem></h1>
+    <content>
+    <ol animate>
+        <li> At each time step $n$, generate $G_n$ from $G_{n-1}$ as follows:
+            <ol animate>
+                <li> Add a new vertex $v_n$ to $G_{n-1}$. </li>
+                <li> Connect $v_n$ to a vertex $u \in G_{n-1}$ with probability proportional to its degree, that is 
+                    $$
+                        P(v_n \leftrightarrow u | G_{n-1}) = \frac{\text{degree}(u)}{\sum_{v \in G_{n-1}}\text{degree}(v)}
+                    $$ </li>
+            </ol>
+        <li> We obtain a then obtain a sequence $\{G_n\}_{n \mathbb{N}}$. </li>
+        </ol>
+    
+        <p pause>
+            This is the so-called  Barabási-Albert Model.  Published in the journal Nature and has more than $45k$ citations.
+        </p>
+    
+</content>
+</slide>
+<slide>
+    <iframe src="https://bamorim.github.io/netmosa/" height="90%" class="rounded drop-shadow"></iframe>
+</slide>
+
+<slide>
+    <h1><get-elem target="pa"></get-elem></h1>
+    <content>
+    The BA-model is an interesting example of a good model that lies in the intersection of Computer Science and Mathematics. 
+    <ol animate>
+        <li> It is a simple and easy to describe model. </li>
+        <li> It is capable of capturing a lot of graph properties observed from empirical data. </li>
+        <li> It has the mathematical challenge mathematicians care about:  its dynamics create a strong dependence between the vertices,  which wasn't observed in other random graph models like the $G(n,p)$.  This makes its analysis harder.   </li>
+        <li> Initially, (2) had been shown only via simulations or nonrigorous results.  Over the years, mathematicians proved interesting properties about it and its many variants. </li>
+    </ol>
+</content>
+</slide>
+
+
+<slide class="align-center">
+    <content>
+      <h2><span id="st">Simulation <i> v.s.</i>Theory</span></h2>
+      <progress-bar></progress-bar>
+    </content>
+</slide>
+
+<slide class="align-center">
+    <content>
+      <h2><span id="hk">Holme-Kim Model</span></h2>
+      <progress-bar></progress-bar>
+    </content>
+</slide>
+
+
+
+<slide>
+    <h1><get-elem target="hk"></get-elem></h1>
+    <content>
+
+    Fix $p\in [0,1]$ and a positive integer~$m>1$.  <span pause>The evolution from $G_{t-1}$ to $G_t$ consists of  </span> <span pause> the addition of a new vertex $v_t$  </span> <span pause>and $m$ new edges between $v_t$ and vertices already in $G_{t-1}$.</span> <span pause> These $m$ edges are added sequentially in the following fashion.</span>
+    <ol animate>
+        <li> The first edge is always attached following the <i> preferential attachment (PA)</i> mechanism, that is, it connects to a previously existing node $w$ with probability proportional to the degree of $w$ in $G_{t-1}$.   </li>
+        <li> Each of the $m-1$ remaining edges makes a random decision on how to attach.
+            <ol animate>
+            <li> With probability $p$, the edge is attached according to the <i>triad formation (TF)</i> mechanism.  Let $w'$ be the node of $G_{t-1}$ to which the previous edge was attached.  Then the current edge connects to a neighbor $w$ of $w'$ chosen with probability proportional to number of edges between $w$ and $w'$.  </li>
+            <li> With probability $1-p$ ($p\in [0,1]$ fixed) the edge follows the same PA mechanism as the first edge (with fresh random choices).  </li>
+        </ol>
+        </li>
+    </ol>
+
+</content>
+</slide>
+
+<slide>
+    <h1><get-elem target="hk"></get-elem>: Global Clustering Coefficient</h1>
+    <content>
+   <definition-block>
+        Given a graph $G$, we define its global clustering coefficient as 
+        <equation-block pause>
+            c(G) =  \frac{3 \times \text{ # of triangles in }G}{\# \text{ of potential triangles}}
+        </equation-block>
+    </definition-block>
+    <p pause>
+        The global clustering coefficient captures the tendency that some network have of closing triangles.  
+    </p>
+    <center pause>
+        <blockquote> Friends of friends tend to be friends. </blockquote>
+    </center>
+</content>
+</slide>
+
+<slide>
+    <h1><get-elem target="hk"></get-elem>: Global Clustering Coefficient</h1>
+
+    <content>
+    In the paper  <u pause> Generalized preferential attachment: Tunable power-
+    law degree distribution and clustering coefficient</u>  <span pause>(a CS paper)  the authors investigated via simulations </span><span pause> many variants of the BA-model,  including the HK-model. </span>
+
+    <span pause>From their simulation,  they concluded that  regarding the $HK$-model,</span><span pause>  $c(G_t)$ satisfies </span>
+    <span pause>
+    $$
+        \liminf_{t \to \infty }c(G_t) > 0,
+    $$
+    almost surely.
+</span>
+</content>
+</slide>
+
+<slide>
+    <h1><get-elem target="hk"></get-elem>: Global Clustering Coefficient</h1>
+    <content>
+   However..... 
+   <theorem-block pause>
+    <title>R. I. Oliveira, R.R., R. Sanchis - Advances in Applied Prob.</title>  
+    
+    For any $p \in [0,1]$, $m>1$
+     
+    $$
+        \lim_{t \to \infty} c(G_t) = 0,
+    $$
+     almost surely.  
+     <span paused>More specifically,</span><span pause>  there exist constants $b_1$ and $b_2$  depending on $p$ and $m$ only,</span><span pause>  such that  </span>
+     <span pause>
+    $$
+        P\left( \frac{b_1}{\log \log t} \le c(G_t) \le \frac{b_2}{\log \log t} \right) = 1 - o(1).
+    $$
+    </span>
+   </theorem-block>
+</slide>
+
+<slide class="align-center">
+    <content>
+      <h2><span id="tbrw">Generating Graphs with Random Walks</span><span pause>:Tree Builder Random Walk</span></h2>
+      <progress-bar></progress-bar>
+    </content>
+</slide>
+
+<slide>
+    <iframe src="https://bamorim.github.io/netmosa/" height="90%" class="rounded drop-shadow"></iframe>
+</slide>
+
+<slide>
+    <h1><get-elem target="tbrw"></get-elem></h1>
+    <content>
+        <theorem-block>
+            <title>J. Englander, G. Iacobelli, G. Pete, R.R. - Annals of Applied Prob.</title>
+            There exist the right choice for the "coin-parameter" so that <span pause>the graphs generated by the Barabási-Albert model</span> <span pause> and the graphs generated by the Tree Builder </span><span pause>are essentially the same.</span>
+        </theorem-block>
+    </content>
+</slide>
+
+<slide>
+    <iframe src="https://bamorim.github.io/netmosa/" height="90%" class="rounded drop-shadow"></iframe>
+    <iframe src="https://bamorim.github.io/netmosa/" height="90%" class="rounded drop-shadow"></iframe>
+</slide>
+
+<slide>
+    <img src="themes/images/obrigado.jpg">
+</slide>
+
+
+
+
+<script src="./library/config.js"></script>
+<script src="./library/delta.js"></script>
+<script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+<script src="./edge-step.js"></script>
