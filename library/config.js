@@ -10,6 +10,7 @@ const deltaConfig = {
     "example",
     "remark",
     "corollary",
+    "definition"
   ],
   plugins: [
     {
