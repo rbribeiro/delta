@@ -7,6 +7,8 @@ nav.init = function () {
 
     switch (e.key) {
       case "ArrowRight":
+      case "ArrowUp":
+      case "PageUp":
         const steps = slide.querySelectorAll(".step");
         if (steps.length > 0) {
           steps[0].classList.remove("step");
@@ -16,6 +18,8 @@ nav.init = function () {
         }
         break;
       case "ArrowLeft":
+      case "ArrowDown":
+      case "PageDown":
         const activeSteps = slide.querySelectorAll(".activeStep");
         if (activeSteps.length > 0) {
           activeSteps[activeSteps.length - 1].classList.remove("activeStep");
