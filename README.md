@@ -4,7 +4,6 @@
 - [Screenshots](#screenshots)
 - [Installation](#installation)
 - [Basic Syntax](#basic-syntax)
-- [Wiki](https://github.com/vimwiki/vimwiki/wiki)
 - [License](#license)
 
 # Introduction
