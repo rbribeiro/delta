@@ -1,4 +1,4 @@
-![Delta: a Dynamic Engine for Layout and Template Arrangement](doc/splash.png)
+![Delta: a Dynamic Engine for Layout and Template Arrangement](doc/Splash.png)
 
 - [Introduction](#introduction)
 - [Screenshots](#screenshots)
