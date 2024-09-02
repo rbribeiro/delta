@@ -3,7 +3,7 @@
 - [Introduction](#introduction)
 - [Screenshots](#screenshots)
 - [Installation](#installation)
-- [Basic Syntax](#basic-syntax)
+- [Usage](#usage)
 - [License](#license)
 
 # Introduction
@@ -15,6 +15,12 @@ articles.
 
 # Installation 
 You just need to clone/download this folder and change the .html file of your choice. Notice that they have different templates.
+
+# Screenshots
+To be done.
+
+# Usage
+To be done.
 
 # License
 This project is licensed under the Creative Commons Attribution-NonCommercial 4.0 International License. 
