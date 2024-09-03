@@ -8,7 +8,7 @@ autogenerateSectionSlides.init = function () {
   });
 
   const totalSlides = document.querySelectorAll("slide").length;
-  Delta.updateState({ totalSlides: totalSlides });
+  Delta.getInstance().updateState({ totalSlides: totalSlides });
 };
 
 autogenerateSectionSlides.sectionBuilder = function (section, number) {
@@ -22,16 +22,19 @@ autogenerateSectionSlides.sectionBuilder = function (section, number) {
     const textArea = document.createElement("textarea");
     textArea.innerHTML = title.innerHTML;
     section.setAttribute("data-title", textArea.innerHTML);
-    titleSlide.innerHTML = `<h1>${textArea.value}</h1>
-								<hr />`;
+    const slideTitle = document.createElement("h2");
+    slideTitle.setAttribute("id", title.id);
+    slideTitle.innerHTML = `${textArea.value}`;
+    titleSlide.append(slideTitle);
+    titleSlide.append(document.createElement("hr"));
+
     if (number) section.setAttribute("id", `DELTA_SECTION_${number}`);
-    Delta.render(titleSlide);
     section.prepend(titleSlide);
     //Delta.refListeners()
     section.removeChild(title);
   }
 };
 
-document.addEventListener("deltaIsReady", () => {
+Delta.getInstance().eventDispatcher.on("deltaIsReady", () => {
   autogenerateSectionSlides.init();
 });
