@@ -10,38 +10,104 @@
     <h3>Dynamic Engine for Layout and Template Arrangement</h3>
     <hr />
     <author>Rodrigo Ribeiro, Ph.D</author>
-    <br />
     <institution>University of Denver</institution>
   </content>
 </slide>
 
 <slide>
   <content>
-
+    <h2>Organization</h2>
+    <table-contents></table-contents>
   </content>
 </slide>
 
-<slide class="align-center">
-  <content>
-    <h2>Math Environments and Equations</h2>
-    <hr />
-  </content>
-</slide>
+<section>
+  <title>Handling Text</title>
+
+  <slide class="align-center">
+    <content>
+      <h2 id="ft">Formatting Text</h2>
+      <hr />
+    </content>
+  </slide>
+
 
 <slide>
-  <title>Math Environments</title>
+  <h1><get-elem target="ft"></get-elem></h1>
   <content>
-    <theorem-block id="thm" pause>
-      <title>Theorem's title</title>
+    
+    The <b>&lt;b&gt;</b> tag makes text <b>bold</b>, the <i>&lt;i&gt;</i> tag makes text <i>italic</i>, and the <u>&lt;u&gt;</u> tag underlines the <u>text</u>. 
+    To highlight text, use the <mark>&lt;mark&gt;</mark> tag, which will result in <mark>highlighted text</mark>. The <s>&lt;s&gt;</s> tag strikes through the <s>text</s>. 
+    Headers are defined using the <b>&lt;h1&gt;</b> to <b>&lt;h6&gt;</b> tags, where <h1>Header 1</h1> is the largest and <h6>Header 6</h6> is the smallest. 
+    A paragraph is defined using the <b>&lt;p&gt;</b> tag, and you can insert a line break with the <b>&lt;br&gt;</b> tag.<br> 
+    Additionally, the <b>&lt;strong&gt;</b> tag emphasizes text strongly, making it <strong>bold</strong>, and the <b>&lt;em&gt;</b> tag adds emphasis, resulting in <em>italic</em> text. 
+    To create smaller text, use the <small>&lt;small&gt;</small> tag, as seen in this <small>example</small>. 
+    Subscript text can be created using the <sub>&lt;sub&gt;</sub> tag, like in H<sub>2</sub>O, and superscript text with the <sup>&lt;sup&gt;</sup> tag, as in E=mc<sup>2</sup>.</p>
+  </content>
+</slide>
+
+</section>
+
+
+<section>
+  <title id="mathsec">Math Environments and equations</title>
+  <slide>
+    <h1><get-elem target="mathsec"></get-elem></h1>
+    <content>
+      <p>The <code>&lt;slide&gt;</code> tag represents a single slide in a math presentation. Within a slide, the <code>&lt;title&gt;</code> tag is used to define the title of the slide. The main content of the slide is enclosed within the <code>&lt;content&gt;</code> tag.</p>
+
+    <p>The <code>&lt;theorem-block&gt;</code> tag is used to represent a theorem. It can have an <code>id</code> attribute for referencing, and a <code>pause</code> attribute that might be used for controlling the presentation flow. Inside the theorem block, the <code>&lt;title&gt;</code> tag specifies the title of the theorem, and the statement follows. The <code>&lt;equation-block&gt;</code> tag is used to include mathematical equations, which are rendered as LaTeX.</p>
+
+    <p>Similarly, the <code>&lt;proposition-block&gt;</code> tag is used for propositions. It can also have attributes like <code>id</code>, <code>pause</code>, and <code>class</code> for additional control or styling. The statement of the proposition follows, and the <code>&lt;align-block&gt;</code> tag is used to include aligned equations, often with multiple lines or labels.</p>
+    </content>
+  </slide>
+
+  <slide>
+    <h1><get-elem target="mathsec"></get-elem></h1>
+    <content>
+     
+      Examples of the tags in use
+      
+    <pre pause>
+&lt;slide&gt;
+  &lt;title&gt;Math Environments&lt;/title&gt;
+  &lt;content&gt;
+    &lt;theorem-block id="thm" pause&gt;
+      &lt;title&gt;Theorem's title&lt;/title&gt;
       The statement goes here.
-      <equation-block> \int_a^bf(x) {\rm d}x = F(b) - F(a) </equation-block>
-    </theorem-block>
+      &lt;equation-block&gt; \int_a^b f(x) {\rm d}x = F(b) - F(a) &lt;/equation-block&gt;
+    &lt;/theorem-block&gt;
+    &lt;proposition-block id="prop" pause class="step"&gt;
+      The statement goes here.
+      &lt;align-block&gt; a &amp; = b+c \\ &amp; = d+e\label{eq} &lt;/align-block&gt;
+    &lt;/proposition-block&gt;
+  &lt;/content&gt;
+&lt;/slide&gt;
+    </pre>
+
+      <p pause>
+        The next slide shows the result.
+      </p>
+
+    </content>
+  </slide>
+  <slide>
+    <title>Math Environments</title>
+    <content>
+      <theorem-block id="thm" pause>
+        <title>Theorem's title</title>
+        The statement goes here.
+        <equation-block> \int_a^b f(x) {\rm d}x = F(b) - F(a) </equation-block>
+      </theorem-block>
     <proposition-block id="prop" pause class="step">
       The statement goes here.
       <align-block> a & = b+c \\ & = d+e\label{eq} </align-block>
     </proposition-block>
   </content>
 </slide>
+
+</section>
+
 
 <slide class="align-center">
   <content>

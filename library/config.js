@@ -10,12 +10,16 @@ const deltaConfig = {
     "example",
     "remark",
     "corollary",
-    "definition"
+    "definition",
   ],
   plugins: [
     {
       id: "annotation",
       src: "./library/plugins/annotation/annotation.js",
+    },
+    {
+      id: "Auto Generation Section Slides",
+      src: "./library/plugins/autogenerateSectionSlides/autogenerateSectionSlides.js",
     },
     {
       id: "ChartJS",
