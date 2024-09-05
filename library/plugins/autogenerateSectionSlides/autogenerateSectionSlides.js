@@ -18,6 +18,7 @@ autogenerateSectionSlides.sectionBuilder = function (section, number) {
   ) {
     const title = section.children[0];
     const titleSlide = document.createElement("slide");
+    const content = document.createElement("content");
     titleSlide.classList.add("section-intro");
     const textArea = document.createElement("textarea");
     textArea.innerHTML = title.innerHTML;
@@ -25,9 +26,10 @@ autogenerateSectionSlides.sectionBuilder = function (section, number) {
     const slideTitle = document.createElement("h2");
     slideTitle.setAttribute("id", title.id);
     slideTitle.innerHTML = `${textArea.value}`;
-    titleSlide.append(slideTitle);
-    titleSlide.append(document.createElement("hr"));
+    content.append(slideTitle);
+    content.append(document.createElement("hr"));
 
+    titleSlide.append(content);
     if (number) section.setAttribute("id", `DELTA_SECTION_${number}`);
     section.prepend(titleSlide);
     //Delta.refListeners()
