@@ -17,6 +17,7 @@ class TableOfContents extends HTMLElement {
 
     sections.forEach((section) => {
       const li = document.createElement("li");
+      if (this.hasAttribute("animate")) li.classList.add("step");
       const span = document.createElement("span");
       span.innerHTML = section.children[0].innerHTML;
       span.classList.add("table-content-item");
