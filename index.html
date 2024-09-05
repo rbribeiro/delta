@@ -17,7 +17,7 @@
 <slide>
   <content>
     <h2>Organization</h2>
-    <table-contents></table-contents>
+    <table-contents animate></table-contents>
   </content>
 </slide>
 
@@ -54,11 +54,11 @@
   <slide>
     <h1><get-elem target="mathsec"></get-elem></h1>
     <content>
-      <p>The <code>&lt;slide&gt;</code> tag represents a single slide in a math presentation. Within a slide, the <code>&lt;title&gt;</code> tag is used to define the title of the slide. The main content of the slide is enclosed within the <code>&lt;content&gt;</code> tag.</p>
+      <p pause>The <code>&lt;slide&gt;</code> tag represents a single slide in a math presentation. Within a slide, the <code>&lt;title&gt;</code> tag is used to define the title of the slide. The main content of the slide is enclosed within the <code>&lt;content&gt;</code> tag.</p>
 
-    <p>The <code>&lt;theorem-block&gt;</code> tag is used to represent a theorem. It can have an <code>id</code> attribute for referencing, and a <code>pause</code> attribute that might be used for controlling the presentation flow. Inside the theorem block, the <code>&lt;title&gt;</code> tag specifies the title of the theorem, and the statement follows. The <code>&lt;equation-block&gt;</code> tag is used to include mathematical equations, which are rendered as LaTeX.</p>
+    <p pause>The <code>&lt;theorem-block&gt;</code> tag is used to represent a theorem. It can have an <code>id</code> attribute for referencing, and a <code>pause</code> attribute that might be used for controlling the presentation flow. Inside the theorem block, the <code>&lt;title&gt;</code> tag specifies the title of the theorem, and the statement follows. The <code>&lt;equation-block&gt;</code> tag is used to include mathematical equations, which are rendered as LaTeX.</p>
 
-    <p>Similarly, the <code>&lt;proposition-block&gt;</code> tag is used for propositions. It can also have attributes like <code>id</code>, <code>pause</code>, and <code>class</code> for additional control or styling. The statement of the proposition follows, and the <code>&lt;align-block&gt;</code> tag is used to include aligned equations, often with multiple lines or labels.</p>
+    <p pause>Similarly, the <code>&lt;proposition-block&gt;</code> tag is used for propositions. It can also have attributes like <code>id</code>, <code>pause</code>, and <code>class</code> for additional control or styling. The statement of the proposition follows, and the <code>&lt;align-block&gt;</code> tag is used to include aligned equations, often with multiple lines or labels.</p>
     </content>
   </slide>
 
@@ -99,7 +99,7 @@
         The statement goes here.
         <equation-block> \int_a^b f(x) {\rm d}x = F(b) - F(a) </equation-block>
       </theorem-block>
-    <proposition-block id="prop" pause class="step">
+    <proposition-block id="prop" pause>
       The statement goes here.
       <align-block> a & = b+c \\ & = d+e\label{eq} </align-block>
     </proposition-block>
@@ -119,9 +119,20 @@
 <slide>
   <title>References</title>
   <content>
-    References are beautiful! This is a reference to
-    <a-ref to="prop"></a-ref>. And this is a reference to equation
-    <eq-ref to="eq"></eq-ref>
+    <p pause>
+      In this system, you can reference any element that has an <code>id</code> attribute. This includes not only mathematical environments like theorems and propositions, but also equations, sections, or any other element with an identifier.
+    </p>
+
+    <p pause>
+      To reference an element, use the <code>&lt;a-ref&gt;</code> tag for general elements like propositions or theorems, and the <code>&lt;eq-ref&gt;</code> tag for equations. These tags take a <code>to</code> attribute, which should match the <code>id</code> of the element you want to reference.
+    </p>
+
+    <p pause>
+      References are flexible! This is a reference to the proposition: <a-ref to="prop"></a-ref>. And this is a reference to the equation: <eq-ref to="eq"></eq-ref>.
+    </p>
+    <p pause>
+      Any element in the content can be referenced as long as it has an <code>id</code> attribute. This allows you to easily point to specific parts of your document, like figures, tables, or even specific sections!
+    </p>
   </content>
 </slide>
 
