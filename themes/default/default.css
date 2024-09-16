@@ -349,6 +349,46 @@ institution {
   box-shadow: var(--drop-shadow);
 }
 
+/*************************
+ * Bibliography
+ ********************/
+.bib-list {
+  list-style: none; /* Remove default list numbering */
+  counter-reset: list-counter; /* Initialize counter */
+}
+
+.bib-list li {
+  counter-increment: list-counter; /* Increment counter */
+  margin-bottom: 5px;
+}
+
+.bib-list li::before {
+  content: "[" counter(list-counter) "] "; /* Display counter in brackets */
+}
+.bib-item {
+  justify-content: right;
+}
+
+.bib-item > title {
+  display: inline;
+}
+.bib-item > journal {
+  font-style: italic;
+}
+
+.bib-item > authors:after,
+.bib-item > year:after {
+  content: ". ";
+}
+
+.bib-item > journal:before {
+  font-style: italic;
+  content: ".  ";
+}
+.bib-item > journal:after {
+  font-style: italic;
+  content: ", ";
+}
 /*******************************************
  *
  * GENERAL CLASSES

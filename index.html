@@ -136,6 +136,103 @@
   </content>
 </slide>
 
+<section>
+  <title>Animation</title>
+<slide>
+  <title>Step-wise LaTeX Equation Animation</title>
+  <content>
+    <p pause>
+      In this system, LaTeX equations can be animated step by step as the user navigates through the items using the right arrow key. This feature allows users to progressively reveal different parts of the equation, enhancing clarity and helping them follow the derivation.
+    </p>
+
+    <p pause>
+      The syntax works by adding the <i>animate</i> attribute to the equation-block environment and enclosing each part of the equation in curly braces <code>{ }</code>. For example, the equation <code>{a} {=} {b{+}c}</code> will be revealed in four steps:
+    </p>
+
+    <ol animate>
+      <li>The first step reveals the variable <code>a</code>.</li>
+      <li>The second step reveals the equals sign <code>=</code>.</li>
+      <li>The third step reveals the variables <code>b</code> and <code>c</code>.</li>
+      <li>The final step reveals the addition sign <code>+</code> between <code>b</code> and <code>c</code>.</li>
+    </ol>
+
+  </content>
+</slide>
+
+
+<slide>
+  <title>Step-wise LaTeX Equation Animation</title>
+  <content>
+    <p pause>
+      Here’s an example:
+    </p>
+
+    <equation-block animate>
+      {a} {=} {b{+}c}
+    </equation-block>
+
+    <p pause>
+      As you navigate through the steps with the right arrow key, each part of the equation will appear sequentially.
+    </p>
+
+  </content>
+</slide>
+
+</section>
+
+<section>
+  <title>Citation and Bibliography</title>
+  <slide>
+    <title>Bibliography</title>
+    <content>
+      
+<the-bibliography>
+  <bib-item id="osmar">
+    <authors>C. Alves and R. Ribeiro</authors>
+    <year>2020</year>
+    <journal>Journal of Statistical Physics</journal>
+    <title>On Mechanical Waves</title>
+  </bib-item>
+  <bib-item id="paper2">
+    <authors>J. Smith and M. Johnson</authors>
+    <year>2018</year>
+    <journal>Physical Review Letters</journal>
+    <title>The Nature of Quantum Entanglement</title>
+  </bib-item>
+
+  <bib-item>
+    <authors>A. Lee and P. Zhang</authors>
+    <year>2021</year>
+    <journal>Journal of Applied Mechanics</journal>
+    <title>Advances in Thermodynamic Processes</title>
+  </bib-item>
+
+  <bib-item>
+    <authors>L. Gonzalez and K. Patel</authors>
+    <year>2019</year>
+    <journal>International Journal of Computational Fluid Dynamics</journal>
+    <title>Numerical Simulations of Turbulent Flows</title>
+  </bib-item>
+
+  <bib-item>
+    <authors>R. Martinez and B. Wilson</authors>
+    <year>2022</year>
+    <journal>Journal of Theoretical Biology</journal>
+    <title>Modeling Population Dynamics in Ecology</title>
+  </bib-item>
+
+  <bib-item id="work">
+    <authors>D. Nguyen and S. Davis</authors>
+    <year>2017</year>
+    <journal>Journal of Chemical Physics</journal>
+    <title>Molecular Interactions in Complex Systems</title>
+    <type>Arxiv</type>
+  </bib-item>
+</the-bibliography>
+    </content>
+  </slide>
+</section>
+
 <slide class="align-center">
   <content>
     <h2>Interactive elements</h2>
