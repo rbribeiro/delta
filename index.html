@@ -182,11 +182,72 @@
 
 <section>
   <title>Citation and Bibliography</title>
+
+
+  
+<slide>
+  <title>How to Create a Bibliography Item</title>
+  <content>
+    <p>
+      To add bibliography items in DELTA, use the <code>&lt;the-bibliography&gt;</code> tag to wrap all references. Each reference is created using the <code>&lt;bib-item&gt;</code> tag. The following fields are required:
+    </p>
+    <ul>
+      <li><code>&lt;authors&gt;</code>: Names of the authors</li>
+      <li><code>&lt;year&gt;</code>: Year of publication</li>
+      <li><code>&lt;journal&gt;</code>: Name of the journal or other source</li>
+      <li><code>&lt;title&gt;</code>: Title of the work</li>
+    </ul>
+
+    <p>
+      Optionally, you can add the <code>&lt;type&gt;</code> tag for works that are not journal articles (e.g., <code>Arxiv</code>).
+    </p>
+
+    <p>
+      Example of a bibliography item:
+    </p>
+    <code>
+      &lt;bib-item id="osmar"&gt;<br/>
+        &nbsp;&nbsp;&lt;authors&gt;C. Alves and R. Ribeiro&lt;/authors&gt;<br/>
+        &nbsp;&nbsp;&lt;year&gt;2020&lt;/year&gt;<br/>
+        &nbsp;&nbsp;&lt;journal&gt;Journal of Statistical Physics&lt;/journal&gt;<br/>
+        &nbsp;&nbsp;&lt;title&gt;On Mechanical Waves&lt;/title&gt;<br/>
+      &lt;/bib-item&gt;
+    </code>
+
+    <p>
+      You can add as many <code>&lt;bib-item&gt;</code> entries as needed, and they can be placed in any order inside the <code>&lt;the-bibliography&gt;</code> section.
+    </p>
+  </content>
+</slide>
+
+<slide>
+  <title>How to Cite Bibliography Items</title>
+  <content>
+    <p>
+      After creating your bibliography items, you can reference them in your presentation using the <code>&lt;cite-work&gt;</code> tag. This tag accepts a comma-separated list of IDs corresponding to the works you want to cite.
+    </p>
+
+    <p>
+      Example of citing works:
+    </p>
+    <code>
+      &lt;cite-work ids="osmar,paper2,work"&gt;&lt;/cite-work&gt;
+    </code>
+
+    <p>
+      This will create a citation that references the works with the IDs <code>osmar</code>, <code>paper2</code>, and <code>work</code>, in that order. The IDs must match the <code>id</code> attribute of the <code>&lt;bib-item&gt;</code> tags you previously defined. See it in action <cite-work ids="osmar,paper2,work"></cite-work>. Try hovering the cursor over the numbers.
+    </p>
+
+    <p>
+      Make sure the <code>id</code> attributes in your bibliography items are unique, as they allow you to reference specific works within the text.
+    </p>
+  </content>
+</slide>
   <slide>
     <title>Bibliography</title>
     <content>
       
-<the-bibliography>
+<the-bibliography animate>
   <bib-item id="osmar">
     <authors>C. Alves and R. Ribeiro</authors>
     <year>2020</year>

@@ -37,6 +37,5 @@ autogenerateSectionSlides.sectionBuilder = function (section, number) {
   }
 };
 
-Delta.getInstance().eventDispatcher.on("deltaIsReady", () => {
-  autogenerateSectionSlides.init();
-});
+// This function must be called before the "isDeltaReady" event to make sure all the new slides have been added before rendering
+autogenerateSectionSlides.init();

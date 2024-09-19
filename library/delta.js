@@ -715,6 +715,8 @@ class Delta {
       slide.id = `DELTA_SLIDE_${key + 1}`;
       slide.setAttribute("number", key + 1);
     });
+
+    Delta.getInstance().goToSlide(event.detail.currentState.currentSlide);
   }
 
   render() {
@@ -725,7 +727,6 @@ class Delta {
       this.getSlideNumFromURL() || this.state.currentSlide || 1;
 
     const totalSlides = document.querySelectorAll("slide").length;
-    console.log(totalSlides);
 
     this.animateLists();
     console.log("Lists rendered...");
