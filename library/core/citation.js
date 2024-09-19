@@ -71,6 +71,7 @@ class Bibliography extends HTMLElement {
   convertChildrenToList() {
     const ol = document.createElement("ol");
     ol.classList.add("bib-list");
+    if (this.hasAttribute("animate")) ol.setAttribute("animate", null);
 
     Array.from(this.children).forEach((child, key) => {
       const li = document.createElement("li");
@@ -126,5 +127,4 @@ class Citation extends HTMLElement {
       this.appendChild(document.createTextNode("]"));
     }
   }
-
 }
