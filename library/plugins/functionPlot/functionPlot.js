@@ -1,57 +1,58 @@
 class FunctionPlot extends HTMLElement {
   constructor() {
     super();
-    // Attach a shadow DOM
     this.attachShadow({ mode: "open" });
+    this.chart = null;
+    this.app = Delta.getInstance();
+    // Bind the handler to the proper context
+    this.handleStateChange = this.handleStateChange.bind(this);
   }
 
   connectedCallback() {
     this.render();
+
+    // Listen for change in the current slide or total slides
+    this.app.eventDispatcher.on(
+      "stateChange:currentSlide",
+      this.handleStateChange.bind(this),
+    );
   }
 
-  static get observedAttributes() {
-    return ["function", "xmin", "xmax", "step", "color"];
-  }
+  // This method is called when the slide changes
+  handleStateChange(event) {
+    // Determine if our element is now visible.
+    if (this.offsetParent !== null) {
+      setTimeout(() => {
+        // Retrieve the canvas
+        const canvas = this.shadowRoot.querySelector("canvas");
 
-  attributeChangedCallback() {
-    this.render();
-  }
+        // If the chart already exists, destroy it before creating a new one.
+        if (this.chart) {
+          this.chart.destroy();
+        }
 
-  render() {
-    this.shadowRoot.innerHTML = "";
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = "./library/plugins/functionPlot/functionPlot.css";
-    this.shadowRoot.appendChild(link);
+        // Re-render the chart
+        // TODO: this should be a temporary solution. I dont want to rerender the chart every time the user enters the slide
+        this.renderChart(canvas);
+      }, 50);
+    }
+  }
+  renderChart(canvas) {
+    // Generate data points and configuration
     const functionExpression = this.getAttribute("function") || "x";
     const xMin = parseFloat(this.getAttribute("xmin"));
     const xMax = parseFloat(this.getAttribute("xmax"));
     const step = parseFloat(this.getAttribute("step"));
     const color = this.getAttribute("color") || "orange";
-
-    // Create a canvas for Chart.js to render on
-    const canvas = document.createElement("canvas");
-    this.shadowRoot.appendChild(canvas);
-
-    if (this.getAttribute("show-controls") === "true") {
-      const controls = this.renderControls(
-        functionExpression,
-        xMin,
-        xMax,
-        step,
-      );
-      this.shadowRoot.append(controls);
-    }
-
-    // Generate data points
     const data = [];
+
     for (let x = xMin; x <= xMax; x += step) {
       const y = this.evaluateFunction(functionExpression, x);
       data.push({ x, y });
     }
 
-    // Plot the data using Chart.js
-    new Chart(canvas, {
+    // Create a new Chart.js instance and store it in this.chart
+    this.chart = new Chart(canvas, {
       type: "line",
       data: {
         datasets: [
@@ -66,27 +67,64 @@ class FunctionPlot extends HTMLElement {
         ],
       },
       options: {
+        responsive: true,
         scales: {
           x: {
             type: "linear",
             position: "bottom",
-            title: {
-              display: true,
-              text: "x",
-            },
+            title: { display: true, text: "x" },
           },
           y: {
-            title: {
-              display: true,
-              text: "y",
-            },
+            title: { display: true, text: "y" },
           },
         },
       },
     });
   }
+  static get observedAttributes() {
+    return ["function", "xmin", "xmax", "step", "color"];
+  }
+
+  attributeChangedCallback() {
+    this.render();
+  }
+
+  render() {
+    // Clear shadow DOM
+    this.shadowRoot.innerHTML = "";
+
+    // Add CSS
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "./library/plugins/functionPlot/functionPlot.css";
+    this.shadowRoot.appendChild(link);
+
+    // Get attributes
+    const functionExpression = this.getAttribute("function") || "x";
+    const xMin = parseFloat(this.getAttribute("xmin"));
+    const xMax = parseFloat(this.getAttribute("xmax"));
+    const step = parseFloat(this.getAttribute("step"));
+    const color = this.getAttribute("color") || "orange";
+
+    // Create a canvas
+    const canvas = document.createElement("canvas");
+    this.shadowRoot.appendChild(canvas);
+
+    if (this.getAttribute("show-controls") === "true") {
+      const controls = this.renderControls(
+        functionExpression,
+        xMin,
+        xMax,
+        step,
+      );
+      this.shadowRoot.append(controls);
+    }
+
+    this.renderChart(canvas);
+  }
 
   renderControls(funValue, xminValue, xmaxValue, stepValue) {
+    // Controls code as before
     const container = document.createElement("div");
     const func = document.createElement("input");
     func.type = "text";
@@ -112,7 +150,6 @@ class FunctionPlot extends HTMLElement {
     send.textContent = "Ok";
     const funcPlot = this;
     send.addEventListener("click", () => {
-      console.log(func.value);
       funcPlot.setAttribute("function", func.value);
       funcPlot.setAttribute("xmin", xmin.value);
       funcPlot.setAttribute("xmax", xmax.value);
@@ -127,13 +164,13 @@ class FunctionPlot extends HTMLElement {
 
     return container;
   }
+
   evaluateFunction(expression, x) {
-    // TODO: Use math.js for more complex expressions and better syntax
     return eval(expression.replace(/x/g, `(${x})`));
   }
 }
 
-// Define the custom element after the DELTA framework is ready
+// Define the custom element after the framework is ready
 Delta.getInstance().eventDispatcher.on("deltaIsReady", () => {
   customElements.define("function-plot", FunctionPlot);
 });
