@@ -1,0 +1,212 @@
+:root {
+  --base-spacing: 8px;
+  --main-font: Lato, Arial, Helvetica, sans-serif; 
+  --color-primary: #005a9c;
+  --color-accent: #f5a623;
+  --color-text-main: #333333;
+  --color-text-light: #777777; 
+  --color-background: #f0f0f0; 
+}
+
+body {
+  background-color: var(--color, #e0e0e0);
+  /* This creates the counter named "h1" and sets it to 0. */
+  counter-reset: h1;
+  font-family: var(--main-font);
+  font-size: 16px;
+}
+
+.container {
+  max-width: var(--width, 960px);
+  padding: 0 20px; /* Side padding for small screens */
+  margin-top: var(--margin-top, 20px);
+  margin-right: var(--margin-right, auto);
+  margin-bottom: var(--margin-bottom, 50px);
+  margin-left: var(--margin-left, auto);
+
+  counter-reset: page-number; 
+}
+
+h1 ~ .environment::before {
+  content: var(--env-name) " " 
+           counter(h1) "." counter(env-counter)
+           " " attr(data-comment);
+}
+
+/* Rule for environments after an H2 (overrides the H1 rule) */
+h2 ~ .environment::before {
+  content: var(--env-name) " " 
+           counter(h1) "." counter(h2) "." counter(env-counter)
+           " " attr(data-comment);
+}
+
+/* Rule for environments after an H3 */
+h3 ~ .environment::before {
+  content: var(--env-name) " " 
+           counter(h1) "." counter(h2) "." counter(h3) "." counter(env-counter)
+           " " attr(data-comment);
+}
+
+
+h1.manual-number {
+  /* This updates the counter's value for the elements that follow */
+  counter-set: h1 var(--number);
+}
+h1.manual-number::before {
+  /* This displays the manual number */
+  content: counter(h1) ". ";
+}
+
+
+h2.manual-number {
+  counter-set: h2 var(--number);
+}
+h2.manual-number::before {
+  /* Note the content includes the parent h1 counter */
+  content: counter(h1) "." counter(h2) ". ";
+}
+
+
+h3.manual-number {
+  counter-set: h3 var(--number);
+}
+h3.manual-number::before {
+  content: counter(h1) "." counter(h2) "." counter(h3) ". ";
+}
+
+
+
+/* Only increment and show the number if the h1 does NOT have the class "unnumbered" */
+h1:not(.unnumbered):not(.manual-number)::before {
+  counter-increment: h1;
+  content: counter(h1) ". ";
+}
+
+h2:not(.unnumbered):not(.manual-number)::before {
+  counter-increment: h2;
+  content: counter(h1) "." counter(h2) ". ";
+}
+
+h3:not(.unnumbered):not(.manual-number)::before {
+  counter-increment: h3;
+  content: counter(h1) "." counter(h2) "." counter(h3) ". ";
+}
+
+h4:not(.unnumbered):not(.manual-number)::before {
+  counter-increment: h4;
+  content: counter(h1) "." counter(h2) "." counter(h3) "." counter(h4) ". ";
+}
+
+
+.vspace {
+  display: block;
+  /* Use the --space-size variable, but if it's not defined, default to 1em */
+  height: var(--size, 1em);
+}
+
+.hspace {
+  display: inline-block;       /* so it behaves like a character */
+  width: var(--size, 1em);     /* default = 1em */
+}
+
+.textleft { text-align: left; }
+.textcenter { text-align: center; }
+.textright { text-align: right; }
+.textjustify { text-align: justify; }
+
+.textbf {
+    font-weight: bold;
+}
+
+.textit {
+    font-style: italic;
+}
+
+.box {
+  padding: var(--box-padding, 20px); /* Space inside the box */
+  margin-top: var(--top-size, 20px); /* Space above the box */
+  margin-bottom: var(--bottom-size, 20px); /* Space below the box */
+  border-radius: var(--box-radius, 5px); /* Slightly rounded corners */
+  background-color: var(--back-color, var(--color-primary));
+  color: var(--text-color, var(--color-text-main));
+
+  border: var(--border-width, 0) 
+          var(--border-style, solid) 
+          var(--border-color, black);
+}
+
+.page {
+  background-color: white;
+  padding: var(--page-padding, 60px); /* This is your "page margins" variable! */
+  margin-bottom: 30px; /* Space between pages */
+  border-radius: 3px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* A soft shadow to lift the page */
+  
+  /* This is crucial for positioning the page number later */
+  position: relative; 
+}
+
+.page:not(.unnumbered):not(.manual-number)::after {
+  counter-increment: page-number; /* Add 1 to the page counter */
+  content: counter(page-number); /* Display the counter's value */
+  
+  /* Positioning styles to place the number in the bottom-right */
+  position: absolute;
+  bottom: 20px;
+  right: 30px;
+  color: #999;
+  font-size: 14px;
+}
+
+.page.manual-number {
+  /* Set the counter to the value of our --page-num variable */
+  counter-set: page-number var(--page-num); 
+}
+.page.manual-number::after {
+  /* Display the counter value (which was just set manually) */
+  content: counter(page-number);
+  
+  /* Re-apply the same positioning styles */
+  position: absolute;
+  bottom: 20px;
+  right: 30px;
+  color: #999;
+  font-size: 14px;
+}
+
+/* Generic class for all theorem-like environments */
+.environment {
+  font-style: italic; /* Italic by default */
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+
+
+.theorem {
+  --env-name: "Theorem";
+  counter-increment: env-counter;
+}
+.example {
+  --env-name: "Example";
+  counter-increment: env-counter;
+}
+/* You can add .proposition, .lemma, etc. in the same pattern */
+
+
+/* The magic ::before pseudo-element that creates the title */
+.environment::before {
+  content: var(--env-name) " " 
+           counter(h1) "." counter(h2) "." counter(env-counter)
+           " " attr(data-comment);
+
+  display: block;
+  font-weight: bold;
+  font-style: normal;
+  margin-bottom: 5px;
+}
+
+/* This is the override class to make the text normal */
+.environment.no-italic {
+  font-style: normal;
+}
