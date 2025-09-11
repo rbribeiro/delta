@@ -1,0 +1,18 @@
+dlt-section {
+  display: block;
+  text-align: justify;
+  font-size: large;
+  line-height: 1.5;
+  margin: 8px 0;
+}
+
+dlt-statement {
+  display: block;
+  text-align: justify;
+  font-size: large;
+  line-height: 1.5;
+  background-color: #f9ffaa;
+  border-radius: 30px;
+  padding: 20px;
+  margin: 20px 0;
+}
