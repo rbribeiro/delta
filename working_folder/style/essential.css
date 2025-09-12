@@ -18,3 +18,8 @@ subsection > title {
   font-size: 1.5rem;
   font-weight: bold;
 }
+
+list > item {
+  display: block;
+  margin: 1rem;
+}
