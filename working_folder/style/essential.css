@@ -28,6 +28,15 @@ subsection > title {
   font-weight: bold;
 }
 
+theorem > title {
+  display: block;
+  font-weight: bold
+}
+
+theorem {
+  font-style: italic;
+}
+
 list > item {
   display: block;
   margin: 1rem;
