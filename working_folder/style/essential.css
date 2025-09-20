@@ -1,31 +1,85 @@
-
-
-
 /******************** 
  * Enviroments styles
  * ******************/
-
 
 body {
   display: flex;
 }
 
+main{
+  margin: auto;
+}
+
+nav{
+  padding: 10px;
+}
+
+#summary-list, #summary-list ul{
+  list-style: none;
+  padding: 0;
+  margin: 0px;
+  display: block;
+  gap: 10px;
+}
+
+#summary-list li {
+  padding: 5px 8px;
+  border-radius: 3px;
+  transition: background-color 0.2s ease;
+  position: relative;
+}
+
+#summary-list li:hover {
+  background-color: #e0e0e0;
+  cursor: pointer;
+}
+
+#summary-list ul li:hover {
+  background-color: #c6c6c6;
+  cursor: pointer;
+}
+
 nav {
   width: 15vw;
-  background-color: gray;
+  background-color: rgb(240, 240, 240);
+  box-shadow: -1px 2px 5px 0 rgba(99, 99, 99, 0.4);
+  height: 100%;
+  border-radius: 5px;
 }
 
-section > title {
-  display: block;
-  font-size: 2rem;
+/* testando inserir o titulo como um atributo*/
+section {
+  position: relative;
+  padding-bottom: 10px;
+  /*border-left: 2px solid #ccc;apenas para ver a identação
+  */
+}
+
+section[title] {
+  padding-top: 60px; /* espaço para o título */
+  padding-left: 30px;
+}
+
+section::before {
+  content: attr(title);
+  position: absolute;
+  left: -2px;/* tira o título da borda esquerda */
+  top: 0;
   font-weight: bold;
+  font-size: 2.2rem;
+  border-left: 0px;
 }
-
 
 subsection > title {
   display: block;
   font-size: 1.5rem;
   font-weight: bold;
+}
+
+subsection{
+  padding-left: 30px;
+  position: relative;
+  display: block;
 }
 
 theorem > title {
