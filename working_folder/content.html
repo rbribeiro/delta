@@ -1,7 +1,7 @@
 <main>
     <section title="Teoremas">
       <title>Teoremas</title>
-     <theorem>
+     <theorem id="teste_razao">
         <title>Teste da Razão</title>
       Seja \((a_n)_n\) uma sequência real. Suponha que existe o limite
 \[
@@ -48,6 +48,23 @@ Se \(L = 1\), o teste é inconclusivo.
         <subsection>
             <title>Soluções</title>
             <solution>
+        <ref ref-id="ex1">Exercício 1</ref>. Observe que é suficiente provar que para todo \( k \in \mathbb{N}\), 
+        \[
+        \lim_{n \to \infty} \frac{n^k}{b^n} = 0
+        \]
+        Uma vez que dado um polinômio, podemos fatorar a maior potência. Agora note que para \(n\) fixo, temos que:
+        \[
+        \frac{(n+1)^k/b^{n+1}}{n^k/b^n} = \left( 1 + \frac{1}{n} \right)^k\frac{1}{b} \to 0,
+        \]
+        quando \(n \to \infty\) e \(b>1\). Logo, pelo <ref ref-id="teste_razao">Teste da Razão</ref>, temos que
+        \[
+          \sum_{n=1}^\infty \frac{n^k}{b^n} < \infty
+        \]
+        O que, por sua vez, implica que
+ \[
+        \lim_{n \to \infty} \frac{n^k}{b^n} = 0
+        \]
+
             </solution>
         </subsection>
     </section>
