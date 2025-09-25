@@ -14,7 +14,7 @@ nav{
   padding: 10px;
 }
 
-#summary-list, #summary-list ul{
+#table-of-contents, #table-of-contents ul{
   list-style: none;
   padding: 0;
   margin: 0px;
@@ -22,19 +22,19 @@ nav{
   gap: 10px;
 }
 
-#summary-list li {
+#table-of-contents li {
   padding: 5px 8px;
   border-radius: 3px;
   transition: background-color 0.2s ease;
   position: relative;
 }
 
-#summary-list li:hover {
+#table-of-contents li:hover {
   background-color: #e0e0e0;
   cursor: pointer;
 }
 
-#summary-list ul li:hover {
+#table-of-contents ul li:hover {
   background-color: #c6c6c6;
   cursor: pointer;
 }

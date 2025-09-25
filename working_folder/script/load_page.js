@@ -8,15 +8,10 @@ const page_head = `
 
 const page_body = `
 <nav>
-    <ul id="summary-list">
-    </ul>
 </nav>
 `;
 
-const page_scripts = ["script/dynamic_content.js"];
-
-window.addEventListener("DOMContentLoaded", () => {
-  document.head.innerHTML = page_head;
+function loadMathJax() {
   const mathjaxScript = document.createElement("script");
   mathjaxScript.id = "MathJax-script";
   mathjaxScript.src = "https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js";
@@ -28,14 +23,30 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   };
   document.head.appendChild(mathjaxScript);
+}
 
-  const main = document.querySelector("main");
-  document.body.innerHTML = page_body;
-  document.body.appendChild(main);
+function loadScripts() {
+  const components = ["table_of_contents", "ref_box"];
+  const scripts = ["dynamic_content", "interaction"];
+
+  const componentsPath = components.map((el) => `script/components/${el}.js`);
+  const scriptsPath = scripts.map((el) => `script/${el}.js`);
+  const page_scripts = [...componentsPath, ...scriptsPath];
 
   page_scripts.forEach((src) => {
     const script = document.createElement("script");
     script.src = src;
     document.body.appendChild(script);
   });
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  document.head.innerHTML = page_head;
+
+  const main = document.querySelector("main");
+  document.body.innerHTML = page_body;
+  document.body.appendChild(main);
+
+  loadScripts();
+  loadMathJax();
 });
