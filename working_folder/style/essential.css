@@ -55,22 +55,19 @@ section {
   */
 }
 
+/* espaço para o título
 section[title] {
-  padding-top: 60px; /* espaço para o título */
+  padding-top: 60px;
   padding-left: 30px;
-}
+} */
 
-section::before {
-  content: attr(title);
-  position: absolute;
-  left: -2px;/* tira o título da borda esquerda */
-  top: 0;
-  font-weight: bold;
+section > dlt-title {
+  display: block;
   font-size: 2.2rem;
-  border-left: 0px;
+  font-weight: bold;
 }
 
-subsection > title {
+subsection > dlt-title {
   display: block;
   font-size: 1.5rem;
   font-weight: bold;
@@ -82,7 +79,7 @@ subsection{
   display: block;
 }
 
-theorem > title {
+.environment > dlt-title {
   display: block;
   font-weight: bold
 }

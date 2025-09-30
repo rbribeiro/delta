@@ -5,17 +5,68 @@ function renderTitleAttribute() {
     return;
   }
 
-  // Should we filter by specific section/statement components?
+  // Should we filter by specific environment components?
   main.querySelectorAll("[title]").forEach((el) => {
     const title = el.getAttribute("title");
     if (!title) return;
 
-    const titleEl = document.createElement("title");
+    // Change attribute name to avoid conflict with HTML title attribute
+    el.setAttribute('dlt-title', title);
+    el.removeAttribute('title');
+
+    const titleEl = document.createElement("dlt-title");
     titleEl.innerHTML = title;
     el.prepend(titleEl);
   });
 }
 
+function renderEnvironmentsNumberAndName(parent, parentNumber, type) {
+  function changeTitleEl(el, number) {
+    let titleEl = el.querySelector(":scope > dlt-title");
+    const title = number + " " + (titleEl ? titleEl.innerHTML : "");
+
+    // If there is no title, should we add the numbering anyway?
+    if (!titleEl) {
+      titleEl = document.createElement("dlt-title");
+      titleEl.innerHTML = title;
+      el.prepend(titleEl);
+    }
+    titleEl.innerHTML = title;
+  }
+
+  // Type can be "subsection" or "section"
+  const sections = parent.querySelectorAll(":scope > " + type);
+
+  (sections || []).forEach((section, index) => {
+    // Compute section number  
+    const numberPrefix = parentNumber != "" ? parentNumber + "." : "";
+    const sectionNumber = numberPrefix + String(index + 1);
+    section.setAttribute("section-number", sectionNumber);
+
+    changeTitleEl(section, sectionNumber);
+
+    Object.keys(ENV_TYPES_JSON).forEach((envType) => {
+      section
+        .querySelectorAll(":scope > " + envType)
+        .forEach((envEl, idx) => {
+          const envNumber = sectionNumber + "." + String(idx + 1);
+          envEl.setAttribute(envType + "-number", envNumber);
+          envEl.setAttribute("class", "environment");
+          const title = ENV_TYPES_JSON[envType].pt + " " + envNumber;
+          changeTitleEl(envEl, title);
+        });
+    });
+
+    // Recurse into subsections
+    renderEnvironmentsNumberAndName(
+      section,
+      sectionNumber,
+      "subsection"
+    );
+  });
+}
+
+// Always execute after the title attributes are rendered and the environments are named
 function renderTableOfContents() {
   const nav = document.querySelector("nav");
   if (!nav) {
@@ -27,4 +78,5 @@ function renderTableOfContents() {
 }
 
 renderTitleAttribute();
-renderTableOfContents();
+renderEnvironmentsNumberAndName(document.querySelector("main"), "", "section");
+renderTableOfContents(); // Always execute after the title attributes are rendered and the environments are named

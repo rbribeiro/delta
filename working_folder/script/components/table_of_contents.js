@@ -8,11 +8,11 @@ class TableOfContents extends HTMLElement {
       return;
     }
 
-    const toc = this.#generateTableOfContents(main, "", "section");
+    const toc = this.#generateTableOfContents(main, "section");
     this.appendChild(toc);
   }
 
-  #generateTableOfContents(parent, parentIdx, type) {
+  #generateTableOfContents(parent, type) {
     // Type can be "subsection" or "section"
     const sections = parent.querySelectorAll(":scope > " + type);
 
@@ -26,35 +26,23 @@ class TableOfContents extends HTMLElement {
       ul.id = "table-of-contents";
     }
 
-    let count = 1;
-    for (let section of sections) {
-      const idxPrefix = parentIdx != "" ? parentIdx + "." : "";
-      const sectionIdx = idxPrefix + String(count);
-      section.setAttribute("section-idx", sectionIdx);
-
-      const titleEl = section.querySelector(":scope > title");
-      const title = sectionIdx + " " + (titleEl ? titleEl.innerHTML : "");
-
-      // Add numbering to the section title
-      // If there is no title, should we add the numbering anyway?
-      if (titleEl) {
-        titleEl.innerHTML = title;
-      }
+    sections.forEach((section) => {
+      const titleEl = section.querySelector(":scope > dlt-title");
+      // the current logic already creates a title for every section (in dynamic_content.js)
+      // but, just in case, we handle the case where there is no title
+      const title = titleEl ? titleEl.innerHTML : "";
 
       const li = document.createElement("li");
       li.innerHTML = title;
 
       const subsections = this.#generateTableOfContents(
         section,
-        sectionIdx,
         "subsection"
       );
       li.appendChild(subsections);
 
       ul.appendChild(li);
-
-      count++;
-    }
+    });
 
     return ul;
   }
