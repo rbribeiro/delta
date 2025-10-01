@@ -7,11 +7,13 @@ class RefBox extends HTMLElement {
             return;
         }
 
-        const ref = document.getElementById(refId).cloneNode(true);
+        const ref = document.querySelector('[uid="'+ refId +'"]');
         if (!ref) {
             console.error(`Element with id ${refId} not found`);
             return;
         }
+
+        const refClone = ref.cloneNode(true);
 
         this.innerHTML = `
             <div class="ref-wrapper">
@@ -22,7 +24,7 @@ class RefBox extends HTMLElement {
             `;
         
         const refContent = this.querySelector(".ref-content");
-        refContent.appendChild(ref);
+        refContent.appendChild(refClone);
 
         const closeBtn = this.querySelector(".close-ref");
         closeBtn.addEventListener("click", () => this.remove());

@@ -28,12 +28,15 @@ class TableOfContents extends HTMLElement {
 
     sections.forEach((section) => {
       const titleEl = section.querySelector(":scope > dlt-title");
-      // the current logic already creates a title for every section (in dynamic_content.js)
+      // the current logic already creates a title for every section (in dynamic_content.js/renderTitle)
       // but, just in case, we handle the case where there is no title
       const title = titleEl ? titleEl.innerHTML : "";
 
       const li = document.createElement("li");
-      li.innerHTML = title;
+      const a = document.createElement("a");
+      a.innerHTML = title;
+      a.href = "#" + section.id;
+      li.appendChild(a);
 
       const subsections = this.#generateTableOfContents(
         section,

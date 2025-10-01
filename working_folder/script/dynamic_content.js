@@ -1,4 +1,4 @@
-function renderTitleAttribute() {
+function renderTitle() {
   const main = document.querySelector("main");
   if (!main) {
     console.error("<main> element not found");
@@ -41,7 +41,7 @@ function renderEnvironmentsNumberAndName(parent, parentNumber, type) {
     // Compute section number  
     const numberPrefix = parentNumber != "" ? parentNumber + "." : "";
     const sectionNumber = numberPrefix + String(index + 1);
-    section.setAttribute("section-number", sectionNumber);
+    section.id = "section" + sectionNumber;
 
     changeTitleEl(section, sectionNumber);
 
@@ -50,8 +50,8 @@ function renderEnvironmentsNumberAndName(parent, parentNumber, type) {
         .querySelectorAll(":scope > " + envType)
         .forEach((envEl, idx) => {
           const envNumber = sectionNumber + "." + String(idx + 1);
-          envEl.setAttribute(envType + "-number", envNumber);
-          envEl.setAttribute("class", "environment");
+          envEl.id = envType+envNumber; // If needed in the future
+          envEl.classList.add("environment");
           const title = ENV_TYPES_JSON[envType].pt + " " + envNumber;
           changeTitleEl(envEl, title);
         });
@@ -77,6 +77,6 @@ function renderTableOfContents() {
   nav.appendChild(toc);
 }
 
-renderTitleAttribute();
+renderTitle();
 renderEnvironmentsNumberAndName(document.querySelector("main"), "", "section");
 renderTableOfContents(); // Always execute after the title attributes are rendered and the environments are named
