@@ -81,7 +81,27 @@ subsection{
 
 .environment > dlt-title {
   display: block;
-  font-weight: bold
+  font-weight: bold;
+}
+
+.collapsible > dlt-title {
+  cursor: pointer;
+}
+
+.collapsible > dlt-title::before {
+  content: '▼';
+  display: inline-block;
+  margin-right: 8px;
+  font-size: 0.8em;
+  transition: transform 0.2s ease-in-out;
+}
+
+.is-collapsed > .content-wrapper {
+  display: none;
+}
+
+.is-collapsed > dlt-title::before {
+  transform: rotate(-90deg); /* Rotate to point right */
 }
 
 theorem {

@@ -27,7 +27,7 @@ function loadMathJax() {
 
 function loadScripts() {
   const components = ["table_of_contents", "ref_box"];
-  const scripts = ["constants", "dynamic_content", "interaction"];
+  const scripts = ["constants", "dynamic_content", "interaction", "collapsible"];
 
   const componentsPath = components.map((el) => `script/components/${el}.js`);
   const scriptsPath = scripts.map((el) => `script/${el}.js`);

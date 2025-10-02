@@ -13,8 +13,14 @@ class TableOfContents extends HTMLElement {
   }
 
   #generateTableOfContents(parent, type) {
-    // Type can be "subsection" or "section"
-    const sections = parent.querySelectorAll(":scope > " + type);
+    // Again adapted for the content-wrapper div, as sections and subsections aren't direct parents anymore
+    let contentParent = parent.querySelector(':scope > .content-wrapper');
+
+    if (!contentParent) {
+      contentParent = parent;
+    }
+
+    const sections = contentParent.querySelectorAll(":scope > " + type);
 
     // No more sections in the tree
     if ((sections || []).length == 0) {
