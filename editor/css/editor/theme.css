@@ -1,0 +1,53 @@
+/**
+ * Editor Theme Styles
+ * 
+ * Theme colors for the editor interface only.
+ * Does NOT affect document rendering.
+ */
+
+/* Light theme (default) */
+:root {
+    --editor-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --panel-bg: white;
+    --header-bg: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    --text-color: #495057;
+    --border-color: #dee2e6;
+    --hover-bg: rgba(0,0,0,0.05);
+}
+
+/* Dark theme */
+body.dark-theme {
+    --editor-bg: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    --panel-bg: #1e1e1e;
+    --header-bg: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+    --text-color: #e2e8f0;
+    --border-color: #4a5568;
+    --hover-bg: rgba(255,255,255,0.1);
+}
+
+body {
+    background: var(--editor-bg);
+}
+
+.editor-panel,
+.preview-panel {
+    background: var(--panel-bg);
+    color: var(--text-color);
+}
+
+.editor-header,
+.preview-header {
+    background: var(--header-bg);
+    color: var(--text-color);
+    border-bottom-color: var(--border-color);
+}
+
+.editor-controls button:hover,
+.preview-controls button:hover {
+    background-color: var(--hover-bg);
+}
+
+body.dark-theme #editor-fallback {
+    background: #1e1e1e;
+    color: #d4d4d4;
+}

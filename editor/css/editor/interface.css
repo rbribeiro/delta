@@ -1,0 +1,139 @@
+/**
+ * Editor Interface Styles
+ * 
+ * Styles for the Delta editor tool interface.
+ * Does NOT affect document content - only the editor UI.
+ */
+
+body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.editor-container,
+.editor-panel,
+.preview-panel,
+.editor-header,
+.preview-header,
+.editor-controls,
+.preview-controls,
+#editor-container,
+#preview {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Editor layout */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.editor-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    height: 100vh;
+    gap: 2px;
+    background-color: rgba(255,255,255,0.1);
+}
+
+/* Editor panels */
+.editor-panel,
+.preview-panel {
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    background: white;
+}
+
+/* Panel headers */
+.editor-header,
+.preview-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 12px 20px;
+    border-bottom: 1px solid #dee2e6;
+    font-weight: 600;
+    color: #495057;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Controls */
+.editor-controls,
+.preview-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.editor-controls button,
+.preview-controls button {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.editor-controls button:hover,
+.preview-controls button:hover {
+    background-color: rgba(0,0,0,0.05);
+}
+
+/* Monaco Editor */
+#editor-container {
+    flex: 1;
+    overflow: hidden;
+}
+
+.monaco-editor {
+    font-family: 'Fira Code', 'JetBrains Mono', monospace !important;
+}
+
+/* Fallback textarea */
+#editor-fallback {
+    width: 100%;
+    height: 100%;
+    border: none;
+    outline: none;
+    resize: none;
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 20px;
+    background: #fafafa;
+    color: #333;
+}
+
+/* Preview container */
+#preview {
+    flex: 1;
+    overflow-y: auto;
+    background: white;
+    padding: 0; /* Document styles handle their own padding */
+}
+
+/* Ensure document content is isolated from editor styles */
+#preview .delta-document {
+    /* Reset any inherited editor styles */
+    font-family: inherit !important;
+    line-height: inherit !important;
+    color: inherit !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .editor-container {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 1fr;
+    }
+}

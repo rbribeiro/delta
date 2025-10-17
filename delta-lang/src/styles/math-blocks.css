@@ -1,0 +1,68 @@
+delta-theorem {
+    display: block;
+    margin: 1.5rem 0;
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    border-left: 4px solid #e74c3c;
+}
+
+
+.level-tag {
+  padding: 3px;
+  border-radius: 6px;
+  margin-left: 1.5rem;
+}
+
+.level-easy {
+  background-color: green;
+}
+
+delta-exercise {
+    display: block;
+    margin: 1.5rem 0;
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    border-left: 4px solid orange;
+}
+
+
+delta-exercise .block-header {
+    background: orange;
+    color: white;
+    padding: 0.75rem 1rem;
+    font-weight: bold;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+delta-theorem .block-header {
+    background: #e74c3c;
+    color: white;
+    padding: 0.75rem 1rem;
+    font-weight: bold;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+
+delta-theorem .block-content {
+    padding: 1rem 1.5rem;
+    line-height: 1.8;
+}
+
+/* Add QED symbol to proofs */
+delta-proof::after {
+    content: "∎";
+    display: block;
+    text-align: right;
+    font-weight: bold;
+    margin-top: 1rem;
+    color: black;
+}
+

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delta Scientific Paper Editor</title>
+    
+    <link rel="stylesheet" href="css/editor/interface.css">
+    <link rel="stylesheet" href="css/editor/theme.css">
+    
+    <!-- Delta Language Styles -->
+    <!-- TODO: Implementar um bundler que compile todos os css -->
+    <link rel="stylesheet" href="../delta-lang/src/styles/base.css">
+    <link rel="stylesheet" href="../delta-lang/src/styles/math-blocks.css">
+    <link rel="stylesheet" href="../delta-lang/src/styles/interactive-ui.css">
+    <link rel="stylesheet" href="../delta-lang/src/styles/media.css">
+    <link rel="stylesheet" href="../delta-lang/src/styles/equations.css">
+    <link rel="stylesheet" href="../delta-lang/src/styles/citations.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+    
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+</head>
+<body>
+    <div class="editor-container">
+        <div class="editor-panel">
+            <div class="editor-header">
+                <h3>📝 Delta Editor</h3>
+                <div class="editor-controls">
+                    <button id="theme-toggle" title="Toggle Dark/Light Theme">🌙</button>
+                    <button id="format-btn" title="Format Document">📐</button>
+                    <span class="status">Ready</span>
+                </div>
+            </div>
+            <div id="editor-container"></div>
+        </div>
+        
+        <div class="preview-panel">
+            <div class="preview-header">
+                <h3>📖 Preview</h3>
+                <div class="preview-controls">
+                    <button id="export-btn" title="Export to HTML">💾</button>
+                    <button id="fullscreen-btn" title="Toggle Fullscreen Preview">🔍</button>
+                </div>
+            </div>
+            <div id="preview">
+                <div class="delta-document" id="document-content">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TODO: Implementar bundler para compilar todos os js -->
+    <!-- Delta Language Core -->
+    <script src="../delta-lang/src/core/parser.js"></script>
+    <script src="../delta-lang/src/renderer/html-renderer.js"></script>
+    
+    <!-- Delta Language Components -->
+    <script src="../delta-lang/src/components/base-elements.js"></script>
+    <script src="../delta-lang/src/components/math-blocks.js"></script>
+    <script src="../delta-lang/src/components/interactive-ui.js"></script>
+    <script src="../delta-lang/src/components/media.js"></script>
+    <script src="../delta-lang/src/components/equations.js"></script>
+    <script src="../delta-lang/src/components/citations.js"></script>
+    
+    <!-- Editor -->
+    <script src="js/editor.js"></script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+{
+  "name": "delta-lang",
+  "version": "0.1.0",
+  "description": "A markup language for scientific papers with Python-like syntax",
+  "main": "dist/delta.min.js",
+  "module": "src/core/parser.js",
+  "types": "dist/delta.d.ts",
+  "files": [
+    "dist/",
+    "src/",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "node tools/build.js",
+    "test": "node tests/parser.test.js",
+    "cli": "node tools/cli.js",
+    "dev": "node tools/build.js --watch",
+    "validate": "node tools/validate.js"
+  },
+  "bin": {
+    "delta": "tools/cli.js"
+  },
+  "keywords": [
+    "markup",
+    "scientific",
+    "papers",
+    "math",
+    "academic",
+    "latex",
+    "python-like",
+    "indentation"
+  ],
+  "author": "Rodrigo",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/delta-lang.git"
+  },
+  "bugs": {
+    "url": "https://github.com/username/delta-lang/issues"
+  },
+  "homepage": "https://github.com/username/delta-lang#readme",
+  "devDependencies": {},
+  "dependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
