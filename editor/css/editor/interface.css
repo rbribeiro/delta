@@ -25,6 +25,11 @@ body {
     box-sizing: border-box;
 }
 
+#preview {
+	margin-left: 8px;
+	margin-right: 8px;
+}
+
 /* Editor layout */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;

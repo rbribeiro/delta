@@ -1,3 +1,35 @@
+const INITIAL_DELTA_TEXT = `# Introduction
+
+theorem "Pythagorean Theorem", difficulty "easy":
+	In a right triangle, the square of the hypotenuse 
+	equals the sum of squares of the other two sides:
+	$$c^2 = a^2 + b^2$$
+
+equation: E = mc^2
+
+definition "Limit":
+	The value that a function approaches as the 
+	input approaches some value.
+
+proof:
+	This follows directly from the definition.
+
+note: This is a simple inline note.
+
+## Advanced Topics
+
+lemma "Fundamental Lemma":
+	Every non-empty set has a smallest element.
+
+example:
+	Consider the set $\\{1, 2, 3\\}$.
+
+plot "This is an example plot" x "1,15" y "1,10" size "0.75,0.4":
+	Plot Content
+
+This is a paragraph with some text.
+`
+
 class DeltaEditor {
     constructor() {
         // Simple direct references to global objects
@@ -55,34 +87,7 @@ class DeltaEditor {
             });
             
             window.require(['vs/editor/editor.main'], () => {
-                const initialContent = `# Introduction
-
-This is a paragraph with some text.
-
-theorem "Pythagorean Theorem", difficulty "easy":
-    In a right triangle, the square of the hypotenuse 
-    equals the sum of squares of the other two sides:
-    $$c^2 = a^2 + b^2$$
-
-equation: E = mc^2
-
-definition "Limit":
-    The value that a function approaches as the 
-    input approaches some value.
-
-proof:
-    This follows directly from the definition.
-
-note: This is a simple inline note.
-
-## Advanced Topics
-
-lemma "Fundamental Lemma":
-    Every non-empty set has a smallest element.
-
-example:
-    Consider the set $\\{1, 2, 3\\}$.
-`;
+                const initialContent = INITIAL_DELTA_TEXT;
 
                 // Register Delta language
                 this.registerDeltaLanguage();
@@ -252,34 +257,7 @@ example:
         // Create a textarea fallback with enhanced styling
         const textarea = document.createElement('textarea');
         textarea.id = 'editor-fallback';
-        textarea.value = `# Introduction
-
-This is a paragraph with some text.
-
-theorem "Pythagorean Theorem", difficulty "easy":
-    In a right triangle, the square of the hypotenuse 
-    equals the sum of squares of the other two sides:
-    $$c^2 = a^2 + b^2$$
-
-equation: E = mc^2
-
-definition "Limit":
-    The value that a function approaches as the 
-    input approaches some value.
-
-proof:
-    This follows directly from the definition.
-
-note: This is a simple inline note.
-
-## Advanced Topics
-
-lemma "Fundamental Lemma":
-    Every non-empty set has a smallest element.
-
-example:
-    Consider the set $\\{1, 2, 3\\}$.
-`;
+        textarea.value = INITIAL_DELTA_TEXT;
         
         textarea.style.cssText = `
             width: 100%;
@@ -393,20 +371,20 @@ example:
     exportHTML() {
         const html = this.preview.innerHTML;
         const blob = new Blob([`
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Delta Document</title>
-    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <style>
-        body { font-family: 'Segoe UI', sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-        ${document.querySelector('style')?.textContent || ''}
-    </style>
-</head>
-<body>
-    ${html}
-</body>
-</html>
+		<!DOCTYPE html>
+		<html>
+		<head>
+			<title>Delta Document</title>
+			<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+			<style>
+				body { font-family: 'Segoe UI', sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+				${document.querySelector('style')?.textContent || ''}
+			</style>
+		</head>
+		<body>
+			${html}
+		</body>
+		</html>
         `], { type: 'text/html' });
         
         const url = URL.createObjectURL(blob);
