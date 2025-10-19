@@ -1,0 +1,21 @@
+delta-plot {
+	display: block;
+	position: relative;
+	width: auto;
+	height: 0;
+}
+
+delta-plot-content {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	background-color: white;
+	padding: 0%;
+	border-radius: 1%;
+	box-sizing: border-box;
+}
+
+.delta-plot-svg {
+	width: 100%;
+	height: 100%;
+}
