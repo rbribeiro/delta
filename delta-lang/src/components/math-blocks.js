@@ -40,7 +40,7 @@ class DeltaTheorem extends HTMLElement {
     const difficulty = this.getAttribute("difficulty") || null
 
     const blockHeader = document.createElement("div")
-    blockHeader.textContent = title ? `Theorem. "${title}"` : "Theorem."
+    blockHeader.textContent = title ? `Theorem (${title}).` : "Theorem."
     blockHeader.classList.add("block-header")
 
     if (difficulty) {
@@ -60,4 +60,21 @@ class DeltaTheorem extends HTMLElement {
 
 customElements.define("delta-theorem", DeltaTheorem)
 
+class DeltaDefinition extends HTMLElement {
+  constructor() {
+    super()
+  }
+
+  connectedCallback() {
+    const title = this.getAttribute("data-title") || null
+
+    const blockHeader = document.createElement("div")
+    blockHeader.textContent = title ? `Definition (${title}).` : "Definition."
+    blockHeader.classList.add("block-header")
+
+    this.prepend(blockHeader)
+  }
+}
+
+customElements.define("delta-definition", DeltaDefinition)
 

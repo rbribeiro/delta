@@ -1,11 +1,20 @@
 const INITIAL_DELTA_TEXT = `# Introduction
 
-theorem "Pythagorean Theorem", difficulty "easy":
-	In a right triangle, the square of the hypotenuse 
-	equals the sum of squares of the other two sides:
+theorem "Pythagorean Theorem":
+	In a right triangle, the square of the hypotenuse equals the sum of squares of the other two sides:
 	$$c^2 = a^2 + b^2$$
 
 equation: E = mc^2
+
+exercise:
+    Seja \\( f : [0,1] \\to \\mathbb{R} \\) uma função contínua tal que
+    \\[
+    \\int_0^1 f(x) , dx = 0.
+    \\]
+    Prove que existe um ponto \\(c \\in (0,1) \\) tal que
+    \\[
+    \\int_0^c f(x), dx = 0.
+    \\]
 
 definition "Limit":
 	The value that a function approaches as the 

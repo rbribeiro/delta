@@ -2,10 +2,13 @@ delta-theorem {
     display: block;
     margin: 1.5rem 0;
     background: white;
-    border-radius: 6px;
+    border-radius: 9px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    border-left: 4px solid #e74c3c;
+    border: 2px solid #ff8aef;
     padding: 0 1.5rem 1px 1.5rem;
+    text-align: justify;   
+        padding-top:0.75em;
+    padding-bottom:0.75em;    
 }
 
 
@@ -16,24 +19,34 @@ delta-theorem {
 }
 
 .level-easy {
-  background-color: green;
+  background-color: rgb(184, 255, 137);
+  padding: 4.5px;
+}
+
+.level-medium {
+  background-color: #ffe8bc;
+  padding: 4.5px;
+}
+
+.level-hard {
+  background-color: #ff8888;
+  padding: 4.5px;
+  color: white
 }
 
 delta-exercise {
     display: block;
     margin: 1.5rem 0;
     background: white;
-    border-radius: 6px;
+    border-radius: 9px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    border-left: 4px solid gray;
+    border: 1px solid rgb(223, 223, 223);
     padding: 0 1.5rem 1px 1.5rem;
 }
 
-
 delta-exercise .block-header {
-    background: gray;
-    color: white;
-    padding: 0.75rem 1rem;
+    color:gray;
+    padding: 0.75rem 1.5rem;
     font-weight: bold;
     font-size: 0.9rem;
     text-transform: uppercase;
@@ -43,21 +56,23 @@ delta-exercise .block-header {
 }
 
 delta-theorem .block-header {
-    background: #e74c3c;
-    color: white;
-    padding: 0.75rem 1rem;
+    background: white;
+    color:#ff8aef;
+    padding-left: 1.5rem;
     font-weight: bold;
     font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin: 0 -1.5rem 0 -1.5rem; 
-    border-top-right-radius: 6px;
+    border-radius: 9px;
+    display: inline-block;
 }
 
-
-delta-theorem .block-content {
-    padding: 1rem 1.5rem;
-    line-height: 1.8;
+delta-theorem > p {
+    display: inline;
+    padding-left: 30px;
+    line-height: 1.4;
+    text-align: justify;
 }
 
 /* Add QED symbol to proofs */
@@ -68,5 +83,43 @@ delta-proof::after {
     font-weight: bold;
     margin-top: 1rem;
     color: black;
+}
+
+delta-definition {
+    display: block;
+    margin: 1.5rem 0;
+    background: white;
+    border-radius: 9px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    padding: 0 1.5rem 1px 1.5rem;
+    text-align: justify; 
+    background:  #ecf47a;      
+    padding-top:0.75em;
+    padding-bottom:0.75em;
+
+}
+
+delta-definition .block-header {
+    color:#6e7235;
+    padding-left: 1.5rem;
+    font-weight: bold;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 -1.5rem 0 -1.5rem; 
+    border-radius: 9px;
+    display: inline-block;
+}
+
+delta-definition > p{
+    display: inline;
+    padding-left: 30px;
+    line-height: 1.4;
+    text-align: justify;
+}
+
+delta-definition >.block-content {
+    padding: 1rem 1.5rem;
+    line-height: 1.8;
 }
 
