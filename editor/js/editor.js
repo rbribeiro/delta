@@ -138,24 +138,9 @@ class DeltaEditor {
                 root: [
                     // Section headers (# ## ###)
                     [/^#{1,6}\s+.*$/, 'section'],
-                    
-                    // Block headers with attributes: theorem "title", attr "value":
-                    [/^(theorem|definition|lemma|proof|example|note|proposition|corollary|equation)\s+"[^"]*"\s*,\s*\w+\s*=\s*"[^"]*"\s*:/, 'block-header-full'],
-                    
-                    // Block headers with title only: theorem "title":
-                    [/^(theorem|definition|lemma|proof|example|note|proposition|corollary|equation)\s+"[^"]*"\s*:/, 'block-header-title'],
-                    
-                    // Simple blocks: theorem:, equation:
-                    [/^(theorem|definition|lemma|proof|example|note|proposition|corollary|equation)\s*:/, 'block-header-simple'],
-                    
-                    // Block type keywords (when not at start of line)
-                    [/\b(theorem|definition|lemma|proof|example|note|proposition|corollary|equation)\b/, 'block-type'],
-                    
-                    // Quoted strings for block titles and attributes
-                    [/"[^"]*"/, 'string'],
-                    
-                    // Attribute patterns
-                    [/\b\w+\s*=/, 'attribute-key'],
+
+                    // Blocks (proof:) (definition "title":) (theorem "title" attribute "value":)
+                    [/^(theorem|definition|lemma|proof|example|note|proposition|corollary|equation)/, { token: 'block-header', next: '@Block' }],
                     
                     // Math blocks $$...$$
                     [/\$\$/, { token: 'math-delimiter', next: '@mathBlock' }],
@@ -165,6 +150,17 @@ class DeltaEditor {
                     
                     // Comments (if we want to support them)
                     [/\/\/.*$/, 'comment'],
+                ],
+
+                Block: [
+                    // End of block header
+                    [/:/, { token: 'block-header', next: '@pop' }],
+                    
+                    // Quoted strings for block titles and attributes
+                    [/"[^"]*"/, 'string'],
+
+                    // Attribute keys
+                    [/[^":]*/, 'attribute-key'],
                 ],
                 
                 mathBlock: [
@@ -215,10 +211,7 @@ class DeltaEditor {
             inherit: true,
             rules: [
                 { token: 'section', foreground: '0066cc', fontStyle: 'bold' },
-                { token: 'block-header-full', foreground: '8b0000', fontStyle: 'bold' },
-                { token: 'block-header-title', foreground: '8b0000', fontStyle: 'bold' },
-                { token: 'block-header-simple', foreground: '8b0000', fontStyle: 'bold' },
-                { token: 'block-type', foreground: '8b0000', fontStyle: 'bold' },
+                { token: 'block-header', foreground: '8b0000', fontStyle: 'bold' },
                 { token: 'attribute-key', foreground: '4b0082' },
                 { token: 'math-delimiter', foreground: '228b22', fontStyle: 'bold' },
                 { token: 'math-command', foreground: '0066cc', fontStyle: 'bold' },
