@@ -1,5 +1,5 @@
 // Exemplo feito em sala
-class DeltaExercise extends DeltaMathBlock {
+class DeltaExercise extends HTMLElement {
   constructor() {
     super()
   }
@@ -29,4 +29,52 @@ class DeltaExercise extends DeltaMathBlock {
 
 customElements.define("delta-exercise", DeltaExercise)
 
+
+class DeltaTheorem extends HTMLElement {
+  constructor() {
+    super()
+  }
+
+  connectedCallback() {
+    const title = this.getAttribute("data-title") || null
+    const difficulty = this.getAttribute("difficulty") || null
+
+    const blockHeader = document.createElement("div")
+    blockHeader.textContent = title ? `Theorem (${title}).` : "Theorem."
+    blockHeader.classList.add("block-header")
+
+    if (difficulty) {
+      const difficultyTag = document.createElement("span")
+      difficultyTag.textContent = difficulty
+      difficultyTag.classList.add("difficulty-tag")
+      difficultyTag.classList.add(`difficulty-${difficulty}`)
+      blockHeader.append(difficultyTag)
+    }
+
+
+    this.prepend(blockHeader)
+  }
+
+
+} 
+
+customElements.define("delta-theorem", DeltaTheorem)
+
+class DeltaDefinition extends HTMLElement {
+  constructor() {
+    super()
+  }
+
+  connectedCallback() {
+    const title = this.getAttribute("data-title") || null
+
+    const blockHeader = document.createElement("div")
+    blockHeader.textContent = title ? `Definition (${title}).` : "Definition."
+    blockHeader.classList.add("block-header")
+
+    this.prepend(blockHeader)
+  }
+}
+
+customElements.define("delta-definition", DeltaDefinition)
 
