@@ -1,31 +1,36 @@
 const INITIAL_DELTA_TEXT = `# Introduction
 
 theorem "Pythagorean Theorem", difficulty "easy":
-	In a right triangle, the square of the hypotenuse 
-	equals the sum of squares of the other two sides:
-	$$c^2 = a^2 + b^2$$
+    In a right triangle, the square of the hypotenuse 
+    equals the sum of squares of the other two sides:
+    $$c^2 = a^2 + b^2$$
 
 equation: E = mc^2
 
 definition "Limit":
-	The value that a function approaches as the 
-	input approaches some value.
+    The value that a function approaches as the 
+    input approaches some value.
 
 proof:
-	This follows directly from the definition.
+    This follows directly from the definition.
 
 note: This is a simple inline note.
 
 ## Advanced Topics
 
 lemma "Fundamental Lemma":
-	Every non-empty set has a smallest element.
+    Every non-empty set has a smallest element.
 
 example:
-	Consider the set $\\{1, 2, 3\\}$.
+    Consider the set $\\{1, 2, 3\\}$.
 
-plot "This is an example plot" x "1,15" y "1,10" size "0.75,0.4":
-	Plot Content
+plot "This is an example plot" x "0.7,1.4" y "-1.4,1.4":
+    function:
+        1 + sin(18*x)/3
+	function color "#48ce94" points "30000":
+        x/3*sin(1/log(x))
+	function from "0.8,1.3" to "-1.25,0":
+        cos(30*x)/3 - 1
 
 This is a paragraph with some text.
 `
@@ -371,20 +376,20 @@ class DeltaEditor {
     exportHTML() {
         const html = this.preview.innerHTML;
         const blob = new Blob([`
-		<!DOCTYPE html>
-		<html>
-		<head>
-			<title>Delta Document</title>
-			<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-			<style>
-				body { font-family: 'Segoe UI', sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-				${document.querySelector('style')?.textContent || ''}
-			</style>
-		</head>
-		<body>
-			${html}
-		</body>
-		</html>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Delta Document</title>
+            <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+            <style>
+                body { font-family: 'Segoe UI', sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+                ${document.querySelector('style')?.textContent || ''}
+            </style>
+        </head>
+        <body>
+            ${html}
+        </body>
+        </html>
         `], { type: 'text/html' });
         
         const url = URL.createObjectURL(blob);
