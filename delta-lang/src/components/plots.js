@@ -390,7 +390,12 @@ class DeltaPlot extends HTMLElement {
 
 					let penState = false;
 					xPoints.forEach((px) => {
-						const py = func(px) ?? null;
+						let py;
+						try {
+							py = func(px) ?? null;
+						} catch(error){
+							py = null;
+						}
 						if(py != null && isFinite(py) && (thisCdm[0] <= py && py <= thisCdm[1])){
 							const svgX = mapX(px);
 							const svgY = mapY(py);
