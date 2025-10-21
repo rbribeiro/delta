@@ -1,3 +1,25 @@
+// ----- Padrões -----
+
+// Seção - Identifica uma linha de seção, que começa com 1 a 6 '#' seguidos de espaço dependendo do nível.
+const SECTION_PATTERN = /^#{1,6}\s/;
+
+// Bloco Simples - Identifica um 'bloco simples', isto é, uma linha que contém ':' e tem conteúdo depois.
+const SIMPLE_BLOCK_PATTERN = /^[a-z]+.*:\s*.+/;
+
+// Bloco Complexo - Identifica um 'bloco complexo': uma linha que termina com ':' e cujo conteúdo está nas linhas seguintes.
+const COMPLEX_BLOCK_PATTERN = /^[a-z]+.*:\s*$/;
+
+// Atributos - Padrõa que extrai atributos no formato chave "valor". A chave é opcional, pois também existe o atributo data-title que não usa chave.
+const ATTRIBUTE_PATTERN = /(?:([\w-]+)\s+)?"([^"]+)"/g;
+
+// Indentação - Padrão que captura o espaço em branco no início da linha medindo a indentação.
+const INDENTATION_PATTERN = /^(\s*)/;
+
+// Conversão de \: para caractere :
+const TWO_DOTS_PATTERN = /\\:/g;
+
+// ----- Parser -----
+
 class Parser {
     constructor() {
         this.lines = []
@@ -33,7 +55,7 @@ class Parser {
         
         // Handle escaped colons: convert \: back to : and treat as regular text
         if (trimmed.includes('\\:')) {
-            const unescaped = trimmed.replace(/\\:/g, ':')
+            const unescaped = trimmed.replace(TWO_DOTS_PATTERN, ':')
             this.addToBuffer(line.replace(trimmed, unescaped), indent)
             return
         }
@@ -59,19 +81,19 @@ class Parser {
     }
 
     matchSection(line) {
-        return /^#{1,6}\s/.test(line)
+        return SECTION_PATTERN.test(line)
     }
 
     matchBlock(line) {
         // Complex block: has colon but NO content after it (content comes on next lines)
         // Examples: "theorem:", "theorem 'title':", "equation id 'eq1':"
-        return /^[a-z]+.*:\s*$/.test(line)
+        return COMPLEX_BLOCK_PATTERN.test(line)
     }
 
     matchSimpleBlock(line) {
         // Simple block: has colon AND has content after it (all on same line)  
         // Examples: "equation: x^2=2", "theorem id 'th1': content here"
-        return /^[a-z]+.*:\s*.+/.test(line)
+        return SIMPLE_BLOCK_PATTERN.test(line)
     }
 
     addToBuffer(line, indent) {
@@ -219,8 +241,8 @@ class Parser {
         let title = null
         
         // Match quoted strings with optional keys
-        const pattern = /(?:(\w+)\s+)?"([^"]+)"/g
-        let match
+        const pattern = ATTRIBUTE_PATTERN;
+        let match; pattern.lastIndex = 0;
         
         while ((match = pattern.exec(text)) !== null) {
             const [, key, value] = match
@@ -252,7 +274,7 @@ class Parser {
     }
 
     getIndent(line) {
-        return (line.match(/^(\s*)/) || ['', ''])[1].length
+        return (line.match(INDENTATION_PATTERN) || ['', ''])[1].length
     }
 }
 
