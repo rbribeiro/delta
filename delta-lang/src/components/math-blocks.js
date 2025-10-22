@@ -44,6 +44,7 @@ class DeltaTheorem extends HTMLElement {
     blockHeader.classList.add("block-header")
 
     if (difficulty) {
+      blockHeader.classList.add("with-difficulty")
       const difficultyTag = document.createElement("span")
       difficultyTag.textContent = difficulty
       difficultyTag.classList.add("difficulty-tag")

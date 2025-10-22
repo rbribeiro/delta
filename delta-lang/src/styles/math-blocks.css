@@ -12,23 +12,28 @@ delta-theorem {
 }
 
 
-.level-tag {
+.level-tag, .difficulty-tag {
   padding: 3px;
   border-radius: 6px;
   margin-left: 1.5rem;
 }
 
-.level-easy {
+.difficulty-tag {
+    margin-right: 1.5rem;
+    color: var(--text-default);
+}
+
+.level-easy, .difficulty-easy {
   background-color: rgb(184, 255, 137);
   padding: 4.5px;
 }
 
-.level-medium {
+.level-medium, .difficulty-medium {
   background-color: #ffe8bc;
   padding: 4.5px;
 }
 
-.level-hard {
+.level-hard, .difficulty-hard {
   background-color: #ff8888;
   padding: 4.5px;
   color: white
@@ -68,11 +73,20 @@ delta-theorem .block-header {
     display: inline-block;
 }
 
+delta-theorem .with-difficulty {
+    display: block;
+}
+
 delta-theorem > p {
     display: inline;
     padding-left: 30px;
     line-height: 1.4;
     text-align: justify;
+}
+
+delta-theorem .with-difficulty ~ p:first-of-type {
+    display: block;
+    padding-left: 0;
 }
 
 /* Add QED symbol to proofs */
