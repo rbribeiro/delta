@@ -79,3 +79,38 @@ class DeltaDefinition extends HTMLElement {
 
 customElements.define("delta-definition", DeltaDefinition)
 
+class DeltaLemma extends HTMLElement {
+  constructor() {
+    super()
+  }
+
+  connectedCallback() {
+    const title = this.getAttribute("data-title") || null
+
+    const blockHeader = document.createElement("div")
+    blockHeader.textContent = title ? `Lemma (${title}).` : "Lemma."
+    blockHeader.classList.add("block-header")
+
+    this.prepend(blockHeader)
+  }
+}
+
+customElements.define("delta-lemma", DeltaLemma)
+
+class DeltaProposition extends HTMLElement {
+  constructor() {
+    super()
+  }
+
+  connectedCallback() {
+    const title = this.getAttribute("data-title") || null
+
+    const blockHeader = document.createElement("div")
+    blockHeader.textContent = title ? `Proposition (${title}).` : "Proposition."
+    blockHeader.classList.add("block-header")
+
+    this.prepend(blockHeader)
+  }
+}
+
+customElements.define("delta-proposition", DeltaProposition)
