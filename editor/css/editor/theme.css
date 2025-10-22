@@ -51,3 +51,7 @@ body.dark-theme #editor-fallback {
     background: #1e1e1e;
     color: #d4d4d4;
 }
+
+.preview-panel {
+    color: var(--text-default);
+}
