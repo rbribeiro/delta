@@ -78,3 +78,22 @@ class DeltaDefinition extends HTMLElement {
 
 customElements.define("delta-definition", DeltaDefinition)
 
+
+class DeltaCorollary extends HTMLElement{
+  constructor(){
+    super()
+  }
+
+  connectedCallback(){
+    const title = this.getAttribute("data-title") || null
+
+    const blockHeader = document.createElement("div")
+    blockHeader.textContent = title ? `Corollary(${title}).` : "Corollary."
+    blockHeader.classList.add("block-header")
+
+    this.prepend(blockHeader)
+  }
+
+}
+
+customElements.define("delta-corollary", DeltaCorollary)
