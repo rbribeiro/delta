@@ -1,4 +1,7 @@
-const INITIAL_DELTA_TEXT = `# Introduction
+const INITIAL_DELTA_TEXT = `
+project title "project-title", author "author-name", type "delta-page", font "Arial":
+ 
+# Introduction
 
 theorem "Pythagorean Theorem", difficulty "easy":
     In a right triangle, the square of the hypotenuse 
@@ -20,6 +23,11 @@ exercise:
 definition "Limit":
     The value that a function approaches as the 
     input approaches some value.
+
+corollary "Weistrass-M Test":
+    For each $ n \\in \\mathbb{N} $, let $f_n$ be a function defined on a set $A \\subseteq \\mathbb{R}$, and let $M_n > 0$ be a real number satisfying
+    $$|f_n(x) \\leq M_n|$$
+    for all $x \\in A$. If $\\sum_{n=1}^\\infty M_n $ converges, then $\\sum_{n=1}^\\infty f_n$ converges uniformly on $A$.
 
 proof:
     This follows directly from the definition.

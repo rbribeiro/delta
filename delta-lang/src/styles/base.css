@@ -3,3 +3,32 @@
  * spacing
  */
 
+ @import url('.\font_package\Serif\cmun-serif.css');
+
+:root {
+  /* Functional Variables (used by components) */
+    --imp-1: #FF8AEF;
+    --imp-2: #FFC555;
+    --imp-3: #ECF47A;
+    --imp-4: #BEFF8B;
+    --imp-5: #CCC4AF;
+
+    --alt-1: #0A265A;
+    --alt-2: #F4D35E;
+    --alt-3: #CA2112;
+    --alt-4: #1EA192;
+    --alt-5: #6A0B90;
+    --alt-6: #FF7621;
+
+    --text-default: #121212;
+    --white: #FAFAFA;
+    --gray:	#666666;
+}
+
+.delta-document {
+    /* Font family */
+    font-family: 'Computer Modern Serif', serif;
+    font-weight: normal;
+    font-style: normal;
+    font-size: 16px;
+}

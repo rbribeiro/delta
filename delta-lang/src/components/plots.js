@@ -127,13 +127,6 @@ class DeltaPlot extends HTMLElement {
 		let plotContent = document.createElement('delta-plot-content')
 		let plotChildren = this.children
 
-		// Título
-		if(title){
-			let titleElement = document.createElement('p')
-			titleElement.innerText = `Plot: ${title}`
-			this.before(titleElement)
-		}
-
 		// Tamanho
 		plotSize = [clip(plotSize[0],0.25,1),clip(plotSize[1],0.25,1)]
 		if(plotSize){
@@ -141,19 +134,27 @@ class DeltaPlot extends HTMLElement {
 			this.style.paddingBottom = `${(plotSize[1])*100}%`
 		}
 
+		const marginLeft = 60
+		const marginRight = 20
+		const marginTop = 25
+		const marginBottom = 55
+		let marginX = marginLeft + marginRight
+		let marginY = marginTop + marginBottom
+		let svgWidth = parseInt(400 * (plotSize[0]/plotSize[1]))
+		let svgHeight = 400
+
 		// Criação do SVG - Base do Plot
 		const svgNS = 'http://www.w3.org/2000/svg'
 		const svg = document.createElementNS(svgNS, 'svg');
-		let svgWidth = parseInt(400 * (plotSize[0]/plotSize[1]))
 		svg.setAttribute('preserveAspectRatio', 'none');
-		svg.setAttribute('viewBox', `0 0 ${svgWidth} 400`);
+		svg.setAttribute('viewBox', `0 0 ${svgWidth} ${svgHeight}`);
 		svg.classList.add('delta-plot-svg');
 
 		const rect = document.createElementNS(svgNS, 'rect');
-		rect.setAttribute('x', '59');
-		rect.setAttribute('y', '21');
-		rect.setAttribute('height', '320');
-		rect.setAttribute('width', `${svgWidth-80}`);
+		rect.setAttribute('x', `${marginLeft-1}`);
+		rect.setAttribute('y', `${marginTop+1}`);
+		rect.setAttribute('height',`${svgHeight-marginY}`);
+		rect.setAttribute('width', `${svgWidth-marginX}`);
 		rect.setAttribute('fill', 'none');
 		rect.setAttribute('stroke', 'black');
 		rect.setAttribute('stroke-width', '1');
@@ -164,23 +165,23 @@ class DeltaPlot extends HTMLElement {
 		if(y[0] == y[1]) y[1]++;
 		let xTicks = tick_locator(x,parseInt(3.5 * plotSize[0]/plotSize[1]),'Linear',plotSize[0])
 		let yTicks = tick_locator(y,3.5,'Linear',plotSize[1])
-		let xCoords = xTicks.map(t => 60 + ((t-x[0])/(x[1]-x[0]))*(svgWidth-80));
-		let yCoords = yTicks.map(t => 20 + (1 - (t-y[0])/(y[1]-y[0]))*320);
+		let xCoords = xTicks.map(t => marginLeft + ((t-x[0])/(x[1]-x[0]))*(svgWidth-marginX));
+		let yCoords = yTicks.map(t => marginTop + (1 - (t-y[0])/(y[1]-y[0]))*(svgHeight-marginY));
 
 		if(showAxis){
 			for(let xc in xCoords){
 				let line = document.createElementNS(svgNS, 'line');
 				line.setAttribute('x1', `${xCoords[xc]}`);
-				line.setAttribute('y1', `335`);
+				line.setAttribute('y1', `${svgHeight - marginBottom - 5}`);
 				line.setAttribute('x2', `${xCoords[xc]}`);
-				line.setAttribute('y2', `345`);
+				line.setAttribute('y2', `${svgHeight - marginBottom + 5}`);
 				line.setAttribute('stroke', 'black');
 				line.setAttribute('stroke-width', '2');
 				svg.appendChild(line)
 
 				let num = document.createElementNS(svgNS, 'text');
 				num.setAttribute('x', `${xCoords[xc]}`);
-				num.setAttribute('y', `362`);
+				num.setAttribute('y', `${svgHeight - marginBottom + 22}`);
 				num.setAttribute('font-size', '20');
 				num.setAttribute('text-anchor', 'middle');
 				num.setAttribute('font-family', 'sans-serif');
@@ -191,16 +192,16 @@ class DeltaPlot extends HTMLElement {
 			for(let yc in yCoords){
 				let line = document.createElementNS(svgNS, 'line');
 				line.setAttribute('y1', `${yCoords[yc]}`);
-				line.setAttribute('x1', `55`);
+				line.setAttribute('x1', `${marginLeft - 5}`);
 				line.setAttribute('y2', `${yCoords[yc]}`);
-				line.setAttribute('x2', `65`);
+				line.setAttribute('x2', `${marginLeft + 5}`);
 				line.setAttribute('stroke', 'black');
 				line.setAttribute('stroke-width', '2');
 				svg.appendChild(line)
 
 				let num = document.createElementNS(svgNS, 'text');
 				num.setAttribute('y', `${yCoords[yc]}`);
-				num.setAttribute('x', `48`);
+				num.setAttribute('x', `${marginLeft - 12}`);
 				num.setAttribute('font-size', '20');
 				num.setAttribute('text-anchor', 'middle');
 				num.setAttribute('font-family', 'sans-serif');
@@ -213,8 +214,8 @@ class DeltaPlot extends HTMLElement {
 
 		// Labels
 		const textX = document.createElementNS(svgNS, 'text');
-		textX.setAttribute('x', `${svgWidth/2 + 30}`);
-		textX.setAttribute('y', '396');
+		textX.setAttribute('x', `${svgWidth/2 + 20}`);
+		textX.setAttribute('y', `${svgHeight - 8}`);
 		textX.setAttribute('text-anchor', 'middle');
 		textX.setAttribute('font-family', 'sans-serif');
 		textX.setAttribute('font-size', '22');
@@ -223,15 +224,27 @@ class DeltaPlot extends HTMLElement {
 		svg.appendChild(textX);
 
 		const textY = document.createElementNS(svgNS, 'text');
-		textY.setAttribute('x', '16');
-		textY.setAttribute('y', '170');
+		let tyX = 22; let tyY = svgHeight/2 - 20
+		textY.setAttribute('x', `${tyX}`);
+		textY.setAttribute('y', `${tyY}`);
 		textY.setAttribute('text-anchor', 'middle');
 		textY.setAttribute('font-family', 'sans-serif');
 		textY.setAttribute('font-size', '22');
 		textY.setAttribute('fill', 'black');
-		textY.setAttribute('transform', 'rotate(-90 17 170)');
+		textY.setAttribute('transform', `rotate(-90 ${tyX} ${tyY})`);
 		textY.textContent = yLabel;
 		svg.appendChild(textY);
+
+		const titleLabel = document.createElementNS(svgNS, 'text');
+		let txX = svgWidth/2 + 20; let txY = 16
+		titleLabel.setAttribute('x', `${txX}`);
+		titleLabel.setAttribute('y', `${txY}`);
+		titleLabel.setAttribute('text-anchor', 'middle');
+		titleLabel.setAttribute('font-family', 'sans-serif');
+		titleLabel.setAttribute('font-size', '22');
+		titleLabel.setAttribute('fill', 'black');
+		titleLabel.textContent = title;
+		svg.appendChild(titleLabel);
 
 		plotContent.appendChild(svg);
 
@@ -240,9 +253,9 @@ class DeltaPlot extends HTMLElement {
 			for(let xc in xCoords){
 				let line = document.createElementNS(svgNS, 'line');
 				line.setAttribute('x1', `${xCoords[xc]}`);
-				line.setAttribute('y1', `20`);
+				line.setAttribute('y1', `${marginTop}`);
 				line.setAttribute('x2', `${xCoords[xc]}`);
-				line.setAttribute('y2', `340`);
+				line.setAttribute('y2', `${svgHeight - marginBottom}`);
 				line.setAttribute('stroke', 'gray');
 				line.setAttribute('stroke-width', '1');
 				svg.appendChild(line)
@@ -250,9 +263,9 @@ class DeltaPlot extends HTMLElement {
 			for(let yc in yCoords){
 				let line = document.createElementNS(svgNS, 'line');
 				line.setAttribute('y1', `${yCoords[yc]}`);
-				line.setAttribute('x1', `60`);
+				line.setAttribute('x1', `${marginLeft}`);
 				line.setAttribute('y2', `${yCoords[yc]}`);
-				line.setAttribute('x2', `${svgWidth-20}`);
+				line.setAttribute('x2', `${svgWidth - marginRight}`);
 				line.setAttribute('stroke', 'gray');
 				line.setAttribute('stroke-width', '1');
 				svg.appendChild(line)
@@ -357,10 +370,10 @@ class DeltaPlot extends HTMLElement {
 
 		// Mapeamento de valor x para coordenada do plot
 		const mapX = (dataX) => {
-			return 60 + ((dataX - x[0]) / (x[1] - x[0])) * (svgWidth - 80);
+			return marginLeft + ((dataX - x[0]) / (x[1] - x[0])) * (svgWidth - marginX);
 		};
 		const mapY = (dataY) => {
-			return 20 + (1 - (dataY - y[0]) / (y[1] - y[0])) * 320;
+			return marginTop + (1 - (dataY - y[0]) / (y[1] - y[0])) * (svgHeight - marginY);
 		};
 
 		// Área de plotagem pra não pular fora
@@ -369,10 +382,10 @@ class DeltaPlot extends HTMLElement {
 		clipPath.setAttribute('id', 'plot-area-clip');
 
 		const clipRect = document.createElementNS(svgNS, 'rect');
-		clipRect.setAttribute('x', '60');
-		clipRect.setAttribute('y', '20');
-		clipRect.setAttribute('width', svgWidth - 80);
-		clipRect.setAttribute('height', 320);
+		clipRect.setAttribute('x', `${marginLeft}`);
+		clipRect.setAttribute('y', `${marginTop}`);
+		clipRect.setAttribute('width', svgWidth - marginX);
+		clipRect.setAttribute('height', svgHeight - marginY);
 
 		clipPath.appendChild(clipRect);
 		defs.appendChild(clipPath);
