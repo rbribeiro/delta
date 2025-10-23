@@ -12,18 +12,15 @@ delta-theorem {
 }
 
 
-.level-tag, .difficulty-tag {
+.level-tag{
   padding: 4.5px 1rem 4.5px 1rem;
   border-radius: 6px;
   margin-left: 1.5rem;
+  color: var(--text-default)
 }
 
-.difficulty-tag {
-    margin-right: 1.5rem;
-    color: var(--text-default);
-}
 
-.level-easy, .difficulty-easy {
+.level-easy{
   background-color: rgb(184, 255, 137);
 }
 
@@ -70,7 +67,7 @@ delta-theorem .block-header {
     display: inline-block;
 }
 
-delta-theorem .with-difficulty {
+delta-theorem .with-level {
     display: block;
 }
 

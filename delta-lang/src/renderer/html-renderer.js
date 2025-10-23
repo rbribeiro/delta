@@ -76,10 +76,12 @@ class DeltaRenderer {
         if (node.title) {
             attributesStr += ` data-title="${this.escapeHtml(node.title)}"`;
         }
-        
+
+        attributesStr += ` data-type="${blockType}"`
+
         if (node.attributes && Object.keys(node.attributes).length > 0) {
             for (const [key, value] of Object.entries(node.attributes)) {
-                attributesStr += ` ${key}="${this.escapeHtml(value)}"`;
+                attributesStr += ` data-${key}="${this.escapeHtml(value)}"`;
             }
         }
         
