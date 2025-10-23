@@ -34,7 +34,7 @@ lemma "Fundamental Lemma":
 example:
     Consider the set $\\{1, 2, 3\\}$.
 
-plot "This is an example plot" x "0.7,1.4" y "-1.4,1.4":
+plot "This is an example plot", x "0.7,1.4" y "-1.4,1.4":
     function:
         1 + sin(18*x)/3
 	function color "#48ce94" points "30000":
