@@ -153,52 +153,28 @@ class DeltaEditor {
                     // Section headers (# ## ###)
                     [/^#{1,6}\s+.*$/, 'section'],
 
-                    // General Tags (proof:) (definition "title":) (theorem "title" attribute "value":)
-                    [/^\s*(project|theorem|definition|lemma|proof|example|note|proposition|corollary|exercise|plot)/, { token: 'block-header', next: '@Tags' }],
-
-                    // Math Tags
-                    [/^\s*(equation|function)/, { token: 'block-header', next: '@mathTags' }],
-
+                    // Blocks (proof:) (definition "title":) (theorem "title" attribute "value":)
+                    [/^(theorem|definition|lemma|proof|example|note|proposition|corollary|equation)/, { token: 'block-header', next: '@Block' }],
+                    
                     // Math blocks $$...$$
                     [/\$\$/, { token: 'math-delimiter', next: '@mathBlock' }],
-
-                    // Math blocks \[...\]
-                    [/\\\[/, { token: 'math-delimiter', next: '@mathBlock' }],
                     
                     // Inline math $...$
-                    [/\$/, { token: 'math-delimiter', next: '@mathBlock' }],
-
-                    // Inline math \(...\)
-                    [/\\\(/, { token: 'math-delimiter', next: '@mathBlock' }],
+                    [/\$/, { token: 'math-delimiter', next: '@mathInline' }],
                     
                     // Comments (if we want to support them)
                     [/\/\/.*$/, 'comment'],
                 ],
 
-                Tags: [
+                Block: [
                     // End of block header
-                    [/:\s*/, { token: 'block-header', next: '@pop' }],
+                    [/:/, { token: 'block-header', next: '@pop' }],
                     
                     // Quoted strings for block titles and attributes
                     [/"[^"]*"/, 'string'],
 
                     // Attribute keys
                     [/[^":]*/, 'attribute-key'],
-                ],
-
-                mathTags: [
-                    // End of block header
-                    [/:\s*/, { token: 'block-header', next: '@mathSpace' }],
-                    
-                    // Quoted strings for block titles and attributes
-                    [/"[^"]*"/, 'string'],
-
-                    // Attribute keys
-                    [/[^":]*/, 'attribute-key'],
-                ],
-
-                mathSpace: [
-                    [/\s*/, { token: 'block-header', next: '@mathTagsBlock' }],
                 ],
                 
                 mathBlock: [
@@ -209,28 +185,19 @@ class DeltaEditor {
                     [/\d+\.?\d*/, 'math-number'],
                     
                     // Math operators
-                    [/[+\-*^/=<>≤≥≠∫∑∏∆∇∞±×÷]/, 'math-operator'],
+                    [/[+\-*/=<>≤≥≠∫∑∏∆∇∞±×÷]/, 'math-operator'],
                     
                     // Delimiters
                     [/[()[\]{}|]/, 'math-delimiter-inner'],
                     
-                    // End delimiter $$
+                    // End delimiter
                     [/\$\$/, { token: 'math-delimiter', next: '@pop' }],
-
-                    // End delimiter \]
-                    [/\\\]/, { token: 'math-delimiter', next: '@pop' }],
-
-                    // End delimiter $
-                    [/\$/, { token: 'math-delimiter', next: '@pop' }],
-
-                    // End delimiter \)
-                    [/\\\)/, { token: 'math-delimiter', next: '@pop' }],
                     
                     // Everything else is math content
-                    [/./, 'math-content']
+                    [/[^$]+/, 'math-content']
                 ],
                 
-                mathTagsBlock: [
+                mathInline: [
                     // LaTeX commands
                     [/\\[a-zA-Z]+/, 'math-command'],
                     
@@ -238,16 +205,16 @@ class DeltaEditor {
                     [/\d+\.?\d*/, 'math-number'],
                     
                     // Math operators
-                    [/[+\-*^/=<>≤≥≠∫∑∏∆∇∞±×÷]/, 'math-operator'],
+                    [/[+\-*/=<>≤≥≠∫∑∏∆∇∞±×÷]/, 'math-operator'],
                     
                     // Delimiters
                     [/[()[\]{}|]/, 'math-delimiter-inner'],
                     
-                    // End delimiter: when we hit a new line.
-                    [/^/, { token: 'math-delimiter', next: '@root' }],
+                    // End delimiter
+                    [/\$/, { token: 'math-delimiter', next: '@pop' }],
                     
                     // Everything else is math content
-                    [/./, 'math-content']
+                    [/[^$]+/, 'math-content']
                 ]
             }
         });
@@ -418,18 +385,15 @@ class DeltaEditor {
     }
     
     exportHTML() {
-        const deltaProject = document.querySelector("delta-project");
-        const title = deltaProject?.getAttribute("title");
-        const font = deltaProject?.getAttribute("font");
         const html = this.preview.innerHTML;
         const blob = new Blob([`
         <!DOCTYPE html>
         <html>
         <head>
-            <title>${title}</title>
+            <title>Delta Document</title>
             <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
             <style>
-                body { font-family: ${font}; max-width: 800px; margin: 0 auto; padding: 20px; }
+                body { font-family: 'Segoe UI', sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
                 ${document.querySelector('style')?.textContent || ''}
             </style>
         </head>
