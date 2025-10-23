@@ -1,4 +1,7 @@
-const INITIAL_DELTA_TEXT = `# Introduction
+const INITIAL_DELTA_TEXT = `
+project title "project-title", author "author-name", type "delta-page", font "Arial":
+ 
+# Introduction
 
 theorem "Pythagorean Theorem", difficulty "easy":
     In a right triangle, the square of the hypotenuse 
@@ -146,7 +149,7 @@ class DeltaEditor {
                     [/^#{1,6}\s+.*$/, 'section'],
 
                     // General Tags (proof:) (definition "title":) (theorem "title" attribute "value":)
-                    [/^\s*(theorem|definition|lemma|proof|example|note|proposition|corollary|exercise|plot)/, { token: 'block-header', next: '@Tags' }],
+                    [/^\s*(project|theorem|definition|lemma|proof|example|note|proposition|corollary|exercise|plot)/, { token: 'block-header', next: '@Tags' }],
 
                     // Math Tags
                     [/^\s*(equation|function)/, { token: 'block-header', next: '@mathTags' }],
@@ -410,15 +413,18 @@ class DeltaEditor {
     }
     
     exportHTML() {
+        const deltaProject = document.querySelector("delta-project");
+        const title = deltaProject?.getAttribute("title");
+        const font = deltaProject?.getAttribute("font");
         const html = this.preview.innerHTML;
         const blob = new Blob([`
         <!DOCTYPE html>
         <html>
         <head>
-            <title>Delta Document</title>
+            <title>${title}</title>
             <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
             <style>
-                body { font-family: 'Segoe UI', sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+                body { font-family: ${font}; max-width: 800px; margin: 0 auto; padding: 20px; }
                 ${document.querySelector('style')?.textContent || ''}
             </style>
         </head>
