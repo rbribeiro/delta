@@ -8,7 +8,7 @@
 /* Light theme (default) */
 :root {
     --editor-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --panel-bg: white;
+    --panel-bg: var(--white);
     --header-bg: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     --text-color: #495057;
     --border-color: #dee2e6;
@@ -50,4 +50,8 @@ body {
 body.dark-theme #editor-fallback {
     background: #1e1e1e;
     color: #d4d4d4;
+}
+
+.preview-panel {
+    color: var(--text-default);
 }

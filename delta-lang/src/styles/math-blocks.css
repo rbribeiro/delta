@@ -123,36 +123,3 @@ delta-definition >.block-content {
     line-height: 1.8;
 }
 
-delta-corollary {
-    display: block;
-    margin: 1.5rem 0;
-    background: white;
-    border-radius: 9px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    border: 1.5px solid #4356E4;
-    padding: 0 1.5rem 1px 1.5rem;
-    text-align: justify;   
-        padding-top:0.75em;
-    padding-bottom:0.75em; 
-    font-style : italic;   
-}
-
-delta-corollary .block-header {
-    background: white;
-    color:#4356E4;
-    padding-left: 1.5rem;
-    font-weight: bold;
-    font-size: .9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin: 0 -1.5rem 0 -1.5rem; 
-    border-radius: 9px;
-    display: block;
-}
-
-delta-corollary > p {
-    display: inline;
-    padding-left: 30px;
-    line-height: 1.4;
-    text-align: justify;
-}
