@@ -1,18 +1,20 @@
-// Exemplo feito em sala
-class DeltaExercise extends HTMLElement {
+class DeltaBlock extends HTMLElement {
   constructor() {
     super()
   }
 
   connectedCallback() {
+
     const title = this.getAttribute("data-title") || null
-    const level = this.getAttribute("level") || null
+    const level = this.getAttribute("data-level") || null
+    const type = this.getAttribute("data-type") || null
 
     const blockHeader = document.createElement("div")
-    blockHeader.textContent = title ? `Exercise. "${title}"` : "Exercise."
+    blockHeader.textContent = title ? `${type} (${title}).` : `${type}`
     blockHeader.classList.add("block-header")
 
     if (level) {
+      blockHeader.classList.add("with-level")
       const levelTag = document.createElement("span")
       levelTag.textContent = level
       levelTag.classList.add("level-tag")
@@ -23,150 +25,42 @@ class DeltaExercise extends HTMLElement {
 
     this.prepend(blockHeader)
   }
+}
 
-
-} 
-
-customElements.define("delta-exercise", DeltaExercise)
-
-
-class DeltaTheorem extends HTMLElement {
+class DeltaTheorem extends DeltaBlock {
   constructor() {
     super()
-  }
-
-  connectedCallback() {
-    const title = this.getAttribute("data-title") || null
-    const difficulty = this.getAttribute("difficulty") || null
-
-    const blockHeader = document.createElement("div")
-    blockHeader.textContent = title ? `Theorem (${title}).` : "Theorem."
-    blockHeader.classList.add("block-header")
-
-    if (difficulty) {
-      blockHeader.classList.add("with-difficulty")
-      const difficultyTag = document.createElement("span")
-      difficultyTag.textContent = difficulty
-      difficultyTag.classList.add("difficulty-tag")
-      difficultyTag.classList.add(`difficulty-${difficulty}`)
-      blockHeader.append(difficultyTag)
-    }
-
-
-    this.prepend(blockHeader)
-  }
-
-
-} 
-
-customElements.define("delta-theorem", DeltaTheorem)
-
-class DeltaDefinition extends HTMLElement {
-  constructor() {
-    super()
-  }
-
-  connectedCallback() {
-    const title = this.getAttribute("data-title") || null
-
-    const blockHeader = document.createElement("div")
-    blockHeader.textContent = title ? `Definition (${title}).` : "Definition."
-    blockHeader.classList.add("block-header")
-
-    this.prepend(blockHeader)
   }
 }
 
-customElements.define("delta-definition", DeltaDefinition)
+customElements.define("delta-theorem",DeltaTheorem)
 
-class DeltaLemma extends HTMLElement {
+class DeltaExercise extends DeltaBlock {
   constructor() {
     super()
   }
-
-  connectedCallback() {
-    const title = this.getAttribute("data-title") || null
-
-    const blockHeader = document.createElement("div")
-    blockHeader.textContent = title ? `Lemma (${title}).` : "Lemma."
-    blockHeader.classList.add("block-header")
-
-    this.prepend(blockHeader)
-  }
 }
 
-customElements.define("delta-lemma", DeltaLemma)
+customElements.define("delta-exercise",DeltaExercise)
 
-class DeltaProposition extends HTMLElement {
+
+class DeltaLemma extends DeltaBlock {
   constructor() {
     super()
   }
-
-  connectedCallback() {
-    const title = this.getAttribute("data-title") || null
-
-    const blockHeader = document.createElement("div")
-    blockHeader.textContent = title ? `Proposition (${title}).` : "Proposition."
-    blockHeader.classList.add("block-header")
-
-    this.prepend(blockHeader)
-  }
 }
 
-customElements.define("delta-proposition", DeltaProposition)
 
-class DeltaConjecture extends HTMLElement {
+customElements.define("delta-lemma",DeltaLemma)
+
+
+
+class DeltaDefinition extends DeltaBlock {
   constructor() {
     super()
   }
-
-  connectedCallback() {
-    const title = this.getAttribute("data-title") || null
-
-    const blockHeader = document.createElement("div")
-    blockHeader.textContent = title ? `Conjecture (${title}).` : "Conjecture."
-    blockHeader.classList.add("block-header")
-
-    this.prepend(blockHeader)
-  }
 }
 
-customElements.define("delta-conjecture", DeltaConjecture)
 
-class DeltaProof extends HTMLElement {
-  constructor() {
-    super()
-  }
-
-  connectedCallback() {
-    const title = this.getAttribute("data-title") || null
-
-    const blockHeader = document.createElement("div")
-    blockHeader.textContent = title ? `Proof (${title}).` : "Proof."
-    blockHeader.classList.add("block-header")
-
-    this.prepend(blockHeader)
-  }
-}
-
-customElements.define("delta-proof", DeltaProof)
-
-
-class DeltaClaim extends HTMLElement {
-  constructor() {
-    super()
-  }
-
-  connectedCallback() {
-    const title = this.getAttribute("data-title") || null
-
-    const blockHeader = document.createElement("div")
-    blockHeader.textContent = title ? `Claim (${title}).` : "Claim."
-    blockHeader.classList.add("block-header")
-
-    this.prepend(blockHeader)
-  }
-}
-
-customElements.define("delta-claim", DeltaClaim)
+customElements.define("delta-definition",DeltaDefinition)
 
