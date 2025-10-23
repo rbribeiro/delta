@@ -36,7 +36,7 @@ delta-theorem {
   color: white
 }
 
-delta-exercise {
+delta-proof,  delta-conjecture, delta-claim, delta-exercise {
     display: block;
     margin: 1.5rem 0;
     background: white;

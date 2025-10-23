@@ -114,3 +114,59 @@ class DeltaProposition extends HTMLElement {
 }
 
 customElements.define("delta-proposition", DeltaProposition)
+
+class DeltaConjecture extends HTMLElement {
+  constructor() {
+    super()
+  }
+
+  connectedCallback() {
+    const title = this.getAttribute("data-title") || null
+
+    const blockHeader = document.createElement("div")
+    blockHeader.textContent = title ? `Conjecture (${title}).` : "Conjecture."
+    blockHeader.classList.add("block-header")
+
+    this.prepend(blockHeader)
+  }
+}
+
+customElements.define("delta-conjecture", DeltaConjecture)
+
+class DeltaProof extends HTMLElement {
+  constructor() {
+    super()
+  }
+
+  connectedCallback() {
+    const title = this.getAttribute("data-title") || null
+
+    const blockHeader = document.createElement("div")
+    blockHeader.textContent = title ? `Proof (${title}).` : "Proof."
+    blockHeader.classList.add("block-header")
+
+    this.prepend(blockHeader)
+  }
+}
+
+customElements.define("delta-proof", DeltaProof)
+
+
+class DeltaClaim extends HTMLElement {
+  constructor() {
+    super()
+  }
+
+  connectedCallback() {
+    const title = this.getAttribute("data-title") || null
+
+    const blockHeader = document.createElement("div")
+    blockHeader.textContent = title ? `Claim (${title}).` : "Claim."
+    blockHeader.classList.add("block-header")
+
+    this.prepend(blockHeader)
+  }
+}
+
+customElements.define("delta-claim", DeltaClaim)
+
