@@ -4,10 +4,27 @@
 const SECTION_PATTERN = /^#{1,6}\s/;
 
 // Bloco Simples - Identifica um 'bloco simples', isto é, uma linha que contém ':' e tem conteúdo depois.
-const SIMPLE_BLOCK_PATTERN = /^[a-z]+.*:\s*.+/;
+const SIMPLE_BLOCK_PATTERN = new RegExp([
+  '^',
+  '([a-z][a-zA-Z0-9_]*)', // equation
+  '(?:\\s+"([^"]*)")?', // equation "title"
+  '(?:\\s*,?\\s+([a-z][a-zA-Z0-9_]*\\s+"[^"]*"))*', // equation "title", attr "value" ...
+  '\\s*:\\s*', // colon outside quotes
+  '(.+)$' // mandatory content after colon
+].join(''));
 
 // Bloco Complexo - Identifica um 'bloco complexo': uma linha que termina com ':' e cujo conteúdo está nas linhas seguintes.
-const COMPLEX_BLOCK_PATTERN = /^[a-z]+.*:\s*$/;
+const COMPLEX_BLOCK_PATTERN = new RegExp([
+  '^(',
+    '[a-z][a-zA-Z0-9_]*\\s*', // 1. theorem
+    '|',
+    '[a-z][a-zA-Z0-9_]*\\s+"[^"]*"\\s*', // 2. theorem "title"
+    '|',
+    '[a-z][a-zA-Z0-9_]*(?:\\s+[a-z][a-zA-Z0-9_]*\\s+"[^"]*")+', // 3. theorem attr "value" ...
+    '|',
+    '[a-z][a-zA-Z0-9_]*\\s+"[^"]*"\\s*,\\s*(?:[a-z][a-zA-Z0-9_]*\\s+"[^"]*")(?:\\s+[a-z][a-zA-Z0-9_]*\\s+"[^"]*")*', // 4. theorem "title", attr "value" ...
+  ')\\s*:\\s*$'
+].join(''), 'm');
 
 // Atributos - Padrõa que extrai atributos no formato chave "valor". A chave é opcional, pois também existe o atributo data-title que não usa chave.
 const ATTRIBUTE_PATTERN = /(?:([\w-]+)\s+)?"([^"]+)"/g;
@@ -53,13 +70,6 @@ class Parser {
         let trimmed = line.trim()
         const indent = this.getIndent(line)
         
-        // Handle escaped colons: convert \: back to : and treat as regular text
-        if (trimmed.includes('\\:')) {
-            const unescaped = trimmed.replace(TWO_DOTS_PATTERN, ':')
-            this.addToBuffer(line.replace(trimmed, unescaped), indent)
-            return
-        }
-        
         if (this.matchSection(trimmed)) {
             this.flushBuffer()
             const section = this.parseSection(trimmed, indent)
@@ -76,7 +86,8 @@ class Parser {
             this.addToHierarchy(block)
             
         } else {
-            this.addToBuffer(line, indent)
+            const escapedLine = this.handleBackslashes(line);
+            this.addToBuffer(escapedLine, indent)
         }
     }
 
@@ -126,9 +137,54 @@ class Parser {
         }
     }
 
+    findUnescapedColons(line) {
+        // Return the indices of unescaped colons in the line
+        // Ignores colons inside quotes
+         
+        const indexes = [];
+        let inQuotes = false;
+        
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            
+            // If finds quotes, checks if not escaped
+            if (char === '"') {
+                let backslashCount = 0;
+                let j = i - 1;
+                while (j >= 0 && line[j] === '\\') {
+                    backslashCount++;
+                    j--;
+                }
+                if (backslashCount % 2 === 0) {
+                    inQuotes = !inQuotes;
+                }
+            }
+            
+            // If finds colon, checks if not escaped and not in quotes
+            if (char === ':' && !inQuotes) {
+                let backslashCount = 0;
+                let j = i - 1;
+                while (j >= 0 && line[j] === '\\') {
+                    backslashCount++;
+                    j--;
+                }
+                if (backslashCount % 2 === 0) {
+                    indexes.push(i);
+                }
+            }
+        }
+        
+        return indexes;
+    }
+
+    handleBackslashes(str) {
+        return str.replace(/\\+/g, match => match.slice(1));
+    }
+
     parseSection(line, indent) {
-        const level = (line.match(/^#+/) || [''])[0].length
-        const title = line.replace(/^#+\s+/, '')
+        const escapedLine = this.handleBackslashes(line);
+        const level = (escapedLine.match(/^#+/) || [''])[0].length
+        const title = escapedLine.replace(/^#+\s+/, '')
         
         return {
             type: 'section',
@@ -141,11 +197,17 @@ class Parser {
 
     parseBlock(line, indent) {
         // Parse: theorem "Pythagorean Theorem", difficulty "easy": OR theorem:
-        const colonIndex = line.lastIndexOf(':')
-        if (colonIndex === -1) return null
+
+        const unescapedColons = this.findUnescapedColons(line)
+
+        if (unescapedColons.length === 0) return null
+        // if (unescapedColons.length > 1) return null // pensar se vamos fazer isso mesmo
+
+        const colonIndex = unescapedColons[0]
         
-        const beforeColon = line.substring(0, colonIndex).trim()
-        const afterColon = line.substring(colonIndex + 1).trim()
+        const escapedLine = this.handleBackslashes(line);
+        const beforeColon = escapedLine.substring(0, colonIndex).trim()
+        const afterColon = escapedLine.substring(colonIndex + 1).trim()
         
         // Parse the part before colon for blockType and attributes
         const spaceIndex = beforeColon.indexOf(' ')
@@ -191,11 +253,16 @@ class Parser {
 
     parseSimpleBlock(line, indent) {
         // Parse: theorem: content OR equation id "eq": content
-        const colonIndex = line.lastIndexOf(':')
-        if (colonIndex === -1) return null
-        
-        const beforeColon = line.substring(0, colonIndex).trim()
-        const afterColon = line.substring(colonIndex + 1).trim()
+        const unescapedColons = this.findUnescapedColons(line)
+
+        if (unescapedColons.length === 0) return null
+        // if (unescapedColons.length > 1) return null // pensar se vamos fazer isso mesmo
+
+        const colonIndex = unescapedColons[0]
+
+        const escapedLine = this.handleBackslashes(line);
+        const beforeColon = escapedLine.substring(0, colonIndex).trim()
+        const afterColon = escapedLine.substring(colonIndex + 1).trim()
         
         // Parse the part before colon for blockType and attributes
         const spaceIndex = beforeColon.indexOf(' ')
