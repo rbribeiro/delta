@@ -207,7 +207,7 @@ class DeltaPlot extends HTMLElement {
 				num.setAttribute('font-family', 'sans-serif');
 				num.setAttribute('fill', 'black');
 				num.textContent = `${format_number(yTicks[yc],1 - (yTicks.length >= 8*plotSize[1]))}`;
-				num.setAttribute('transform', `rotate(-${num.textContent.includes('-') && num.textContent.includes('e') ? 70 : 90} ${num.getAttribute('x')} ${yCoords[yc]})`);
+				num.setAttribute('transform', `rotate(-${num.textContent.includes('-') && num.textContent.includes('e') ? 70 : 90} ${marginLeft - 12} ${yCoords[yc]})`);
 				svg.appendChild(num)
 			}
 		}
