@@ -100,13 +100,13 @@ class DeltaPlot extends HTMLElement {
 
 	connectedCallback(){
 		const title = this.getAttribute("data-title") || null;
-    	const xStr = this.getAttribute("x") || null
-		const yStr = this.getAttribute("y") || null
-		const xLabel = this.getAttribute("x-label") || "X"
-		const yLabel = this.getAttribute("y-label") || "Y"
-		const size = this.getAttribute("size") || null
-		const grid = this.getAttribute("grid") || "true"
-		const axis = this.getAttribute("axis") || "true"
+    	const xStr = this.getAttribute("data-x") || null
+		const yStr = this.getAttribute("data-y") || null
+		const xLabel = this.getAttribute("data-x-label") || "X"
+		const yLabel = this.getAttribute("data-y-label") || "Y"
+		const size = this.getAttribute("data-size") || null
+		const grid = this.getAttribute("data-grid") || "true"
+		const axis = this.getAttribute("data-axis") || "true"
 
 		let x = parse_tuple(xStr, 2) || [0,1]
 		let y = parse_tuple(yStr, 2) || [0,1]
@@ -116,13 +116,13 @@ class DeltaPlot extends HTMLElement {
 		let plotSize = parse_tuple(size,2) || [0.75, 0.4]
 
 		this.removeAttribute('data-title')
-		this.removeAttribute('x')
-		this.removeAttribute('y')
-		this.removeAttribute('x-label')
-		this.removeAttribute('y-label')
-		this.removeAttribute('size')
-		this.removeAttribute('grid')
-		this.removeAttribute('show_axis')
+		this.removeAttribute('data-x')
+		this.removeAttribute('data-y')
+		this.removeAttribute('data-x-label')
+		this.removeAttribute('data-y-label')
+		this.removeAttribute('data-size')
+		this.removeAttribute('data-grid')
+		this.removeAttribute('data-axis')
 
 		let plotContent = document.createElement('delta-plot-content')
 		let plotChildren = this.children
@@ -278,10 +278,10 @@ class DeltaPlot extends HTMLElement {
 		Array.from(plotChildren).forEach((child, ic) => {
 			// Processa apenas funções (futuramente pode ter outros objetos, como distribution, já que digitar a formulinha é mt chato)
 			if(child.tagName == "DELTA-FUNCTION"){
-				const dom = child.getAttribute("from") || null;
-				const codom = child.getAttribute("to") || null;
-				const qtPts = child.getAttribute("points") || null;
-				const colr = child.getAttribute("color") || null;
+				const dom = child.getAttribute("data-from") || null;
+				const codom = child.getAttribute("data-to") || null;
+				const qtPts = child.getAttribute("data-points") || null;
+				const colr = child.getAttribute("data-color") || null;
 
 				const domain = parse_tuple(dom,2) || x
 				const codomain = parse_tuple(codom,2) || y
