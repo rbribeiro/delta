@@ -1,5 +1,37 @@
 //console.log("Plot content loaded!!!")
 
+// ----- Funções Matemáticas -----
+
+// MDC
+
+const _aux_gcd = (x,y) => {
+	return x == 0 ? y : _aux_gcd(y%x,x);
+}
+
+const Math_gcd = (...x) => {
+	x = x.map(x => parseInt(x))
+	let res = x[0];
+	for(let _i = 1; _i < x.length; _i++){
+		res = _aux_gcd(res,x[_i])
+	}
+	return res;
+}
+
+// MMC
+
+const _aux_lcm = (x,y) => {
+	return x*y == 0 ? 0 : x*y/_aux_gcd(x,y);
+}
+
+const Math_lcm = (...x) => {
+	x = x.map(x => parseInt(x))
+	let res = x[0];
+	for(let _i = 1; _i < x.length; _i++){
+		res = _aux_lcm(res,x[_i])
+	}
+	return res;
+}
+
 // ----- Funções axuliares -----
 
 // Converte "13,357,310.3,694.4" -> [13,357,310.3,694.4] obrigando k partes (0 = any k)
@@ -130,7 +162,7 @@ class DeltaPlot extends HTMLElement {
 		// Tamanho
 		plotSize = [clip(plotSize[0],0.25,1),clip(plotSize[1],0.25,1)]
 		if(plotSize){
-			this.style.margin = `0 ${(1-plotSize[0])*50}%`
+			this.style.margin = `2% ${(1-plotSize[0])*50}%`
 			this.style.paddingBottom = `${(plotSize[1])*100}%`
 		}
 
@@ -285,7 +317,7 @@ class DeltaPlot extends HTMLElement {
 
 				const domain = parse_tuple(dom,2) || x
 				const codomain = parse_tuple(codom,2) || y
-				const pts = parseInt(qtPts) ? Math.min(Math.max(parseInt(qtPts),1),50000) : 250;
+				const pts = parseInt(qtPts) ? Math.min(Math.max(parseInt(qtPts),1),50000) : 500;
 				
 				const hexRegex = /^#([0-9A-F]{3}){1,2}$/i;
 				let funcColor;
@@ -317,17 +349,26 @@ class DeltaPlot extends HTMLElement {
 					line = line.replace(/([\d\.]+)(x|y)/g,'$1*$2') //Corrige 3x -> 3*x. Funciona com y tbm
 					line = line.replace(/\b(pi)\b/g,Math.PI) //Converte pi p/ número
 					line = line.replace(/\b(e)\b/g,Math.E) //Converte e p/ número
-					line = line.replace(/(?<!\^)\^(?!\^)/g, '**'); //converte ^ para **
-					line = line.replace(/\^\^/g, '^'); //converte ^^ para ^
+					line = line.replace(/(?<!\^)\^(?!\^)/g, '**'); //Converte ^ para **
+					line = line.replace(/\^\^/g, '^'); //Converte ^^ para ^
+					line = line.replace('&lt;', '<'); //Converte < para forma certa
+					line = line.replace('&gt;', '>'); //Converte > para forma certa
 
-					// Coloca Math antes de tudo que precisar e for alguma função, tipo abs()
+					// Coloca Math. antes de tudo que precisar e for alguma função, tipo abs()
 					let mathFunctions = 'abs sqrt cbrt sin cos tan asin acos atan sinh cosh tanh asinh acosh atanh sign round floor ceil max min log2 log10 log'.split(' ')
 					let mathOrString = mathFunctions.join('|')
 					const mathFunctionsRegex = new RegExp(`(${mathOrString})\\(`, 'g');
 					line = line.replace(mathFunctionsRegex,'Math.$1(');
 
+					// Coloca Math_ antes de tudo que precisar e for função artificial, tipo gcd()
+					let newFunctions = 'gcd lcm'.split(' ')
+					let newOrString = newFunctions.join('|')
+					const newFunctionsRegex = new RegExp(`(${newOrString})\\(`, 'g');
+					line = line.replace(newFunctionsRegex,'Math_$1(');
+
 					// Função correspondente (ou função nula em caso de falha)
 					let safeLine = function_string_sanitizer(line)
+					console.log(safeLine,"_2")
 					if(safeLine) compositionLines.push(safeLine)
 				}
 				

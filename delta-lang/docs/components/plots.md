@@ -66,15 +66,15 @@ pi $\rightarrow$ 3.141592653589 (Constante pi)
 
 ^^ $\rightarrow$ ^ (Operação de ou exclusivo)
 
+gcd $\rightarrow$ Função gcd de máximo divisor comum
+
+lcm $\rightarrow$ Função lcm de mínimo múltiplo comum
+
 **Mecânicas Ainda Não Implementadas**:
 
 ??? $\rightarrow$ Função log em uma base específica $B$
 
 ??? $\rightarrow$ Função $\binom{a}{b}$ - $a$ escolhe $b$
-
-??? $\rightarrow$ Função gcd de máximo divisor comum
-
-??? $\rightarrow$ Função mdc de mínimo múltiplo comum
 
 ??? $\rightarrow$ Operação de Somatório
 
@@ -82,7 +82,7 @@ pi $\rightarrow$ 3.141592653589 (Constante pi)
 
 ??? $\rightarrow$ Fatorial e Fatoriais Múltiplos
 
-??? $\rightarrow$ Piecewise Functions - Funções que são definidas de forma diferente conforme o domínio
+??? $\rightarrow$ Piecewise Functions - Funções que são definidas de forma diferente conforme o domínio **Observação: Já podemos usar operador ternário então é possível**
 
 ## Plot
 
