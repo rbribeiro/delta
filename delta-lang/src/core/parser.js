@@ -8,7 +8,7 @@ const SIMPLE_BLOCK_PATTERN = new RegExp([
   '^',
   '([a-z][a-zA-Z0-9_]*)', // equation
   '(?:\\s+"([^"]*)")?', // equation "title"
-  '(?:\\s*,?\\s+([a-z][a-zA-Z0-9_]*\\s+"[^"]*"))*', // equation "title", attr "value" ...
+  '(?:\\s*,?\\s+([a-z][a-zA-Z0-9_-]*\\s+"[^"]*"))*', // equation "title", attr "value" ...
   '\\s*:\\s*', // colon outside quotes
   '(.+)$' // mandatory content after colon
 ].join(''));
@@ -20,9 +20,9 @@ const COMPLEX_BLOCK_PATTERN = new RegExp([
     '|',
     '[a-z][a-zA-Z0-9_]*\\s+"[^"]*"\\s*', // 2. theorem "title"
     '|',
-    '[a-z][a-zA-Z0-9_]*(?:\\s+[a-z][a-zA-Z0-9_]*\\s+"[^"]*")+', // 3. theorem attr "value" ...
+    '[a-z][a-zA-Z0-9_]*(?:\\s+[a-z][a-zA-Z0-9_-]*\\s+"[^"]*")+', // 3. theorem attr "value" ...
     '|',
-    '[a-z][a-zA-Z0-9_]*\\s+"[^"]*"\\s*,\\s*(?:[a-z][a-zA-Z0-9_]*\\s+"[^"]*")(?:\\s+[a-z][a-zA-Z0-9_]*\\s+"[^"]*")*', // 4. theorem "title", attr "value" ...
+    '[a-z][a-zA-Z0-9_]*\\s+"[^"]*"\\s*,\\s*(?:[a-z][a-zA-Z0-9_-]*\\s+"[^"]*")(?:\\s+[a-z][a-zA-Z0-9_-]*\\s+"[^"]*")*', // 4. theorem "title", attr "value" ...
   ')\\s*:\\s*$'
 ].join(''), 'm');
 
