@@ -29,8 +29,7 @@ body {
     background: var(--editor-bg);
 }
 
-.editor-panel,
-.preview-panel {
+.editor-panel {
     background: var(--panel-bg);
     color: var(--text-color);
 }
