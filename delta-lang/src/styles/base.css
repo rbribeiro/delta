@@ -22,3 +22,85 @@
     --white: #FAFAFA;
     --gray:	#666666;
 }
+
+.hint {
+    display: flex;
+    align-items: flex-start;
+    margin: 0.5em 0;
+    gap: 0;
+}
+
+.hint-lamp {
+    width: 24px;
+    height: 24px;
+    border-radius: 12px;
+    background: var(--dft-yellow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    flex-shrink: 0;
+    transition: all 0.4s ease;
+    z-index: 1;
+}
+
+.hint-lamp:hover {
+    background: var(--dft-orange);
+}
+
+.hint-lamp::before {
+    content: "💡";
+}
+
+.hint.open .hint-lamp {
+    border-radius: 12px 0 0 12px;
+}
+
+.hint-content {
+    display: none;
+    background: var(--dft-yellow);
+    color: var(--dft-navy);
+    font-style: italic;
+    font-size: small;
+    font-weight: 500;
+    line-height: 1.4;
+    border-radius: 0 12px 12px 0;
+    padding: 8px 12px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.hint-content.visible {
+    display: block;
+    opacity: 1;
+}
+
+
+.step-content {
+  position: relative; 
+  border-left: 2px dashed var(--gray);
+  padding-left: 1.5em; 
+  padding-bottom: 1em;
+}
+
+.step-title {
+  font-weight: bold;
+  color: var(--dft-navy);
+  cursor: pointer;
+}
+
+.step-timeline-dot {
+    position: absolute; 
+    left: -0.67em; 
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    transition: background 0.3s ease;
+    z-index: 2;
+    text-align: center;
+    cursor: pointer;
+    color: var(--white);
+    font-weight: bold;
+    background-color: var(--dft-orange);
+}
