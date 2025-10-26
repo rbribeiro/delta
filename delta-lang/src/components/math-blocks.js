@@ -64,3 +64,14 @@ class DeltaDefinition extends DeltaBlock {
 
 customElements.define("delta-definition",DeltaDefinition)
 
+
+class DeltaProof extends DeltaBlock {
+  constructor() {
+    super()
+  }
+
+  
+}
+
+customElements.define("delta-proof", DeltaProof)
+
