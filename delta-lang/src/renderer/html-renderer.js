@@ -77,6 +77,7 @@ class DeltaRenderer {
             attributesStr += ` data-title="${this.escapeHtml(node.title)}"`;
         }
 
+        // Add the block type as attribute
         attributesStr += ` data-type="${blockType}"`
 
         if (node.attributes && Object.keys(node.attributes).length > 0) {
@@ -100,7 +101,9 @@ class DeltaRenderer {
         const tagName = `delta-${blockType}`;
         const childrenHTML = this.renderChildren(node.children);
         
-        return `<${tagName} simple>${childrenHTML}</${tagName}>`;
+       const  attributesStr = `data-type="${blockType}" simple`
+        
+        return `<${tagName} ${attributesStr}>${childrenHTML}</${tagName}>`;
     }
     
     /**

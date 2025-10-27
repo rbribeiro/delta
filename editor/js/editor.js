@@ -1,51 +1,65 @@
 const INITIAL_DELTA_TEXT = `
-project title "project-title", author "author-name", type "delta-page", font "Arial":
- 
-# Introduction
 
-theorem "Pythagorean Theorem", difficulty "easy":
-    In a right triangle, the square of the hypotenuse 
-    equals the sum of squares of the other two sides:
-    $$c^2 = a^2 + b^2$$
+# Introdução aos Limites e Continuidade
 
-equation: E = mc^2
+definition "Continuidade":
+    Uma função $f$ é contínua em um ponto $c$ se o limite de $f(x)$ quando $x$ se aproxima de $c$ é igual a $f(c)$.
 
-exercise:
-    Seja \\( f : [0,1] \\to \\mathbb{R} \\) uma função contínua tal que
-    \\[
-    \\int_0^1 f(x) , dx = 0.
-    \\]
-    Prove que existe um ponto \\(c \\in (0,1) \\) tal que
-    \\[
-    \\int_0^c f(x), dx = 0.
-    \\]
-
-definition "Limit":
-    The value that a function approaches as the 
-    input approaches some value.
+theorem "Teorema do Valor Intermediário", level "medium":
+    Se $f$ é contínua em $[a,b]$ e $k$ está entre f(a) e f(b), então existe $c$ em $(a,b)$ tal que $f(c) = k$.
+    hint: Use o teorema de Bolzano-Weierstrass para a demonstração.
 
 proof:
-    This follows directly from the definition.
+    Vamos demonstrar este teorema fundamental passo a passo.
+    step "Configuração inicial":
+        Seja $S = {x [a,c] : f(x) < k }$. Este conjunto é limitado superiormente por b.
+        hint:
+            O conjunto S é não-vazio pois a ∈ S (assumindo f(a) < k).
+    step "Aplicação do supremo":
+        Por ser limitado superiormente, S possui supremo. Seja c = sup(S).
+        hint: Lembre-se que todo conjunto limitado superiormente possui supremo nos reais.
 
-note: This is a simple inline note.
+exercise "Aplicação prática", level "easy":
+    Prove que a equação x³ - x - 1 = 0 possui pelo menos uma raiz real no intervalo [1,2].
+    hint:
+        Calcule f(1) e f(2) e aplique o Teorema do Valor Intermediário.
 
-## Advanced Topics
+## Teoremas de Aproximação
 
-lemma "Fundamental Lemma":
-    Every non-empty set has a smallest element.
+lemma "Aproximação por Polinômios":
+    Toda função contínua em um intervalo fechado pode ser uniformemente aproximada por polinômios.
 
-example:
-    Consider the set $\\{1, 2, 3\\}$.
+example "Função Exponencial":
+    A função $f(x) = e^x$ pode ser aproximada pela série:
+    $$e^x = \\sum_{n=0}^{\\infty} \\frac{x^n}{n!} = 1 + x + \\frac{x^2}{2!} + \\frac{x^3}{3!} + \\cdots$$
+    hint:
+        Esta é a série de Taylor da função exponencial.
 
-plot "This is an example plot", x "0.7,1.4" y "-1.4,1.4":
+definition "Convergência Uniforme":
+    Uma sequência de funções {f_n} converge uniformemente para f se:
+    $$\\lim_{n \\to \\infty} \\sup_{x \\in D} |f_n(x) - f(x)| = 0$$
+
+## Exercícios Avançados
+
+exercise "Teorema de Weierstrass", level "hard":
+    Demonstre que se f é contínua em [a,b], então f é uniformemente contínua em [a,b].
+    hint:
+        Use o método da contradição e a compacidade do intervalo [a,b].
+
+note: 
+    Os teoremas fundamentais da análise real formam a base para toda a matemática avançada.
+    hint:
+        Estude bem estes conceitos - eles aparecem em todas as áreas da matemática!
+
+## Visualização
+
+plot "Teorema do Valor Intermediário", x "0,3" y "-2,8":
     function:
-        1 + sin(18*x)/3
-	function color "#48ce94" points "30000":
-        x/3*sin(1/log(x))
-	function from "0.8,1.3" to "-1.25,0":
-        cos(30*x)/3 - 1
+        x^3 - x - 1
+    function color "#FF6B6B":
+        0
 
-This is a paragraph with some text.
+Esta visualização mostra a função f(x) = x³ - x - 1 e a linha y = 0, demonstrando graficamente a existência de uma raiz.
 `
 
 class DeltaEditor {
