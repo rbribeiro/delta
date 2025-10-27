@@ -1,4 +1,5 @@
-TEMPLATE_ID = 1
+BASE_T = 0; PLOT_T = 1; NEW_T = 2;
+TEMPLATE_ID = BASE_T;
 const DeltaTemplates = [
 `# Introdução aos Limites e Continuidade
 
@@ -59,10 +60,8 @@ plot "Teorema do Valor Intermediário", x "0,3" y "-2,8":
     function color "#FF6B6B":
         0
 
-Esta visualização mostra a função f(x) = x³ - x - 1 e a linha y = 0, demonstrando graficamente a existência de uma raiz.
-`
+Esta visualização mostra a função f(x) = x³ - x - 1 e a linha y = 0, demonstrando graficamente a existência de uma raiz.`
 ,
-
 `plot "Piecewise Function", x "0,10" y "0,20":
     function points "100000":
         e^-(x-3)
@@ -105,12 +104,8 @@ plot "Function Family", x "0,10" y "0,20":
     function points "7500" color "#0FF":
         x^10
     legend:`
-]
-const INITIAL_DELTA_TEXT = DeltaTemplates[TEMPLATE_ID]
-
-const INITIAL_DELTA_TEXTB = `
-
-# Continuous Functions
+,
+`# Continuous Functions
 
 We now come to a significant milestone in our progress toward a rigorous theory of real-valued functions—a proper definition of the seminal concept of continuity that avoids any intuitive appeals to “unbroken curves” or functions without “jumps” or “holes.”
 
@@ -222,8 +217,9 @@ theorem "Composition of Continuous Functions":
 proof:
     [](Exercise 4.3.3.)
 
-## Exercises
-`
+## Exercises`
+]
+const INITIAL_DELTA_TEXT = DeltaTemplates[TEMPLATE_ID]
 
 class DeltaEditor {
     constructor() {
