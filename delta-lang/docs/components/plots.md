@@ -4,7 +4,7 @@ Os componentes de plotagem são componentes delta que permitem a criação de um
 
 ## Function
 
-O componente function representa uma função arbitrária dada por alguma expressão analítica. Funções vão obedecer uma sintaxe próxima da sintaxe do javascript, apenas com fatores adicionais de conveniência e funções adicionais. Em cada linha de conteúdo, recebe-se uma expressão com x, e se não for a primeira linha, com y. 
+O componente function representa uma função arbitrária dada por alguma expressão analítica. Funções vão obedecer uma sintaxe próxima da sintaxe do javascript, apenas com fatores adicionais de conveniência e funções adicionais. Em cada linha de conteúdo, recebe-se uma expressão com x, e se não for a primeira linha, com y.
 
 **Definição**:
 ```

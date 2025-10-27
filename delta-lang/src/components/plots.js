@@ -347,12 +347,13 @@ class DeltaPlot extends HTMLElement {
 				for(let l in lines){
 					let line = lines[l]
 					line = line.replace(/([\d\.]+)(x|y)/g,'$1*$2') //Corrige 3x -> 3*x. Funciona com y tbm
+					line = line.replace(/([\d\.]+|x|y)\(/g, '$1*('); //Corrige multiplicação com parenteses
 					line = line.replace(/\b(pi)\b/g,Math.PI) //Converte pi p/ número
 					line = line.replace(/\b(e)\b/g,Math.E) //Converte e p/ número
 					line = line.replace(/(?<!\^)\^(?!\^)/g, '**'); //Converte ^ para **
 					line = line.replace(/\^\^/g, '^'); //Converte ^^ para ^
-					line = line.replace('&lt;', '<'); //Converte < para forma certa
-					line = line.replace('&gt;', '>'); //Converte > para forma certa
+					line = line.replace(/&lt;/g, '<'); //Converte < para forma certa
+					line = line.replace(/&gt;/g, '>'); //Converte > para forma certa
 
 					// Coloca Math. antes de tudo que precisar e for alguma função, tipo abs()
 					let mathFunctions = 'abs sqrt cbrt sin cos tan asin acos atan sinh cosh tanh asinh acosh atanh sign round floor ceil max min log2 log10 log'.split(' ')
@@ -368,7 +369,6 @@ class DeltaPlot extends HTMLElement {
 
 					// Função correspondente (ou função nula em caso de falha)
 					let safeLine = function_string_sanitizer(line)
-					console.log(safeLine,"_2")
 					if(safeLine) compositionLines.push(safeLine)
 				}
 				
