@@ -1,36 +1,73 @@
+/* Level flag: A small circle on the right */
+.block-header.with-level {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.level-tag {
+    padding: 0.6rem;
+    border-radius: 50%;
+}
+
+.level-tag > .level-text {
+    display: none;
+}
+
+.level-easy {
+  background-color: var(--dft-green);
+  color: var(--white);
+}
+
+.level-medium {
+  background-color: var(--dft-yellow);
+}
+
+.level-hard {
+  background-color: var(--dft-red);
+  color: var(--white);
+}
+
+/* Theorem */
 delta-theorem {
     display: block;
     margin: 1.5rem 0;
-    background: white;
+    background: var(--white);
     border-radius: 9px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    border: 2px solid #ff8aef;
+    /* box-shadow: 0 2px 6px rgba(0,0,0,0.1); */
+    border-left: 0.5rem solid var(--dft-purple);
     padding: 0 1.5rem 1px 1.5rem;
     text-align: justify;   
-        padding-top:0.75em;
+    padding-top:0.75em;
     padding-bottom:0.75em;    
 }
 
-
-.level-tag{
-  padding: 4.5px 1rem 4.5px 1rem;
-  border-radius: 6px;
-  margin-left: 1.5rem;
-  color: var(--text-default)
+delta-theorem .block-header {
+    background: var(--white);
+    color: var(--text-default);
+    padding-left: 1.5rem;
+    font-weight: bold;
+    font-size: 1.1rem;
+    text-transform: capitalize;
+    /* letter-spacing: 0.5px; */
+    margin: 0 -1.5rem -0.5rem -1.5rem; 
+    display: inline-block;
 }
 
-
-.level-easy{
-  background-color: rgb(184, 255, 137);
+delta-theorem[simple] .block-header {
+    margin-right: 0.5rem;
 }
 
-.level-medium, .difficulty-medium {
-  background-color: #ffe8bc;
+delta-theorem > p {
+    display: inline;
+    padding-left: 30px;
+    line-height: inherit;
+    text-align: justify;
 }
 
-.level-hard, .difficulty-hard {
-  background-color: #ff8888;
-  color: white
+delta-theorem .with-level ~ p:first-of-type {
+    display: block;
+    padding-left: 0;
 }
 
 delta-proof,  delta-conjecture, delta-claim, delta-exercise {
@@ -52,35 +89,6 @@ delta-exercise .block-header, delta-proof .block-header {
     letter-spacing: 0.5px;
     margin: 0 -1.5rem 0 -1.5rem; 
     border-top-right-radius: 6px;
-}
-
-delta-theorem .block-header {
-    background: white;
-    color:#ff8aef;
-    padding-left: 1.5rem;
-    font-weight: bold;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin: 0 -1.5rem 0 -1.5rem; 
-    border-radius: 9px;
-    display: inline-block;
-}
-
-delta-theorem .with-level {
-    display: block;
-}
-
-delta-theorem > p {
-    display: inline;
-    padding-left: 30px;
-    line-height: 1.4;
-    text-align: justify;
-}
-
-delta-theorem .with-difficulty ~ p:first-of-type {
-    display: block;
-    padding-left: 0;
 }
 
 /* Add QED symbol to proofs */
@@ -117,6 +125,10 @@ delta-definition .block-header {
     margin: 0 -1.5rem 0 -1.5rem; 
     border-radius: 9px;
     display: inline-block;
+}
+
+delta-definition[simple] .block-header {
+    margin-right: 0.5rem;
 }
 
 delta-definition > p{

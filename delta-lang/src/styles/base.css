@@ -17,10 +17,24 @@
     --dft-cyan: #1EA192;
     --dft-purple: #6A0B90;
     --dft-orange: #FF7621;
+    --dft-green: #107d48;
 
     --text-default: #121212;
     --white: #FAFAFA;
     --gray:	#666666;
+}
+
+.delta-document {
+    /* Font family */
+    font-family: 'Computer Modern Serif', serif !important;
+    font-weight: normal;
+    font-style: normal;
+    font-size: 1.07rem;
+    color: var(--text-default);
+    line-height: 1.4;
+    text-align: justify;
+
+    margin: 0 5vw;
 }
 
 .hint {
