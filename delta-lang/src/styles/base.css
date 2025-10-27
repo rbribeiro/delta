@@ -12,15 +12,37 @@
     --imp-5: #CCC4AF;
 
     --dft-navy: #0A265A;
-    --dft-yellow: #F4D35E;
+    --dft-yellow: #f4d35d;
     --dft-red: #CA2112;
     --dft-cyan: #1EA192;
     --dft-purple: #6A0B90;
     --dft-orange: #FF7621;
+    --dft-green: #107d48;
+
+    --dft-navy-60: #0A265A99;
+    --dft-yellow-60: #f4d35d99;
+    --dft-red-60: #CA211299;
+    --dft-cyan-60: #1EA19299;
+    --dft-purple-60: #6A0B9099;
+    --dft-orange-60: #FF762199;
+    --dft-green-60: #107d4899;
 
     --text-default: #121212;
     --white: #FAFAFA;
     --gray:	#666666;
+}
+
+.delta-document {
+    /* Font family */
+    font-family: 'Computer Modern Serif', serif !important;
+    font-weight: normal;
+    font-style: normal;
+    font-size: 1.07rem;
+    color: var(--text-default);
+    line-height: 1.4;
+    text-align: justify;
+
+    margin: 0 5vw;
 }
 
 .hint {
@@ -103,4 +125,42 @@
     color: var(--white);
     font-weight: bold;
     background-color: var(--dft-orange);
+}
+
+delta-note, delta-remark {
+    display: block;
+    margin: 1.5rem 0;
+    border-left: 0.5rem solid;
+    border-radius: 9px;
+    text-align: justify; 
+}
+
+delta-note {
+    border-color: var(--dft-yellow);
+    padding: 0.8em 1.5rem;
+}
+
+delta-note::before {
+    content: "📌";
+    display: inline-block;
+}
+
+delta-remark {
+    border-color: var(--dft-orange);
+    padding: 0.8em 1.5rem;
+}
+
+delta-remark::before {
+    content: "✏️";
+    display: inline-block;
+}
+
+delta-remark > p:first-of-type, delta-note > p:first-of-type {
+    margin-top: 0;
+    display: inline;
+    padding-left: 10px;
+}
+
+delta-remark > p:last-of-type, delta-note > p:last-of-type {
+    margin-bottom: 0;
 }

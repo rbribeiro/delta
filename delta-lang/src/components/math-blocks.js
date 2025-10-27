@@ -10,13 +10,16 @@ class DeltaBlock extends HTMLElement {
     const type = this.getAttribute("data-type") || null
 
     const blockHeader = document.createElement("div")
-    blockHeader.textContent = title ? `${type} (${title}).` : `${type}`
+    blockHeader.textContent = title ? `${type} (${title}).` : `${type}.`
     blockHeader.classList.add("block-header")
 
     if (level) {
       blockHeader.classList.add("with-level")
       const levelTag = document.createElement("span")
-      levelTag.textContent = level
+      const leveltextTag = document.createElement("span")
+      leveltextTag.textContent = level
+      leveltextTag.classList.add("level-text")
+      levelTag.append(leveltextTag)
       levelTag.classList.add("level-tag")
       levelTag.classList.add(`level-${level}`)
       blockHeader.append(levelTag)
@@ -75,3 +78,18 @@ class DeltaProof extends DeltaBlock {
 
 customElements.define("delta-proof", DeltaProof)
 
+class DeltaExample extends DeltaBlock {
+  constructor() {
+    super()
+  }
+}
+
+customElements.define("delta-example", DeltaExample)
+
+class DeltaCorollary extends DeltaBlock {
+  constructor() {
+    super()
+  }
+}
+
+customElements.define("delta-corollary", DeltaCorollary)

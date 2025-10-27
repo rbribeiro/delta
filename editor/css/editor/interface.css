@@ -129,9 +129,9 @@ body {
 /* Ensure document content is isolated from editor styles */
 #preview .delta-document {
     /* Reset any inherited editor styles */
-    font-family: inherit !important;
-    line-height: inherit !important;
-    color: inherit !important;
+    font-family: inherit;
+    line-height: inherit;
+    color: inherit;
 }
 
 /* Responsive */

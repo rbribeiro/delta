@@ -86,3 +86,17 @@ customElements.define('delta-step', DeltaStep)
 
 
 console.log('Base elements loaded (theorem, note)')
+
+class DeltaNote extends HTMLElement {
+    constructor() {
+        super();
+    }
+}
+customElements.define('delta-note', DeltaNote)
+
+class DeltaRemark extends HTMLElement {
+    constructor() {
+        super();
+    }
+}
+customElements.define('delta-remark', DeltaRemark)
