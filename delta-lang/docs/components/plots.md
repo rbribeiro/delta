@@ -19,7 +19,7 @@ plot "T" x "A,B" y "C,D" size "E,F" grid "G" axis "H" x-label "I" y-label "J":
     - Recebe uma tupla de números em ponto flutuante (A,B) designando o intervalo mostrado no eixo x visível no plot.
 - y $\rightarrow$ C = float (default = 0), D = float (default = 1):
     - Recebe uma tupla de números em ponto flutuante (C,D) designando o intervalo mostrado no eixo x visível no plot.
-- size $\rightarrow$ E = float $\in (0,1]$ (default = 0.8), F = float $>0$ (default = 0.5):
+- size $\rightarrow$ E = float $\in (0,1]$ (default = 0.9), F = float $>0$ (default = 0.5):
     - Recebe uma tupla de números em ponto flutuante (E,F) designando por E a porcentagem da largura disponível usada como largura do plot e por F a mesma unidade, mas usada como altura do plot.
 - grid $\rightarrow$ G = bool (default = True):
     - Recebe um booleano representando se a grade deve ser mostrada ou não.
@@ -131,5 +131,5 @@ legend objects "A" position "B" fixed "C" opacity "D" size "E,F":
     - Recebe uma booleano indicando se a opção da legenda ser móvel deve ser desativada, isto é, a legenda deve ser fixa.
 - opacity $\rightarrow$ D = float $\in [0,1]$ (default = 0.8):
 	- Recebe um número real de 0 até 1 representando a opacidade desejada da legenda.
-- size $\rightarrow$ E = float $\in (0,1]$ (default = 0.3), F = float $>0$ (default = 0.4):
+- size $\rightarrow$ E = float $\in [0.1,0.8]$ (default = 0.3), F = float $\in [0.1,0.8]$ (default = 0.4):
     - Recebe uma tupla de números em ponto flutuante (E,F) designando por E a porcentagem da largura disponível usada como largura da legenda e por F a mesma unidade, mas usada como altura da legenda.

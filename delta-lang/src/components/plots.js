@@ -1,5 +1,3 @@
-//console.log("Plot content loaded!!!")
-
 // ----- Funções Matemáticas -----
 
 // MDC
@@ -149,7 +147,7 @@ class DeltaPlot extends HTMLElement {
 		let showGrid = (grid.toLowerCase() === "true")
 		let showAxis = (axis.toLowerCase() === "true")
 
-		let plotSize = parse_tuple(size,2) || [0.75, 0.4]
+		let plotSize = parse_tuple(size,2) || [0.9, 0.5]
 
 		let plotContent = document.createElement('delta-plot-content')
 		let plotChildren = this.children
@@ -447,7 +445,7 @@ class DeltaPlot extends HTMLElement {
                 let fixed = (isFixed ?? 'false').toLowerCase() === 'true';
 
 				let sizeTemp = parse_tuple(legendSize, 2) || [0.3,0.4];
-				let size = [clip(sizeTemp[0], 0.2, 0.7), clip(sizeTemp[1], 0.2, 0.7)];
+				let size = [clip(sizeTemp[0], 0.1, 0.8), clip(sizeTemp[1], 0.1, 0.8)];
 
 				let opacityTemp = parseFloat(legendOpacity);
 				let opacity = clip(isNaN(opacityTemp) ? 0.9 : opacityTemp, 0, 1);

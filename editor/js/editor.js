@@ -55,10 +55,11 @@ note:
 ## Visualização
 
 plot "Teorema do Valor Intermediário", x "0,3" y "-2,8":
-    function:
+    function "$x^3 - x - 1$":
         x^3 - x - 1
-    function color "#FF6B6B":
+    function "Função Nula", color "#FF6B6B":
         0
+    legend position "top left" objects "1" size "0.22,0.12":
 
 Esta visualização mostra a função f(x) = x³ - x - 1 e a linha y = 0, demonstrando graficamente a existência de uma raiz.`
 ,
