@@ -1,6 +1,7 @@
-const INITIAL_DELTA_TEXT = `
-
-# Introdução aos Limites e Continuidade
+BASE_T = 0; PLOT_T = 1; NEW_T = 2;
+TEMPLATE_ID = BASE_T;
+const DeltaTemplates = [
+`# Introdução aos Limites e Continuidade
 
 definition "Continuidade":
     Uma função $f$ é contínua em um ponto $c$ se o limite de $f(x)$ quando $x$ se aproxima de $c$ é igual a $f(c)$.
@@ -54,17 +55,58 @@ note:
 ## Visualização
 
 plot "Teorema do Valor Intermediário", x "0,3" y "-2,8":
-    function:
+    function "$x^3 - x - 1$":
         x^3 - x - 1
-    function color "#FF6B6B":
+    function "Função Nula", color "#FF6B6B":
         0
+    legend position "top left" objects "1" size "0.22,0.12":
 
-Esta visualização mostra a função f(x) = x³ - x - 1 e a linha y = 0, demonstrando graficamente a existência de uma raiz.
-`
+Esta visualização mostra a função f(x) = x³ - x - 1 e a linha y = 0, demonstrando graficamente a existência de uma raiz.`
+,
+`plot "Piecewise Function", x "0,10" y "0,20":
+    function points "100000":
+        e^-(x-3)
+        gcd(4.2*(x+0.15),2) - 1.5(x-3)*(x-5)
+        -4*(7-x)^2 + 17
+        sin(x*pi*4)+17
+        x <= 3 ? y : x <= 5 ? y2 : x <= 7 ? y3 : y4
 
-const INITIAL_DELTA_TEXTB = `
+plot "This is an example plot", x "0.7,1.4" y "-1.4,1.4":
+    function:
+        1 + sin(18*x)/3
+	function color "#48ce94" points "30000":
+        x/3*sin(1/log(x))
+	function from "0.8,1.3" to "-1.25,0":
+        (sin(30*x)/tan(30*x))/3 - 1
 
-# Continuous Functions
+plot "Function Family", x "0,10" y "0,20":
+    function points "1000" color "#000":
+        log(x)
+    function points "1000" color "#333":
+        x
+    function points "1000" color "#666":
+        x^1.5
+    function points "1000" color "#999":
+        x^2
+    function points "1000" color "#BBB":
+        x^3
+    function points "1000" color "#DDD":
+        x^4
+    function points "5000" color "#F00":
+        x^5
+    function points "5000" color "#0F0":
+        x^6
+    function points "5000" color "#00F":
+        x^7
+    function points "5000" color "#0FF":
+        x^8
+    function points "7500" color "#F0F":
+        x^9
+    function points "7500" color "#0FF":
+        x^10
+    legend:`
+,
+`# Continuous Functions
 
 We now come to a significant milestone in our progress toward a rigorous theory of real-valued functions—a proper definition of the seminal concept of continuity that avoids any intuitive appeals to “unbroken curves” or functions without “jumps” or “holes.”
 
@@ -176,8 +218,9 @@ theorem "Composition of Continuous Functions":
 proof:
     [](Exercise 4.3.3.)
 
-## Exercises
-`
+## Exercises`
+]
+const INITIAL_DELTA_TEXT = DeltaTemplates[TEMPLATE_ID]
 
 class DeltaEditor {
     constructor() {
