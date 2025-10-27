@@ -63,15 +63,7 @@ Esta visualização mostra a função f(x) = x³ - x - 1 e a linha y = 0, demons
 `
 ,
 
-`plot "This is an example plot", x "0.7,1.4" y "-1.4,1.4":
-    function:
-        1 + sin(18*x)/3
-	function color "#48ce94" points "30000":
-        x/3*sin(1/log(x))
-	function from "0.8,1.3" to "-1.25,0":
-        cos(30*x)/3 - 1
-
-plot "Piecewise Function", x "0,10" y "0,20":
+`plot "Piecewise Function", x "0,10" y "0,20":
     function points "100000":
         e^-(x-3)
         gcd(4.2*(x+0.15),2) - 1.5(x-3)*(x-5)
@@ -79,7 +71,40 @@ plot "Piecewise Function", x "0,10" y "0,20":
         sin(x*pi*4)+17
         x <= 3 ? y : x <= 5 ? y2 : x <= 7 ? y3 : y4
 
-plot "":`
+plot "This is an example plot", x "0.7,1.4" y "-1.4,1.4":
+    function:
+        1 + sin(18*x)/3
+	function color "#48ce94" points "30000":
+        x/3*sin(1/log(x))
+	function from "0.8,1.3" to "-1.25,0":
+        (sin(30*x)/tan(30*x))/3 - 1
+
+plot "Function Family", x "0,10" y "0,20":
+    function points "1000" color "#000":
+        log(x)
+    function points "1000" color "#333":
+        x
+    function points "1000" color "#666":
+        x^1.5
+    function points "1000" color "#999":
+        x^2
+    function points "1000" color "#BBB":
+        x^3
+    function points "1000" color "#DDD":
+        x^4
+    function points "5000" color "#F00":
+        x^5
+    function points "5000" color "#0F0":
+        x^6
+    function points "5000" color "#00F":
+        x^7
+    function points "5000" color "#0FF":
+        x^8
+    function points "7500" color "#F0F":
+        x^9
+    function points "7500" color "#0FF":
+        x^10
+    legend:`
 ]
 const INITIAL_DELTA_TEXT = DeltaTemplates[TEMPLATE_ID]
 
