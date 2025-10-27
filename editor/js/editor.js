@@ -62,6 +62,124 @@ plot "Teorema do Valor Intermediário", x "0,3" y "-2,8":
 Esta visualização mostra a função f(x) = x³ - x - 1 e a linha y = 0, demonstrando graficamente a existência de uma raiz.
 `
 
+const ANALYSIS_CHAP_TEXT = `
+
+# Continuous Functions
+
+We now come to a significant milestone in our progress toward a rigorous theory of real-valued functions—a proper definition of the seminal concept of continuity that avoids any intuitive appeals to “unbroken curves” or functions without “jumps” or “holes.”
+
+definition "Continuity", level "easy", id "continuity":
+    A function $f: A \\rightarrow \\mathbb{R}$ is _continuous at a
+    point_ $c \\in A$ if, for all $\\epsilon > 0$, there exists a $\\delta > 0$ such that whenever $\\|x-c\\|<\\delta$ (and $x \\in A$) it follow that $\\|f(x)-f(c)\\| < \\epsilon$.
+
+    If $f$ is continuous at every point in the domain $A$, then we say that $f$ is _continuous on_ $A$.
+
+The definition of continuity looks much like the definition for functional limits, with a few subtle differences. The most important is that we require the point $c$ to be in the domain of $f$. The value $f(c)$ then becomes the value of $\\limit_{x \\rightarrow c} f(x)$. With this observation in mind, it is tempting to shorten [](def, "continuity") to say that $f$ is continuous at $c \\in A$ if
+$$\\limit_{x \\rightarrow c} f(x) = f(c)$$
+
+This is fine as long as $c$ is a limit point of $A$. If $c$ is an isolated point of $A$, then $\\limit_{x \\rightarrow c} f(x)$ isn’t defined but [](def, "continuity") can still be applied. An unremarkable but noteworthy consequence of this definition is that functions arecontinuous at isolated points of their domains [](Exercise 4.3.5).
+
+We saw in the previous section that, in addition to the standard $\\epsilon-\\delta$ definition, functional limits have a useful formulation in terms of sequences. The same is true of continuity. The next theorem summarizes these various equivalent ways to characterize the continuity of a function at a given point.
+
+theorem "Characterizations of Continuity":
+    Let $f: A \\rightarrow \\mathbb{R}$, and let $c \\in A$. The function $f$ is continuous at $c$ if and only if one of the following three conditions is met\\:
+    enumerate label "romam":
+        item: 
+            For all $\\epsilon > 0$, there exists a $\\delta > 0$ such that $\\|x-c\\|<\\delta$ (and $x \\in A) implies $\\|f(x) -f(c) \\| < \\epsilon$;
+        item:
+            For all $V_{\\epsilon}(f(c))$, there exists a $V_{\\delta}(c)$ with the property that $x \\in V_{\\delta}(c)$ (and $x \\in A$) implies $f(x) \\in V_{\\epsilon}(f(c))$;
+        item:
+            For all $(x_n) \\rightarrow c$ (with $x_n \\in A$), it follows that $f(x_n) \\rightarrow f(c)$.
+    If $c$ is a limit point of $A$, then the above conditions are equivalent to
+        item:
+            $\\limit_{x \\rightarrow c} f(x) = f(c)$
+
+proof: 
+    Statement (i) is just [](Definition 4.3.1), and statement (ii) is the standard rewording of (i) using topological neighborhoods in place of the absolute value notation. Statement (iii) is equivalent to (i) via an argument nearly identical to that of [](Theorem 4.2.3), with some slight modifications for when $x_n = c$. Finally, statement (iv) is seen to be equivalent to (i) by considering Definition 4.2.1 and observing that the case $x=c$ (which is excluded in the definition of functional limits) leads to the requirement $f(c) \\in V_{\\epsilon}(f(c))$, which is trivially true.
+
+The length of this list is somewhat deceiving. Statements (i), (ii), and (iv) are closely related and essentially remind us that functional limits have an $\\epsilon-\\delta$ formulation as well as a topological description. Statement (iii), however, is qualitatively different from the others. As a general rule, the sequential characterization of continuity is typically the most useful for demonstrating that a function is not continuous at some point.
+
+corollary "Criterion for Discontinuity": 
+    Let $f: A \\rightarrow \\mathbb{R}$ and let $c \\in A$ be a limit point of $A$. If there exists a sequence $(x_n) \\subseteq A$ where $(x_n) \\rightarrow c$ but such that $f(x_n)$ does not converge to $f(c)$, we may conclude that $f$ is not continuous at $c$.
+
+The sequential characterization of continuity is also important for the other reasons that it was important for functional limits. In particular, it allows us to bring our catalog of results about the behavior of sequences to bear on the study of continuous functions. The next theorem should be compared to [](Corollary 4.2.3) as well as to [](Theorem 2.3.3).
+
+theorem "Algebraic Continuity Theorem":
+    Assume $f: A \\rightarrow \\mathbb{R}$ and $g: A \\rightarrow \\mathbb{R}$ are continuous at a point $c \\in A$. Then,
+    enumarate label "roman":
+        item:
+            $kf(x)$ is continuous at $c$ for all $k \\in \\mathbb{R}$;
+        item:
+            $f(x) + g(x)$ is continuous at $c$;
+        item:
+            $f(x)g(x)$ is continuous at $c$; and
+        item:
+            $f(x)/g(x)$ is continuous at $c$, provided the quotient is defined.
+            
+proof:
+    All of these statements can be quickly derived from [](Corollary 4.2.4) and [](Theorem 4.3.2).
+
+These results provide us with the tools we need to firm up our arguments
+in the opening section of this chapter about the behavior of Dirichlet’s function and Thomae’s function. The details are requested in [](Exercise 4.3.7). Here are some more examples of arguments for and against continuity of some familiar functions.
+
+example:
+    All polynomials are continuous on $\\mathbb{R}$. In fact, rational functions (i.e., quotients of polynomials) are continuous wherever they are defined.
+
+    To see why this is so, consider the identity function $g(x)$. Because $\\|g(x) - g(c)\\| = \\|x-c\\|$, we can respond to a given $\\epsilon > 0$ by choosing $\\delta = \\epsilon$, and it follows that $g$ is continuous on all of $\\mathbb{R}$. It is even simpler to show that a constant function $f(x) = k$, is continuous. (Letting $\\delta =1$ regardless of the value of $\\epsilon$ does the trick.) Because an arbitrary polynomial
+    $$p(x) = a_0 + a_1x + a_2x^2 + \\cdots + \_nx^n$$
+    consists of sums and products of $g(x)$ with different constant functions, we may conclude from [](Theorem 4.3.4) that $p(x)$ is continuous.
+
+    Likewise, [](Theorem 4.3.4) implies that quotients of polynomials are continuous as long as the denominator is not zero.
+
+example:
+    In [](Example 4.2.6), we saw that the oscillations of $\\sin(1/x)$ are so rapid near the origin that $\\lim_{x\\rightarrow 0} \\sin(1/x)$ does not exist. Now, consider the function
+    $$g(x) = \\begin{cases} x \\sin(1/x) & \\text{if } x \\neq 0 \\\\ 0 & \\text{if } x = 0. \\end{cases}$$
+    To investigate the continuity of $g$ at $c = 0$ ([](Fig. 4.6)), we can estimate
+    $$\\|g(x) - g(0)\\| = \\|x\\sin(1/x) -0\\| \\leq \\|x\\|.$$
+    Given $\\epsilon > 0$, set $\\delta = \\epsilon$, so that whenever $\\|x-0\\|=\\|x\\| < \\delta$ if follows that $\\|g(x) - g(0)\\|< \\epsilon$. Thus, $g$ is continuous at the origin.
+    
+plot x "1.0,1.0" y "-2.0,2.0":
+    function:
+        xsin(1/x)
+
+example:
+    Throughout the exercises we have been using the greatest integer function $h(x) = [[x]]$ which for each $x \\in \\mathbb{R}$ returns the largest integer $n \\in \\mathbb{Z}$$ satisfying $n \\leq x$. This familiar step function certainly has discontinuous “jumps” at each integer value of its domain, but it is a useful exercise to try and articulate this observation in the language of analysis.
+
+    Given $m \\in \\mathbb{Z}$, define the sequence $(x_n)$ by $x_n = m-1/n$. It follows that $(x_n) \\rightarrow m$, but
+    $$h(x_n) \\rightarrow (m-1),$$
+    which does not equal $m=h(m)$. By [](Corollary 4.3.3), we see that $h$ fails to be continuous at each $m \\in \\mathbb{Z}$.
+
+    Now let’s see why $h$ is continuous at a point $c \\in \\mathbb{Z}$. Given $\\epsilon > 0$, we must find a $\\delta$-neighborhood $V_{\\delta}(c) such that $x \\in V_{\\delta}(c)$ implies $h(x) \\in V_{\\epsilon} (h(c))$. We know that $c \\in \\mathbb{R}$ falls between consecutive integers $n<c<n + 1$ for some $n \\in \\mathbb{Z}$. If we take $\\delta = \\min\\{c-n,(n + 1)- c\\}$, then it follows from the definition of $h$ that $h(x) = h(c)$ for all $x \\in V_{\\delta}(c)$. Thus, we certainly have
+    $$h(x) \\in V_{\\epsilon} (h(c))$$
+    whenever $x \\in V_{\\delta}(c)$.
+
+    This latter proof is quite different from the typical situation in that the value of $\\delta$ does not actually depend on the choice of $\\epsilon$. Usually, a smaller $\\epsilon$ requires a smaller $\\delta$ in response, but here the same value of $\\delta$ works no matter how small $\\epsilon$ is chosen.
+
+example:
+    Consider $f(x) = \\sqrt{x}$$ defined on $A = \\{x \\in \\mathbb{R}: x \\geq 0 \\}$. [](Exercise 2.3.1) outlines a sequential proof that $f$ is continuous on $A$. Here, we give an $\\epsilon-\\delta$ proof of the same fact.
+
+    Let $\\epsilon > 0$. We need to argue that $\\|f(x)-f(c) \\|$ can be made less than $\\epsilon$ for all values of $x$ in some $\\delta$ neighborhood around $c$. If $c=0$, this reduces to the statement $\\sqrt{x} < \\epsilon$, which happens as long as $x < \\epsilon^2$. Thus, if we choose $\\delta = \\epsilon^2$, we see that $\\|x-0\\| < \\delta$ implies $\\|f(x)-0\\|< \\epsilon$.
+
+    For a point $c \\in A$ different from zero, we need to estimate $\\| \\sqrt{x} - \\sqrt{c} \\|. This time, write
+    $$\\| \\sqrt{x} - \\sqrt{c} \\| = \\| \\sqrt{x} - \\sqrt{c} \\| \\left( \\frac{\\sqrt{x} + \\sqrt{c}}{\\sqrt{x} + \\sqrt{c}} \\right) = \\frac{\\|x-c\\|}{\\sqrt{x} + \\sqrt{c}} \\leq \\frac{\\|x-c\\|}{\\sqrt{c}}$$.
+    In order to make this quantity less than $\\epsilon$, it suffices to pick $\\delta = \\epsilon \\sqrt{c}$. Then, $\\|x-c\\|<\\delta$ implies
+    $$\\|\\sqrt{x} - \\sqrt{c} \\| < \\frac{\\epsilon \\sqrt{c}}{\\sqrt{c}}=\\epsilon$$.
+    as desired.
+
+Although we have now shown that both polynomials and the square root function are continuous, the Algebraic Continuity Theorem does not provide the justification needed to conclude that a function such as $h(x) = \\sqrt{3x^2 + 5}$ is continuous. For this, we must prove that compositions of continuous functions are continuous.
+
+theorem "Composition of Continuous Functions":
+    Given $f: A \\rightarrow \\mathbb{R}$ and $g: B \\rightarrow \\mathbb{R}$, assume that the range $f(A) = \\{f(x):x \\in A \\}$ is contained in the domain $B$ so that the composition $g \\circ f(x) = g(f(x))$ is defined on $A$.
+    
+    If $f$ is continuous at $c \\in A$, and if $g$ is continuous at $f(c)\\in B$, then $g \\circ f$ is continuous at $c$.
+
+proof:
+    [](Exercise 4.3.3.)
+
+## Exercises
+
+`
+
 class DeltaEditor {
     constructor() {
         // Simple direct references to global objects
