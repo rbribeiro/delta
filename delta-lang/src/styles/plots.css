@@ -40,11 +40,32 @@ delta-plot-content {
   transition: transform 0.1s ease;
 }
 
+.legend-drag-handle {
+	position: absolute;
+	bottom: 2px;
+	right: 15px;
+	width: 18px;
+	height: 18px;
+	padding: 0;
+	border: none;
+	background: none;
+	cursor: move;
+	opacity: 0.3;
+}
+
 .legend-toggle-btn:hover {
   opacity: 1;
 }
 
+.legend-drag-handle:hover {
+  opacity: 1;
+}
+
 .legend-toggle-btn:active {
+  transform: scale(0.9);
+}
+
+.legend-drag-handle:active {
   transform: scale(0.9);
 }
 

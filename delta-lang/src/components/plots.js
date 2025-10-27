@@ -624,7 +624,7 @@ class DeltaPlot extends HTMLElement {
                     legendToggleBtn.setAttribute('xmlns', xhtmlNS);
                     legendToggleBtn.className = 'legend-toggle-btn';
 
-                    // Ícone SVG para o botão
+                    // Ícone SVG para o botão de toggle
                     const iconSvg = document.createElementNS(svgNS, 'svg');
                     iconSvg.setAttribute('viewBox', '0 0 24 24');
                     iconSvg.classList.add('legend-toggle-icon');
@@ -638,24 +638,113 @@ class DeltaPlot extends HTMLElement {
                     iconSvg.appendChild(circlePath);
                     legendToggleBtn.appendChild(iconSvg);
 
+					// Botão de Drag (foreign -> xmlns)
+					const legendDragHandle = document.createElementNS(xhtmlNS, 'button');
+					legendDragHandle.setAttribute('xmlns', xhtmlNS);
+					legendDragHandle.className = 'legend-drag-handle';
+
+					// Ícone SVG para o botão de drag
+					const dragIconSvg = document.createElementNS(svgNS, 'svg');
+					dragIconSvg.setAttribute('viewBox', '0 0 15 16');
+					dragIconSvg.style.width = '14px';
+					dragIconSvg.style.height = '14px';
+
+					const dragIconPath = document.createElementNS(svgNS, 'path');
+					dragIconPath.setAttribute('fill', '#333');
+					dragIconPath.setAttribute('d', 'M8 0L5 4h6L8 0z M8 16l3-4H5l3 4z M0 8l4-3v6L0 8z M16 8l-4 3V5l4 3z');
+					
+					dragIconSvg.appendChild(dragIconPath);
+					legendDragHandle.appendChild(dragIconSvg);
+
                     // Click pra ativar/desativar legenda
                     legendToggleBtn.addEventListener('click', () => {
                         const isHidden = legendContentDiv.style.display === 'none';
                         if (isHidden) {
                             legendContentDiv.style.display = 'block';
+							if(!fixed) legendDragHandle.style.display = 'block';
                             circlePath.classList.remove('legend-toggle-circle--outlined');
                             circlePath.classList.add('legend-toggle-circle--filled');
                         } else {
                             legendContentDiv.style.display = 'none';
+							if(!fixed) legendDragHandle.style.display = 'none';
                             circlePath.classList.remove('legend-toggle-circle--filled');
                             circlePath.classList.add('legend-toggle-circle--outlined');
                         }
                     });
 
                     legendWrapper.appendChild(legendToggleBtn);
+					legendWrapper.appendChild(legendDragHandle);
                     legendWrapper.appendChild(legendContentDiv);
                     legend.appendChild(legendWrapper);
                     svg.appendChild(legend);
+
+					// Legenda pode sair mudando de lugar
+					if (!fixed) {
+						let isDragging = false;
+						let offset = { x: 0, y: 0 };
+
+						// Magia negra que extrai coordenadas do SVG
+						const getSVGCoordinates = (e) => {
+							const CTM = svg.getScreenCTM();
+							const svgPoint = svg.createSVGPoint();
+							svgPoint.x = e.clientX;
+							svgPoint.y = e.clientY;
+							return svgPoint.matrixTransform(CTM.inverse());
+						};
+
+						legendToggleBtn.addEventListener('mousedown', (e) => {
+							e.stopPropagation();
+						});
+
+						legendContentDiv.addEventListener('mousedown', (e) => {
+							e.stopPropagation();
+						});
+
+						legendDragHandle.addEventListener('mousedown', (e) => {
+							e.stopPropagation();
+							isDragging = true;
+							legendWrapper.style.cursor = 'move';
+							
+							const svgCoords = getSVGCoordinates(e);
+							const currentX = parseFloat(legend.getAttribute('x'));
+							const currentY = parseFloat(legend.getAttribute('y'));
+							
+							offset.x = svgCoords.x - currentX;
+							offset.y = svgCoords.y - currentY;
+						});
+
+						svg.addEventListener('mousemove', (e) => {
+							if (!isDragging) return;
+							
+							e.preventDefault();
+							
+							const svgCoords = getSVGCoordinates(e);
+							let newX = svgCoords.x - offset.x;
+							let newY = svgCoords.y - offset.y;
+
+							const minX = marginLeft;
+							const maxX = svgWidth - marginRight - legendWidth;
+							const minY = marginTop;
+							const maxY = svgHeight - marginBottom - legendHeight;
+
+							newX = Math.max(minX, Math.min(newX, maxX));
+							newY = Math.max(minY, Math.min(newY, maxY));
+							
+							legend.setAttribute('x', newX);
+							legend.setAttribute('y', newY);
+						});
+
+						const stopDragging = () => {
+							isDragging = false;
+							legendWrapper.style.cursor = 'default';
+						};
+
+						svg.addEventListener('mouseup', stopDragging);
+						svg.addEventListener('mouseleave', stopDragging);
+					} else {
+						legendDragHandle.style.display = 'none';
+						console.log('none')
+					}
                     break;
 			}
 		}
