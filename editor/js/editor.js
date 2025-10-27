@@ -1,6 +1,6 @@
-const INITIAL_DELTA_TEXT = `
-
-# Introdução aos Limites e Continuidade
+TEMPLATE_ID = 1
+const DeltaTemplates = [
+`# Introdução aos Limites e Continuidade
 
 definition "Continuidade":
     Uma função $f$ é contínua em um ponto $c$ se o limite de $f(x)$ quando $x$ se aproxima de $c$ é igual a $f(c)$.
@@ -61,6 +61,27 @@ plot "Teorema do Valor Intermediário", x "0,3" y "-2,8":
 
 Esta visualização mostra a função f(x) = x³ - x - 1 e a linha y = 0, demonstrando graficamente a existência de uma raiz.
 `
+,
+
+`plot "This is an example plot", x "0.7,1.4" y "-1.4,1.4":
+    function:
+        1 + sin(18*x)/3
+	function color "#48ce94" points "30000":
+        x/3*sin(1/log(x))
+	function from "0.8,1.3" to "-1.25,0":
+        cos(30*x)/3 - 1
+
+plot "Piecewise Function", x "0,10" y "0,20":
+    function points "100000":
+        e^-(x-3)
+        gcd(4.2*(x+0.15),2) - 1.5(x-3)*(x-5)
+        -4*(7-x)^2 + 17
+        sin(x*pi*4)+17
+        x <= 3 ? y : x <= 5 ? y2 : x <= 7 ? y3 : y4
+
+plot "":`
+]
+const INITIAL_DELTA_TEXT = DeltaTemplates[TEMPLATE_ID]
 
 class DeltaEditor {
     constructor() {
