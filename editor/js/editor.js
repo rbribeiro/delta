@@ -62,13 +62,13 @@ plot "Teorema do Valor Intermediário", x "0,3" y "-2,8":
 Esta visualização mostra a função f(x) = x³ - x - 1 e a linha y = 0, demonstrando graficamente a existência de uma raiz.
 `
 
-const ANALYSIS_CHAP_TEXT = `
+const INITIAL_DELTA_TEXTB = `
 
 # Continuous Functions
 
 We now come to a significant milestone in our progress toward a rigorous theory of real-valued functions—a proper definition of the seminal concept of continuity that avoids any intuitive appeals to “unbroken curves” or functions without “jumps” or “holes.”
 
-definition "Continuity", level "easy", id "continuity":
+definition "Continuity", level "easy" id "continuity":
     A function $f: A \\rightarrow \\mathbb{R}$ is _continuous at a
     point_ $c \\in A$ if, for all $\\epsilon > 0$, there exists a $\\delta > 0$ such that whenever $\\|x-c\\|<\\delta$ (and $x \\in A$) it follow that $\\|f(x)-f(c)\\| < \\epsilon$.
 
@@ -177,7 +177,6 @@ proof:
     [](Exercise 4.3.3.)
 
 ## Exercises
-
 `
 
 class DeltaEditor {

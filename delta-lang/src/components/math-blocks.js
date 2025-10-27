@@ -78,3 +78,18 @@ class DeltaProof extends DeltaBlock {
 
 customElements.define("delta-proof", DeltaProof)
 
+class DeltaExample extends DeltaBlock {
+  constructor() {
+    super()
+  }
+}
+
+customElements.define("delta-example", DeltaExample)
+
+class DeltaCorollary extends DeltaBlock {
+  constructor() {
+    super()
+  }
+}
+
+customElements.define("delta-corollary", DeltaCorollary)
