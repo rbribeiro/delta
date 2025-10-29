@@ -85,9 +85,18 @@ class Parser {
             this.addToHierarchy(section)
             
         } else if (this.matchSimpleBlock(trimmed)) {
-            const simpleBlock = this.parseSimpleBlock(trimmed, indent)
+            const [simpleBlock, afterColon] = this.parseSimpleBlock(trimmed, indent)
             this.addToHierarchy(simpleBlock)
             
+            // Handle inline content
+            if (afterColon) {
+                this.handleSubLine(afterColon, indent+1)
+                //block.children.push({
+                //    type: 'text',
+                //    content: afterColon
+                //})
+            }
+
         } else if (this.matchBlock(trimmed)) {
             const block = this.parseBlock(trimmed, indent)
             this.addToHierarchy(block)
@@ -369,15 +378,7 @@ class Parser {
             if (Object.keys(attributes).length > 0) block.attributes = attributes
         }
         
-        // Handle inline content
-        if (afterColon) {
-            block.children.push({
-                type: 'text',
-                content: afterColon
-            })
-        }
-        
-        return block
+        return [block, afterColon]
     }
 
     parseAttributes(text) {
