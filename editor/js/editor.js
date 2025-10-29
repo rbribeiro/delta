@@ -323,7 +323,7 @@ class DeltaEditor {
                     [/^#{1,6}\s+.*$/, 'section'],
 
                     // General Tags (proof:) (definition "title":) (theorem "title" attribute "value":)
-                    [/^\s*(project|theorem|definition|lemma|proof|example|note|proposition|corollary|exercise|plot)/, { token: 'block-header', next: '@Tags' }],
+                    [/^\s*(project|theorem|definition|lemma|proof|example|note|proposition|corollary|exercise|plot|legend)/, { token: 'block-header', next: '@Tags' }],
 
                     // Math Tags
                     [/^\s*(equation|function)/, { token: 'block-header', next: '@mathTags' }],
@@ -448,10 +448,7 @@ class DeltaEditor {
             inherit: true,
             rules: [
                 { token: 'section', foreground: '4fc3f7', fontStyle: 'bold' },
-                { token: 'block-header-full', foreground: 'ff6b6b', fontStyle: 'bold' },
-                { token: 'block-header-title', foreground: 'ff6b6b', fontStyle: 'bold' },
-                { token: 'block-header-simple', foreground: 'ff6b6b', fontStyle: 'bold' },
-                { token: 'block-type', foreground: 'ff6b6b', fontStyle: 'bold' },
+                { token: 'block-header', foreground: 'ff6b6b', fontStyle: 'bold' },
                 { token: 'attribute-key', foreground: 'da70d6' },
                 { token: 'math-delimiter', foreground: '4caf50', fontStyle: 'bold' },
                 { token: 'math-command', foreground: '4fc3f7', fontStyle: 'bold' },

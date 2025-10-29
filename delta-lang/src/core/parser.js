@@ -35,6 +35,21 @@ const INDENTATION_PATTERN = /^(\s*)/;
 // Conversão de \: para caractere :
 const TWO_DOTS_PATTERN = /\\:/g;
 
+// Negrito - Padrão que identifica texto em negrito delimitado por **.
+const BOLD_PATTERN = /\*\*(.+?)(?<!\\)\*\*/
+
+// Itálico - Padrão que identifica texto em itálico delimitado por __.
+const ITALIC_PATTERN = /__(.+?)(?<!\\)__/
+
+// Negrito e Itálico - Padrão que identifica texto em negrito e itálico delimitado por --.
+const BOLD_ITALIC_PATTERN = /--(.+?)(?<!\\)--/
+
+// Marcação - Padrão que identifica texto marcado delimitado por `.
+const MARK_PATTERN = /``(.+?)(?<!\\)``/
+
+// Sublinhado - Padrão que identifica texto sublinhado delimitado por ~~.
+const UNDERSCORE_PATTERN = /~~(.+?)(?<!\\)~~/
+
 // ----- Parser -----
 
 class Parser {
@@ -42,15 +57,11 @@ class Parser {
         this.lines = []
         this.currentIndex = 0
         this.stack = []
-        this.buffer = []
-        this.bufferIndent = null
     }
 
     parse(text) {
         this.lines = text.split('\n')
         this.currentIndex = 0
-        this.buffer = []
-        this.bufferIndent = null
         
         // Initialize with root
         const root = { type: 'document', children: [], indent: -1 }
@@ -62,7 +73,7 @@ class Parser {
             this.currentIndex++
         }
         
-        this.flushBuffer()
+        console.log(root)
         return root
     }
 
@@ -71,24 +82,83 @@ class Parser {
         const indent = this.getIndent(line)
         
         if (this.matchSection(trimmed)) {
-            this.flushBuffer()
             const section = this.parseSection(trimmed, indent)
             this.addToHierarchy(section)
             
         } else if (this.matchSimpleBlock(trimmed)) {
-            this.flushBuffer()
             const simpleBlock = this.parseSimpleBlock(trimmed, indent)
             this.addToHierarchy(simpleBlock)
             
         } else if (this.matchBlock(trimmed)) {
-            this.flushBuffer()
             const block = this.parseBlock(trimmed, indent)
             this.addToHierarchy(block)
             
+        } else if (this.matchSubLine(trimmed)) {
+            //const escapedTrimmedLine = this.handleBackslashes(line).trimStart()
+            const trimmed = line.trimStart()
+            this.handleSubLine(trimmed, indent)
         } else {
-            const escapedLine = this.handleBackslashes(line);
-            this.addToBuffer(escapedLine, indent)
+            const escapedTrimmedLine = this.handleBackslashes(line).trimStart()
+            //const trimmed = line.trimStart()
+            this.addText(escapedTrimmedLine, indent)
         }
+    }
+
+    handleSubLine(subline, indent) {
+        if (BOLD_PATTERN.test(subline)) {
+            this.parseSequence(subline, indent, BOLD_PATTERN, 'bold')
+        
+        } else if (ITALIC_PATTERN.test(subline)) {
+            this.parseSequence(subline, indent, ITALIC_PATTERN, 'italic')
+        
+        } else if (BOLD_ITALIC_PATTERN.test(subline)) {
+            this.parseSequence(subline, indent, BOLD_ITALIC_PATTERN, 'bold-italic')
+        
+        } else if (MARK_PATTERN.test(subline)) {
+            this.parseSequence(subline, indent, MARK_PATTERN, 'mark')
+        
+        } else if (UNDERSCORE_PATTERN.test(subline)) {
+            this.parseSequence(subline, indent, UNDERSCORE_PATTERN, 'underscore')
+        
+        } else {
+            this.addText(subline, indent)
+        }
+    }
+
+    matchSubLine(trimmed) {
+        return BOLD_PATTERN.test(trimmed) || ITALIC_PATTERN.test(trimmed) || BOLD_ITALIC_PATTERN.test(trimmed) || MARK_PATTERN.test(trimmed) || UNDERSCORE_PATTERN.test(trimmed)
+    }
+
+    parseSequence(line, indent, pattern, type) {
+        const content = line.split(pattern)
+        let head = pattern.source.match(/([^(]*)\(/)[1]
+        const escape = new RegExp('\\\\' + head)
+        head = head.replace(/\\/g,'')
+
+        if (this.stack[this.stack.length-1].type === 'paragraph') {
+            console.log(content, head, escape, content[1].replace(escape, head))
+            this.stack[this.stack.length-1].children.push({
+                type: 'text',
+                content: content[0]
+            },{
+                type: type,
+                content: content[1].replace(escape, head)
+            })
+        } else {
+            console.log(content, head, escape, content[1].replace(escape, head))
+            this.addToHierarchy({
+                type: 'paragraph',
+                children: [{
+                    type: 'text',
+                    content: content[0]
+                },{
+                    type: type,
+                    content: content[1].replace(escape, head)
+                }],
+                indent: indent
+            })
+        }
+        this.handleSubLine(line.substring(content[0].length + content[1].length + 4), indent)
     }
 
     matchSection(line) {
@@ -107,33 +177,32 @@ class Parser {
         return SIMPLE_BLOCK_PATTERN.test(line)
     }
 
-    addToBuffer(line, indent) {
-        const trimmed = line.trim()
-        
-        if (trimmed === '') {
-            this.flushBuffer()
+    addText(trimmed, indent) {
+        if (this.stack[this.stack.length-1].type === 'paragraph') {
+            if (trimmed === '' && this.stack[this.stack.length-1].children.length > 0) {
+                this.addToHierarchy({
+                    type: 'paragraph',
+                    children: [{
+                        type: 'text',
+                        content: ''
+                    }],
+                    indent: indent
+                })
+            } else {
+                this.stack[this.stack.length-1].children.push({
+                    type: 'text',
+                    content: trimmed
+                })
+            }
         } else {
-            // Check if indentation changed
-            if (this.buffer.length > 0 && this.bufferIndent !== indent) {
-                this.flushBuffer()
-            }
-            
-            this.buffer.push(trimmed)
-            this.bufferIndent = indent
-        }
-    }
-
-    flushBuffer() {
-        if (this.buffer.length > 0) {
-            const paragraph = {
+            this.addToHierarchy({
                 type: 'paragraph',
-                content: this.buffer.join('\n'),
-                indent: this.bufferIndent
-            }
-            
-            this.addToHierarchy(paragraph)
-            this.buffer = []
-            this.bufferIndent = null
+                children: [{
+                    type: 'text',
+                    content: trimmed
+                }],
+                indent: indent
+            })
         }
     }
 
@@ -178,7 +247,7 @@ class Parser {
     }
 
     handleBackslashes(str) {
-        return str.replace(/\\+/g, match => match.slice(1));
+        return str.replace(/\\\\+/g, match => match.slice(1));
     }
 
     parseSection(line, indent) {
