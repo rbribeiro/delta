@@ -73,7 +73,6 @@ class Parser {
             this.currentIndex++
         }
         
-        console.log(root)
         return root
     }
 
@@ -105,24 +104,35 @@ class Parser {
     }
 
     handleSubLine(subline, indent) {
+        let k = {}
+        let none = true
+        
         if (BOLD_PATTERN.test(subline)) {
-            this.parseSequence(subline, indent, BOLD_PATTERN, 'bold')
-        
-        } else if (ITALIC_PATTERN.test(subline)) {
-            this.parseSequence(subline, indent, ITALIC_PATTERN, 'italic')
-        
-        } else if (BOLD_ITALIC_PATTERN.test(subline)) {
-            this.parseSequence(subline, indent, BOLD_ITALIC_PATTERN, 'bold-italic')
-        
-        } else if (MARK_PATTERN.test(subline)) {
-            this.parseSequence(subline, indent, MARK_PATTERN, 'mark')
-        
-        } else if (UNDERSCORE_PATTERN.test(subline)) {
-            this.parseSequence(subline, indent, UNDERSCORE_PATTERN, 'underscore')
-        
-        } else {
-            this.addText(subline, indent)
+            k[subline.match(BOLD_PATTERN).index] = [BOLD_PATTERN, 'bold']
+            none = false
         }
+        if (ITALIC_PATTERN.test(subline)) {
+            k[subline.match(ITALIC_PATTERN).index] = [ITALIC_PATTERN, 'italic']
+            none = false
+        }
+        if (BOLD_ITALIC_PATTERN.test(subline)) {
+            k[subline.match(BOLD_ITALIC_PATTERN).index] = [BOLD_ITALIC_PATTERN, 'bold-italic']
+            none = false
+        }
+        if (MARK_PATTERN.test(subline)) {
+            k[subline.match(MARK_PATTERN).index] = [MARK_PATTERN, 'mark']
+            none = false
+        }
+        if (UNDERSCORE_PATTERN.test(subline)) {
+            k[subline.match(UNDERSCORE_PATTERN).index] = [UNDERSCORE_PATTERN, 'underscore']
+            none = false
+        }
+        if (none) {
+            this.addText(subline, indent)
+            return
+        }
+        
+        this.parseSequence(subline, indent, ...k[Math.min(...Object.keys(k))])
     }
 
     matchSubLine(trimmed) {
@@ -136,7 +146,6 @@ class Parser {
         head = head.replace(/\\/g,'')
 
         if (this.stack[this.stack.length-1].type === 'paragraph') {
-            console.log(content, head, escape, content[1].replace(escape, head))
             this.stack[this.stack.length-1].children.push({
                 type: 'text',
                 content: content[0]
@@ -145,7 +154,6 @@ class Parser {
                 content: content[1].replace(escape, head)
             })
         } else {
-            console.log(content, head, escape, content[1].replace(escape, head))
             this.addToHierarchy({
                 type: 'paragraph',
                 children: [{
