@@ -90,7 +90,7 @@ class Parser {
             
             // Handle inline content
             if (afterColon) {
-                this.handleSubLine(afterColon, indent+1)
+                this.createParagraphFromSubLine(afterColon, indent + 1)
                 //block.children.push({
                 //    type: 'text',
                 //    content: afterColon
@@ -101,81 +101,60 @@ class Parser {
             const block = this.parseBlock(trimmed, indent)
             this.addToHierarchy(block)
             
-        } else if (this.matchSubLine(trimmed)) {
+        } else {
             //const escapedTrimmedLine = this.handleBackslashes(line).trimStart()
             const trimmed = line.trimStart()
-            this.handleSubLine(trimmed, indent)
+            this.createParagraphFromSubLine(trimmed, indent)
+        }
+    }
+
+    createParagraphFromSubLine(subline, indent) {
+        const seq = this.handleSubLine(subline)
+        if (this.stack[this.stack.length-1].type === 'paragraph') {
+            this.stack[this.stack.length-1].children.push(...seq)
         } else {
-            const escapedTrimmedLine = this.handleBackslashes(line).trimStart()
-            //const trimmed = line.trimStart()
-            this.addText(escapedTrimmedLine, indent)
+            this.addToHierarchy({
+                type: 'paragraph',
+                children: seq,
+                indent: indent
+            })
         }
     }
 
-    handleSubLine(subline, indent) {
-        let k = {}
-        let none = true
-        
+    handleSubLine(subline) {
         if (BOLD_PATTERN.test(subline)) {
-            k[subline.match(BOLD_PATTERN).index] = [BOLD_PATTERN, 'bold']
-            none = false
+            const partition = this.parseSequence(subline, BOLD_PATTERN, 'bold')
+            return [...this.handleSubLine(partition[0]), partition[1], ...this.handleSubLine(partition[2])]
+        } else if (ITALIC_PATTERN.test(subline)) {
+            const partition = this.parseSequence(subline, ITALIC_PATTERN, 'italic')
+            return [...this.handleSubLine(partition[0]), partition[1], ...this.handleSubLine(partition[2])]
+        } else if (BOLD_ITALIC_PATTERN.test(subline)) {
+            const partition = this.parseSequence(subline, BOLD_ITALIC_PATTERN, 'bold-italic')
+            return [...this.handleSubLine(partition[0]), partition[1], ...this.handleSubLine(partition[2])]
+        } else if (MARK_PATTERN.test(subline)) {
+            const partition = this.parseSequence(subline, MARK_PATTERN, 'mark')
+            return [...this.handleSubLine(partition[0]), partition[1], ...this.handleSubLine(partition[2])]
+        } else if (UNDERSCORE_PATTERN.test(subline)) {
+            const partition = this.parseSequence(subline, UNDERSCORE_PATTERN, 'underscore')
+            return [...this.handleSubLine(partition[0]), partition[1], ...this.handleSubLine(partition[2])]
+        } else {
+            return [{
+                    type: 'text',
+                    content: this.handleBackslashes(subline)
+                }]
         }
-        if (ITALIC_PATTERN.test(subline)) {
-            k[subline.match(ITALIC_PATTERN).index] = [ITALIC_PATTERN, 'italic']
-            none = false
-        }
-        if (BOLD_ITALIC_PATTERN.test(subline)) {
-            k[subline.match(BOLD_ITALIC_PATTERN).index] = [BOLD_ITALIC_PATTERN, 'bold-italic']
-            none = false
-        }
-        if (MARK_PATTERN.test(subline)) {
-            k[subline.match(MARK_PATTERN).index] = [MARK_PATTERN, 'mark']
-            none = false
-        }
-        if (UNDERSCORE_PATTERN.test(subline)) {
-            k[subline.match(UNDERSCORE_PATTERN).index] = [UNDERSCORE_PATTERN, 'underscore']
-            none = false
-        }
-        if (none) {
-            this.addText(subline, indent)
-            return
-        }
-        
-        this.parseSequence(subline, indent, ...k[Math.min(...Object.keys(k))])
     }
 
-    matchSubLine(trimmed) {
-        return BOLD_PATTERN.test(trimmed) || ITALIC_PATTERN.test(trimmed) || BOLD_ITALIC_PATTERN.test(trimmed) || MARK_PATTERN.test(trimmed) || UNDERSCORE_PATTERN.test(trimmed)
-    }
-
-    parseSequence(line, indent, pattern, type) {
+    parseSequence(line, pattern, type) {
         const content = line.split(pattern)
         let head = pattern.source.match(/([^(]*)\(/)[1]
         const escape = new RegExp('\\\\' + head)
         head = head.replace(/\\/g,'')
 
-        if (this.stack[this.stack.length-1].type === 'paragraph') {
-            this.stack[this.stack.length-1].children.push({
-                type: 'text',
-                content: content[0]
-            },{
-                type: type,
-                content: content[1].replace(escape, head)
-            })
-        } else {
-            this.addToHierarchy({
-                type: 'paragraph',
-                children: [{
-                    type: 'text',
-                    content: content[0]
-                },{
+        return [content[0],{
                     type: type,
                     content: content[1].replace(escape, head)
-                }],
-                indent: indent
-            })
-        }
-        this.handleSubLine(line.substring(content[0].length + content[1].length + 4), indent)
+                },content[2]]
     }
 
     matchSection(line) {
@@ -192,35 +171,6 @@ class Parser {
         // Simple block: has colon AND has content after it (all on same line)  
         // Examples: "equation: x^2=2", "theorem id 'th1': content here"
         return SIMPLE_BLOCK_PATTERN.test(line)
-    }
-
-    addText(trimmed, indent) {
-        if (this.stack[this.stack.length-1].type === 'paragraph') {
-            if (trimmed === '' && this.stack[this.stack.length-1].children.length > 0) {
-                this.addToHierarchy({
-                    type: 'paragraph',
-                    children: [{
-                        type: 'text',
-                        content: ''
-                    }],
-                    indent: indent
-                })
-            } else {
-                this.stack[this.stack.length-1].children.push({
-                    type: 'text',
-                    content: trimmed
-                })
-            }
-        } else {
-            this.addToHierarchy({
-                type: 'paragraph',
-                children: [{
-                    type: 'text',
-                    content: trimmed
-                }],
-                indent: indent
-            })
-        }
     }
 
     findUnescapedColons(line) {
