@@ -73,6 +73,7 @@ class Parser {
             this.currentIndex++
         }
         
+        console.log(root)
         return root
     }
 
@@ -90,7 +91,7 @@ class Parser {
             
             // Handle inline content
             if (afterColon) {
-                this.createParagraphFromSubLine(afterColon, indent + 1)
+                this.createParagraphFromSubLine(afterColon, indent + 4)
                 //block.children.push({
                 //    type: 'text',
                 //    content: afterColon
@@ -102,15 +103,23 @@ class Parser {
             this.addToHierarchy(block)
             
         } else {
-            //const escapedTrimmedLine = this.handleBackslashes(line).trimStart()
-            const trimmed = line.trimStart()
-            this.createParagraphFromSubLine(trimmed, indent)
+            if (trimmed !== '') {
+                //const escapedTrimmedLine = this.handleBackslashes(line).trimStart()
+                const trimmed = line.trimStart()
+                this.createParagraphFromSubLine(trimmed, indent)
+            } else if (this.stack[this.stack.length-1].type === 'paragraph' && this.stack[this.stack.length-1].children.length !== 0) {
+                this.addToHierarchy({
+                    type: 'paragraph',
+                    children: [],
+                    indent: indent
+                })
+            }
         }
     }
 
     createParagraphFromSubLine(subline, indent) {
         const seq = this.handleSubLine(subline)
-        if (this.stack[this.stack.length-1].type === 'paragraph') {
+        if (this.stack[this.stack.length-1].indent <= indent && this.stack[this.stack.length-1].type === 'paragraph') {
             this.stack[this.stack.length-1].children.push(...seq)
         } else {
             this.addToHierarchy({
