@@ -20,7 +20,22 @@ class DeltaRenderer {
         switch (node.type) {
             case 'document':
                 return this.renderChildren(node.children);
-                
+
+            case 'bold':
+                return this.renderBold(node);
+
+            case 'italic':
+                return this.renderItalic(node);
+
+            case 'bold-italic':
+                return this.renderBoldItalic(node);
+
+            case 'mark':
+                return this.renderMark(node);
+            
+            case 'underscore':
+                return this.renderUnderscore(node);
+            
             case 'section':
                 return this.renderSection(node);
                 
@@ -42,6 +57,51 @@ class DeltaRenderer {
     }
     
     /**
+     * Render a bold node
+     * @param {Object} node - Bold AST node
+     * @returns {string} HTML string
+     */
+    renderBold(node) {
+        return `<b>${this.escapeHtml(node.content)}</b>`;
+    }
+
+    /**
+     * Render a italic node
+     * @param {Object} node - Italic AST node
+     * @returns {string} HTML string
+     */
+    renderItalic(node) {
+        return `<i>${this.escapeHtml(node.content)}</i>`;
+    }
+
+    /**
+     * Render a bold-italic node
+     * @param {Object} node - Bold-italic AST node
+     * @returns {string} HTML string
+     */
+    renderBoldItalic(node) {
+        return `<b><i>${this.escapeHtml(node.content)}</i></b>`;
+    }
+
+    /**
+     * Render a mark node
+     * @param {Object} node - Mark AST node
+     * @returns {string} HTML string
+     */
+    renderMark(node) {
+        return `<mark>${this.escapeHtml(node.content)}</mark>`;
+    }
+
+    /**
+     * Render a underscore node
+     * @param {Object} node - Underscore AST node
+     * @returns {string} HTML string
+     */
+    renderUnderscore(node) {
+        return `<u>${this.escapeHtml(node.content)}</u>`;
+    }
+
+    /**
      * Render a section node (# ## ### headers)
      * @param {Object} node - Section AST node
      * @returns {string} HTML string
@@ -59,7 +119,8 @@ class DeltaRenderer {
      * @returns {string} HTML string
      */
     renderParagraph(node) {
-        return `<p>${this.escapeHtml(node.content)}</p>`;
+        const childrenHTML = this.renderChildren(node.children);
+        return `<p>${childrenHTML}</p>`;
     }
     
     /**
@@ -139,7 +200,8 @@ class DeltaRenderer {
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
+            .replace(/'/g, '&#39;')
+            .replace(/`/g, '&#96;');
     }
 }
 
