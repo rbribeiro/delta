@@ -1,0 +1,62 @@
+delta-composition, delta-slide {
+    display: block;
+    margin: 1rem 0;
+}
+
+delta-page {
+    display: block;
+    padding: 15px;
+    margin: 8px 0;
+    transition: all 0.3s ease;
+}
+
+/* Estilos específicos para composição - ACUMULATIVO */
+delta-composition delta-page {
+    opacity: 1;
+    height: auto;
+    visibility: visible;
+    /* Garante que todas as páginas mantenham seu espaço */
+}
+
+delta-composition delta-page.hidden {
+    opacity: 0;
+    /* Mantém a altura, padding e margin para preservar o layout */
+    visibility: hidden;
+    /* Cria um espaço em branco no lugar do conteúdo */
+    background-color: transparent;
+    color: transparent;
+    pointer-events: none;
+}
+
+/* Remove o conteúdo de texto das páginas escondidas, mas mantém o espaço */
+delta-composition delta-page.hidden > * {
+    opacity: 0;
+}
+
+/* Estilos específicos para slides */
+delta-slide {
+    position: relative;
+    min-height: 150px;
+    overflow: hidden;
+}
+
+delta-slide > delta-page {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    box-sizing: border-box;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+}
+
+delta-slide > delta-page.active {
+    position: relative;
+    opacity: 1;
+    transform: translateX(0);
+}
+
+delta-slide > delta-page.prev {
+    transform: translateX(-100%);
+}

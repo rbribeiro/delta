@@ -1,0 +1,156 @@
+/* Estilos para o delta-grid - IDÊNTICO ao composition */
+delta-grid {
+    display: block;
+    margin: 8px 0;
+    padding: 0;
+    background-color: transparent;
+}
+
+delta-grid:not([data-title=""])::before {
+    content: attr(data-title);
+    display: block;
+    font-size: 1.3em;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    color: var(--dft-navy);
+    text-align: center;
+    border-bottom: none; /* Sem barra vermelha */
+}
+
+.delta-grid-content {
+    display: grid;
+    gap: 8px 16px; /* Gap vertical IDÊNTICO ao margin do composition (8px) */
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+    align-items: start;
+}
+
+/* Estilos para os delta-panel - EXATAMENTE IGUAL ao delta-page */
+delta-panel {
+    display: block;
+    padding: 16px 18px; /* Mesmo padding do delta-page */
+    margin: 0; /* Sem margin - o gap do grid cuida do espaçamento */
+    background-color: transparent;
+    border: none;
+    color: var(--text-default);
+    line-height: 1.5;
+    transition: all 0.2s ease;
+    min-height: auto;
+    height: auto;
+    box-sizing: border-box; /* Garante que padding não some com width */
+}
+
+/* Hover sutil - opcional */
+delta-panel:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Título dos painéis */
+delta-panel[data-title]:not([data-title=""])::before {
+    content: attr(data-title);
+    display: block;
+    font-weight: bold;
+    margin-bottom: 1.2rem;
+    padding: 0.5rem 0.8rem;
+    background-color: rgba(128, 128, 128, 0.06);
+    border-left: 0.3rem solid var(--dft-red);
+    border-radius: 4px;
+    color: var(--dft-navy);
+    font-size: 0.95em;
+    box-sizing: border-box;
+    line-height: 1.3;
+}
+
+/* Painéis simples (sem título) */
+delta-panel[simple]::before {
+    display: none;
+}
+
+/* Conteúdo dos painéis - IDÊNTICO ao composition */
+delta-panel p {
+    margin: 0 0 0.8rem 0;
+    line-height: 1.5;
+    text-align: justify;
+}
+
+delta-panel p:last-child {
+    margin-bottom: 0;
+}
+
+/* Espaçamento para elementos comuns - IDÊNTICO ao composition */
+delta-panel theorem,
+delta-panel proof,
+delta-panel exercise,
+delta-panel step,
+delta-panel hint {
+    display: block;
+    margin-bottom: 0.8rem;
+}
+
+delta-panel theorem:last-child,
+delta-panel proof:last-child,
+delta-panel exercise:last-child,
+delta-panel step:last-child,
+delta-panel hint:last-child {
+    margin-bottom: 0;
+}
+
+/* Remover todas as cores variadas */
+delta-panel[data-color] {
+    background-color: transparent;
+    border: none;
+}
+
+/* Garantir alinhamento PERFEITO entre grid e composition */
+delta-composition delta-grid,
+delta-slide delta-grid {
+    margin: 0;
+}
+
+delta-composition delta-panel,
+delta-slide delta-panel {
+    padding: 16px 18px;
+    margin: 0;
+}
+
+/* Ajuste fino para conteúdo matemático */
+delta-panel .math,
+delta-composition .math {
+    line-height: 1.2;
+}
+
+delta-panel mjx-container,
+delta-composition mjx-container {
+    line-height: 1.2 !important;
+}
+
+/* Estilos específicos para slides (mantém os existentes) */
+delta-slide {
+    position: relative;
+    min-height: 150px;
+    overflow: hidden;
+}
+
+delta-slide > delta-page {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    box-sizing: border-box;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+}
+
+delta-slide > delta-page.active {
+    position: relative;
+    opacity: 1;
+    transform: translateX(0);
+}
+
+delta-slide > delta-page.prev {
+    transform: translateX(-100%);
+}

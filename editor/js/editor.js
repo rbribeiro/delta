@@ -1,5 +1,5 @@
-BASE_T = 0; PLOT_T = 1; NEW_T = 2;
-TEMPLATE_ID = BASE_T;
+BASE_T = 0; PLOT_T = 1; NEW_T = 2; SCG_T = 3;
+TEMPLATE_ID = SCG_T;
 const DeltaTemplates = [
 `# Introdução aos Limites e Continuidade
 
@@ -65,10 +65,10 @@ Esta visualização mostra a função f(x) = x³ - x - 1 e a linha y = 0, demons
 ,
 `plot "Piecewise Function", x "0,10" y "0,20":
     function points "100000":
-        e^-(x-3)
-        gcd(4.2*(x+0.15),2) - 1.5(x-3)*(x-5)
-        -4*(7-x)^2 + 17
-        sin(x*pi*4)+17
+        e^-(x-3)\n        
+        gcd(4.2*(x+0.15),2) - 1.5(x-3)*(x-5)\n        
+        -4*(7-x)^2 + 17\n        
+        sin(x*pi*4)+17\n        
         x <= 3 ? y : x <= 5 ? y2 : x <= 7 ? y3 : y4
 
 plot "This is an example plot", x "0.7,1.4" y "-1.4,1.4":
@@ -218,7 +218,50 @@ theorem "Composition of Continuous Functions":
 proof:
     [](Exercise 4.3.3.)
 
-## Exercises`
+## Exercises`,
+`slide:
+    page:
+        # Derivadas e Integrais
+        composition:
+            page order "1":
+            page order "2":
+                definition "Derivada", level "easy":
+                    A derivada de uma função $f$ em um ponto $c$ é definida como
+                    $$f'(c) = \\lim_{h \\to 0} \\frac{f(c+h) - f(c)}{h}$$
+                    desde que este limite exista.
+            page order "4":
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+            page order "3":
+                definition "Integral de Riemann", level "easy":
+                    Seja \\(f\\) uma função definida no intervalo \\([a, b]\\). A **integral definida** de \\(f\\) de \\(a\\) até \\(b\\) é dada pelo limite:
+                    $$\\int_a^b f(x) dx = \\lim_{n \\to \\infty} \\sum_{i=1}^{n} f(x_i^*) \\Delta x_i$$
+                    note:
+                        \\([a, b]\\) é dividido em \\(n\\) subintervalos de largura \\(\\Delta x_i\\)\n                        
+                        \\(x_i^*\\) é um ponto amostral no i-ésimo subintervalo
+                    **Caso particular (partições homogêneas com extremo direito):**
+                    $$\\int_a^b f(x) dx = \\lim_{n \\to \\infty} \\frac{b-a}{n}\\sum_{i=1}^{n} f\\left(a+i\\frac{b-a}{n}\\right)$$
+                    
+                    Esta definição assume que \\(f\\) é contínua em \\([a, b]\\) ou possui um número finito de descontinuidades.
+    page:
+        grid "Lista de Derivadas e Integrais", scale "3x3":
+            panel:
+                $$x^n$$
+            panel "Derivada":
+                $nx^{n-1}$ para $n \\neq 0$
+            panel "Integral":
+                $\\frac{x^{n+1}}{n+1} + C$  para $n \\neq -1$
+            panel:
+                $$e^x$$
+            panel "Derivada":
+                $$e^x$$
+            panel "Integral":
+                $$e^x + C$$
+            panel:
+                $\\ln(x)$ para $x > 0$
+            panel "Derivada":
+                $$\\frac{1}{x}$$
+            panel "Integral":
+                $$x\\ln(x) - x + C$$`
 ]
 const INITIAL_DELTA_TEXT = DeltaTemplates[TEMPLATE_ID]
 
@@ -239,6 +282,7 @@ class DeltaEditor {
     init() {
         this.initializeEditor();
         this.setupControls();
+        this.setupResizer(); // Setup resizer for editor and preview panes
         
         // Force initial preview update after a short delay to ensure editor is ready
         setTimeout(() => {
@@ -298,7 +342,8 @@ class DeltaEditor {
                     renderWhitespace: 'selection',
                     tabSize: 4,
                     insertSpaces: true,
-                    detectIndentation: false
+                    detectIndentation: false,
+                    trimAutoWhitespace: false // Keep trailing spaces
                 });
                 
                 // Listen for content changes
@@ -323,7 +368,7 @@ class DeltaEditor {
                     [/^#{1,6}\s+.*$/, 'section'],
 
                     // General Tags (proof:) (definition "title":) (theorem "title" attribute "value":)
-                    [/^\s*(project|theorem|definition|lemma|proof|example|note|proposition|corollary|exercise|plot|legend|hint|step)/, { token: 'block-header', next: '@Tags' }],
+                    [/^\s*(project|theorem|definition|lemma|proof|example|note|proposition|corollary|exercise|plot|legend|hint|step|grid|panel|slide|composition|page)/, { token: 'block-header', next: '@Tags' }],
 
                     // Math Tags
                     [/^\s*(equation|function)/, { token: 'block-header', next: '@mathTags' }],
@@ -658,6 +703,61 @@ class DeltaEditor {
                 console.log('MathJax error:', err);
             });
         }
+    }
+
+    setupResizer() {
+        const resizer = document.getElementById('vertical-resizer');
+        const editorPanel = document.querySelector('.editor-panel');
+        const previewPanel = document.querySelector('.preview-panel');
+        const container = document.querySelector('.editor-container');
+        
+        let isResizing = false;
+
+        resizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+            
+            // Prevent text selection during resize
+            e.preventDefault();
+        });
+
+        const handleMouseMove = (e) => {
+            if (!isResizing) return;
+            
+            const containerRect = container.getBoundingClientRect();
+            const containerWidth = containerRect.width;
+            
+            // Calculate new widths based on mouse position
+            const editorWidth = ((e.clientX - containerRect.left) / containerWidth) * 100;
+            const previewWidth = 100 - editorWidth;
+            
+            // Apply constraints (min 20% each side)
+            if (editorWidth >= 20 && previewWidth >= 20) {
+                editorPanel.style.width = `${editorWidth}%`;
+                previewPanel.style.width = `${previewWidth}%`;
+                resizer.style.left = `${editorWidth}%`;
+                
+                // Trigger Monaco editor resize if available
+                if (this.monacoEditor) {
+                    setTimeout(() => {
+                        this.monacoEditor.layout();
+                    }, 0);
+                }
+            }
+        };
+
+        const handleMouseUp = () => {
+            isResizing = false;
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+        };
+
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+        
+        // Set initial position
+        resizer.style.left = '50%';
     }
     
 

@@ -7,8 +7,8 @@ const SECTION_PATTERN = /^#{1,6}\s/;
 const SIMPLE_BLOCK_PATTERN = new RegExp([
   '^',
   '([a-z][a-zA-Z0-9_]*)', // equation
-  '(?:\\s+"([^"]*)")?', // equation "title"
-  '(?:\\s*,?\\s+([a-z][a-zA-Z0-9_-]*\\s+"[^"]*"))*', // equation "title", attr "value" ...
+  '(?:\\s+".*?(?<!\\\\)")?', // equation "title"
+  '(?:\\s*,?\\s+([a-z][a-zA-Z0-9_-]*\\s+".*?(?<!\\\\)"))*', // equation "title", attr "value" ...
   '\\s*:\\s*', // colon outside quotes
   '(.+)$' // mandatory content after colon
 ].join(''));
@@ -18,16 +18,16 @@ const COMPLEX_BLOCK_PATTERN = new RegExp([
   '^(',
     '[a-z][a-zA-Z0-9_]*\\s*', // 1. theorem
     '|',
-    '[a-z][a-zA-Z0-9_]*\\s+"[^"]*"\\s*', // 2. theorem "title"
+    '[a-z][a-zA-Z0-9_]*\\s+".*?(?<!\\\\)"\\s*', // 2. theorem "title"
     '|',
-    '[a-z][a-zA-Z0-9_]*(?:\\s+[a-z][a-zA-Z0-9_-]*\\s+"[^"]*")+', // 3. theorem attr "value" ...
+    '[a-z][a-zA-Z0-9_]*(?:\\s+[a-z][a-zA-Z0-9_-]*\\s+".*?(?<!\\\\)")+', // 3. theorem attr "value" ...
     '|',
-    '[a-z][a-zA-Z0-9_]*\\s+"[^"]*"\\s*,\\s*(?:[a-z][a-zA-Z0-9_-]*\\s+"[^"]*")(?:\\s+[a-z][a-zA-Z0-9_-]*\\s+"[^"]*")*', // 4. theorem "title", attr "value" ...
+    '[a-z][a-zA-Z0-9_]*\\s+".*?(?<!\\\\)"\\s*,\\s*(?:[a-z][a-zA-Z0-9_-]*\\s+".*?(?<!\\\\)")(?:\\s+[a-z][a-zA-Z0-9_-]*\\s+".*?(?<!\\\\)")*', // 4. theorem "title", attr "value" ...
   ')\\s*:\\s*$'
 ].join(''), 'm');
 
 // Atributos - Padrõa que extrai atributos no formato chave "valor". A chave é opcional, pois também existe o atributo data-title que não usa chave.
-const ATTRIBUTE_PATTERN = /(?:([\w-]+)\s+)?"([^"]+)"/g;
+const ATTRIBUTE_PATTERN = /(?:([\w-]+)\s+)?"(.*?)(?<!\\)"/g;
 
 // Indentação - Padrão que captura o espaço em branco no início da linha medindo a indentação.
 const INDENTATION_PATTERN = /^(\s*)/;
@@ -91,7 +91,11 @@ class Parser {
             
             // Handle inline content
             if (afterColon) {
-                this.createParagraphFromSubLine(afterColon, indent + 4)
+                this.addToHierarchy({
+                    type: 'paragraph',
+                    children: this.handleSubLine(afterColon),
+                    indent: indent + 4
+                })
                 //block.children.push({
                 //    type: 'text',
                 //    content: afterColon
@@ -105,9 +109,11 @@ class Parser {
         } else {
             if (trimmed !== '') {
                 //const escapedTrimmedLine = this.handleBackslashes(line).trimStart()
+                // If it's a non-empty line, process it as part of a paragraph
                 const trimmed = line.trimStart()
                 this.createParagraphFromSubLine(trimmed, indent)
             } else if (this.stack[this.stack.length-1].type === 'paragraph' && this.stack[this.stack.length-1].children.length !== 0) {
+                // If an empty line is detected and the previous line is not an empty paragraph, it places an empty paragraph on hold
                 this.addToHierarchy({
                     type: 'paragraph',
                     children: [],
@@ -120,8 +126,10 @@ class Parser {
     createParagraphFromSubLine(subline, indent) {
         const seq = this.handleSubLine(subline)
         if (this.stack[this.stack.length-1].indent <= indent && this.stack[this.stack.length-1].type === 'paragraph') {
+            //If the type of the last one is paragraph and the indentation of the current one is greater than or equal, place it in the previous one.
             this.stack[this.stack.length-1].children.push(...seq)
         } else {
+            // Otherwise, create a new paragraph
             this.addToHierarchy({
                 type: 'paragraph',
                 children: seq,
@@ -351,9 +359,9 @@ class Parser {
         while ((match = pattern.exec(text)) !== null) {
             const [, key, value] = match
             if (key) {
-                attributes[key] = value
+                attributes[key] = value.replace(/\\"/g,'"')
             } else if (!title) {
-                title = value // First unkeyed string is title
+                title = value.replace(/\\"/g,'"') // First unkeyed string is title
             }
         }
         

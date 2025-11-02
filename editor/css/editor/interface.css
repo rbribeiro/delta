@@ -38,10 +38,10 @@ body {
 }
 
 .editor-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
     height: 100vh;
     gap: 2px;
+    position: relative;
     background-color: rgba(255,255,255,0.1);
 }
 
@@ -54,6 +54,7 @@ body {
     overflow: hidden;
     box-shadow: 0 8px 32px rgba(0,0,0,0.1);
     background: var(--white);
+    width: 50%;
 }
 
 /* Panel headers */
@@ -135,9 +136,36 @@ body {
 }
 
 /* Responsive */
-@media (max-width: 768px) {
-    .editor-container {
-        grid-template-columns: 1fr;
-        grid-template-rows: 1fr 1fr;
-    }
+
+
+/* Resizable panel styles */
+.resizer {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 8px;
+    background: transparent;
+    cursor: col-resize;
+    z-index: 10;
+    transition: background-color 0.2s;
+}
+
+.resizer:hover {
+    background-color: #4a90e2;
+}
+
+.resizer::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 2px;
+    transform: translateY(-50%);
+    width: 2px;
+    height: 40px;
+    background: #ccc;
+    border-radius: 1px;
+}
+
+.resizer:hover::after {
+    background: #4a90e2;
 }

@@ -54,3 +54,12 @@ body.dark-theme #editor-fallback {
 .preview-panel {
     color: var(--text-default);
 }
+
+/* Resizable panel styles - Dark Theme*/
+body.dark-theme .resizer::after {
+    background: #555;
+}
+
+body.dark-theme .resizer:hover::after {
+    background: #4a90e2;
+}

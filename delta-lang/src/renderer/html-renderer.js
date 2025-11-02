@@ -159,12 +159,26 @@ class DeltaRenderer {
      */
     renderSimpleBlock(node) {
         const blockType = node.blockType || 'note';
-        const tagName = `delta-${blockType}`;
+        const tagName = `delta-${blockType}`; // e.g., delta-theorem, delta-definition
+        
+        // Build attributes string
+        let attributesStr = '';
+        if (node.title) {
+            attributesStr += ` data-title="${this.escapeHtml(node.title)}"`;
+        }
+
+        // Add the block type as attribute
+        attributesStr += ` data-type="${blockType}"`
+
+        if (node.attributes && Object.keys(node.attributes).length > 0) {
+            for (const [key, value] of Object.entries(node.attributes)) {
+                attributesStr += ` data-${key}="${this.escapeHtml(value)}"`;
+            }
+        }
+        
         const childrenHTML = this.renderChildren(node.children);
         
-       const  attributesStr = `data-type="${blockType}" simple`
-        
-        return `<${tagName} ${attributesStr}>${childrenHTML}</${tagName}>`;
+        return `<${tagName}${attributesStr} simple>${childrenHTML}</${tagName}>`;
     }
     
     /**
