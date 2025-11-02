@@ -99,33 +99,6 @@
 }
 
 
-.step-content {
-  position: relative; 
-  border-left: 2px dashed var(--gray);
-  padding-left: 1.5em; 
-  padding-bottom: 1em;
-}
-
-.step-title {
-  font-weight: bold;
-  color: var(--dft-navy);
-  cursor: pointer;
-}
-
-.step-timeline-dot {
-    position: absolute; 
-    left: -0.67em; 
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    transition: background 0.3s ease;
-    z-index: 2;
-    text-align: center;
-    cursor: pointer;
-    color: var(--white);
-    font-weight: bold;
-    background-color: var(--dft-orange);
-}
 
 delta-note, delta-remark {
     display: block;

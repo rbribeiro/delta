@@ -35,52 +35,59 @@ customElements.define("delta-hint",DeltaHint)
 class DeltaStep extends HTMLElement {
     constructor() {
         super();
-        this.bodyIsVisible = false;
     }
 
     connectedCallback() {
-        const title = this.getAttribute('data-title') || ''
-        const level = this.getAttribute("data-level") || null
-        const originalContent = this.innerHTML
-        this.innerHTML = ""
-        const stepContent = document.createElement("div")
-        stepContent.classList.add("step-content")
+        const title = this.getAttribute('data-title') || '';
+        const number = this.getAttribute('data-number') || '';
+        const level = this.getAttribute('data-level')
+        const originalContent = this.innerHTML;
+        this.innerHTML = "";
 
-        const stepTimelineDot = document.createElement("div")
-        stepTimelineDot.classList.add("step-timeline-dot")
-        stepTimelineDot.textContent = "+"
+        const wrapper = document.createElement("div");
+        wrapper.classList.add("step-wrapper");
 
-        const stepTitle = document.createElement("div")
-        stepTitle.classList.add("step-title")
-        stepTitle.textContent = title
+        const trigger = document.createElement("button");
+        trigger.classList.add("step-trigger");
 
-        if (level) {
-            stepTitle.classList.add("with-level")
-            const levelTag = document.createElement("span")
-            levelTag.textContent = level
-            levelTag.classList.add("level-tag")
-            levelTag.classList.add(`level-${level}`)
-            stepTitle.append(levelTag)
-        }
+        const stepTitle = document.createElement("span");
+        stepTitle.classList.add("step-title");
+        stepTitle.textContent = number ? `Step ${number}.` : "Step.";
 
-        const stepBody = document.createElement("div")
-        stepBody.classList.add("step-body")
-        stepBody.style.display = 'none';
-        stepBody.innerHTML = originalContent
-        
-        this.append(stepContent)
-        stepContent.append(stepTimelineDot, stepTitle, stepBody)
-        stepTimelineDot.addEventListener("click", () => {this.toggleBody(stepTimelineDot, stepBody)})
-        stepTitle.addEventListener("click", () => this.toggleBody(stepTimelineDot, stepBody))
-        
+
+        const stepSummary = document.createElement("span");
+        stepSummary.classList.add("step-summary");
+        stepSummary.textContent = title;
+
+        if(level) {
+        const levelTag = document.createElement("span")
+        const leveltextTag = document.createElement("span")
+        leveltextTag.textContent = level
+        leveltextTag.classList.add("level-text")
+        levelTag.append(leveltextTag)
+        levelTag.classList.add("level-tag")
+        levelTag.classList.add(`level-${level}`)
+        stepSummary.append(levelTag)
+        stepSummary.classList.add("with-level")
     }
 
-    toggleBody(toggle,stepBody) {
-        this.bodyIsVisible = !this.bodyIsVisible
-        stepBody.style.display = this.bodyIsVisible ? "block" : "none"
-        toggle.textContent = this.bodyIsVisible ? "-" : "+"
+        trigger.append(stepTitle, stepSummary);
 
+        const stepContent = document.createElement("div");
+        stepContent.classList.add("step-content");
+
+        const stepContentInner = document.createElement("div");
+        stepContentInner.classList.add("step-content-inner");
+        stepContentInner.innerHTML = originalContent;
+
+        stepContent.append(stepContentInner);
+
+        wrapper.append(trigger, stepContent);
+        this.append(wrapper);
+
+        trigger.addEventListener("click", () => wrapper.classList.toggle("open"));
     }
+
 }
 customElements.define('delta-step', DeltaStep)
 

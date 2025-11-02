@@ -73,6 +73,15 @@ class DeltaProof extends DeltaBlock {
     super()
   }
 
+  connectedCallback() {
+      super.connectedCallback()
+      const steps = this.querySelectorAll("delta-step")
+
+      steps.forEach((step,idx) => {
+      if (!step.hasAttribute("data-number")) step.setAttribute("data-number", idx + 1)
+    })
+  }
+
   
 }
 
