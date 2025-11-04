@@ -323,7 +323,7 @@ class DeltaEditor {
                     [/^#{1,6}\s+.*$/, 'section'],
 
                     // General Tags (proof:) (definition "title":) (theorem "title" attribute "value":)
-                    [/^\s*(project|theorem|definition|lemma|proof|example|note|proposition|corollary|exercise|plot|legend|hint|step)/, { token: 'block-header', next: '@Tags' }],
+                    [/^\s*(project|theorem|definition|lemma|proof|example|note|proposition|corollary|exercise|plot|legend|hint|step|caption|youtube)/, { token: 'block-header', next: '@Tags' }],
 
                     // Math Tags
                     [/^\s*(equation|function)/, { token: 'block-header', next: '@mathTags' }],
