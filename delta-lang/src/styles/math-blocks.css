@@ -29,7 +29,7 @@
 }
 
 /* General */
-delta-theorem, delta-proof, delta-conjecture, delta-claim, delta-exercise, delta-example, delta-lemma, delta-proposition {
+delta-theorem, delta-proof, delta-conjecture, delta-claim, delta-exercise, delta-example, delta-lemma, delta-proposition, delta-corollary, delta-definition {
     display: block;
     margin: 1.5rem 0;
     background: var(--white);
@@ -39,7 +39,7 @@ delta-theorem, delta-proof, delta-conjecture, delta-claim, delta-exercise, delta
     text-align: justify; 
 }
 
-delta-theorem, delta-conjecture, delta-claim, delta-lemma, delta-proposition, delta-corollary, delta-definition {
+delta-theorem, delta-conjecture, delta-claim, delta-lemma, delta-proposition, delta-corollary, delta-definition, delta-corollary {
     border-left: 0.5rem solid;
 }
 
@@ -167,11 +167,15 @@ delta-definition >.block-content {
     line-height: 1.8;
 }
 
+delta-definition .with-level ~ p:first-of-type {
+    display: block;
+    padding-left: 0;
+}
+
 delta-lemma {
     display: block;
     margin: 1.5rem 0;
     border-radius: 9px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     border-color: var(--dft-navy);
     padding: 0 1.5rem 1px 1.5rem;
     text-align: justify;   
@@ -179,7 +183,11 @@ delta-lemma {
     padding-bottom:0.75em;    
 }
 
-delta-lemma .block-header {
+delta-corollary {
+    border-color: var(--dft-navy);
+}
+
+delta-lemma .block-header, delta-corollary .block-header {
     padding-left: 1.5rem;
     font-weight: bold;
     text-transform: capitalize;
