@@ -107,3 +107,62 @@ class DeltaRemark extends HTMLElement {
     }
 }
 customElements.define('delta-remark', DeltaRemark)
+
+
+
+class DeltaQuote extends HTMLElement {
+  constructor() {
+    super()
+  }
+
+   connectedCallback() {
+    const initialContent = this.innerHTML
+    const contentWrapper = document.createElement("div")
+    contentWrapper.classList.add("delta-quote-content")
+
+    let quoteColor = this.getAttribute("data-quote-color")
+    if (quoteColor) {
+      if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(quoteColor)) {
+        quoteColor = quoteColor
+      } else {
+        quoteColor = `var(--dft-${quoteColor})`
+      }
+    }
+
+
+    const openQuote = document.createElement("span")
+    openQuote.classList.add("delta-quote-mark", "delta-quote-open")
+    openQuote.textContent = "“"
+
+    const bodyWrapper = document.createElement("div")
+    bodyWrapper.classList.add("delta-quote-body")
+    bodyWrapper.innerHTML = initialContent
+
+    const closeQuote = document.createElement("span")
+    closeQuote.classList.add("delta-quote-mark", "delta-quote-close")
+    closeQuote.textContent = "”"
+
+    contentWrapper.appendChild(openQuote)
+    contentWrapper.appendChild(bodyWrapper)
+    contentWrapper.appendChild(closeQuote)
+
+    this.innerHTML = ""
+    const author = this.getAttribute("data-author")
+    if(author) {
+      const authorWrapper = document.createElement("div")
+      authorWrapper.classList.add("delta-quote-author")
+      authorWrapper.textContent = author
+      this.append(authorWrapper)
+    }
+    if(quoteColor) {
+      openQuote.style.color = quoteColor
+      closeQuote.style.color = quoteColor
+
+    }
+    this.prepend(contentWrapper)
+  }
+
+}
+
+customElements.define("delta-quote",DeltaQuote)
+
