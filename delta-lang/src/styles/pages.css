@@ -3,22 +3,25 @@ delta-composition, delta-slide {
     margin: 1rem 0;
 }
 
-delta-page {
+/* Estilo base para delta-page e elementos com order */
+delta-page, [data-order] {
     display: block;
     padding: 15px;
     margin: 8px 0;
     transition: all 0.3s ease;
 }
 
-/* Estilos específicos para composição - ACUMULATIVO */
-delta-composition delta-page {
+/* Páginas NÃO OCULTAS do composition - comportamento normal */
+delta-composition delta-page:not(.hidden),
+delta-composition [data-order]:not(.hidden) {
     opacity: 1;
-    height: auto;
     visibility: visible;
-    /* Garante que todas as páginas mantenham seu espaço */
+    height: auto;
 }
 
-delta-composition delta-page.hidden {
+/* Páginas OCULTAS do composition */
+delta-composition delta-page.hidden,
+delta-composition [data-order].hidden {
     opacity: 0;
     /* Mantém a altura, padding e margin para preservar o layout */
     visibility: hidden;
@@ -28,8 +31,9 @@ delta-composition delta-page.hidden {
     pointer-events: none;
 }
 
-/* Remove o conteúdo de texto das páginas escondidas, mas mantém o espaço */
-delta-composition delta-page.hidden > * {
+/* Remove a visibilidade das páginas ocultas */
+delta-composition delta-page.hidden *,
+delta-composition [data-order].hidden * {
     opacity: 0;
 }
 
@@ -40,7 +44,9 @@ delta-slide {
     overflow: hidden;
 }
 
-delta-slide > delta-page {
+/* Elementos dentro do slide (delta-page e elementos com data-order) */
+delta-slide > delta-page,
+delta-slide > [data-order] {
     position: absolute;
     top: 0;
     left: 0;
@@ -51,12 +57,14 @@ delta-slide > delta-page {
     transition: all 0.3s ease;
 }
 
-delta-slide > delta-page.active {
+delta-slide > delta-page.active,
+delta-slide > [data-order].active {
     position: relative;
     opacity: 1;
     transform: translateX(0);
 }
 
-delta-slide > delta-page.prev {
+delta-slide > delta-page.prev,
+delta-slide > [data-order].prev {
     transform: translateX(-100%);
 }

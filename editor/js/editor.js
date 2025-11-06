@@ -220,48 +220,47 @@ proof:
 
 ## Exercises`,
 `slide:
-    page:
+    composition order "1":
         # Derivadas e Integrais
-        composition:
-            page order "1":
-            page order "2":
-                definition "Derivada", level "easy":
-                    A derivada de uma função $f$ em um ponto $c$ é definida como
-                    $$f'(c) = \\lim_{h \\to 0} \\frac{f(c+h) - f(c)}{h}$$
-                    desde que este limite exista.
-            page order "4":
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-            page order "3":
-                definition "Integral de Riemann", level "easy":
-                    Seja \\(f\\) uma função definida no intervalo \\([a, b]\\). A **integral definida** de \\(f\\) de \\(a\\) até \\(b\\) é dada pelo limite:
-                    $$\\int_a^b f(x) dx = \\lim_{n \\to \\infty} \\sum_{i=1}^{n} f(x_i^*) \\Delta x_i$$
-                    note:
-                        \\([a, b]\\) é dividido em \\(n\\) subintervalos de largura \\(\\Delta x_i\\)\n                        
-                        \\(x_i^*\\) é um ponto amostral no i-ésimo subintervalo
-                    **Caso particular (partições homogêneas com extremo direito):**
-                    $$\\int_a^b f(x) dx = \\lim_{n \\to \\infty} \\frac{b-a}{n}\\sum_{i=1}^{n} f\\left(a+i\\frac{b-a}{n}\\right)$$
-                    
-                    Esta definição assume que \\(f\\) é contínua em \\([a, b]\\) ou possui um número finito de descontinuidades.
+        page:
+        definition "Derivada" level "easy" order "2":
+            A derivada de uma função $f$ em um ponto $c$ é definida como
+            $$f'(c) = \\lim_{h \\to 0} \\frac{f(c+h) - f(c)}{h}$$
+            desde que este limite exista.
+        page order "4":
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+        definition "Integral de Riemann" level "easy" order "3":
+            Seja \\(f\\) uma função definida no intervalo \([a, b]\). A **integral definida** de \(f\) de \(a\) até \(b\) é dada pelo limite:
+            $$\\int_a^b f(x) dx = \\lim_{n \\to \\infty} \\sum_{i=1}^{n} f(x_i^*) \\Delta x_i$$
+            note:
+                \\([a, b]\\) é dividido em \\(n\\) subintervalos de largura \\(\\Delta x_i\\)
+                        
+                \\(x_i^*\\) é um ponto amostral no i-ésimo subintervalo
+            **Caso particular (partições homogêneas com extremo direito):**
+            $$\\int_a^b f(x) dx = \\lim_{n \\to \\infty} \\frac{b-a}{n}\\sum_{i=1}^{n} f\\left(a+i\\frac{b-a}{n}\\right)$$
+                        
+            Esta definição assume que \\(f\\) é contínua em \\([a, b]\\) ou possui um número finito de descontinuidades.
+    grid "Lista de Derivadas e Integrais" scale "3x3" order "2":
+        panel:
+            $x^n$  para $n \\neq -1$
+        panel "Derivada":
+            $nx^{n-1}$
+        panel "Integral":
+            $\\frac{x^{n+1}}{n+1} + C$
+        panel:
+            $$e^x$$
+        panel "Derivada":
+            $$e^x$$
+        panel "Integral":
+            $$e^x + C$$
+        panel:
+            $\\ln(x)$ para $x > 0$
+        panel "Derivada":
+            $$\\frac{1}{x}$$
+        panel "Integral":
+            $$x\\ln(x) - x + C$$
     page:
-        grid "Lista de Derivadas e Integrais", scale "3x3":
-            panel:
-                $$x^n$$
-            panel "Derivada":
-                $nx^{n-1}$ para $n \\neq 0$
-            panel "Integral":
-                $\\frac{x^{n+1}}{n+1} + C$  para $n \\neq -1$
-            panel:
-                $$e^x$$
-            panel "Derivada":
-                $$e^x$$
-            panel "Integral":
-                $$e^x + C$$
-            panel:
-                $\\ln(x)$ para $x > 0$
-            panel "Derivada":
-                $$\\frac{1}{x}$$
-            panel "Integral":
-                $$x\\ln(x) - x + C$$`
+        Fim.`
 ]
 const INITIAL_DELTA_TEXT = DeltaTemplates[TEMPLATE_ID]
 
