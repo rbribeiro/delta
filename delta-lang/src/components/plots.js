@@ -30,6 +30,27 @@ const Math_lcm = (...x) => {
 	return res;
 }
 
+// Distribuições
+
+const Math_normal = (x, mu, sigma) => {
+    if (sigma <= 0) return NaN;
+    
+    let z = (x - mu) / sigma;
+    let cons = 1.0 / (sigma * Math.sqrt(2.0 * Math.PI));
+    return cons * Math.exp(-0.5 * z * z);
+}
+
+const Math_uniform = (x, a, b) => {
+    if (a >= b) return NaN;
+    if (x < a || x > b) return 0;
+    return 1 / (b - a);
+}
+
+const Math_exponential = (x, lambda) => {
+    if (lambda <= 0 || x < 0) return 0;
+    return lambda * Math.exp(-lambda * x);
+}
+
 // ----- Funções axuliares -----
 
 // Converte "13,357,310.3,694.4" -> [13,357,310.3,694.4] obrigando k partes (0 = any k)
@@ -302,16 +323,17 @@ class DeltaPlot extends HTMLElement {
 		// 'legend' | tupla de objetos | posição | fixed | size | opacity
 		let plotObjects = []
 		Array.from(plotChildren).forEach((child, ic) => {
-			// Processa apenas funções (futuramente pode ter outros objetos, como distribution, já que digitar a formulinha é mt chato)
-			if(child.tagName == "DELTA-FUNCTION"){
+			// Processa funções
+			if(child.tagName == "DELTA-FUNCTION" || child.tagName == "DELTA-DISTRIBUTION"){
 				const label = child.getAttribute("data-title") || null;
 				const dom = child.getAttribute("data-from") || null;
 				const codom = child.getAttribute("data-to") || null;
 				const qtPts = child.getAttribute("data-points") || null;
 				const colr = child.getAttribute("data-color") || null;
 
+				const overflow = 1.2
 				const domain = parse_tuple(dom,2) || x
-				const codomain = parse_tuple(codom,2) || y
+				const codomain = parse_tuple(codom,2) || [y[0]*overflow,y[1]*overflow]
 				const pts = parseInt(qtPts) ? Math.min(Math.max(parseInt(qtPts),2),75000) : 500;
 				
 				const hexRegex = /^#([0-9A-F]{3}){1,2}$/i;
@@ -319,7 +341,6 @@ class DeltaPlot extends HTMLElement {
 				if (hexRegex.test(colr)) {
 					funcColor = colr;
 				} else {
-					// Lógica pra cores de funções + rainbow pq é dahora
 					const availableFuncColors = {
 						'red': '#E41A1C', 'blue': '#377EB8', 'green': '#4DAF4A',
 						'purple': '#984EA3', 'orange': '#FF7F00', 'yellow': '#FFFF33',
@@ -336,57 +357,86 @@ class DeltaPlot extends HTMLElement {
 						funcColor = defaultColors[ic % defaultColors.length];
 					}
 				}
-				// O esperado é um texto simples, que vai gerar um parágrafo.
-				let lines = child.innerHTML.replace(/<p>/g,'').replace(/<\/p>/g,'\n').split('\n').filter(k => k !== '');
-				let finalLabel = label || (lines.length > 0 ? lines[lines.length-1] : `Function ${ic + 1}`);
 
-				let compositionLines = []
-				for(let l in lines){
-					let line = lines[l]
-					line = line.replace(/([\d\.]+)(x|y)/g,'$1*$2') //Corrige 3x -> 3*x. Funciona com y tbm
-					line = line.replace(/([\d\.]+|x|y)\(/g, '$1*('); //Corrige multiplicação com parenteses
-					line = line.replace(/\b(pi)\b/g,Math.PI) //Converte pi p/ número
-					line = line.replace(/\b(e)\b/g,Math.E) //Converte e p/ número
-					line = line.replace(/(?<!\^)\^(?!\^)/g, '**'); //Converte ^ para **
-					line = line.replace(/\^\^/g, '^'); //Converte ^^ para ^
-					line = line.replace(/&lt;/g, '<'); //Converte < para forma certa
-					line = line.replace(/&gt;/g, '>'); //Converte > para forma certa
+				let composedFunction = null, finalLabel;
+				if(child.tagName == "DELTA-FUNCTION"){
+					// O esperado é um texto simples, que vai gerar um parágrafo.
+					let lines = child.innerHTML.replace(/<p>/g,'').replace(/<\/p>/g,'\n').split('\n').filter(k => k !== '');
+					finalLabel = label || (lines.length > 0 ? lines[lines.length-1] : `Function ${ic + 1}`);
 
-					// Coloca Math. antes de tudo que precisar e for alguma função, tipo abs()
-					let mathFunctions = 'abs sqrt cbrt sin cos tan asin acos atan sinh cosh tanh asinh acosh atanh sign round floor ceil max min log2 log10 log'.split(' ')
-					let mathOrString = mathFunctions.join('|')
-					const mathFunctionsRegex = new RegExp(`(${mathOrString})\\(`, 'g');
-					line = line.replace(mathFunctionsRegex,'Math.$1(');
+					let compositionLines = []
+					for(let l in lines){
+						let line = lines[l]
+						line = line.replace(/([\d\.]+)(x|y)/g,'$1*$2') //Corrige 3x -> 3*x. Funciona com y tbm
+						line = line.replace(/([\d\.]+|x|y)\(/g, '$1*('); //Corrige multiplicação com parenteses
+						line = line.replace(/\b(pi)\b/g,Math.PI) //Converte pi p/ número
+						line = line.replace(/\b(e)\b/g,Math.E) //Converte e p/ número
+						line = line.replace(/(?<!\^)\^(?!\^)/g, '**'); //Converte ^ para **
+						line = line.replace(/\^\^/g, '^'); //Converte ^^ para ^
+						line = line.replace(/&lt;/g, '<'); //Converte < para forma certa
+						line = line.replace(/&gt;/g, '>'); //Converte > para forma certa
 
-					// Coloca Math_ antes de tudo que precisar e for função artificial, tipo gcd()
-					let newFunctions = 'gcd lcm'.split(' ')
-					let newOrString = newFunctions.join('|')
-					const newFunctionsRegex = new RegExp(`(${newOrString})\\(`, 'g');
-					line = line.replace(newFunctionsRegex,'Math_$1(');
+						// Coloca Math. antes de tudo que precisar e for alguma função, tipo abs()
+						let mathFunctions = 'abs sqrt cbrt sin cos tan asin acos atan sinh cosh tanh asinh acosh atanh sign round floor ceil max min log2 log10 log'.split(' ')
+						let mathOrString = mathFunctions.join('|')
+						const mathFunctionsRegex = new RegExp(`(${mathOrString})\\(`, 'g');
+						line = line.replace(mathFunctionsRegex,'Math.$1(');
 
-					// Função correspondente (ou função nula em caso de falha)
-					let safeLine = function_string_sanitizer(line)
-					if(safeLine) compositionLines.push(safeLine)
-				}
-				
-				// Troca y pela linha correspondente. Troca por 0 se na primeira.
-				if(compositionLines.length){
-					compositionLines[0] = compositionLines[0].replace(/\by(\d*)\b/g,'0')
-				
-					for(let i = 1; i < compositionLines.length; i++){
-						let ys = compositionLines[i].match(/\by(\d*)\b/g);
-						for(let j in ys){
-							let indx = parseInt(ys[j].length == 1 ? '1' : ys[j].substring(1)) 
-							if(indx == 0 || indx > i){
-								compositionLines[i] = compositionLines[i].replace(`${ys[j]}`,`0`);
-							} else {
-								compositionLines[i] = compositionLines[i].replace(`${ys[j]}`,`(${compositionLines[indx-1]})`);
+						// Coloca Math_ antes de tudo que precisar e for função artificial, tipo gcd()
+						let newFunctions = 'gcd lcm'.split(' ')
+						let newOrString = newFunctions.join('|')
+						const newFunctionsRegex = new RegExp(`(${newOrString})\\(`, 'g');
+						line = line.replace(newFunctionsRegex,'Math_$1(');
+
+						// Função correspondente (ou função nula em caso de falha)
+						let safeLine = function_string_sanitizer(line)
+						if(safeLine) compositionLines.push(safeLine)
+					}
+					
+					// Troca y pela linha correspondente. Troca por 0 se na primeira.
+					if(compositionLines.length){
+						compositionLines[0] = compositionLines[0].replace(/\by(\d*)\b/g,'0')
+					
+						for(let i = 1; i < compositionLines.length; i++){
+							let ys = compositionLines[i].match(/\by(\d*)\b/g);
+							for(let j in ys){
+								let indx = parseInt(ys[j].length == 1 ? '1' : ys[j].substring(1)) 
+								if(indx == 0 || indx > i){
+									compositionLines[i] = compositionLines[i].replace(`${ys[j]}`,`0`);
+								} else {
+									compositionLines[i] = compositionLines[i].replace(`${ys[j]}`,`(${compositionLines[indx-1]})`);
+								}
 							}
 						}
+
+						composedFunction = Function('x',`return ${compositionLines[compositionLines.length-1]};`);
 					}
+				} else if(child.tagName == 'DELTA-DISTRIBUTION'){
+					const pdfunc = child.getAttribute("data-pdf") || "";
+					let params;
+					switch (pdfunc.toLowerCase()) {
+						case "normal":
+							params = child.getAttribute("data-parameters") || null;
+							params = parse_tuple(params, 2) || [0,1];
+							composedFunction = (xxx) => Math_normal(xxx,params[0],params[1]);
+							finalLabel = "Dist. Normal";
+							break;
+						case "exponential":
+							params = child.getAttribute("data-parameters") || null;
+							params = parse_tuple(params, 1) || [1];
+							composedFunction = (xxx) => Math_exponential(xxx,params[0]);
+							finalLabel = "Dist. Exponencial";
+							break;
+						case "uniform":
+							params = child.getAttribute("data-parameters") || null;
+							params = parse_tuple(params, 2) || [0,1];
+							composedFunction = (xxx) => Math_uniform(xxx,params[0],params[1]);
+							finalLabel = "Dist. Uniforme";
+							break;
+					}
+				}
 
-					const composedFunction = Function('x',`return ${compositionLines[compositionLines.length-1]};`);
-
+				if(composedFunction){
 					let startPoint = Math.max(domain[0],x[0])
 					let endPoint = Math.min(domain[1],x[1])
 					const maxPoints = pts;
@@ -403,6 +453,7 @@ class DeltaPlot extends HTMLElement {
 						plotObjects.push(['function',composedFunction,points,codomain,funcColor,finalLabel])
 					}
 				}
+
 			} else if(child.tagName == 'DELTA-LEGEND'){
                 const legendObjects = child.getAttribute("data-objects") || null;
                 const legendPos = child.getAttribute("data-position") || null;
