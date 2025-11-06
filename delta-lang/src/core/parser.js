@@ -231,7 +231,7 @@ class Parser {
     }
 
     handleBackslashes(str) {
-        return str.replace(/(\\)/g, '\\\\');
+        return str.replace(/(\\\\)/g, '\\');
     }
 
     parseSection(line, indent) {
