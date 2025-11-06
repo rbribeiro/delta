@@ -367,10 +367,10 @@ class DeltaEditor {
                     [/^#{1,6}\s+.*$/, 'section'],
 
                     // General Tags (proof:) (definition "title":) (theorem "title" attribute "value":)
-                    [/^\s*(project|theorem|definition|lemma|proof|example|note|proposition|corollary|exercise|plot|legend|hint|step|grid|panel|slide|composition|page|caption|youtube|quote)/, { token: 'block-header', next: '@Tags' }],
+                    [/^\s*(?!(equation|function)\b)([a-z][a-zA-Z0-9_]*)(?=.*?(?<!\\):)/, { token: 'block-header', next: '@Tags' }],
 
                     // Math Tags
-                    [/^\s*(equation|function)/, { token: 'block-header', next: '@mathTags' }],
+                    [/^\s*(equation|function)(?=.*?(?<!\\):)/, { token: 'block-header', next: '@mathTags' }],
 
                     // Math blocks $$...$$
                     [/\$\$/, { token: 'math-delimiter', next: '@mathBlock' }],
@@ -393,7 +393,7 @@ class DeltaEditor {
                     [/:\s*/, { token: 'block-header', next: '@pop' }],
                     
                     // Quoted strings for block titles and attributes
-                    [/"[^"]*"/, 'string'],
+                    [/".*?(?<!\\)"/, 'string'],
 
                     // Attribute keys
                     [/[^":]*/, 'attribute-key'],
@@ -404,7 +404,7 @@ class DeltaEditor {
                     [/:\s*/, { token: 'block-header', next: '@mathSpace' }],
                     
                     // Quoted strings for block titles and attributes
-                    [/"[^"]*"/, 'string'],
+                    [/".*?(?<!\\)"/, 'string'],
 
                     // Attribute keys
                     [/[^":]*/, 'attribute-key'],

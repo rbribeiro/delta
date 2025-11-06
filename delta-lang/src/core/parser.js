@@ -170,7 +170,7 @@ class Parser {
 
         return [content[0],{
                     type: type,
-                    content: content[1].replace(escape, head)
+                    content: this.handleBackslashes(content[1].replace(escape, head))
                 },content[2]]
     }
 
@@ -231,7 +231,7 @@ class Parser {
     }
 
     handleBackslashes(str) {
-        return str.replace(/\\\\+/g, match => match.slice(1));
+        return str.replace(/(\\)/g, '\\\\');
     }
 
     parseSection(line, indent) {
@@ -359,9 +359,9 @@ class Parser {
         while ((match = pattern.exec(text)) !== null) {
             const [, key, value] = match
             if (key) {
-                attributes[key] = value.replace(/\\"/g,'"')
+                attributes[key] = value.replace(/\\\\"/g,'"')
             } else if (!title) {
-                title = value.replace(/\\"/g,'"') // First unkeyed string is title
+                title = value.replace(/\\\\"/g,'"') // First unkeyed string is title
             }
         }
         
