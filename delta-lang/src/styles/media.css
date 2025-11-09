@@ -1,19 +1,34 @@
 /**
  * Media Components - Styling for media.js components
  */
-delta-youtube {
+delta-geogebra, delta-youtube {
   display: block;
-  max-width: 640px;
+  max-width: 900px;
   margin: 1.5rem auto;
+  text-align: center;
 
 }
 
-delta-youtube iframe {
+delta-geogebra iframe, delta-youtube iframe {
   display: block;
   width: 100%;
   height: 360px;
   border: none;
 }
+
+delta-geogebra div.wrapper{
+  display: block;
+  width: 100%;
+  margin: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+  background: #fff;
+}
+
+
 
 delta-youtube div.wrapper {
   display: block;
@@ -54,6 +69,7 @@ delta-caption span.video-tag {
   margin-bottom: 6px;
   text-align: center;
   letter-spacing: 0.01em;
+  width: 100%;
 }
 
 .video-title::first-letter {
