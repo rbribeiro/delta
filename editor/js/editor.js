@@ -65,10 +65,10 @@ Esta visualização mostra a função f(x) = x³ - x - 1 e a linha y = 0, demons
 ,
 `plot "Piecewise Function", x "0,10" y "0,20":
     function points "100000":
-        e^-(x-3)\n        
-        gcd(4.2*(x+0.15),2) - 1.5(x-3)*(x-5)\n        
-        -4*(7-x)^2 + 17\n        
-        sin(x*pi*4)+17\n        
+        e^-(x-3)
+        gcd(4.2*(x+0.15),2) - 1.5(x-3)*(x-5)
+        -4*(7-x)^2 + 17
+        sin(x*pi*4)+17
         x <= 3 ? y : x <= 5 ? y2 : x <= 7 ? y3 : y4
 
 plot "This is an example plot", x "0.7,1.4" y "-1.4,1.4":
@@ -342,7 +342,7 @@ class DeltaEditor {
                     tabSize: 4,
                     insertSpaces: true,
                     detectIndentation: false,
-                    trimAutoWhitespace: false // Keep trailing spaces
+                    trimAutoWhitespace: true // Does not keep trailing spaces
                 });
                 
                 // Listen for content changes

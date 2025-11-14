@@ -1,3 +1,9 @@
+// ----- Parâmetros -----
+
+// Agregar linhas conexas não-vazias com identação crescente no mesmo parágrafo e separar parágrafos por linhas vazias.
+// true implica problema com funções piecewise do plot.
+const AGGREGATEIDENTATIONLINE = false;
+
 // ----- Padrões -----
 
 // Seção - Identifica uma linha de seção, que começa com 1 a 6 '#' seguidos de espaço dependendo do nível.
@@ -49,6 +55,9 @@ const MARK_PATTERN = /``(.+?)(?<!\\)``/
 
 // Sublinhado - Padrão que identifica texto sublinhado delimitado por ~~.
 const UNDERSCORE_PATTERN = /~~(.+?)(?<!\\)~~/
+
+// Comandos inline
+const INLINE_COMMAND_PATTERN = /(?<!\\)@([^:\s]+)(?::([^:{\s]+)|:{(.+)(?<!\\)})(?:{(.+)(?<!\\)})/
 
 // ----- Parser -----
 
@@ -112,7 +121,7 @@ class Parser {
                 // If it's a non-empty line, process it as part of a paragraph
                 const trimmed = line.trimStart()
                 this.createParagraphFromSubLine(trimmed, indent)
-            } else if (this.stack[this.stack.length-1].type === 'paragraph' && this.stack[this.stack.length-1].children.length !== 0) {
+            } else if (AGGREGATEIDENTATIONLINE && this.stack[this.stack.length-1].type === 'paragraph' && this.stack[this.stack.length-1].children.length !== 0) {
                 // If an empty line is detected and the previous line is not an empty paragraph, it places an empty paragraph on hold
                 this.addToHierarchy({
                     type: 'paragraph',
@@ -125,7 +134,7 @@ class Parser {
 
     createParagraphFromSubLine(subline, indent) {
         const seq = this.handleSubLine(subline)
-        if (this.stack[this.stack.length-1].indent <= indent && this.stack[this.stack.length-1].type === 'paragraph') {
+        if (AGGREGATEIDENTATIONLINE && this.stack[this.stack.length-1].indent <= indent && this.stack[this.stack.length-1].type === 'paragraph') {
             //If the type of the last one is paragraph and the indentation of the current one is greater than or equal, place it in the previous one.
             this.stack[this.stack.length-1].children.push(...seq)
         } else {
@@ -139,7 +148,10 @@ class Parser {
     }
 
     handleSubLine(subline) {
-        if (BOLD_PATTERN.test(subline)) {
+        if (INLINE_COMMAND_PATTERN.test(subline)) {
+            const partition = this.parseInlineCommand(subline)
+            return [...this.handleSubLine(partition[0]), partition[1], ...this.handleSubLine(partition[2])]
+        } else if (BOLD_PATTERN.test(subline)) {
             const partition = this.parseSequence(subline, BOLD_PATTERN, 'bold')
             return [...this.handleSubLine(partition[0]), partition[1], ...this.handleSubLine(partition[2])]
         } else if (ITALIC_PATTERN.test(subline)) {
@@ -172,6 +184,19 @@ class Parser {
                     type: type,
                     content: this.handleBackslashes(content[1].replace(escape, head))
                 },content[2]]
+    }
+
+    parseInlineCommand(line) {
+        const content = line.split(INLINE_COMMAND_PATTERN)
+        const command = {
+            type: content[1],
+            content: content[4]
+        }
+
+        if (content[2]) command.id = content[2]
+        if (content[3]) command.attributes = this.parseAttributes(content[3])
+
+        return [content[0],command,content[5]]
     }
 
     matchSection(line) {
