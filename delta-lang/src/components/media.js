@@ -39,7 +39,7 @@ class DeltaYouTube extends HTMLElement {
           titleElem.textContent = title;
           this.appendChild(titleElem);
         }
-
+ 
     if (url) {
       try {
         const urlObj = new URL(url);
