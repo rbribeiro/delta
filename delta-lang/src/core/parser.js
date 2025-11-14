@@ -111,7 +111,7 @@ class Parser {
                 this.addToHierarchy({
                     type: 'paragraph',
                     children: [],
-                    indent: indent
+                    indent: this.stack[this.stack.length-1].indent
                 })
             }
         }
