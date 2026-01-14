@@ -16,7 +16,13 @@ class DeltaRenderer {
      */
     render(node) {
         if (!node || !node.type) return '';
-        
+
+        // Calculate numbering only once at the root document level
+        if (node.type === 'document' && !node._isNumbered) {
+            this.calculateNumbering(node);
+            node._isNumbered = true; // mark as done so we don't re-calculate in recursion
+        }
+
         switch (node.type) {
             case 'document':
                 return this.renderChildren(node.children);
@@ -55,6 +61,82 @@ class DeltaRenderer {
                 return '';
         }
     }
+
+    /**
+     * Numbering algorithm
+     * Handles numbered/unnumbered sections and inherited numbering contexts
+     */
+    calculateNumbering(node, prefix = '0', inheritedCounters = null) {
+        // If this node is a leaf (text) or has no children, stop.
+        if (!node.children) return;
+
+        // We prepare to count the children of THIS node.
+        let sectionCounter = 0;
+        
+        // If we received counters from a parent (Section*), use them. Otherwise (eg. we entered a new valid Section), start with {}.
+        let mathCounters = inheritedCounters || {}; 
+
+        // Helper to get/increment math counter
+        const getMathNumber = (type, isUnnumbered) => {
+            if (isUnnumbered) return null;
+            
+            if (!mathCounters[type]) mathCounters[type] = 0;
+            mathCounters[type]++;
+            
+            // return eg. "1.2.1" (Prefix (section). Counter (block))
+            // if prefix is "0" (no section yet), result is "0.1"
+            return `${prefix}.${mathCounters[type]}`;
+        };
+
+        // Pass through the children
+        node.children.forEach(child => {
+            
+            // 1st scenario
+            if (child.type === 'section') {
+                
+                if (child.isUnnumbered) {
+                    this.calculateNumbering(child, prefix, mathCounters);
+                    
+                } else {
+                    sectionCounter++;
+                    
+                    let newPrefix;
+
+                    // If we are at the root ('0') but this is a subsection (## or ###...),
+                    // we prefix it with "0." explicitly.
+                    if (prefix === '0' && child.level > 1) {
+                         newPrefix = `0.${sectionCounter}`;
+                    } else {
+                         // Standard logic: If root, just "1". If nested, "1.1".
+                         newPrefix = prefix === '0' ? `${sectionCounter}` : `${prefix}.${sectionCounter}`;
+                    }
+
+                    child.sectionNumber = newPrefix;
+                    this.calculateNumbering(child, newPrefix, {});
+                }
+            } 
+            
+            // 2nd scenario (Theorem, 'eq', etc.)
+            else if (child.type === 'block' || child.type === 'simple-block') {
+                // Define which blocks get numbers (add more later if necessary)
+                const numerableTypes = ['theorem', 'lemma', 'definition', 'corollary', 'proposition', 'example', 'equation'];
+
+                if (numerableTypes.includes(child.blockType)) {
+                    child.blockNumber = getMathNumber(child.blockType, child.isUnnumbered);
+                }
+
+                // Then we recurse deeper just in case the theorem has nested blocks (eg. an equation inside it)
+                this.calculateNumbering(child, prefix, mathCounters); 
+            }
+            
+            // 3rd scenario generic formatting (bold, italic, divs)
+            else {
+                // Just pass the current state through
+                this.calculateNumbering(child, prefix, mathCounters);
+            }
+        });
+    }
+
     
     /**
      * Render a bold node
@@ -108,9 +190,30 @@ class DeltaRenderer {
      */
     renderSection(node) {
         const level = Math.min(node.level, 6);
-        const sectionHTML = `<h${level}>${this.escapeHtml(node.title)}</h${level}>`;
+
+        const NumberHTML = node.sectionNumber
+            ? `<span class="section-number">${node.sectionNumber}. </span>` 
+            : '';
+
+        const safeTitle = node.title.replace(/\s+/g, '-').replace(/[^\w-]/g, '').toLowerCase();
+        const sectionId = node.sectionNumber 
+            ? `sec-${node.sectionNumber}` 
+            : `sec-u-${safeTitle}`;
+
         const childrenHTML = this.renderChildren(node.children);
-        return sectionHTML + childrenHTML;
+        
+        return `
+            <section class="delta-section level-${level}" id="${sectionId}" data-number="${node.sectionNumber || ''}">
+                <header class="section-header">
+                    <h${level}>
+                        ${NumberHTML}${this.escapeHtml(node.title)}
+                    </h${level}>
+                </header>
+                <div class="section-content">
+                    ${childrenHTML}
+                </div>
+            </section>
+        `;
     }
     
     /**
@@ -141,6 +244,10 @@ class DeltaRenderer {
         // Add the block type as attribute
         attributesStr += ` data-type="${blockType}"`
 
+        if (node.blockNumber) {
+            attributesStr += ` data-number="${node.blockNumber}"`;
+        }
+
         if (node.attributes && Object.keys(node.attributes).length > 0) {
             for (const [key, value] of Object.entries(node.attributes)) {
                 attributesStr += ` data-${key}="${this.escapeHtml(value)}"`;
@@ -162,8 +269,16 @@ class DeltaRenderer {
         const tagName = `delta-${blockType}`;
         const childrenHTML = this.renderChildren(node.children);
         
-       const  attributesStr = `data-type="${blockType}" simple`
+        let  attributesStr = `data-type="${blockType}" simple`
+
+        if (node.blockNumber) {
+            attributesStr += ` data-number="${node.blockNumber}"`;
+        }
         
+        if (node.title) {
+            attributesStr += ` data-title="${this.escapeHtml(node.title)}"` 
+        }
+
         return `<${tagName} ${attributesStr}>${childrenHTML}</${tagName}>`;
     }
     

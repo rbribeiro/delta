@@ -1,12 +1,13 @@
 // ----- Padrões -----
 
 // Seção - Identifica uma linha de seção, que começa com 1 a 6 '#' seguidos de espaço dependendo do nível.
-const SECTION_PATTERN = /^#{1,6}\s/;
+// Modificado: permite um * opcional para marcar ausência de numeração na seção (eg. #* ##*...)
+const SECTION_PATTERN = /^#{1,6}\*?\s/;
 
 // Bloco Simples - Identifica um 'bloco simples', isto é, uma linha que contém ':' e tem conteúdo depois.
 const SIMPLE_BLOCK_PATTERN = new RegExp([
   '^',
-  '([a-z][a-zA-Z0-9_]*)', // equation
+  '([a-z][a-zA-Z0-9_]*\\*?)', // equation
   '(?:\\s+"([^"]*)")?', // equation "title"
   '(?:\\s*,?\\s+([a-z][a-zA-Z0-9_-]*\\s+"[^"]*"))*', // equation "title", attr "value" ...
   '\\s*:\\s*', // colon outside quotes
@@ -16,13 +17,13 @@ const SIMPLE_BLOCK_PATTERN = new RegExp([
 // Bloco Complexo - Identifica um 'bloco complexo': uma linha que termina com ':' e cujo conteúdo está nas linhas seguintes.
 const COMPLEX_BLOCK_PATTERN = new RegExp([
   '^(',
-    '[a-z][a-zA-Z0-9_]*\\s*', // 1. theorem
+    '[a-z][a-zA-Z0-9_]*\\*?\\s*', // 1. theorem
     '|',
-    '[a-z][a-zA-Z0-9_]*\\s+"[^"]*"\\s*', // 2. theorem "title"
+    '[a-z][a-zA-Z0-9_]*\\*?\\s+"[^"]*"\\s*', // 2. theorem "title"
     '|',
-    '[a-z][a-zA-Z0-9_]*(?:\\s+[a-z][a-zA-Z0-9_-]*\\s+"[^"]*")+', // 3. theorem attr "value" ...
+    '[a-z][a-zA-Z0-9_]*\\*?(?:\\s+[a-z][a-zA-Z0-9_-]*\\s+"[^"]*")+', // 3. theorem attr "value" ...
     '|',
-    '[a-z][a-zA-Z0-9_]*\\s+"[^"]*"\\s*,\\s*(?:[a-z][a-zA-Z0-9_-]*\\s+"[^"]*")(?:\\s+[a-z][a-zA-Z0-9_-]*\\s+"[^"]*")*', // 4. theorem "title", attr "value" ...
+    '[a-z][a-zA-Z0-9_]*\\*?\\s+"[^"]*"\\s*,\\s*(?:[a-z][a-zA-Z0-9_-]*\\s+"[^"]*")(?:\\s+[a-z][a-zA-Z0-9_-]*\\s+"[^"]*")*', // 4. theorem "title", attr "value" ...
   ')\\s*:\\s*$'
 ].join(''), 'm');
 
@@ -83,7 +84,9 @@ class Parser {
         
         if (this.matchSection(trimmed)) {
             const section = this.parseSection(trimmed, indent)
-            this.addToHierarchy(section)
+
+            // Changed
+            this.addSectionToHierarchy(section)
             
         } else if (this.matchSimpleBlock(trimmed)) {
             const [simpleBlock, afterColon] = this.parseSimpleBlock(trimmed, indent)
@@ -105,8 +108,8 @@ class Parser {
         } else {
             if (trimmed !== '') {
                 //const escapedTrimmedLine = this.handleBackslashes(line).trimStart()
-                const trimmed = line.trimStart()
-                this.createParagraphFromSubLine(trimmed, indent)
+                const trimmedContent = line.trimStart() // Renamed to avoid conflict with top-level "trimmed"
+                this.createParagraphFromSubLine(trimmedContent, indent)
             } else if (this.stack[this.stack.length-1].type === 'paragraph' && this.stack[this.stack.length-1].children.length !== 0) {
                 this.addToHierarchy({
                     type: 'paragraph',
@@ -114,6 +117,80 @@ class Parser {
                     indent: this.stack[this.stack.length-1].indent
                 })
             }
+        }
+    }
+
+    // NEW METHOD: Handles the logic for Sections (Title, Section, Subsection)
+
+    addSectionToHierarchy(newSection) {
+        // 1. First, we must close any "non-section" blocks that might still be open 
+        // (like a Theorem or Note that wasn't closed properly), because a Section breaks everything.
+        while (this.stack.length > 1) {
+            const top = this.stack[this.stack.length - 1];
+
+            // If the top is not a section, we close it (pop)
+            if (top.type !== 'section') {
+                this.stack.pop();
+            } else {
+                // if it is a section, we stop to check the levels
+                break;
+            }
+        }
+
+        // 2. Now we handle Section nesting based on level (#)
+        // We pop the stack until we find a parent Section with a 'level' strictly less than our new section (when we find, it will be the parent).
+        // Example: If stack is [Section 1 (Lvl 1), Subsection 1.1 (Lvl 2)] and we add Section 2 (Lvl 1):
+        // We pop Subsection 1.1 (2 >= 1).
+        // We pop Section 1 (1 >= 1).
+        // We attach Section 2 to Root.
+
+        while (this.stack.length > 1) {
+            const top = this.stack[this.stack.length - 1];
+
+            if (top.type === 'section' && top.level >= newSection.level) {
+                this.stack.pop();
+            } else {
+                break;
+            }
+        }
+
+        // 3. Add the valid parent and push to stack
+
+        const parent = this.stack[this.stack.length - 1];
+        parent.children.push(newSection);
+        this.stack.push(newSection);
+    }
+
+    // Modified method: handles standard hierarchy (paragraph, blocks) based on indentation
+
+    addToHierarchy(element) {
+        // Pop stack until we find the correct parent
+        while (this.stack.length > 1) {
+            const parent = this.stack[this.stack.length - 1];
+
+            // If a parent is a 'section', we never pop it based on indentation 
+            // Sections act as permanent containers until we close them with addSectionToHierarchy 
+            if (parent.type === 'section') {
+                break;
+            }
+
+            // For other blocks (like theorems, lists, etc), we use indentation to define belonging
+
+            if (parent.indent < element.indent) {
+                break;
+            }
+
+            this.stack.pop()
+        }
+
+        // Add to current parent
+
+        const parent = this.stack[this.stack.length -1]
+        parent.children.push(element)
+
+        // Push onto the stack if the element can have children
+        if (element.children !== undefined) {
+            this.stack.push(element)
         }
     }
 
@@ -228,16 +305,33 @@ class Parser {
 
     parseSection(line, indent) {
         const escapedLine = this.handleBackslashes(line);
-        const level = (escapedLine.match(/^#+/) || [''])[0].length
-        const title = escapedLine.replace(/^#+\s+/, '')
+
+        // Check for '*' before the title starts.
+        // Matches beginning like "##*"
+
+        const isUnnumbered = /^#+\*/.test(escapedLine);
+
+        const level = (escapedLine.match(/^#+/) || [''])[0].length;
+
+        // Clean title: remove hashes, optional star, and spaces
+        const title = escapedLine.replace(/^#+\*?\s+/, '');
         
         return {
             type: 'section',
             level: level,
+            isUnnumbered: isUnnumbered,
             title: title,
             indent: indent,
             children: []
         }
+    }
+
+    // Helper to extract type and unnumbered status
+    parseBlockType(rawType) {
+        const isUnnumbered = rawType.endsWith('*');
+        // slice(0, -1) removes the last character ('*')
+        const blockType = isUnnumbered ? rawType.slice(0, -1) : rawType;
+        return {blockType, isUnnumbered};
     }
 
     parseBlock(line, indent) {
@@ -248,25 +342,30 @@ class Parser {
         if (unescapedColons.length === 0) return null
         // if (unescapedColons.length > 1) return null // pensar se vamos fazer isso mesmo
 
-        const colonIndex = unescapedColons[0]
+        const colonIndex = unescapedColons[0];
         
         const escapedLine = this.handleBackslashes(line);
-        const beforeColon = escapedLine.substring(0, colonIndex).trim()
-        const afterColon = escapedLine.substring(colonIndex + 1).trim()
+        const beforeColon = escapedLine.substring(0, colonIndex).trim();
+        const afterColon = escapedLine.substring(colonIndex + 1).trim();
         
         // Parse the part before colon for blockType and attributes
-        const spaceIndex = beforeColon.indexOf(' ')
-        let blockType, attributeText
+        const spaceIndex = beforeColon.indexOf(' ');
+
+        let rawType, attributeText;
         
         if (spaceIndex === -1) {
             // Simple case: "theorem:"
-            blockType = beforeColon
-            attributeText = ''
+            rawType = beforeColon;
+            attributeText = '';
         } else {
             // Complex case: "theorem 'Pythagorean'"
-            blockType = beforeColon.substring(0, spaceIndex)
-            attributeText = beforeColon.substring(spaceIndex + 1).trim()
+            rawType = beforeColon.substring(0, spaceIndex);
+            attributeText = beforeColon.substring(spaceIndex + 1).trim();
         }
+
+        // Extract the cleanblock format 
+        const {blockType, isUnnumbered} = this.parseBlockType(rawType);
+
         
         let title = null, attributes = {}
         if (attributeText) {
@@ -277,7 +376,8 @@ class Parser {
         
         const block = {
             type: 'block',
-            blockType: blockType,
+            blockType: blockType, // eg. theorem (clean, not theorem*)
+            isUnnumbered: isUnnumbered,
             indent: indent,
             children: []
         }
@@ -303,29 +403,34 @@ class Parser {
         if (unescapedColons.length === 0) return null
         // if (unescapedColons.length > 1) return null // pensar se vamos fazer isso mesmo
 
-        const colonIndex = unescapedColons[0]
+        const colonIndex = unescapedColons[0];
 
         const escapedLine = this.handleBackslashes(line);
-        const beforeColon = escapedLine.substring(0, colonIndex).trim()
-        const afterColon = escapedLine.substring(colonIndex + 1).trim()
+        const beforeColon = escapedLine.substring(0, colonIndex).trim();
+        const afterColon = escapedLine.substring(colonIndex + 1).trim();
         
         // Parse the part before colon for blockType and attributes
-        const spaceIndex = beforeColon.indexOf(' ')
-        let blockType, attributeText
+        const spaceIndex = beforeColon.indexOf(' ');
+
+        let rawType, attributeText;
         
         if (spaceIndex === -1) {
             // Simple case: "theorem:"
-            blockType = beforeColon
+            rawType = beforeColon
             attributeText = ''
         } else {
             // Complex case: "equation id 'eq':"
-            blockType = beforeColon.substring(0, spaceIndex)
+            rawType = beforeColon.substring(0, spaceIndex)
             attributeText = beforeColon.substring(spaceIndex + 1).trim()
         }
         
+        // Extract * logic
+        const {blockType, isUnnumbered} = this.parseBlockType(rawType);
+
         const block = {
             type: 'simple-block',
             blockType: blockType,
+            isUnnumbered: isUnnumbered,
             indent: indent,
             children: []
         }
@@ -358,23 +463,6 @@ class Parser {
         }
         
         return { title, attributes }
-    }
-
-    addToHierarchy(element) {
-        // Pop stack until we find correct parent
-        while (this.stack.length > 1 && 
-               this.stack[this.stack.length - 1].indent >= element.indent) {
-            this.stack.pop()
-        }
-        
-        // Add to current parent
-        const parent = this.stack[this.stack.length - 1]
-        parent.children.push(element)
-        
-        // Push onto stack if this element can have children
-        if (element.children !== undefined) {
-            this.stack.push(element)
-        }
     }
 
     getIndent(line) {

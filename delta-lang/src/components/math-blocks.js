@@ -8,9 +8,27 @@ class DeltaBlock extends HTMLElement {
     const title = this.getAttribute("data-title") || null
     const level = this.getAttribute("data-level") || null
     const type = this.getAttribute("data-type") || null
+    const number = this.getAttribute("data-number") || null
 
     const blockHeader = document.createElement("div")
-    blockHeader.textContent = title ? `${type} (${title}).` : `${type}.`
+
+    // Construct header with number
+
+    let headerText = type || 'Block';
+
+    // Capitalize type (optional, but looks nicer if type is lowercase)
+    headerText = headerText.charAt(0).toUpperCase() + headerText.slice(1);
+
+    if (number) {
+      headerText += ` ${number}`
+    }
+    if (title) {
+            headerText += ` (${title})`;
+        }
+        
+    headerText += "."; // add the final dot
+
+    blockHeader.textContent = headerText;
     blockHeader.classList.add("block-header")
 
     if (level) {
