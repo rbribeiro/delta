@@ -8,6 +8,7 @@ class DeltaBlock extends HTMLElement {
     const title = this.getAttribute("data-title") || null
     const level = this.getAttribute("data-level") || null
     const type = this.getAttribute("data-type") || null
+    const align = this.getAttribute("data-align") || null
 
     const blockHeader = document.createElement("div")
     blockHeader.textContent = title ? `${type} (${title}).` : `${type}.`
@@ -25,6 +26,7 @@ class DeltaBlock extends HTMLElement {
       blockHeader.append(levelTag)
     }
 
+    // TO DO: Change text align based on 'data-align' value
 
     this.prepend(blockHeader)
   }
@@ -105,6 +107,14 @@ class DeltaCorollary extends DeltaBlock {
 
 customElements.define("delta-corollary", DeltaCorollary)
 
+class DeltaProblem extends DeltaBlock {
+  constructor() {
+    super()
+  }
+}
+
+customElements.define("delta-problem", DeltaProblem)
+
 class DeltaOpenProblem extends DeltaBlock {
   constructor() {
     super()
@@ -120,14 +130,6 @@ class DeltaExample extends DeltaBlock {
 }
 
 customElements.define("delta-example", DeltaExample)
-
-class DeltaExercise extends DeltaBlock {
-  constructor() {
-    super()
-  }
-}
-
-customElements.define("delta-exercise", DeltaExercise)
 
 class DeltaExercise extends DeltaBlock {
   constructor() {
@@ -176,3 +178,21 @@ class DeltaClaim extends DeltaBlock {
 }
 
 customElements.define("delta-claim", DeltaClaim)
+
+class DeltaAssumption extends DeltaBlock {
+  constructor(){
+    super()
+  }
+}
+
+customElements.define("delta-assumption", DeltaAssumption)
+
+class DeltaSolution extends DeltaBlock {
+  constructor() {
+    super()
+  }
+}
+
+customElements.define("delta-solution", DeltaSolution)
+
+// TO DO: Algorithm

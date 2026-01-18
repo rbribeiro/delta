@@ -9,7 +9,9 @@
 /* Propriedades compartilhadas por todos os blocos delta */
 delta-theorem, delta-proof, delta-conjecture, delta-claim, 
 delta-exercise, delta-example, delta-lemma, delta-proposition, 
-delta-corollary, delta-definition {
+delta-corollary, delta-definition, delta-problem, delta-axiom,
+delta-postulate, delta-hypothesis, delta-fact, delta-open_problem,
+delta-assumption, delta-solution {
     display: block;
     margin: var(--block-margin);
     background: var(--white);
@@ -19,8 +21,9 @@ delta-corollary, delta-definition {
 }
 
 /* Blocos que possuem borda lateral esquerda */
-delta-theorem, delta-conjecture, delta-claim, delta-lemma, 
-delta-proposition, delta-corollary, delta-definition {
+delta-theorem, delta-conjecture, delta-claim, delta-lemma, delta-assumption, 
+delta-proposition, delta-corollary, delta-definition, delta-problem, delta-axiom,
+delta-postulate, delta-hypothesis, delta-fact, delta-open_problem {
     border-left: var(--block-border-width) solid;
     padding-top: 0.75em;
     padding-bottom: 0.75em;
@@ -66,7 +69,12 @@ delta-lemma, delta-corollary, delta-proposition { border-color: var(--dft-navy);
 delta-exercise { padding-left: 0; }
 delta-exercise .block-header, delta-example .block-header {
     color: var(--gray);
-    border-top-right-radius: 6px;
+}
+delta-solution .block-header {
+    font-weight: normal;
+    font-style: italic;
+    margin: 0 -2.5rem 0 -1.5rem;
+    padding: 0 1.5rem 1px 1.5rem;
 }
 
 /* Prova (Proof) */
@@ -90,7 +98,7 @@ delta-proof::after {
 /* Estilização do parágrafo inicial que "corre" junto ao título */
 delta-theorem > p:first-of-type,
 delta-proof > p:first-of-type,
-delta-definition > p {
+delta-definition > p, delta-solution > p:first-of-type {
     display: inline;
     padding-left: 30px;
     line-height: 1.4;
