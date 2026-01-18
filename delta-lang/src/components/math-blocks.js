@@ -36,27 +36,15 @@ class DeltaTheorem extends DeltaBlock {
   }
 }
 
-customElements.define("delta-theorem",DeltaTheorem)
+customElements.define("delta-theorem", DeltaTheorem)
 
-class DeltaExercise extends DeltaBlock {
+class DeltaProposition extends DeltaBlock {
   constructor() {
     super()
   }
 }
 
-customElements.define("delta-exercise",DeltaExercise)
-
-
-class DeltaLemma extends DeltaBlock {
-  constructor() {
-    super()
-  }
-}
-
-
-customElements.define("delta-lemma",DeltaLemma)
-
-
+customElements.define("delta-proposition", DeltaProposition)
 
 class DeltaDefinition extends DeltaBlock {
   constructor() {
@@ -64,28 +52,66 @@ class DeltaDefinition extends DeltaBlock {
   }
 }
 
+customElements.define("delta-definition", DeltaDefinition)
 
-customElements.define("delta-definition",DeltaDefinition)
-
-
-class DeltaProof extends DeltaBlock {
+class DeltaConjecture extends DeltaBlock {
   constructor() {
     super()
   }
-
-  connectedCallback() {
-      super.connectedCallback()
-      const steps = this.querySelectorAll("delta-step")
-
-      steps.forEach((step,idx) => {
-      if (!step.hasAttribute("data-number")) step.setAttribute("data-number", idx + 1)
-    })
-  }
-
-  
 }
 
-customElements.define("delta-proof", DeltaProof)
+customElements.define("delta-conjecture", DeltaConjecture)
+
+class DeltaLemma extends DeltaBlock {
+  constructor() {
+    super()
+  }
+}
+
+customElements.define("delta-lemma", DeltaLemma)
+
+class DeltaProof extends DeltaBlock {
+  constructor() {
+    super();
+  }
+  
+  connectedCallback() {
+    super.connectedCallback();
+
+    const steps = this.querySelectorAll("delta-step");
+    const cases = this.querySelectorAll("delta-case");
+    
+    steps.forEach((step, idx) => {
+      if (!step.hasAttribute("data-number")) {
+        step.setAttribute("data-number", idx + 1);
+      }
+    });
+
+    cases.forEach((caseElem, idx) => {
+      if (!caseElem.hasAttribute("data-number")) {
+        caseElem.setAttribute("data-number", idx + 1);
+      }
+    });
+  }
+}
+
+customElements.define("delta-proof", DeltaProof);
+
+class DeltaCorollary extends DeltaBlock {
+  constructor() {
+    super()
+  }
+}
+
+customElements.define("delta-corollary", DeltaCorollary)
+
+class DeltaOpenProblem extends DeltaBlock {
+  constructor() {
+    super()
+  }
+}
+
+customElements.define("delta-open_problem", DeltaOpenProblem)
 
 class DeltaExample extends DeltaBlock {
   constructor() {
@@ -95,10 +121,58 @@ class DeltaExample extends DeltaBlock {
 
 customElements.define("delta-example", DeltaExample)
 
-class DeltaCorollary extends DeltaBlock {
+class DeltaExercise extends DeltaBlock {
   constructor() {
     super()
   }
 }
 
-customElements.define("delta-corollary", DeltaCorollary)
+customElements.define("delta-exercise", DeltaExercise)
+
+class DeltaExercise extends DeltaBlock {
+  constructor() {
+    super()
+  }
+}
+
+customElements.define("delta-exercise", DeltaExercise)
+
+class DeltaAxiom extends DeltaBlock {
+  constructor() {
+    super()
+  }
+}
+
+customElements.define("delta-axiom", DeltaAxiom)
+
+class DeltaPostulate extends DeltaBlock {
+  constructor() {
+    super()
+  }
+}
+
+customElements.define("delta-postulate", DeltaPostulate)
+
+class DeltaHypothesis extends DeltaBlock {
+  constructor() {
+    super()
+  }
+}
+
+customElements.define("delta-hypothesis", DeltaHypothesis)
+
+class DeltaFact extends DeltaBlock {
+  constructor() {
+    super()
+  }
+}
+
+customElements.define("delta-fact", DeltaFact)
+
+class DeltaClaim extends DeltaBlock {
+  constructor(){
+    super()
+  }
+}
+
+customElements.define("delta-claim", DeltaClaim)

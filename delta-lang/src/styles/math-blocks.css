@@ -1,108 +1,83 @@
-/* Level flag: A small circle on the right */
+/* --- Variáveis e Reset de Blocos --- */
+:root {
+    --block-border-width: 0.5rem;
+    --block-radius: 9px;
+    --block-margin: 1.5rem 0;
+    --block-padding: 0 1.5rem 1px 1.5rem;
+}
+
+/* Propriedades compartilhadas por todos os blocos delta */
+delta-theorem, delta-proof, delta-conjecture, delta-claim, 
+delta-exercise, delta-example, delta-lemma, delta-proposition, 
+delta-corollary, delta-definition {
+    display: block;
+    margin: var(--block-margin);
+    background: var(--white);
+    border-radius: var(--block-radius);
+    padding: var(--block-padding);
+    text-align: justify;
+}
+
+/* Blocos que possuem borda lateral esquerda */
+delta-theorem, delta-conjecture, delta-claim, delta-lemma, 
+delta-proposition, delta-corollary, delta-definition {
+    border-left: var(--block-border-width) solid;
+    padding-top: 0.75em;
+    padding-bottom: 0.75em;
+}
+
+/* --- Cabeçalhos (Block Headers) --- */
+.block-header {
+    font-weight: bold;
+    text-transform: capitalize;
+    display: inline-block;
+    letter-spacing: 0.5px;
+    margin: 0 -1.5rem -0.5rem -1.5rem;
+    padding-left: 1.5rem;
+}
+
+/* Ajuste para quando há nível (level-tag) */
 .block-header.with-level, .step-summary.with-level {
     display: flex;
     align-items: center;
     gap: 1rem;
 }
 
-.level-tag {
-    padding: 0.6rem;
-    border-radius: 50%;
+.level-tag { padding: 0.6rem; border-radius: 50%; }
+.level-tag > .level-text { display: none; }
+.level-easy { background-color: var(--dft-green); color: var(--white); }
+.level-medium { background-color: var(--dft-yellow); }
+.level-hard { background-color: var(--dft-red); color: var(--white); }
+
+/* --- Estilos Específicos de Blocos --- */
+
+/* Teorema */
+delta-theorem { border-color: var(--dft-purple); }
+delta-theorem .block-header { color: var(--text-default); background: var(--white); }
+
+/* Definição */
+delta-definition { border-color: var(--dft-cyan); }
+
+/* Lemas, Corolários e Proposições */
+delta-lemma, delta-corollary, delta-proposition { border-color: var(--dft-navy); }
+delta-proposition { box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+delta-proposition .block-header { font-size: 0.9rem; }
+
+/* Exercícios e Exemplos */
+delta-exercise { padding-left: 0; }
+delta-exercise .block-header, delta-example .block-header {
+    color: var(--gray);
+    border-top-right-radius: 6px;
 }
 
-.level-tag > .level-text {
-    display: none;
-}
-
-.level-easy {
-  background-color: var(--dft-green);
-  color: var(--white);
-}
-
-.level-medium {
-  background-color: var(--dft-yellow);
-}
-
-.level-hard {
-  background-color: var(--dft-red);
-  color: var(--white);
-}
-
-/* General */
-delta-theorem, delta-proof, delta-conjecture, delta-claim, delta-exercise, delta-example, delta-lemma, delta-proposition, delta-corollary, delta-definition {
-    display: block;
-    margin: 1.5rem 0;
-    background: var(--white);
-    border-radius: 9px;
-    /* box-shadow: 0 2px 6px rgba(0,0,0,0.1); */
-    padding: 0 1.5rem 1px 1.5rem;
-    text-align: justify; 
-}
-
-delta-theorem, delta-conjecture, delta-claim, delta-lemma, delta-proposition, delta-corollary, delta-definition, delta-corollary {
-    border-left: 0.5rem solid;
-}
-
-/* Theorem */
-delta-theorem {
-    border-color: var(--dft-purple);  
-    padding-top:0.75em;
-    padding-bottom:0.75em;    
-}
-
-delta-theorem .block-header {
-    background: var(--white);
-    color: var(--text-default);
-    padding-left: 1.5rem;
-    font-weight: bold;
-    /* font-size: 1.1rem; */
-    text-transform: capitalize;
-    /* letter-spacing: 0.5px; */
-    margin: 0 -1.5rem -0.5rem -1.5rem; 
-    display: inline-block;
-}
-
-delta-theorem[simple] .block-header {
-    margin-right: 0.5rem;
-}
-
-delta-theorem > p:first-of-type {
-    display: inline;
-    padding-left: 30px;
-    line-height: inherit;
-    text-align: justify;
-}
-
-delta-theorem .with-level ~ p:first-of-type {
-    display: block;
-    padding-left: 0;
-}
-
-/* Proof */
+/* Prova (Proof) */
 delta-proof .block-header {
-    color: var(--text-default);
     font-weight: normal;
     font-style: italic;
-    text-transform: capitalize;
-    font-size: inherit;
+    margin: 0 -2.5rem 0 -1.5rem;
     padding: 0 1.5rem 1px 1.5rem;
-    margin: 0 -2.5rem 0 -1.5rem; 
-    display: inline-block;
 }
 
-delta-proof > p:first-of-type {
-    display: inline;
-    padding-left: 30px;
-    line-height: inherit;
-    text-align: justify;
-}
-
-delta-proof > p:last-child {
-    margin-bottom: 0;
-}
-
-
-/* Add QED symbol to proofs */
 delta-proof::after {
     content: "∎";
     display: block;
@@ -112,187 +87,88 @@ delta-proof::after {
     color: black;
 }
 
-delta-exercise .block-header, delta-example .block-header {
-    color:var(--gray);
-    padding: 0 1.5rem;
-    font-weight: bold;
-    text-transform: capitalize;
-    letter-spacing: 0.5px;
-    margin: 0 -1.5rem -0.5rem -1.5rem; 
-    border-top-right-radius: 6px;
-}
-
-delta-exercise {
-    padding-left: 0; /* keep the text aligned with the page */
-}
-
-/* Example */
-
-/* Definition */
-delta-definition {
-    display: block;
-    margin: 1.5rem 0;
-    border-radius: 9px;
-    /* box-shadow: 0 2px 6px rgba(0,0,0,0.1); */
-    border-color: var(--dft-cyan);  
-    padding: 0 1.5rem 1px 1.5rem;
-    text-align: justify;     
-    padding-top:0.75em;
-    padding-bottom:0.75em;
-}
-
-delta-definition .block-header {
-    padding-left: 1.5rem;
-    font-weight: bold;
-    text-transform: capitalize;
-    letter-spacing: 0.5px;
-    margin: 0 -1.5rem 0 -1.5rem; 
-    border-radius: 9px;
-    display: inline-block;
-}
-
-delta-definition[simple] .block-header {
-    margin-right: 0.5rem;
-}
-
-delta-definition > p{
+/* --- Conteúdo de Texto --- */
+/* Estilização do parágrafo inicial que "corre" junto ao título */
+delta-theorem > p:first-of-type,
+delta-proof > p:first-of-type,
+delta-definition > p {
     display: inline;
     padding-left: 30px;
     line-height: 1.4;
-    text-align: justify;
 }
 
-delta-definition >.block-content {
-    padding: 1rem 1.5rem;
-    line-height: 1.8;
+/* Quebra o inline se houver tag de nível */
+.with-level ~ p:first-of-type {
+    display: block !important;
+    padding-left: 0 !important;
 }
 
-delta-definition .with-level ~ p:first-of-type {
-    display: block;
-    padding-left: 0;
+delta-definition[simple] .block-header,
+delta-theorem[simple] .block-header {
+    margin-right: 0.5rem;
 }
 
-delta-lemma {
-    display: block;
-    margin: 1.5rem 0;
-    border-radius: 9px;
-    border-color: var(--dft-navy);
-    padding: 0 1.5rem 1px 1.5rem;
-    text-align: justify;   
-    padding-top:0.75em;
-    padding-bottom:0.75em;    
+/* --- Steps & Cases (Interatividade) --- */
+.step-trigger, .case-trigger {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    padding: 1rem 0.5rem;
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.2s ease;
 }
 
-delta-corollary {
-    border-color: var(--dft-navy);
-}
+/* Cores específicas */
+.step-trigger { color: var(--dft-navy); }
+.case-trigger { color: var(--dft-green); }
 
-delta-lemma .block-header, delta-corollary .block-header {
-    padding-left: 1.5rem;
-    font-weight: bold;
-    text-transform: capitalize;
-    letter-spacing: 0.5px;
-    margin: 0 -1.5rem 0 -1.5rem; 
-    border-radius: 9px;
+.step-trigger:hover, .case-trigger:hover { background-color: #e4e4e4; }
+
+.step-trigger::before, .case-trigger::before {
+    content: '➤';
     display: inline-block;
+    font-weight: 900;
+    margin-right: 1rem;
+    transition: transform 0.2s ease-in-out;
 }
 
-delta-proposition {
-    display: block;
-    margin: 1.5rem 0;
-    border-radius: 9px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    border-color: var(--dft-navy);
-    padding: 0 1.5rem 1px 1.5rem;
-    text-align: justify;   
-    padding-top:0.75em;
-    padding-bottom:0.75em;    
+.step-wrapper.open .step-trigger::before, 
+.case-wrapper.open .case-trigger::before {
+    transform: rotate(90deg);
 }
 
-delta-proposition .block-header {
-    padding-left: 1.5rem;
-    font-weight: bold;
-    font-size: 0.9rem;
-    text-transform: capitalize;
-    letter-spacing: 0.5px;
-    margin: 0 -1.5rem 0 -1.5rem; 
-    border-radius: 9px;
-    display: inline-block;
+.step-title { font-weight: 700; color: var(--dft-navy); }
+.case-title { font-weight: 700; color: var(--dft-green); }
+
+.step-summary, .case-summary {
+    font-weight: 400;
+    color: var(--gray);
+    margin-left: 0.5em;
 }
 
-
-/*********************
- * PROF STEPS CSS
- * *****************/
-
-.step-trigger {
-  background-color: transparent;
-  border: none;
-  cursor: pointer;
-  width: 100%;
-  text-align: left;
-  padding: 1rem 0.5rem;
-  font-family: var(--font-sans);
-  font-weight: 500;
-  font-size: 1rem;
-  color: var(--dft-navy);
-  display: flex;
-  align-items: center;
-  transition: background-color 0.2s ease;
+/* Animação de Conteúdo */
+.step-content, .case-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
 }
 
-.step-trigger:hover {
-  background-color: #e4e4e4;
+.step-wrapper.open .step-content, 
+.case-wrapper.open .case-content {
+    max-height: 3000px;
 }
 
-.step-trigger::before {
-  content: '➤';   
-  display: inline-block;
-  font-weight: 900;
-  margin-right: 1rem;
-  font-size: 1rem;
-  transition: transform 0.2s ease-in-out;
-  color: var(--dft-navy);
+.step-content-inner, .case-content-inner {
+    padding-left: 2rem;
+    margin-left: 0.8rem;
+    border-left: 2px solid;
 }
 
-.step-wrapper.open .step-trigger::before {
-  transform: rotate(90deg); 
-}
-
-.step-trigger .step-title {
-  font-weight: 700;
-  color: var(--dft-navy);
-}
-
-.step-trigger .step-summary {
-  font-weight: 400;
-  color: var(--gray);
-  margin-left: 0.5em;
-}
-
-.step-content {
-  max-height: 0;
-  padding: 0;
-  margin: 0;
-  overflow: hidden;
-  transition: max-height 0.30s ease-out;
-}
-
-
-
-.step-content-inner {
-  padding-left: 2rem; 
-  border-left: 2px solid var(--dft-navy);
-  margin-left: 0.8rem;
-}
-
-.step-content-inner > p {
-  margin-top: 0;
-}
-
-
-.step-wrapper.open .step-content {
-  max-height: 3000px; /* Isso aqui é um workaround para existir animação. Talvez seja necessário corrigir. */
-}
-
-
+.step-content-inner { border-left-color: var(--dft-navy); }
+.case-content-inner { border-left-color: var(--dft-green); }
