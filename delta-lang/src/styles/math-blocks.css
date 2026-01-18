@@ -24,6 +24,7 @@ delta-proposition, delta-corollary, delta-definition {
     border-left: var(--block-border-width) solid;
     padding-top: 0.75em;
     padding-bottom: 0.75em;
+    border-color: var(--dft-navy);
 }
 
 /* --- Cabeçalhos (Block Headers) --- */
@@ -60,8 +61,6 @@ delta-definition { border-color: var(--dft-cyan); }
 
 /* Lemas, Corolários e Proposições */
 delta-lemma, delta-corollary, delta-proposition { border-color: var(--dft-navy); }
-delta-proposition { box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-delta-proposition .block-header { font-size: 0.9rem; }
 
 /* Exercícios e Exemplos */
 delta-exercise { padding-left: 0; }
