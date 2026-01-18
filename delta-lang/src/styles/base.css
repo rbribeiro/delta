@@ -28,7 +28,7 @@
     --dft-green-60: #107d4899;
 
     --text-default: #121212;
-    --white: #FAFAFA;
+    --white: #FFFFFF;
     --gray:	#666666;
 }
 
@@ -136,4 +136,58 @@ delta-remark > p:first-of-type, delta-note > p:first-of-type {
 
 delta-remark > p:last-of-type, delta-note > p:last-of-type {
     margin-bottom: 0;
+}
+
+
+/************** 
+ * DELTA QUOTE
+ * ***********/
+
+delta-quote {
+  display: block;
+  position: relative;
+  margin: 2em 0;
+  padding: 1.2em 2em;
+  font-size: 1.15em;
+}
+
+.delta-quote-content {
+  display: flex;
+  align-items: flex-start;
+  font-style: italic;
+}
+
+.delta-quote-mark {
+  font-size: 2.5em;
+  font-family: serif;
+  line-height: 1;
+}
+
+.delta-quote-open {
+  margin-right: 0.3em;
+  align-self: flex-start;
+}
+
+.delta-quote-close {
+  margin-left: 0.3em;
+  align-self: flex-end;
+}
+
+.delta-quote-body {
+  flex: 1;
+}
+
+
+.delta-quote-author {
+  display: block;
+  margin-top: 1em;
+  text-align: right;
+  font-size: 1em;
+  color: var(--gray);
+  font-style: italic;
+}
+
+.delta-quote-author::before {
+  content: "— ";
+  font-style: normal;
 }
