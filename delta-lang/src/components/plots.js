@@ -1,7 +1,12 @@
+// ----- Constantes -----
+
+const ANY = 0;
+
 // ----- Funções Matemáticas -----
 
-// MDC
-
+/*
+	Dados n inteiros x1, ..., xn, retorna o máximo divisor comum de todos eles.
+*/
 const _aux_gcd = (x,y) => {
 	return x == 0 ? y : _aux_gcd(y%x,x);
 }
@@ -15,8 +20,9 @@ const Math_gcd = (...x) => {
 	return res;
 }
 
-// MMC
-
+/*
+	Dados n inteiros x1, ..., xn, retorna o mínimo múltiplo comum de todos eles.
+*/
 const _aux_lcm = (x,y) => {
 	return x*y == 0 ? 0 : x*y/_aux_gcd(x,y);
 }
@@ -30,8 +36,9 @@ const Math_lcm = (...x) => {
 	return res;
 }
 
-// Distribuições
-
+/*
+	Função de densidade de probabilidade - Distribuição Normal
+*/
 const Math_normal = (x, mu, sigma) => {
     if (sigma <= 0) return NaN;
     
@@ -40,20 +47,30 @@ const Math_normal = (x, mu, sigma) => {
     return cons * Math.exp(-0.5 * z * z);
 }
 
+/*
+	Função de densidade de probabilidade - Distribuição Uniforme
+*/
 const Math_uniform = (x, a, b) => {
     if (a >= b) return NaN;
     if (x < a || x > b) return 0;
     return 1 / (b - a);
 }
 
+/*
+	Função de densidade de probabilidade - Distribuição Exponencial
+*/
 const Math_exponential = (x, lambda) => {
     if (lambda <= 0 || x < 0) return 0;
     return lambda * Math.exp(-lambda * x);
 }
 
-// ----- Funções axuliares -----
-
-// Converte "13,357,310.3,694.4" -> [13,357,310.3,694.4] obrigando k partes (0 = any k)
+// ----- Funções Auxiliares -----
+ 
+/*
+	Dada uma string representando uma tupla de valores, converte para uma lista com esses valores. Argumentos são k = tamanho da tupla,
+	onde tamanhos diferentes desse são rejeitados e retornam null. 0 indica que qualquer tamanho vale. numbers força que os termos sejam números também.
+	"13,357,310.3,694.4" -> [13,357,310.3,694.4]
+*/
 function parse_tuple(tuple, k = 0, numbers = true){
 	if(tuple == null) return null
 	const parts = tuple.split(',');
@@ -72,13 +89,17 @@ function parse_tuple(tuple, k = 0, numbers = true){
 	}
 }
 
-// Força x em [a,b]. Null = não restringe
+/*
+	Força x no intervalo [a,b]. Se passar de uma borda, retorna aquela borda.
+	null indica que não tem aquele limite lateral, identificado por ?? para validar o null.
+*/
 function clip(x, a = null, b = null){
 	return Math.max(Math.min(x,(b ?? Infinity)),(a ?? -Infinity));
 }
 
-// Converte pra outras notações
-// Opções: notação científica (sci)
+/*
+	Formata um número x para outra notação. por enquanto só científica.
+*/
 function format_number(x, precision = 2, maxdig = 4, type = "sci"){
 	const num = parseFloat(x);
 	const numStr = String(Math.abs(num));
@@ -92,18 +113,18 @@ function format_number(x, precision = 2, maxdig = 4, type = "sci"){
 	}
 }
 
-// Dado x = [a,b], pega lista de pontos que ficaria agradável
-// TODO: Implementar outras escalas (log e sei lá mais oq tiver, levantar isso na reunião)
+/*
+	Dado x = [a,b], pega lista de pontos que ficaria agradável de colocar marcadores no gráfico, ex: 10000, 20000, 25000, 50000
+*/
 function tick_locator(x, targetTicks = 5, plotScale = 'Linear', borderControl = 0.75){
     let [min, max] = x;
     if(min > max){
         [min, max] = [max, min];
     }
 
-	// Evita marcações coladas nas bordas
-	let unplug = (max-min)*(0.004)/borderControl
-	min += unplug
-	max -= unplug
+	let unplugFromBorders = (max-min)*(0.004)/borderControl
+	min += unplugFromBorders
+	max -= unplugFromBorders
 
     const span = max - min;
     const step = span / (targetTicks+1);
@@ -134,143 +155,257 @@ function tick_locator(x, targetTicks = 5, plotScale = 'Linear', borderControl = 
     return ticks;
 }
 
-// Deixa uma linha segura pra tentar não injetar nada (NECESSÁRIO MAIS REVISÕES --- IMPORTANTE)
-// Também precisa de algo assim pra tudo que tá pegando só o título e jogando direto, no caso dos data-titles (NECESSÁRIO IMPLEMENTAR --- IMPORTANTE)
+/*
+	Dada uma linha contendo uma descrição de uma função, retorna se ela é uma função válida ou não.
+*/
+// TODO (na verdade DOING): Rework do sistema de conversão de texto para função, pois isso tem muitos problemas de segurança
+// Nomes úteis: Algoritmo de Shunting-Yard
 function function_string_sanitizer(line){
-	try {
-		let creation_attempt = new Function('x', `return ${line};`);
-		return line
-	} catch (error) {
-        console.log("Erro de sintaxe na expressão:",line);
-        return null;
-    }
+	return true;
+}
+
+// ----- Conteúdos -----
+
+// Funções chamadas com Math.X
+const content_mathFunctions = [
+	'abs', 'sqrt', 'cbrt', 'sin', 'cos', 'tan', 'asin', 'acos', 'atan',
+	'sinh', 'cosh', 'tanh', 'asinh', 'acosh', 'atanh', 'sign', 'round',
+	'floor', 'ceil', 'max', 'min', 'log2', 'log10', 'log'
+]
+
+// Funções criadas para serem chamadas com Math_X
+const content_artificialFunctions = [
+	'gcd', 'lcm'
+]
+
+// Constantes
+const content_constants = {
+	'pi': Math.PI,
+	'e': Math.E
+}
+
+// Operadores convertidos
+const content_conversions = {
+	'^^': '^', //xor
+	'^': '**', //potência
 }
 
 // ----- Delta Plot -----
 
 class DeltaPlot extends HTMLElement {
+	#title; #x; #y; #showGrid; #showAxis;
+	#plotContent; #plotChildren; #plotSize;
+
+	#marginLeft; #marginRight; #marginTop; #marginBottom;
+	#marginX; #marginY; #svgWidth; #svgHeight; #svg; #svgNS;
+
+	#xTicks; #yTicks; #xCoords; #yCoords; #xLabel; #yLabel;
+
 	constructor(){
 		super()
 	}
 
-	connectedCallback(){
-		const title = this.getAttribute("data-title") || null;
-    	const xStr = this.getAttribute("data-x") || null
-		const yStr = this.getAttribute("data-y") || null
-		const xLabel = this.getAttribute("data-x-label") || "X"
-		const yLabel = this.getAttribute("data-y-label") || "Y"
-		const size = this.getAttribute("data-size") || null
-		const grid = this.getAttribute("data-grid") || "true"
-		const axis = this.getAttribute("data-axis") || "true"
+	#prepare_parameters(){
+		this.#title = this.getAttribute("data-title") || null;
 
-		let x = parse_tuple(xStr, 2) || [0,1]
-		let y = parse_tuple(yStr, 2) || [0,1]
-		let showGrid = (grid.toLowerCase() === "true")
-		let showAxis = (axis.toLowerCase() === "true")
+    	let xStr = this.getAttribute("data-x") || null
+		let yStr = this.getAttribute("data-y") || null
+		this.#x = parse_tuple(xStr, 2) || [0,1]
+		this.#y = parse_tuple(yStr, 2) || [0,1]
 
-		let plotSize = parse_tuple(size,2) || [0.9, 0.5]
+		this.#xLabel = this.getAttribute("data-x-label") || "X"
+		this.#yLabel = this.getAttribute("data-y-label") || "Y"
 
-		let plotContent = document.createElement('delta-plot-content')
-		let plotChildren = this.children
+		let grid = this.getAttribute("data-grid") || "true"
+		let axis = this.getAttribute("data-axis") || "true"
+		this.#showGrid = (grid.toLowerCase() === "true")
+		this.#showAxis = (axis.toLowerCase() === "true")
 
-		// Tamanho
-		plotSize = [clip(plotSize[0],0.25,1),clip(plotSize[1],0.25,1)]
-		if(plotSize){
-			this.style.margin = `2% ${(1-plotSize[0])*50}%`
-			this.style.paddingBottom = `${(plotSize[1])*100}%`
+		let size = this.getAttribute("data-size") || null
+		let sizeTuple = parse_tuple(size,2) || [0.9, 0.5]
+		this.#plotSize = [clip(sizeTuple[0],0.25,1),clip(sizeTuple[1],0.25,1)]
+		if(this.#plotSize){
+			this.style.margin = `2% ${(1-this.#plotSize[0])*50}%`
+			this.style.paddingBottom = `${(this.#plotSize[1])*100}%`
 		}
 
-		const marginLeft = 60
-		const marginRight = 20
-		const marginTop = 25
-		const marginBottom = 55
-		let marginX = marginLeft + marginRight
-		let marginY = marginTop + marginBottom
-		let svgWidth = parseInt(400 * (plotSize[0]/plotSize[1]))
-		let svgHeight = 400
+		this.#plotContent = document.createElement('delta-plot-content')
+		this.#plotChildren = this.children
 
-		// Criação do SVG - Base do Plot
-		const svgNS = 'http://www.w3.org/2000/svg'
-		const svg = document.createElementNS(svgNS, 'svg');
-		svg.setAttribute('preserveAspectRatio', 'none');
-		svg.setAttribute('viewBox', `0 0 ${svgWidth} ${svgHeight}`);
-		svg.classList.add('delta-plot-svg');
+		this.#marginLeft = 60
+		this.#marginRight = 20
+		this.#marginTop = 25
+		this.#marginBottom = 55
+		this.#marginX = (this.#marginLeft + this.#marginRight)
+		this.#marginY = (this.#marginTop + this.#marginBottom);
+		this.#svgHeight = 400
+		this.#svgWidth = parseInt(400 * (this.#plotSize[0]/this.#plotSize[1]));
+	}
 
-		const rect = document.createElementNS(svgNS, 'rect');
-		rect.setAttribute('x', `${marginLeft-1}`);
-		rect.setAttribute('y', `${marginTop+1}`);
-		rect.setAttribute('height',`${svgHeight-marginY}`);
-		rect.setAttribute('width', `${svgWidth-marginX}`);
+	#prepare_function_string(line){
+		line = line.replace(/&lt;/g, '<');
+		line = line.replace(/&gt;/g, '>');
+
+        for (const [key, val] of Object.entries(content_constants)) {
+            line = line.replace(new RegExp(`\\b${key}\\b`, 'g'), val);
+        }
+
+        const tokenMap = {}; let tokenIndex = 0;
+        for (const [op, replacement] of Object.entries(content_conversions)) {
+            const token = `CONFIGTOKEN${tokenIndex++}`;
+            tokenMap[token] = replacement;
+            
+            const escapedOp = op.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            line = line.replace(new RegExp(escapedOp, 'g'), token);
+        }
+        for (const [token, value] of Object.entries(tokenMap)) {
+            line = line.replaceAll(token, value);
+        }
+
+        const applyFunctionPrefix = (list, prefix) => {
+            const uniqueFuncs = [...new Set(list)].sort((a, b) => b.length - a.length);
+            if (uniqueFuncs.length > 0) {
+                const pattern = uniqueFuncs.join('|');
+                const regex = new RegExp(`\\b(${pattern})\\(`, 'g');
+                line = line.replace(regex, `${prefix}$1(`);
+            }
+        };
+
+        applyFunctionPrefix(content_mathFunctions, 'Math.');
+        applyFunctionPrefix(content_artificialFunctions, 'Math_');
+		//todo: deixar o 3x -> 3*x automatico dnv qnd eu implementar mais modular a composição de funções
+
+        return line;
+	}
+
+	#prepare_plotting_area(){
+		const defs = document.createElementNS(this.#svgNS, 'defs');
+		const clipPath = document.createElementNS(this.#svgNS, 'clipPath');
+		clipPath.setAttribute('id', 'plot-area-clip');
+
+		const clipRect = document.createElementNS(this.#svgNS, 'rect');
+		clipRect.setAttribute('x', `${this.#marginLeft}`);
+		clipRect.setAttribute('y', `${this.#marginTop}`);
+		clipRect.setAttribute('width', this.#svgWidth - this.#marginX);
+		clipRect.setAttribute('height', this.#svgHeight - this.#marginY);
+
+		clipPath.appendChild(clipRect);
+		defs.appendChild(clipPath);
+		this.#svg.prepend(defs);
+	}
+
+	#create_plot_base(){
+		// Plot Body
+		this.#svgNS = 'http://www.w3.org/2000/svg'
+		this.#svg = document.createElementNS(this.#svgNS, 'svg');
+		this.#svg.setAttribute('preserveAspectRatio', 'none');
+		this.#svg.setAttribute('viewBox', `0 0 ${this.#svgWidth} ${this.#svgHeight}`);
+		this.#svg.classList.add('delta-plot-svg');
+
+		const rect = document.createElementNS(this.#svgNS, 'rect');
+		rect.setAttribute('x', `${this.#marginLeft-1}`);
+		rect.setAttribute('y', `${this.#marginTop+1}`);
+		rect.setAttribute('height',`${this.#svgHeight-this.#marginY}`);
+		rect.setAttribute('width', `${this.#svgWidth-this.#marginX}`);
 		rect.setAttribute('fill', 'none');
 		rect.setAttribute('stroke', 'black');
 		rect.setAttribute('stroke-width', '1');
-		svg.appendChild(rect)
+		this.#svg.appendChild(rect)
 
-		// Eixos
-		if(x[0] == x[1]) x[1]++;
-		if(y[0] == y[1]) y[1]++;
-		let xTicks = tick_locator(x,parseInt(3.5 * plotSize[0]/plotSize[1]),'Linear',plotSize[0])
-		let yTicks = tick_locator(y,3.5,'Linear',plotSize[1])
-		let xCoords = xTicks.map(t => marginLeft + ((t-x[0])/(x[1]-x[0]))*(svgWidth-marginX));
-		let yCoords = yTicks.map(t => marginTop + (1 - (t-y[0])/(y[1]-y[0]))*(svgHeight-marginY));
+		// Axis
+		if(this.#x[0] == this.#x[1]) this.#x[1]++;
+		if(this.#y[0] == this.#y[1]) this.#y[1]++;
+		this.#xTicks = tick_locator(this.#x,parseInt(3.5 * this.#plotSize[0]/this.#plotSize[1]),'Linear',this.#plotSize[0])
+		this.#yTicks = tick_locator(this.#y,3.5,'Linear',this.#plotSize[1])
+		this.#xCoords = this.#xTicks.map(t => this.#marginLeft + ((t-this.#x[0])/(this.#x[1]-this.#x[0]))*(this.#svgWidth-this.#marginX));
+		this.#yCoords = this.#yTicks.map(t => this.#marginTop + (1 - (t-this.#y[0])/(this.#y[1]-this.#y[0]))*(this.#svgHeight-this.#marginY));
 
-		if(showAxis){
-			for(let xc in xCoords){
-				let line = document.createElementNS(svgNS, 'line');
-				line.setAttribute('x1', `${xCoords[xc]}`);
-				line.setAttribute('y1', `${svgHeight - marginBottom - 5}`);
-				line.setAttribute('x2', `${xCoords[xc]}`);
-				line.setAttribute('y2', `${svgHeight - marginBottom + 5}`);
+		const barSpace = 5; const textSpace = 17;
+		if(this.#showAxis){
+			for(let xc in this.#xCoords){
+				let line = document.createElementNS(this.#svgNS, 'line');
+				line.setAttribute('x1', `${this.#xCoords[xc]}`);
+				line.setAttribute('y1', `${this.#svgHeight - this.#marginBottom - barSpace}`);
+				line.setAttribute('x2', `${this.#xCoords[xc]}`);
+				line.setAttribute('y2', `${this.#svgHeight - this.#marginBottom + barSpace}`);
 				line.setAttribute('stroke', 'black');
 				line.setAttribute('stroke-width', '2');
-				svg.appendChild(line)
+				this.#svg.appendChild(line)
 
-				let num = document.createElementNS(svgNS, 'text');
-				num.setAttribute('x', `${xCoords[xc]}`);
-				num.setAttribute('y', `${svgHeight - marginBottom + 22}`);
+				let num = document.createElementNS(this.#svgNS, 'text');
+				num.setAttribute('x', `${this.#xCoords[xc]}`);
+				num.setAttribute('y', `${this.#svgHeight - this.#marginBottom + (textSpace + barSpace)}`);
 				num.setAttribute('font-size', '20');
 				num.setAttribute('text-anchor', 'middle');
 				num.setAttribute('font-family', 'sans-serif');
 				num.setAttribute('fill', 'black');
-				num.textContent = `${format_number(xTicks[xc],1 - (xTicks.length >= 8*plotSize[0]))}`
-				svg.appendChild(num)
+				num.textContent = `${format_number(this.#xTicks[xc],1 - (this.#xTicks.length >= 8*this.#plotSize[0]))}`
+				this.#svg.appendChild(num)
 			}
-			for(let yc in yCoords){
-				let line = document.createElementNS(svgNS, 'line');
-				line.setAttribute('y1', `${yCoords[yc]}`);
-				line.setAttribute('x1', `${marginLeft - 5}`);
-				line.setAttribute('y2', `${yCoords[yc]}`);
-				line.setAttribute('x2', `${marginLeft + 5}`);
+			for(let yc in this.#yCoords){
+				let line = document.createElementNS(this.#svgNS, 'line');
+				line.setAttribute('y1', `${this.#yCoords[yc]}`);
+				line.setAttribute('x1', `${this.#marginLeft - barSpace}`);
+				line.setAttribute('y2', `${this.#yCoords[yc]}`);
+				line.setAttribute('x2', `${this.#marginLeft + barSpace}`);
 				line.setAttribute('stroke', 'black');
 				line.setAttribute('stroke-width', '2');
-				svg.appendChild(line)
+				this.#svg.appendChild(line)
 
-				let num = document.createElementNS(svgNS, 'text');
-				num.setAttribute('y', `${yCoords[yc]}`);
-				num.setAttribute('x', `${marginLeft - 12}`);
+				let num = document.createElementNS(this.#svgNS, 'text');
+				num.setAttribute('y', `${this.#yCoords[yc]}`);
+				num.setAttribute('x', `${this.#marginLeft - (textSpace - barSpace)}`);
 				num.setAttribute('font-size', '20');
 				num.setAttribute('text-anchor', 'middle');
 				num.setAttribute('font-family', 'sans-serif');
 				num.setAttribute('fill', 'black');
-				num.textContent = `${format_number(yTicks[yc],1 - (yTicks.length >= 8*plotSize[1]))}`;
-				num.setAttribute('transform', `rotate(-${num.textContent.includes('-') && num.textContent.includes('e') ? 70 : 90} ${marginLeft - 12} ${yCoords[yc]})`);
-				svg.appendChild(num)
+				num.textContent = `${format_number(this.#yTicks[yc],1 - (this.#yTicks.length >= 8*this.#plotSize[1]))}`;
+				let rotationAng = num.textContent.includes('-') && num.textContent.includes('e') ? 70 : 90
+				num.setAttribute('transform', `rotate(-${rotationAng} ${this.#marginLeft - (textSpace - barSpace)} ${this.#yCoords[yc]})`);
+				this.#svg.appendChild(num)
+			}
+		}
+
+		// Grid
+		if(this.#showGrid){
+			for(let xc in this.#xCoords){
+				let line = document.createElementNS(this.#svgNS, 'line');
+				line.setAttribute('x1', `${this.#xCoords[xc]}`);
+				line.setAttribute('y1', `${this.#marginTop}`);
+				line.setAttribute('x2', `${this.#xCoords[xc]}`);
+				line.setAttribute('y2', `${this.#svgHeight - this.#marginBottom}`);
+				line.setAttribute('stroke', 'gray');
+				line.setAttribute('stroke-width', '1');
+				this.#svg.appendChild(line)
+			}
+			for(let yc in this.#yCoords){
+				let line = document.createElementNS(this.#svgNS, 'line');
+				line.setAttribute('y1', `${this.#yCoords[yc]}`);
+				line.setAttribute('x1', `${this.#marginLeft}`);
+				line.setAttribute('y2', `${this.#yCoords[yc]}`);
+				line.setAttribute('x2', `${this.#svgWidth - this.#marginRight}`);
+				line.setAttribute('stroke', 'gray');
+				line.setAttribute('stroke-width', '1');
+				this.#svg.appendChild(line)
 			}
 		}
 
 		// Labels
-		const textX = document.createElementNS(svgNS, 'text');
-		textX.setAttribute('x', `${svgWidth/2 + 20}`);
-		textX.setAttribute('y', `${svgHeight - 8}`);
+		let titleX = this.#svgWidth/2 + 20; let titleY = 18;
+		let txX = this.#svgWidth/2 + 20; let txY = this.#svgHeight - 8;
+		let tyX = 22; let tyY = this.#svgHeight/2 - 20;
+
+		const textX = document.createElementNS(this.#svgNS, 'text');
+		textX.setAttribute('x', `${txX}`);
+		textX.setAttribute('y', `${txY}`);
 		textX.setAttribute('text-anchor', 'middle');
 		textX.setAttribute('font-family', 'sans-serif');
 		textX.setAttribute('font-size', '22');
 		textX.setAttribute('fill', 'black');
-		textX.textContent = xLabel;
-		svg.appendChild(textX);
+		textX.textContent = this.#xLabel;
+		this.#svg.appendChild(textX);
 
-		const textY = document.createElementNS(svgNS, 'text');
-		let tyX = 22; let tyY = svgHeight/2 - 20
+		const textY = document.createElementNS(this.#svgNS, 'text');
 		textY.setAttribute('x', `${tyX}`);
 		textY.setAttribute('y', `${tyY}`);
 		textY.setAttribute('text-anchor', 'middle');
@@ -278,530 +413,431 @@ class DeltaPlot extends HTMLElement {
 		textY.setAttribute('font-size', '22');
 		textY.setAttribute('fill', 'black');
 		textY.setAttribute('transform', `rotate(-90 ${tyX} ${tyY})`);
-		textY.textContent = yLabel;
-		svg.appendChild(textY);
+		textY.textContent = this.#yLabel;
+		this.#svg.appendChild(textY);
 
-		const titleLabel = document.createElementNS(svgNS, 'text');
-		let txX = svgWidth/2 + 20; let txY = 18
-		titleLabel.setAttribute('x', `${txX}`);
-		titleLabel.setAttribute('y', `${txY}`);
+		const titleLabel = document.createElementNS(this.#svgNS, 'text');
+		titleLabel.setAttribute('x', `${titleX}`);
+		titleLabel.setAttribute('y', `${titleY}`);
 		titleLabel.setAttribute('text-anchor', 'middle');
 		titleLabel.setAttribute('font-family', 'sans-serif');
 		titleLabel.setAttribute('font-size', '22');
 		titleLabel.setAttribute('fill', 'black');
-		titleLabel.textContent = title;
-		svg.appendChild(titleLabel);
+		titleLabel.textContent = this.#title;
+		this.#svg.appendChild(titleLabel);
 
-		plotContent.appendChild(svg);
+		this.#plotContent.appendChild(this.#svg);
+	}
 
-		// Grade
-		if(showGrid){
-			for(let xc in xCoords){
-				let line = document.createElementNS(svgNS, 'line');
-				line.setAttribute('x1', `${xCoords[xc]}`);
-				line.setAttribute('y1', `${marginTop}`);
-				line.setAttribute('x2', `${xCoords[xc]}`);
-				line.setAttribute('y2', `${svgHeight - marginBottom}`);
-				line.setAttribute('stroke', 'gray');
-				line.setAttribute('stroke-width', '1');
-				svg.appendChild(line)
+	#process_function(funcObj, i){
+		let label = funcObj.getAttribute("data-title") || null;
+
+		const dom = funcObj.getAttribute("data-from") || null;
+		const domain = parse_tuple(dom,2) || this.#x
+
+		const overflow = 1.5 // Tolerancia para desenhar pontos acima e abaixo do gráfico
+		const codom = funcObj.getAttribute("data-to") || null;
+		const codomain = parse_tuple(codom,2) || [this.#y[0]*overflow,this.#y[1]*overflow]
+
+		const qtPts = funcObj.getAttribute("data-points") || null;
+		const pts = parseInt(qtPts) ? Math.min(Math.max(parseInt(qtPts),2),80000) : 500;
+		let funcColor, parsedFunction = null;
+
+		// Cor
+		const chosenColor = funcObj.getAttribute("data-color") || null;
+		const hexRegex = /^#([0-9A-F]{3}){1,2}$/i;
+		if (hexRegex.test(chosenColor)) {
+			funcColor = chosenColor;
+		} else {
+			const availableFuncColors = {
+				'red': '#E41A1C', 'blue': '#377EB8', 'green': '#4DAF4A',
+				'purple': '#984EA3', 'orange': '#FF7F00', 'yellow': '#FFFF33',
+				'magenta': '#FF00FF', 'cyan': '#00FFFF', 'brown': '#A65628',
+				'pink': '#F781BF', 'gray': '#999999', 'flame': '#E25822',
+				'black': '#000000', 'lime': '#00FF00', 'navy': '#000080',
+				'maroon': '#800000', 'teal': '#008080', 'olive': '#808000'
+			};
+			const defaultColors = Object.values(availableFuncColors);
+
+			if (chosenColor && (chosenColor.toLowerCase() in availableFuncColors)) {
+				funcColor = availableFuncColors[chosenColor.toLowerCase()];
+			} else {
+				funcColor = defaultColors[i % defaultColors.length];
 			}
-			for(let yc in yCoords){
-				let line = document.createElementNS(svgNS, 'line');
-				line.setAttribute('y1', `${yCoords[yc]}`);
-				line.setAttribute('x1', `${marginLeft}`);
-				line.setAttribute('y2', `${yCoords[yc]}`);
-				line.setAttribute('x2', `${svgWidth - marginRight}`);
-				line.setAttribute('stroke', 'gray');
-				line.setAttribute('stroke-width', '1');
-				svg.appendChild(line)
+		}
+		if(funcObj.tagName == "DELTA-FUNCTION"){
+			if(label === null){
+				label = `Function ${i + 1}`
+			}
+			let line = funcObj.innerHTML.replace(/<p>/g,'').replace(/<\/p>/g,'');
+			let parsedLine = this.#prepare_function_string(line);
+			parsedFunction = Function('x',`return ${parsedLine};`);
+			if(label === null){
+				label = `Function ${i + 1}`
+			}
+		} else if(funcObj.tagName == 'DELTA-DISTRIBUTION'){
+			const pdfunc = funcObj.getAttribute("data-pdf") || ""; let params;
+			switch (pdfunc.toLowerCase()) {
+				case "normal":
+					params = funcObj.getAttribute("data-parameters") || null;
+					params = parse_tuple(params, 2) || [0,1];
+					parsedFunction = (xxx) => Math_normal(xxx,params[0],params[1]);
+					label = label || "Dist. Normal";
+					break;
+				case "exponential":
+					params = funcObj.getAttribute("data-parameters") || null;
+					params = parse_tuple(params, 1) || [1];
+					parsedFunction = (xxx) => Math_exponential(xxx,params[0]);
+					label = label || "Dist. Exponencial";
+					break;
+				case "uniform":
+					params = funcObj.getAttribute("data-parameters") || null;
+					params = parse_tuple(params, 2) || [0,1];
+					parsedFunction = (xxx) => Math_uniform(xxx,params[0],params[1]);
+					label = label || "Dist. Uniforme";
+					break;
 			}
 		}
 
-		// Processar Objetos
-		// 'function' | função javascript | pontos | contradominio (a,b) | cor | label
-		// 'legend' | tupla de objetos | posição | fixed | size | opacity
-		let plotObjects = []
-		Array.from(plotChildren).forEach((child, ic) => {
-			// Processa funções
-			if(child.tagName == "DELTA-FUNCTION" || child.tagName == "DELTA-DISTRIBUTION"){
-				const label = child.getAttribute("data-title") || null;
-				const dom = child.getAttribute("data-from") || null;
-				const codom = child.getAttribute("data-to") || null;
-				const qtPts = child.getAttribute("data-points") || null;
-				const colr = child.getAttribute("data-color") || null;
+		if(parsedFunction){
+			let startPoint = Math.max(domain[0],this.#x[0])
+			let endPoint = Math.min(domain[1],this.#x[1])
+			const maxPoints = pts;
 
-				const overflow = 1.2
-				const domain = parse_tuple(dom,2) || x
-				const codomain = parse_tuple(codom,2) || [y[0]*overflow,y[1]*overflow]
-				const pts = parseInt(qtPts) ? Math.min(Math.max(parseInt(qtPts),2),75000) : 500;
-				
-				const hexRegex = /^#([0-9A-F]{3}){1,2}$/i;
-				let funcColor;
-				if (hexRegex.test(colr)) {
-					funcColor = colr;
+			if(startPoint <= endPoint){
+				let nPoints = Math.max(parseInt(maxPoints*this.#plotSize[0]*(endPoint - startPoint)/(this.#x[1] - this.#x[0])),1);
+				let points;
+				if(nPoints == 1){
+					points = [(endPoint+startPoint)/2]
 				} else {
-					const availableFuncColors = {
-						'red': '#E41A1C', 'blue': '#377EB8', 'green': '#4DAF4A',
-						'purple': '#984EA3', 'orange': '#FF7F00', 'yellow': '#FFFF33',
-						'magenta': '#FF00FF', 'cyan': '#00FFFF', 'brown': '#A65628',
-						'pink': '#F781BF', 'gray': '#999999', 'flame': '#E25822',
-						'black': '#000000', 'lime': '#00FF00', 'navy': '#000080',
-						'maroon': '#800000', 'teal': '#008080', 'olive': '#808000'
-					};
-					const defaultColors = Object.values(availableFuncColors);
-
-					if (colr && (colr.toLowerCase() in availableFuncColors)) {
-						funcColor = availableFuncColors[colr.toLowerCase()];
-					} else {
-						funcColor = defaultColors[ic % defaultColors.length];
-					}
+					let step = (endPoint - startPoint)/(nPoints-1);
+					points = Array.from({ length: nPoints }, (_, i) => startPoint + (step * i));
 				}
+				return ['function',parsedFunction,points,codomain,funcColor,label]
+			}
+		}
+	}
 
-				let composedFunction = null, finalLabel;
-				if(child.tagName == "DELTA-FUNCTION"){
-					// O esperado é um texto simples, que vai gerar um parágrafo.
-					let lines = child.innerHTML.replace(/<p>/g,'').replace(/<\/p>/g,'\n').split('\n').filter(k => k !== '');
-					finalLabel = label || (lines.length > 0 ? lines[lines.length-1] : `Function ${ic + 1}`);
+	#process_legend(legendObj){
+		const legendObjects = legendObj.getAttribute("data-objects") || null;
+		const legendPos = legendObj.getAttribute("data-position") || null;
+		const isFixed = legendObj.getAttribute("data-fixed") || null;
+		const legendSize = legendObj.getAttribute("data-size") || null;
+		const legendOpacity = legendObj.getAttribute("data-opacity") || null;
 
-					let compositionLines = []
-					for(let l in lines){
-						let line = lines[l]
-						line = line.replace(/([\d\.]+)(x|y)/g,'$1*$2') //Corrige 3x -> 3*x. Funciona com y tbm
-						line = line.replace(/([\d\.]+|x|y)\(/g, '$1*('); //Corrige multiplicação com parenteses
-						line = line.replace(/\b(pi)\b/g,Math.PI) //Converte pi p/ número
-						line = line.replace(/\b(e)\b/g,Math.E) //Converte e p/ número
-						line = line.replace(/(?<!\^)\^(?!\^)/g, '**'); //Converte ^ para **
-						line = line.replace(/\^\^/g, '^'); //Converte ^^ para ^
-						line = line.replace(/&lt;/g, '<'); //Converte < para forma certa
-						line = line.replace(/&gt;/g, '>'); //Converte > para forma certa
+		let obj = parse_tuple(legendObjects,ANY) || ['all']
+		let posTemp = parse_tuple(legendPos,ANY,false) || ['top right']
+		
+		let pos = [];
+		const posOptions = ['top left', 'top right', 'bottom left', 'bottom right'];
+		if(posTemp.length == 1){
+			if (posOptions.includes(posTemp[0].trim())) {
+				let ptemp = posTemp[0].trim().split(' ');
+				pos = [ptemp[1], ptemp[0]];
+			} else {
+				pos = ['right','top'];
+			}
+		} else if(posTemp.length == 2){
+			let ptemp = parse_tuple(legendPos,2) || [0,1]
+			pos = [clip(ptemp[0],0,1),clip(ptemp[1],0,1)];
+		} else {
+			pos = ['right','top'];
+		}
+		
+		let fixed = (isFixed ?? 'false').toLowerCase() === 'true';
 
-						// Coloca Math. antes de tudo que precisar e for alguma função, tipo abs()
-						let mathFunctions = 'abs sqrt cbrt sin cos tan asin acos atan sinh cosh tanh asinh acosh atanh sign round floor ceil max min log2 log10 log'.split(' ')
-						let mathOrString = mathFunctions.join('|')
-						const mathFunctionsRegex = new RegExp(`(${mathOrString})\\(`, 'g');
-						line = line.replace(mathFunctionsRegex,'Math.$1(');
+		let sizeTemp = parse_tuple(legendSize, 2) || [0.3,0.4];
+		let size = [clip(sizeTemp[0], 0.1, 0.8), clip(sizeTemp[1], 0.1, 0.8)];
 
-						// Coloca Math_ antes de tudo que precisar e for função artificial, tipo gcd()
-						let newFunctions = 'gcd lcm'.split(' ')
-						let newOrString = newFunctions.join('|')
-						const newFunctionsRegex = new RegExp(`(${newOrString})\\(`, 'g');
-						line = line.replace(newFunctionsRegex,'Math_$1(');
+		let opacityTemp = parseFloat(legendOpacity);
+		let opacity = clip(isNaN(opacityTemp) ? 0.9 : opacityTemp, 0, 1);
 
-						// Função correspondente (ou função nula em caso de falha)
-						let safeLine = function_string_sanitizer(line)
-						if(safeLine) compositionLines.push(safeLine)
-					}
-					
-					// Troca y pela linha correspondente. Troca por 0 se na primeira.
-					if(compositionLines.length){
-						compositionLines[0] = compositionLines[0].replace(/\by(\d*)\b/g,'0')
-					
-						for(let i = 1; i < compositionLines.length; i++){
-							let ys = compositionLines[i].match(/\by(\d*)\b/g);
-							for(let j in ys){
-								let indx = parseInt(ys[j].length == 1 ? '1' : ys[j].substring(1)) 
-								if(indx == 0 || indx > i){
-									compositionLines[i] = compositionLines[i].replace(`${ys[j]}`,`0`);
-								} else {
-									compositionLines[i] = compositionLines[i].replace(`${ys[j]}`,`(${compositionLines[indx-1]})`);
-								}
-							}
-						}
+		return ['legend',obj,pos,fixed,size,opacity];
+	}
 
-						composedFunction = Function('x',`return ${compositionLines[compositionLines.length-1]};`);
-					}
-				} else if(child.tagName == 'DELTA-DISTRIBUTION'){
-					const pdfunc = child.getAttribute("data-pdf") || "";
-					let params;
-					switch (pdfunc.toLowerCase()) {
-						case "normal":
-							params = child.getAttribute("data-parameters") || null;
-							params = parse_tuple(params, 2) || [0,1];
-							composedFunction = (xxx) => Math_normal(xxx,params[0],params[1]);
-							finalLabel = "Dist. Normal";
-							break;
-						case "exponential":
-							params = child.getAttribute("data-parameters") || null;
-							params = parse_tuple(params, 1) || [1];
-							composedFunction = (xxx) => Math_exponential(xxx,params[0]);
-							finalLabel = "Dist. Exponencial";
-							break;
-						case "uniform":
-							params = child.getAttribute("data-parameters") || null;
-							params = parse_tuple(params, 2) || [0,1];
-							composedFunction = (xxx) => Math_uniform(xxx,params[0],params[1]);
-							finalLabel = "Dist. Uniforme";
-							break;
-					}
-				}
-
-				if(composedFunction){
-					let startPoint = Math.max(domain[0],x[0])
-					let endPoint = Math.min(domain[1],x[1])
-					const maxPoints = pts;
-
-					if(startPoint <= endPoint){
-						let nPoints = Math.max(parseInt(maxPoints*plotSize[0]*(endPoint - startPoint)/(x[1] - x[0])),1);
-						let points;
-						if(nPoints == 1){
-							points = [(endPoint+startPoint)/2]
-						} else {
-							let step = (endPoint - startPoint)/(nPoints-1);
-							points = Array.from({ length: nPoints }, (_, i) => startPoint + (step * i));
-						}
-						plotObjects.push(['function',composedFunction,points,codomain,funcColor,finalLabel])
-					}
-				}
-
-			} else if(child.tagName == 'DELTA-LEGEND'){
-                const legendObjects = child.getAttribute("data-objects") || null;
-                const legendPos = child.getAttribute("data-position") || null;
-                const isFixed = child.getAttribute("data-fixed") || null;
-				const legendSize = child.getAttribute("data-size") || null;
-				const legendOpacity = child.getAttribute("data-opacity") || null;
-
-                let objTemp = parse_tuple(legendObjects,0,false) || ['all']
-                let posTemp = parse_tuple(legendPos,0,false) || ['top right']
-                
-                let pos = [];
-                const posOptions = ['top left', 'top right', 'bottom left', 'bottom right'];
-				if(posTemp.length == 0 || posTemp.length > 2){
-					pos.push('top right')
-				} else if(posTemp.length == 1){
-					if (posOptions.includes(posTemp[0].trim())) {
-                        pos.push(posTemp[0].trim());
-                    } else {
-						pos.push('top right')
-					}
-				} else if(posTemp.length == 2){
-					pos = parse_tuple(legendPos,2) || [0,1]
-				}
-
-				let obj = [];
-                const objOptions = ['all', 'functions'];
-                for(let item of objTemp){
-                    const trimmedItem = item.trim();
-                    if (objOptions.includes(trimmedItem)) {
-                        obj.push(trimmedItem);
-                    } else {
-                        const parsedNum = parseInt(trimmedItem);
-                        if (!isNaN(parsedNum) && parsedNum >= 0 && String(parsedNum) === trimmedItem) {
-                            obj.push(parsedNum);
-                        }
-                    }
-                }
-				if(obj.length == 0) obj = ['all']
-                
-                let fixed = (isFixed ?? 'false').toLowerCase() === 'true';
-
-				let sizeTemp = parse_tuple(legendSize, 2) || [0.3,0.4];
-				let size = [clip(sizeTemp[0], 0.1, 0.8), clip(sizeTemp[1], 0.1, 0.8)];
-
-				let opacityTemp = parseFloat(legendOpacity);
-				let opacity = clip(isNaN(opacityTemp) ? 0.9 : opacityTemp, 0, 1);
-
-				plotObjects.push(['legend',obj,pos,fixed,size,opacity])
-        	}
-		});
-
-		// Mapeamento de valor x para coordenada do plot
+	#draw_function(plotObj){
 		const mapX = (dataX) => {
-			return marginLeft + ((dataX - x[0]) / (x[1] - x[0])) * (svgWidth - marginX);
+			return this.#marginLeft + ((dataX - this.#x[0]) / (this.#x[1] - this.#x[0])) * (this.#svgWidth - this.#marginX);
 		};
 		const mapY = (dataY) => {
-			return marginTop + (1 - (dataY - y[0]) / (y[1] - y[0])) * (svgHeight - marginY);
+			return this.#marginTop + (1 - (dataY - this.#y[0]) / (this.#y[1] - this.#y[0])) * (this.#svgHeight - this.#marginY);
 		};
 
-		// Área de plotagem pra não pular fora
-		const defs = document.createElementNS(svgNS, 'defs');
-		const clipPath = document.createElementNS(svgNS, 'clipPath');
-		clipPath.setAttribute('id', 'plot-area-clip');
+		const [_, func, xPoints, thisCdm, thisColor, ___] = plotObj;
+		const path = document.createElementNS(this.#svgNS, 'path');
+		let d = ''; let penState = false;
+		xPoints.forEach((px) => {
+			let py;
+			try {
+				py = func(px) ?? null;
+			} catch(error){
+				py = null;
+			}
+			if(py != null && isFinite(py) && (thisCdm[0] <= py && py <= thisCdm[1])){
+				const svgX = mapX(px);
+				const svgY = mapY(py);
 
-		const clipRect = document.createElementNS(svgNS, 'rect');
-		clipRect.setAttribute('x', `${marginLeft}`);
-		clipRect.setAttribute('y', `${marginTop}`);
-		clipRect.setAttribute('width', svgWidth - marginX);
-		clipRect.setAttribute('height', svgHeight - marginY);
+				if (!penState) {
+					d += `M ${svgX} ${svgY}`;
+					penState = true;
+				} else {
+					d += ` L ${svgX} ${svgY}`;
+				}
+			} else {
+				penState = false;
+			}
+		});
 
-		clipPath.appendChild(clipRect);
-		defs.appendChild(clipPath);
-		svg.prepend(defs);
+		path.setAttribute('d', d);
+		path.setAttribute('stroke', thisColor);
+		path.setAttribute('stroke-width', '2');
+		path.setAttribute('fill', 'none');
+		path.setAttribute('clip-path', 'url(#plot-area-clip)');
 
-		// Agora de fato desenha os objetos
-		for (const plotObject of plotObjects) {
-			const type = plotObject[0];
+		this.#svg.appendChild(path);
+	}
 
-			switch (type) {
-				case 'function':
-					const [_, func, xPoints, thisCdm, thisColor, ___] = plotObject;
-					const path = document.createElementNS(svgNS, 'path');
-					let d = '';
+	#draw_legend(plotObj, plotObjects){
+		const [__, obj, pos, fixed, size, opacity] = plotObj;
+		let legendHtmlContent = '';
+		let itemsToDisplay = new Set();
 
-					let penState = false;
-					xPoints.forEach((px) => {
-						let py;
-						try {
-							py = func(px) ?? null;
-						} catch(error){
-							py = null;
-						}
-						if(py != null && isFinite(py) && (thisCdm[0] <= py && py <= thisCdm[1])){
-							const svgX = mapX(px);
-							const svgY = mapY(py);
-
-							if (!penState) {
-								d += `M ${svgX} ${svgY}`;
-								penState = true;
-							} else {
-								d += ` L ${svgX} ${svgY}`;
-							}
-						} else {
-							penState = false;
-						}
-					});
-
-					path.setAttribute('d', d);
-					path.setAttribute('stroke', thisColor);
-					path.setAttribute('stroke-width', '2');
-					path.setAttribute('fill', 'none');
-					path.setAttribute('clip-path', 'url(#plot-area-clip)');
-
-					svg.appendChild(path);
-					break;
-				case 'legend':
-                    const [__, obj, pos, fixed, size, opacity] = plotObject;
-
-					// Seleciona os objetos da legenda
-                    let legendHtmlContent = '';
-                    let itemsToDisplay = new Set();
-
-                    for (const objRule of obj) {
-                        if (objRule === 'all' || objRule === 'functions') {
-							let parseRule = {
-								'functions': 'function',
-								'all': 'all'
-							}
-                            plotObjects.forEach((item) => {
-                                if ((item[0] === parseRule[objRule] || objRule == 'all') && item[0] !== 'legend') itemsToDisplay.add(item);
-                            });
-                        } else if (parseInt(objRule) != NaN && objRule >= 1) {
-                            if (objRule-1 < plotObjects.length && plotObjects[objRule-1][0] === 'function') {
-                                itemsToDisplay.add(plotObjects[objRule-1]);
-                            }
-                        }
-                    }
-
-					// Gera o HTML pra legenda
-                    for (const item of itemsToDisplay) {
-						// [_, func, pts, cdm, color, label]
-                        const itemColor = item[4];
-                        const itemLabel = item[5];
-                        legendHtmlContent += `<div style="margin: 3px 0; display: flex; align-items: center;">
-                            <span style="width: 20px; height: 2px; background-color: ${itemColor}; margin-right: 5px;"></span>
-                            <span style="white-space: nowrap;">${itemLabel}</span>
-                        </div>`;
-                    }
-                    if (legendHtmlContent === '') break;
-
-					// Posicionamentos :(
-                    const legendPadding = 10;
-                    const plotAreaWidth = svgWidth - marginX;
-                    const plotAreaHeight = svgHeight - marginY;
-
-                    const legendWidth = size[0] * plotAreaWidth;
-                    const legendHeight = size[1] * plotAreaHeight;
-
-                    let legendX, legendY;
-                    if (typeof pos[0] === 'string') {
-                        const posKeyword = pos[0];
-                        switch (posKeyword) {
-                            case 'top left':
-                                legendX = marginLeft + legendPadding;
-                                legendY = marginTop + legendPadding;
-                                break;
-                            case 'bottom left':
-                                legendX = marginLeft + legendPadding;
-                                legendY = svgHeight - marginBottom - legendHeight - legendPadding;
-                                break;
-                            case 'bottom right':
-                                legendX = svgWidth - marginRight - legendWidth - legendPadding;
-                                legendY = svgHeight - marginBottom - legendHeight - legendPadding;
-                                break;
-                            case 'top right':
-                            default:
-                                legendX = svgWidth - marginRight - legendWidth - legendPadding;
-                                legendY = marginTop + legendPadding;
-                        }
-                    } else {
-                        const v = clip(pos[0], 0, 1);
-                        const h = clip(pos[1], 0, 1);
-
-                        legendX = marginLeft + h * (plotAreaWidth - legendWidth);
-                        legendY = marginTop + v * (plotAreaHeight - legendHeight);
-                    }
-
-                    // foreignObject - Jeito maluco que achei de fazer o scroll
-                    const legend = document.createElementNS(svgNS, 'foreignObject');
-                    legend.setAttribute('x', legendX);
-                    legend.setAttribute('y', legendY);
-                    legend.setAttribute('width', legendWidth);
-                    legend.setAttribute('height', legendHeight);
-                    const xhtmlNS = 'http://www.w3.org/1999/xhtml';
-
-                    // Wrapper principal pra legenda
-                    const legendWrapper = document.createElementNS(xhtmlNS, 'div');
-                    legendWrapper.setAttribute('xmlns', xhtmlNS);
-                    legendWrapper.style.position = 'relative';
-                    legendWrapper.style.height = '100%';
-                    legendWrapper.style.width = '100%';
-
-                    // Div de conteúdo rolável
-                    const legendContentDiv = document.createElementNS(xhtmlNS, 'div');
-                    legendContentDiv.setAttribute('xmlns', xhtmlNS);
-                    legendContentDiv.style.height = '100%';
-                    legendContentDiv.style.overflowY = 'auto';
-                    legendContentDiv.style.background = `rgba(255, 255, 255, ${opacity})`;
-                    legendContentDiv.style.border = '1px solid #ccc';
-                    legendContentDiv.style.borderRadius = '4px';
-                    legendContentDiv.style.padding = '5px';
-                    legendContentDiv.style.boxSizing = 'border-box';
-                    legendContentDiv.style.fontFamily = 'sans-serif';
-                    legendContentDiv.style.fontSize = '14px';
-                    legendContentDiv.innerHTML = legendHtmlContent;
-
-                    // Botão de Toggle (foreign -> xmlns)
-                    const legendToggleBtn = document.createElementNS(xhtmlNS, 'button');
-                    legendToggleBtn.setAttribute('xmlns', xhtmlNS);
-                    legendToggleBtn.className = 'legend-toggle-btn';
-
-                    // Ícone SVG para o botão de toggle
-                    const iconSvg = document.createElementNS(svgNS, 'svg');
-                    iconSvg.setAttribute('viewBox', '0 0 24 24');
-                    iconSvg.classList.add('legend-toggle-icon');
-
-                    const circlePath = document.createElementNS(svgNS, 'circle');
-                    circlePath.setAttribute('cx', '12');
-                    circlePath.setAttribute('cy', '12');
-                    circlePath.setAttribute('r', '6');
-                    circlePath.classList.add('legend-toggle-circle', 'legend-toggle-circle--filled');
-
-                    iconSvg.appendChild(circlePath);
-                    legendToggleBtn.appendChild(iconSvg);
-
-					// Botão de Drag (foreign -> xmlns)
-					const legendDragHandle = document.createElementNS(xhtmlNS, 'button');
-					legendDragHandle.setAttribute('xmlns', xhtmlNS);
-					legendDragHandle.className = 'legend-drag-handle';
-
-					// Ícone SVG para o botão de drag
-					const dragIconSvg = document.createElementNS(svgNS, 'svg');
-					dragIconSvg.setAttribute('viewBox', '0 0 15 16');
-					dragIconSvg.style.width = '14px';
-					dragIconSvg.style.height = '14px';
-
-					const dragIconPath = document.createElementNS(svgNS, 'path');
-					dragIconPath.setAttribute('fill', '#333');
-					dragIconPath.setAttribute('d', 'M8 0L5 4h6L8 0z M8 16l3-4H5l3 4z M0 8l4-3v6L0 8z M16 8l-4 3V5l4 3z');
-					
-					dragIconSvg.appendChild(dragIconPath);
-					legendDragHandle.appendChild(dragIconSvg);
-
-                    // Click pra ativar/desativar legenda
-                    legendToggleBtn.addEventListener('click', () => {
-                        const isHidden = legendContentDiv.style.display === 'none';
-                        if (isHidden) {
-                            legendContentDiv.style.display = 'block';
-							if(!fixed) legendDragHandle.style.display = 'block';
-                            circlePath.classList.remove('legend-toggle-circle--outlined');
-                            circlePath.classList.add('legend-toggle-circle--filled');
-                        } else {
-                            legendContentDiv.style.display = 'none';
-							if(!fixed) legendDragHandle.style.display = 'none';
-                            circlePath.classList.remove('legend-toggle-circle--filled');
-                            circlePath.classList.add('legend-toggle-circle--outlined');
-                        }
-                    });
-
-                    legendWrapper.appendChild(legendToggleBtn);
-					legendWrapper.appendChild(legendDragHandle);
-                    legendWrapper.appendChild(legendContentDiv);
-                    legend.appendChild(legendWrapper);
-                    svg.appendChild(legend);
-
-					// Legenda pode sair mudando de lugar
-					if (!fixed) {
-						let isDragging = false;
-						let offset = { x: 0, y: 0 };
-
-						// Magia negra que extrai coordenadas do SVG
-						const getSVGCoordinates = (e) => {
-							const CTM = svg.getScreenCTM();
-							const svgPoint = svg.createSVGPoint();
-							svgPoint.x = e.clientX;
-							svgPoint.y = e.clientY;
-							return svgPoint.matrixTransform(CTM.inverse());
-						};
-
-						legendToggleBtn.addEventListener('mousedown', (e) => {
-							e.stopPropagation();
-						});
-
-						legendContentDiv.addEventListener('mousedown', (e) => {
-							e.stopPropagation();
-						});
-
-						legendDragHandle.addEventListener('mousedown', (e) => {
-							e.stopPropagation();
-							isDragging = true;
-							legendWrapper.style.cursor = 'move';
-							
-							const svgCoords = getSVGCoordinates(e);
-							const currentX = parseFloat(legend.getAttribute('x'));
-							const currentY = parseFloat(legend.getAttribute('y'));
-							
-							offset.x = svgCoords.x - currentX;
-							offset.y = svgCoords.y - currentY;
-						});
-
-						svg.addEventListener('mousemove', (e) => {
-							if (!isDragging) return;
-							
-							e.preventDefault();
-							
-							const svgCoords = getSVGCoordinates(e);
-							let newX = svgCoords.x - offset.x;
-							let newY = svgCoords.y - offset.y;
-
-							const minX = marginLeft;
-							const maxX = svgWidth - marginRight - legendWidth;
-							const minY = marginTop;
-							const maxY = svgHeight - marginBottom - legendHeight;
-
-							newX = Math.max(minX, Math.min(newX, maxX));
-							newY = Math.max(minY, Math.min(newY, maxY));
-							
-							legend.setAttribute('x', newX);
-							legend.setAttribute('y', newY);
-						});
-
-						const stopDragging = () => {
-							isDragging = false;
-							legendWrapper.style.cursor = 'default';
-						};
-
-						svg.addEventListener('mouseup', stopDragging);
-						svg.addEventListener('mouseleave', stopDragging);
-					} else {
-						legendDragHandle.style.display = 'none';
-						console.log('none')
-					}
-                    break;
+		for (const objRule of obj) {
+			if (objRule === 'all') {
+				plotObjects.forEach((item) => {
+					if (item[0] !== 'legend') itemsToDisplay.add(item);
+				});
+			} else if (parseInt(objRule) != NaN) {
+				let objId = clip(objRule,1,plotObjects.length) 
+				if (plotObjects[objId-1][0] !== 'legend') {
+					itemsToDisplay.add(plotObjects[objId-1]);
+				}
 			}
 		}
 
+		// HTML da Legenda
+		for (const item of itemsToDisplay) {
+			// [_, func, pts, cdm, color, label]
+			const itemColor = item[4];
+			const itemLabel = item[5];
+			legendHtmlContent += `<div style="margin: 3px 0; display: flex; align-items: center;">
+				<span style="width: 20px; height: 2px; background-color: ${itemColor}; margin-right: 5px;"></span>
+				<span style="white-space: nowrap;">${itemLabel}</span>
+			</div>`;
+		}
+		if (legendHtmlContent === '') legendHtmlContent = '<div style="color: gray; font-style: italic;">Sem dados</div>';
+
+		// Posicionamentos
+		const legendPadding = 10;
+		const plotAreaWidth = this.#svgWidth - this.#marginX;
+		const plotAreaHeight = this.#svgHeight - this.#marginY;
+		const legendWidth = size[0] * plotAreaWidth;
+		const legendHeight = size[1] * plotAreaHeight;
+
+		let legendX, legendY;
+		if(pos[0] == 'left'){
+			legendX = this.#marginLeft + legendPadding;
+		} else if(pos[0] == 'right'){
+			legendX = this.#svgWidth - this.#marginRight - legendWidth - legendPadding;
+		} else {
+			legendX = this.#marginLeft + pos[0] * (plotAreaWidth - legendWidth);
+		}
+		if(pos[1] == 'top'){
+			legendY = this.#marginTop + legendPadding;
+		} else if(pos[1] == 'bottom'){
+			legendY = this.#svgHeight - this.#marginBottom - legendHeight - legendPadding;
+		} else {
+			legendY = this.#marginTop + pos[1] * (plotAreaHeight - legendHeight);
+		}
+
+		// foreignObject para scroll
+		const legend = document.createElementNS(this.#svgNS, 'foreignObject');
+		legend.setAttribute('x', legendX);
+		legend.setAttribute('y', legendY);
+		legend.setAttribute('width', legendWidth);
+		legend.setAttribute('height', legendHeight);
+		const xhtmlNS = 'http://www.w3.org/1999/xhtml';
+
+		// Wrapper principal pra legenda
+		const legendWrapper = document.createElementNS(xhtmlNS, 'div');
+		legendWrapper.setAttribute('xmlns', xhtmlNS);
+		legendWrapper.style.position = 'relative';
+		legendWrapper.style.height = '100%';
+		legendWrapper.style.width = '100%';
+
+		// Div de conteúdo rolável
+		const legendContentDiv = document.createElementNS(xhtmlNS, 'div');
+		legendContentDiv.setAttribute('xmlns', xhtmlNS);
+		legendContentDiv.style.height = '100%';
+		legendContentDiv.style.overflowY = 'auto';
+		legendContentDiv.style.background = `rgba(255, 255, 255, ${opacity})`;
+		legendContentDiv.style.border = '1px solid #ccc';
+		legendContentDiv.style.borderRadius = '4px';
+		legendContentDiv.style.padding = '5px';
+		legendContentDiv.style.boxSizing = 'border-box';
+		legendContentDiv.style.fontFamily = 'sans-serif';
+		legendContentDiv.style.fontSize = '14px';
+		legendContentDiv.innerHTML = legendHtmlContent;
+
+		// Botão de Toggle (foreign -> xmlns)
+		const legendToggleBtn = document.createElementNS(xhtmlNS, 'button');
+		legendToggleBtn.setAttribute('xmlns', xhtmlNS);
+		legendToggleBtn.className = 'legend-toggle-btn';
+
+		// Ícone SVG para o botão de toggle
+		const iconSvg = document.createElementNS(this.#svgNS, 'svg');
+		iconSvg.setAttribute('viewBox', '0 0 24 24');
+		iconSvg.classList.add('legend-toggle-icon');
+
+		const circlePath = document.createElementNS(this.#svgNS, 'circle');
+		circlePath.setAttribute('cx', '12');
+		circlePath.setAttribute('cy', '12');
+		circlePath.setAttribute('r', '6');
+		circlePath.classList.add('legend-toggle-circle', 'legend-toggle-circle--filled');
+
+		iconSvg.appendChild(circlePath);
+		legendToggleBtn.appendChild(iconSvg);
+
+		// Botão de Drag (foreign -> xmlns)
+		const legendDragHandle = document.createElementNS(xhtmlNS, 'button');
+		legendDragHandle.setAttribute('xmlns', xhtmlNS);
+		legendDragHandle.className = 'legend-drag-handle';
+
+		// Ícone SVG para o botão de drag
+		const dragIconSvg = document.createElementNS(this.#svgNS, 'svg');
+		dragIconSvg.setAttribute('viewBox', '0 0 15 16');
+		dragIconSvg.style.width = '14px';
+		dragIconSvg.style.height = '14px';
+
+		const dragIconPath = document.createElementNS(this.#svgNS, 'path');
+		dragIconPath.setAttribute('fill', '#333');
+		dragIconPath.setAttribute('d', 'M8 0L5 4h6L8 0z M8 16l3-4H5l3 4z M0 8l4-3v6L0 8z M16 8l-4 3V5l4 3z');
+		
+		dragIconSvg.appendChild(dragIconPath);
+		legendDragHandle.appendChild(dragIconSvg);
+
+		// Click pra ativar/desativar legenda
+		legendToggleBtn.addEventListener('click', () => {
+			const isHidden = legendContentDiv.style.display === 'none';
+			if (isHidden) {
+				legendContentDiv.style.display = 'block';
+				if(!fixed) legendDragHandle.style.display = 'block';
+				circlePath.classList.remove('legend-toggle-circle--outlined');
+				circlePath.classList.add('legend-toggle-circle--filled');
+			} else {
+				legendContentDiv.style.display = 'none';
+				if(!fixed) legendDragHandle.style.display = 'none';
+				circlePath.classList.remove('legend-toggle-circle--filled');
+				circlePath.classList.add('legend-toggle-circle--outlined');
+			}
+		});
+
+		legendWrapper.appendChild(legendToggleBtn);
+		legendWrapper.appendChild(legendDragHandle);
+		legendWrapper.appendChild(legendContentDiv);
+		legend.appendChild(legendWrapper);
+		this.#svg.appendChild(legend);
+
+		// Legenda pode sair mudando de lugar
+		if (!fixed) {
+			let isDragging = false;
+			let offset = { x: 0, y: 0 };
+
+			// Extrai coordenadas do SVG
+			const getSVGCoordinates = (e) => {
+				const CTM = this.#svg.getScreenCTM();
+				const svgPoint = this.#svg.createSVGPoint();
+				svgPoint.x = e.clientX;
+				svgPoint.y = e.clientY;
+				return svgPoint.matrixTransform(CTM.inverse());
+			};
+
+			legendToggleBtn.addEventListener('mousedown', (e) => {
+				e.stopPropagation();
+			});
+
+			legendContentDiv.addEventListener('mousedown', (e) => {
+				e.stopPropagation();
+			});
+
+			legendDragHandle.addEventListener('mousedown', (e) => {
+				e.stopPropagation();
+				isDragging = true;
+				legendWrapper.style.cursor = 'move';
+				
+				const svgCoords = getSVGCoordinates(e);
+				const currentX = parseFloat(legend.getAttribute('x'));
+				const currentY = parseFloat(legend.getAttribute('y'));
+				
+				offset.x = svgCoords.x - currentX;
+				offset.y = svgCoords.y - currentY;
+			});
+
+			this.#svg.addEventListener('mousemove', (e) => {
+				if (!isDragging) return;
+				
+				e.preventDefault();
+				
+				const svgCoords = getSVGCoordinates(e);
+				let newX = svgCoords.x - offset.x;
+				let newY = svgCoords.y - offset.y;
+
+				const minX = this.#marginLeft;
+				const maxX = this.#svgWidth - this.#marginRight - legendWidth;
+				const minY = this.#marginTop;
+				const maxY = this.#svgHeight - this.#marginBottom - legendHeight;
+
+				newX = Math.max(minX, Math.min(newX, maxX));
+				newY = Math.max(minY, Math.min(newY, maxY));
+				
+				legend.setAttribute('x', newX);
+				legend.setAttribute('y', newY);
+			});
+
+			const stopDragging = () => {
+				isDragging = false;
+				legendWrapper.style.cursor = 'default';
+			};
+
+			this.#svg.addEventListener('mouseup', stopDragging);
+			this.#svg.addEventListener('mouseleave', stopDragging);
+		} else {
+			legendDragHandle.style.display = 'none';
+		}
+	}
+
+	connectedCallback(){
+		// Obtém parâmetros do plot definidos no texto delta e os prepara para o formato adequado
+		this.#prepare_parameters()
+
+		// Cria a base do plot: Fundo, grade, marcadores, ...
+		this.#create_plot_base()
+
+		// Processa os objetos dentro do plot e os guarda no formato abaixo
+		// 'function' | função javascript - f | pontos - [[a,b],...] | contradominio - [a,b] | cor - str | label - str
+		// 'legend' | tupla de objetos | posição | fixed | size | opacity
+		let plotObjects = []
+		Array.from(this.#plotChildren).forEach((child, ic) => {
+			if(["DELTA-FUNCTION", "DELTA-DISTRIBUTION"].includes(child.tagName)){
+				plotObjects.push(this.#process_function(child,ic))
+			} else if(child.tagName == "DELTA-LEGEND"){
+				plotObjects.push(this.#process_legend(child));
+			}
+		});
+
+		// Desenha os objetos processados no SVG
+		this.#prepare_plotting_area()
+		for(let objc of plotObjects){
+			if(objc[0] == 'function'){
+				this.#draw_function(objc)
+			} else if(objc[0] == 'legend'){
+				this.#draw_legend(objc, plotObjects)
+			}
+		}
+
+		// Anexa o plot no documento
 		this.innerHTML = ''
-		this.appendChild(plotContent)
+		this.appendChild(this.#plotContent)
 	}
 }
 
