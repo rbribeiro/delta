@@ -79,6 +79,11 @@ plot "This is an example plot", x "0.7,1.4" y "-1.4,1.4":
 	function from "0.8,1.3" to "-1.25,0":
         (sin(30*x)/tan(30*x))/3 - 1
 
+plot "Distributions", y "0,1" x "-2,2":
+    distribution pdf "Normal" parameters "0,0.5":
+    distribution pdf "Uniform" parameters "-1,1":
+    distribution pdf "Exponential" parameters "1":
+
 plot "Function Family", x "0,10" y "0,20":
     function points "1000" color "#000":
         log(x)
