@@ -91,7 +91,6 @@ class DeltaStep extends HTMLElement {
 }
 customElements.define('delta-step', DeltaStep)
 
-
 console.log('Base elements loaded (theorem, note)')
 
 class DeltaNote extends HTMLElement {
@@ -107,8 +106,6 @@ class DeltaRemark extends HTMLElement {
     }
 }
 customElements.define('delta-remark', DeltaRemark)
-
-
 
 class DeltaQuote extends HTMLElement {
   constructor() {
@@ -164,5 +161,62 @@ class DeltaQuote extends HTMLElement {
 
 }
 
-customElements.define("delta-quote",DeltaQuote)
+customElements.define("delta-quote", DeltaQuote)
 
+class DeltaCase extends HTMLElement {
+    constructor() {
+        super();
+    }
+
+    connectedCallback() {
+        const title = this.getAttribute('data-title') || '';
+        const number = this.getAttribute('data-number') || '';
+        const level = this.getAttribute('data-level');
+        const originalContent = this.innerHTML;
+        this.innerHTML = "";
+
+        const wrapper = document.createElement("div");
+        wrapper.classList.add("case-wrapper");
+
+        const trigger = document.createElement("button");
+        trigger.classList.add("case-trigger");
+
+        const caseTitle = document.createElement("span");
+        caseTitle.classList.add("case-title");
+        caseTitle.textContent = number ? `Case ${number}.` : "Case.";
+
+        const caseSummary = document.createElement("span");
+        caseSummary.classList.add("case-summary");
+        caseSummary.textContent = title;
+
+        if (level) {
+            const levelTag = document.createElement("span");
+            const leveltextTag = document.createElement("span");
+            leveltextTag.textContent = level;
+            leveltextTag.classList.add("level-text");
+            levelTag.append(leveltextTag);
+            levelTag.classList.add("level-tag");
+            levelTag.classList.add(`level-${level}`);
+            caseSummary.append(levelTag);
+            caseSummary.classList.add("with-level");
+        }
+
+        trigger.append(caseTitle, caseSummary);
+
+        const caseContent = document.createElement("div");
+        caseContent.classList.add("case-content");
+
+        const caseContentInner = document.createElement("div");
+        caseContentInner.classList.add("case-content-inner");
+        caseContentInner.innerHTML = originalContent;
+
+        caseContent.append(caseContentInner);
+
+        wrapper.append(trigger, caseContent);
+        this.append(wrapper);
+
+        trigger.addEventListener("click", () => wrapper.classList.toggle("open"));
+    }
+}
+
+customElements.define('delta-case', DeltaCase);
