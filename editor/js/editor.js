@@ -62,55 +62,93 @@ plot "Teorema do Valor Intermediário", x "0,3" y "-2,8":
     legend position "top left" objects "1" size "0.22,0.12":
 
 Esta visualização mostra a função f(x) = x³ - x - 1 e a linha y = 0, demonstrando graficamente a existência de uma raiz.`
+
+
+
+
+
 ,
-`plot "Piecewise Function", x "0,10" y "0,20":
-    function points "100000":
-        e^-(x-3)
-        gcd(4.2*(x+0.15),2) - 1.5(x-3)*(x-5)
-        -4*(7-x)^2 + 17
-        sin(x*pi*4)+17
-        x <= 3 ? y : x <= 5 ? y2 : x <= 7 ? y3 : y4
 
-plot "This is an example plot", x "0.7,1.4" y "-1.4,1.4":
-    function:
-        1 + sin(18*x)/3
-	function color "#48ce94" points "30000":
-        x/3*sin(1/log(x))
-	function from "0.8,1.3" to "-1.25,0":
-        (sin(30*x)/tan(30*x))/3 - 1
 
-plot "Distributions", y "0,1" x "-2,2":
-    distribution pdf "Normal" parameters "0,0.5":
-    distribution pdf "Uniform" parameters "-1,1":
-    distribution pdf "Exponential" parameters "1":
 
-plot "Function Family", x "0,10" y "0,20":
-    function points "1000" color "#000":
-        log(x)
-    function points "1000" color "#333":
-        x
-    function points "1000" color "#666":
-        x^1.5
-    function points "1000" color "#999":
-        x^2
-    function points "1000" color "#BBB":
-        x^3
-    function points "1000" color "#DDD":
-        x^4
-    function points "5000" color "#F00":
-        x^5
-    function points "5000" color "#0F0":
-        x^6
-    function points "5000" color "#00F":
-        x^7
-    function points "5000" color "#0FF":
-        x^8
-    function points "7500" color "#F0F":
-        x^9
-    function points "7500" color "#0FF":
-        x^10
-    legend:`
+
+
+`plot "Distribuição Normal", x "-3.2,3.2" y "0,0.8":
+    distribution "Padrão", pdf "Normal":
+    distribution "Média 1, Std 0.6", pdf "Normal" parameters "1,0.6":
+    distribution "Média -3, Std 0.3", pdf "Normal" parameters "-3,0.3":
+    distribution "Média -1.2, Std 1.6", pdf "Normal" parameters "-1.2,1.6":
+    legend position "top right":
+
+plot "Distribuição Uniforme", x "-1,6" y "0,1.2":
+    distribution "U(0, 1)", pdf "Uniform" parameters "0,1":
+    distribution "U(1, 4)", pdf "Uniform" parameters "1,4":
+    distribution "U(0, 5)", pdf "Uniform" parameters "0,5":
+    legend position "top right":
+
+plot "Distribuição Exponencial", x "0,5" y "0,3.2":
+    distribution "λ=0.5", pdf "Exponential" parameters "0.5":
+    distribution "λ=1.0", pdf "Exponential" parameters "1.0":
+    distribution "λ=3.0", pdf "Exponential" parameters "3.0":
+    legend position "top right":
+
+plot "Distribuição Gama", x "0,15" y "0,0.6":
+    distribution "α=2, β=0.5", pdf "Gamma" parameters "2,0.5":
+    distribution "α=5, β=1", pdf "Gamma" parameters "5,1":
+    distribution "α=9, β=2", pdf "Gamma" parameters "9,2":
+    legend position "top right":
+
+plot "Distribuição Beta", x "0,1" y "0,6":
+    distribution "α=2, β=2", pdf "Beta" parameters "2,2":
+    distribution "α=0.5, β=0.5", pdf "Beta" parameters "0.5,0.5":
+    distribution "α=2, β=5", pdf "Beta" parameters "2,5":
+    distribution "α=5, β=2", pdf "Beta" parameters "5,2":
+    legend position "top right":
+
+plot "Distribuição Qui-Quadrado", x "0,15" y "0,0.5":
+    distribution "k=2", pdf "Chi_Squared" parameters "2":
+    distribution "k=4", pdf "Chi_Squared" parameters "4":
+    distribution "k=6", pdf "Chi_Squared" parameters "6":
+    legend position "top right":
+
+plot "Uniforme Discreta", x "0,12" y "0,0.3":
+    distribution "U(1, 6)", pdf "Discrete_Uniform" parameters "1,6":
+    distribution "U(1, 10)", pdf "Discrete_Uniform" parameters "1,10":
+    legend position "top right":
+
+plot "Distribuição Bernoulli", x "-0.5,2.5" y "0,1.1":
+    distribution "p=0.3", pdf "Bernoulli" parameters "0.3":
+    distribution "p=0.8", pdf "Bernoulli" parameters "0.8":
+    distribution "p=0.55", pdf "Bernoulli" parameters "0.55":
+    legend position "top right":
+
+plot "Distribuição Binomial", x "0,20" y "0,0.3":
+    distribution "n=20, p=0.5", pdf "Binomial" parameters "20,0.5" points "1000":
+    distribution "n=20, p=0.2", pdf "Binomial" parameters "20,0.2" points "1000":
+    distribution "n=20, p=0.8", pdf "Binomial" parameters "20,0.8" points "1000":
+    legend position "top right":
+
+plot "Distribuição Poisson", x "0,20" y "0,0.4":
+    distribution "λ=4", pdf "Poisson" parameters "4" points "1000":
+    distribution "λ=10", pdf "Poisson" parameters "10" points "1000":
+    legend position "top right":
+
+plot "Distribuição Geométrica", x "1,12" y "0,0.6":
+    distribution "p=0.2", pdf "Geometric" parameters "0.2":
+    distribution "p=0.5", pdf "Geometric" parameters "0.5":
+    distribution "p=0.8", pdf "Geometric" parameters "0.8":
+    legend position "top right":`
+
+
+
+
+
 ,
+
+
+
+
+
 `# Continuous Functions
 
 We now come to a significant milestone in our progress toward a rigorous theory of real-valued functions—a proper definition of the seminal concept of continuity that avoids any intuitive appeals to “unbroken curves” or functions without “jumps” or “holes.”

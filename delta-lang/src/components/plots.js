@@ -37,6 +37,21 @@ const Math_lcm = (...x) => {
 }
 
 /*
+	Calcula o log do valor da distribuição Gama em algum ponto x usando aproximação de Lanczos
+*/
+const _aux_log_gamma = (z) => {
+    const p = [676.5203681218851, -1259.1392167224028, 771.3234287776531,
+               -176.61502916214059, 12.507343278686905, -0.13857109526572012,
+               9.9843695780195716e-6, 1.5056327351493116e-7];
+    if (z < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * z)) - _aux_log_gamma(1 - z);
+    z -= 1;
+    let x = 0.9999999999998099;
+    for (let i = 0; i < p.length; i++) x += p[i] / (z + i + 1);
+    let t = z + p.length - 0.5;
+    return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x);
+};
+
+/*
 	Função de densidade de probabilidade - Distribuição Normal
 */
 const Math_normal = (x, mu, sigma) => {
@@ -51,7 +66,7 @@ const Math_normal = (x, mu, sigma) => {
 	Função de densidade de probabilidade - Distribuição Uniforme
 */
 const Math_uniform = (x, a, b) => {
-    if (a >= b) return NaN;
+    if (a >= b) [a,b] = [b,a];
     if (x < a || x > b) return 0;
     return 1 / (b - a);
 }
@@ -62,6 +77,86 @@ const Math_uniform = (x, a, b) => {
 const Math_exponential = (x, lambda) => {
     if (lambda <= 0 || x < 0) return 0;
     return lambda * Math.exp(-lambda * x);
+}
+
+/*
+	Função de densidade de probabilidade - Distribuição Gama
+*/
+const Math_gamma = (x, alpha, beta) => {
+    if (x < 0 || alpha <= 0 || beta <= 0) return 0;
+    const logPDF = alpha * Math.log(beta) + (alpha - 1) * Math.log(x) - (beta * x) - _aux_log_gamma(alpha);
+    return Math.exp(logPDF);
+}
+
+/*
+	Função de densidade de probabilidade - Distribuição Beta
+*/
+const Math_beta = (x, alpha, beta) => {
+    if (x < 0 || x > 1 || alpha <= 0 || beta <= 0) return 0;
+    const logB = _aux_log_gamma(alpha) + _aux_log_gamma(beta) - _aux_log_gamma(alpha + beta);
+    const logPDF = (alpha - 1) * Math.log(x) + (beta - 1) * Math.log(1 - x) - logB;
+    return Math.exp(logPDF);
+}
+
+/*
+	Função de densidade de probabilidade - Distribuição Qui-Quadrado
+*/
+const Math_chi_squared = (x, k) => {
+    if (x < 0 || k <= 0) return 0;
+    return Math_gamma(x, k / 2, 0.5);
+}
+
+/*
+	Função de densidade de probabilidade - Distribuição Uniforme Discreta
+*/
+const Math_discrete_uniform = (x, a, b) => {
+	a = parseInt(a); b = parseInt(b);
+    if (a >= b) [a,b] = [b,a];
+    if (x < a || x > b) return 0;
+    return 1 / (b - a + 1);
+}
+
+/*
+	Função de densidade de probabilidade - Distribuição Bernoulli
+*/
+const Math_bernoulli = (x, p) => {
+	x = parseInt(x)
+    if (p < 0 || p > 1) return NaN;
+    if (x == 1) return p;
+    if (x == 0) return 1 - p;
+    return 0;
+}
+
+/*
+	Função de densidade de probabilidade - Distribuição Binomial
+*/
+const Math_binomial = (k, n, p) => {
+	k = parseInt(k)
+    if (k < 0 || k > n || p < 0 || p > 1) return 0;
+    if (p === 0) return k === 0 ? 1 : 0;
+    if (p === 1) return k === n ? 1 : 0;
+    const logNcr = _aux_log_gamma(n+1) - (_aux_log_gamma(k+1) + _aux_log_gamma(n - k + 1));
+    const logPDF = logNcr + k * Math.log(p) + (n - k) * Math.log(1 - p);
+    return Math.exp(logPDF);
+}
+
+/*
+	Função de densidade de probabilidade - Distribuição Poisson
+*/
+const Math_poisson = (k, lambda) => {
+	k = parseInt(k)
+    if (k < 0 || lambda <= 0) return 0;
+    const logPDF = k * Math.log(lambda) - lambda - _aux_log_gamma(k+1);
+    return Math.exp(logPDF);
+}
+
+/*
+	Função de densidade de probabilidade - Distribuição Geométrica
+*/
+const Math_geometric = (k, p) => {
+	k = parseInt(k)
+    if (k < 1 || p <= 0 || p > 1) return 0;
+    return Math.pow(1 - p, k - 1) * p;
 }
 
 // ----- Funções Auxiliares -----
@@ -175,7 +270,9 @@ const content_mathFunctions = [
 
 // Funções criadas para serem chamadas com Math_X
 const content_artificialFunctions = [
-	'gcd', 'lcm'
+	'gcd', 'lcm',
+	'normal', 'uniform', 'exponential', 'gamma', 'beta', 'chi_squared',
+	'discrete_uniform', 'bernoulli', 'binomial', 'poisson', 'geometric'
 ]
 
 // Constantes
@@ -495,6 +592,46 @@ class DeltaPlot extends HTMLElement {
 					params = parse_tuple(params, 2) || [0,1];
 					parsedFunction = (xxx) => Math_uniform(xxx,params[0],params[1]);
 					label = label || "Dist. Uniforme";
+					break;
+				case "gamma":
+					params = parse_tuple(funcObj.getAttribute("data-parameters"), 2) || [1, 1];
+					parsedFunction = (xxx) => Math_gamma(xxx, params[0], params[1]);
+					label = label || "Dist. Gama";
+					break;
+				case "beta":
+					params = parse_tuple(funcObj.getAttribute("data-parameters"), 2) || [2, 2];
+					parsedFunction = (xxx) => Math_beta(xxx, params[0], params[1]);
+					label = label || "Dist. Beta";
+					break;
+				case "chi_squared":
+					params = parse_tuple(funcObj.getAttribute("data-parameters"), 1) || [1];
+					parsedFunction = (xxx) => Math_chi_squared(xxx, params[0]);
+					label = label || "Dist. Qui-Quadrado";
+					break;
+				case "discrete_uniform":
+					params = parse_tuple(funcObj.getAttribute("data-parameters"), 2) || [1, 6];
+					parsedFunction = (xxx) => Math_discrete_uniform(xxx, params[0], params[1]);
+					label = label || "Dist. Uniforme Discreta";
+					break;
+				case "bernoulli":
+					params = parse_tuple(funcObj.getAttribute("data-parameters"), 1) || [0.5];
+					parsedFunction = (xxx) => Math_bernoulli(xxx, params[0]);
+					label = label || "Dist. Bernoulli";
+					break;
+				case "binomial":
+					params = parse_tuple(funcObj.getAttribute("data-parameters"), 2) || [10, 0.5];
+					parsedFunction = (xxx) => Math_binomial(xxx, params[0], params[1]);
+					label = label || "Dist. Binomial";
+					break;
+				case "poisson":
+					params = parse_tuple(funcObj.getAttribute("data-parameters"), 1) || [1];
+					parsedFunction = (xxx) => Math_poisson(xxx, params[0]);
+					label = label || "Dist. Poisson";
+					break;
+				case "geometric":
+					params = parse_tuple(funcObj.getAttribute("data-parameters"), 1) || [0.5];
+					parsedFunction = (xxx) => Math_geometric(xxx, params[0]);
+					label = label || "Dist. Geométrica";
 					break;
 			}
 		}
