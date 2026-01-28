@@ -321,7 +321,7 @@ class DeltaPlot extends HTMLElement {
 
 	#xTicks; #yTicks; #xCoords; #yCoords; #xLabel; #yLabel;
 	#availableColorsDict; #availableColorsList; #availableColorsKeys;
-	#gridColor; #axisColor;
+	#gridColor; #axisColor; #textColor;
 
 	constructor(){
 		super()
@@ -349,6 +349,8 @@ class DeltaPlot extends HTMLElement {
 
 		this.#xLabel = this.getAttribute("data-x-label") || "X"
 		this.#yLabel = this.getAttribute("data-y-label") || "Y"
+		let textColorPar = this.getAttribute("data-text-color") || "black"
+		this.#textColor = this.#identify_color(textColorPar,this.#availableColorsKeys.indexOf('black'));
 
 		let grid = this.getAttribute("data-grid") || "true"
 		let axis = this.getAttribute("data-axis") || "true"
@@ -555,7 +557,7 @@ class DeltaPlot extends HTMLElement {
 		textX.setAttribute('text-anchor', 'middle');
 		textX.setAttribute('font-family', 'sans-serif');
 		textX.setAttribute('font-size', '22');
-		textX.setAttribute('fill', 'black');
+		textX.setAttribute('fill', this.#textColor);
 		textX.textContent = this.#xLabel;
 		this.#svg.appendChild(textX);
 
@@ -565,7 +567,7 @@ class DeltaPlot extends HTMLElement {
 		textY.setAttribute('text-anchor', 'middle');
 		textY.setAttribute('font-family', 'sans-serif');
 		textY.setAttribute('font-size', '22');
-		textY.setAttribute('fill', 'black');
+		textY.setAttribute('fill', this.#textColor);
 		textY.setAttribute('transform', `rotate(-90 ${tyX} ${tyY})`);
 		textY.textContent = this.#yLabel;
 		this.#svg.appendChild(textY);
@@ -576,7 +578,7 @@ class DeltaPlot extends HTMLElement {
 		titleLabel.setAttribute('text-anchor', 'middle');
 		titleLabel.setAttribute('font-family', 'sans-serif');
 		titleLabel.setAttribute('font-size', '22');
-		titleLabel.setAttribute('fill', 'black');
+		titleLabel.setAttribute('fill', this.#textColor);
 		titleLabel.textContent = this.#title;
 		this.#svg.appendChild(titleLabel);
 
@@ -710,6 +712,7 @@ class DeltaPlot extends HTMLElement {
 		const isFixed = legendObj.getAttribute("data-fixed") || null;
 		const legendSize = legendObj.getAttribute("data-size") || null;
 		const legendOpacity = legendObj.getAttribute("data-opacity") || null;
+		const textColorPar = legendObj.getAttribute("data-text-color") || "black"
 
 		let obj = parse_tuple(legendObjects,ANY) || ['all']
 		let posTemp = parse_tuple(legendPos,ANY,false) || ['top right']
@@ -738,7 +741,9 @@ class DeltaPlot extends HTMLElement {
 		let opacityTemp = parseFloat(legendOpacity);
 		let opacity = clip(isNaN(opacityTemp) ? 0.9 : opacityTemp, 0, 1);
 
-		return ['legend',obj,pos,fixed,size,opacity];
+		let textColor = this.#identify_color(textColorPar,this.#availableColorsKeys.indexOf('black'));
+
+		return ['legend',obj,pos,fixed,size,opacity,textColor];
 	}
 
 	#draw_function(plotObj){
@@ -784,7 +789,7 @@ class DeltaPlot extends HTMLElement {
 	}
 
 	#draw_legend(plotObj, plotObjects){
-		const [__, obj, pos, fixed, size, opacity] = plotObj;
+		const [__, obj, pos, fixed, size, opacity, txtColor] = plotObj;
 		let legendHtmlContent = '';
 		let itemsToDisplay = new Set();
 
@@ -808,7 +813,7 @@ class DeltaPlot extends HTMLElement {
 			const itemLabel = item[5];
 			legendHtmlContent += `<div style="margin: 3px 0; display: flex; align-items: center;">
 				<span style="width: 20px; height: 2px; background-color: ${itemColor}; margin-right: 5px;"></span>
-				<span style="white-space: nowrap;">${itemLabel}</span>
+				<span style="white-space: nowrap; color: ${txtColor};">${itemLabel}</span>
 			</div>`;
 		}
 		if (legendHtmlContent === '') legendHtmlContent = '<div style="color: gray; font-style: italic;">Sem dados</div>';
@@ -1001,7 +1006,7 @@ class DeltaPlot extends HTMLElement {
 
 		// Processa os objetos dentro do plot e os guarda no formato abaixo
 		// 'function' | função javascript - f | pontos - [[a,b],...] | contradominio - [a,b] | cor - str | label - str
-		// 'legend' | tupla de objetos | posição | fixed | size | opacity
+		// 'legend' | tupla de objetos - [a,...,z] | posição - [a,b] | fixed - bool | tamanho - [a,b] | opacidade - k | cor de texto - str
 		let plotObjects = []
 		Array.from(this.#plotChildren).forEach((child, ic) => {
 			if(["DELTA-FUNCTION", "DELTA-DISTRIBUTION"].includes(child.tagName)){
@@ -1010,6 +1015,7 @@ class DeltaPlot extends HTMLElement {
 				plotObjects.push(this.#process_legend(child));
 			}
 		});
+		console.log(plotObjects);
 
 		// Desenha os objetos processados no SVG
 		this.#prepare_plotting_area()
