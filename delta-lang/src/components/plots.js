@@ -320,12 +320,26 @@ class DeltaPlot extends HTMLElement {
 	#marginX; #marginY; #svgWidth; #svgHeight; #svg; #svgNS;
 
 	#xTicks; #yTicks; #xCoords; #yCoords; #xLabel; #yLabel;
+	#availableColorsDict; #availableColorsList; #availableColorsKeys;
+	#gridColor; #axisColor;
 
 	constructor(){
 		super()
 	}
 
 	#prepare_parameters(){
+
+		this.#availableColorsDict = {
+			'red': '#E41A1C', 'blue': '#377EB8', 'green': '#4DAF4A',
+			'purple': '#984EA3', 'orange': '#FF7F00', 'yellow': '#FFFF33',
+			'magenta': '#FF00FF', 'cyan': '#00FFFF', 'brown': '#A65628',
+			'pink': '#F781BF', 'gray': '#999999', 'flame': '#E25822',
+			'black': '#000000', 'lime': '#00FF00', 'navy': '#000080',
+			'maroon': '#800000', 'teal': '#008080', 'olive': '#808000'
+		};
+		this.#availableColorsKeys = Object.values(this.#availableColorsDict);
+		this.#availableColorsList = Object.keys(this.#availableColorsDict);
+
 		this.#title = this.getAttribute("data-title") || null;
 
     	let xStr = this.getAttribute("data-x") || null
@@ -340,6 +354,11 @@ class DeltaPlot extends HTMLElement {
 		let axis = this.getAttribute("data-axis") || "true"
 		this.#showGrid = (grid.toLowerCase() === "true")
 		this.#showAxis = (axis.toLowerCase() === "true")
+
+		let gridColorPar = this.getAttribute("data-grid-color") || "gray"
+		let axisColorPar = this.getAttribute("data-axis-color") || "black"
+		this.#gridColor = this.#identify_color(gridColorPar,this.#availableColorsKeys.indexOf('gray'));
+		this.#axisColor = this.#identify_color(axisColorPar,this.#availableColorsKeys.indexOf('black'));
 
 		let size = this.getAttribute("data-size") || null
 		let sizeTuple = parse_tuple(size,2) || [0.9, 0.5]
@@ -360,6 +379,21 @@ class DeltaPlot extends HTMLElement {
 		this.#marginY = (this.#marginTop + this.#marginBottom);
 		this.#svgHeight = 400
 		this.#svgWidth = parseInt(400 * (this.#plotSize[0]/this.#plotSize[1]));
+	}
+
+	#identify_color(colorString, indx = 0){
+		const hexRegex = /^#([0-9A-F]{3}){1,2}$/i;
+		let parsedColor;
+		if (hexRegex.test(colorString)) {
+			parsedColor = colorString;
+		} else {
+			if (colorString && (colorString.toLowerCase() in this.#availableColorsDict)) {
+				parsedColor = this.#availableColorsDict[colorString.toLowerCase()];
+			} else {
+				parsedColor = this.#availableColorsList[indx % this.#availableColorsList.length];
+			}
+		}
+		return parsedColor;
 	}
 
 	#prepare_function_string(line){
@@ -428,7 +462,7 @@ class DeltaPlot extends HTMLElement {
 		rect.setAttribute('height',`${this.#svgHeight-this.#marginY}`);
 		rect.setAttribute('width', `${this.#svgWidth-this.#marginX}`);
 		rect.setAttribute('fill', 'none');
-		rect.setAttribute('stroke', 'black');
+		rect.setAttribute('stroke', this.#axisColor);
 		rect.setAttribute('stroke-width', '1');
 		this.#svg.appendChild(rect)
 
@@ -448,7 +482,7 @@ class DeltaPlot extends HTMLElement {
 				line.setAttribute('y1', `${this.#svgHeight - this.#marginBottom - barSpace}`);
 				line.setAttribute('x2', `${this.#xCoords[xc]}`);
 				line.setAttribute('y2', `${this.#svgHeight - this.#marginBottom + barSpace}`);
-				line.setAttribute('stroke', 'black');
+				line.setAttribute('stroke', this.#axisColor);
 				line.setAttribute('stroke-width', '2');
 				this.#svg.appendChild(line)
 
@@ -458,7 +492,7 @@ class DeltaPlot extends HTMLElement {
 				num.setAttribute('font-size', '20');
 				num.setAttribute('text-anchor', 'middle');
 				num.setAttribute('font-family', 'sans-serif');
-				num.setAttribute('fill', 'black');
+				num.setAttribute('fill', this.#axisColor);
 				num.textContent = `${format_number(this.#xTicks[xc],1 - (this.#xTicks.length >= 8*this.#plotSize[0]))}`
 				this.#svg.appendChild(num)
 			}
@@ -468,7 +502,7 @@ class DeltaPlot extends HTMLElement {
 				line.setAttribute('x1', `${this.#marginLeft - barSpace}`);
 				line.setAttribute('y2', `${this.#yCoords[yc]}`);
 				line.setAttribute('x2', `${this.#marginLeft + barSpace}`);
-				line.setAttribute('stroke', 'black');
+				line.setAttribute('stroke', this.#axisColor);
 				line.setAttribute('stroke-width', '2');
 				this.#svg.appendChild(line)
 
@@ -478,7 +512,7 @@ class DeltaPlot extends HTMLElement {
 				num.setAttribute('font-size', '20');
 				num.setAttribute('text-anchor', 'middle');
 				num.setAttribute('font-family', 'sans-serif');
-				num.setAttribute('fill', 'black');
+				num.setAttribute('fill', this.#axisColor);
 				num.textContent = `${format_number(this.#yTicks[yc],1 - (this.#yTicks.length >= 8*this.#plotSize[1]))}`;
 				let rotationAng = num.textContent.includes('-') && num.textContent.includes('e') ? 70 : 90
 				num.setAttribute('transform', `rotate(-${rotationAng} ${this.#marginLeft - (textSpace - barSpace)} ${this.#yCoords[yc]})`);
@@ -494,7 +528,7 @@ class DeltaPlot extends HTMLElement {
 				line.setAttribute('y1', `${this.#marginTop}`);
 				line.setAttribute('x2', `${this.#xCoords[xc]}`);
 				line.setAttribute('y2', `${this.#svgHeight - this.#marginBottom}`);
-				line.setAttribute('stroke', 'gray');
+				line.setAttribute('stroke', this.#gridColor);
 				line.setAttribute('stroke-width', '1');
 				this.#svg.appendChild(line)
 			}
@@ -504,7 +538,7 @@ class DeltaPlot extends HTMLElement {
 				line.setAttribute('x1', `${this.#marginLeft}`);
 				line.setAttribute('y2', `${this.#yCoords[yc]}`);
 				line.setAttribute('x2', `${this.#svgWidth - this.#marginRight}`);
-				line.setAttribute('stroke', 'gray');
+				line.setAttribute('stroke', this.#gridColor);
 				line.setAttribute('stroke-width', '1');
 				this.#svg.appendChild(line)
 			}
@@ -563,28 +597,9 @@ class DeltaPlot extends HTMLElement {
 		const pts = parseInt(qtPts) ? Math.min(Math.max(parseInt(qtPts),2),80000) : 500;
 		let funcColor, parsedFunction = null;
 
-		// Cor
 		const chosenColor = funcObj.getAttribute("data-color") || null;
-		const hexRegex = /^#([0-9A-F]{3}){1,2}$/i;
-		if (hexRegex.test(chosenColor)) {
-			funcColor = chosenColor;
-		} else {
-			const availableFuncColors = {
-				'red': '#E41A1C', 'blue': '#377EB8', 'green': '#4DAF4A',
-				'purple': '#984EA3', 'orange': '#FF7F00', 'yellow': '#FFFF33',
-				'magenta': '#FF00FF', 'cyan': '#00FFFF', 'brown': '#A65628',
-				'pink': '#F781BF', 'gray': '#999999', 'flame': '#E25822',
-				'black': '#000000', 'lime': '#00FF00', 'navy': '#000080',
-				'maroon': '#800000', 'teal': '#008080', 'olive': '#808000'
-			};
-			const defaultColors = Object.values(availableFuncColors);
+		funcColor = this.#identify_color(chosenColor,i);
 
-			if (chosenColor && (chosenColor.toLowerCase() in availableFuncColors)) {
-				funcColor = availableFuncColors[chosenColor.toLowerCase()];
-			} else {
-				funcColor = defaultColors[i % defaultColors.length];
-			}
-		}
 		if(funcObj.tagName == "DELTA-FUNCTION"){
 			if(label === null){
 				label = `Function ${i + 1}`
