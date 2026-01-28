@@ -175,12 +175,14 @@ function stress_test(){
         ['2^x*x^2+2^2*x^x',                                 5,                              13300],
         ['abs(x)',                                          -9,                             9],
         ['x^2+7*x-4*abs(x)',                                -3,                             -24],
-        ['sqrt(abs(x))',                                    -7,                             Math.sqrt(Math.abs(-7))],
+        ['sqrt(abs(x))',                                    -7,                             Math.sqrt(7)],
         ['log2(1024)',                                      0,                              10],
         ['log2(2^x)^2-2*x+1',                               11,                             100],
         ['log(e^x)^log10(10^x)*3',                          2,                              12],
         ['logsqrt(e^2^x)',                                  3,                              4],
-        ['signlog(2^-x) + signlog(2^-(-x))',                100,                            0],
+        ['signlog(2^-x) + signlog(2^-(-x))',                60,                             0],
+        ['-3+-3-x+-x',                                      12,                             -30],
+        ['1.135^-3.5531*x',                                 2,                              2*1.135**(-3.5531)],
     ]
 
     let stringy = ''
@@ -195,9 +197,10 @@ function stress_test(){
         } 
         let f = r[1]
         let fx = f(test[i][1])
-        if(fx == test[i][2]){
+        if(fx === test[i][2]){
             stringy += '0'
         } else {
+            console.log(`${fx} is wrong, should be ${test[i][2]}`)
             stringy += '1'
         }
     }

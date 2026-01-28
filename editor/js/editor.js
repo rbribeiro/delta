@@ -137,6 +137,18 @@ plot "Distribuição Geométrica", x "1,12" y "0,0.6":
     distribution "p=0.2", pdf "Geometric" parameters "0.2":
     distribution "p=0.5", pdf "Geometric" parameters "0.5":
     distribution "p=0.8", pdf "Geometric" parameters "0.8":
+    legend position "top right":
+
+plot "Distribuição F", x "0,5" y "0,1.2":
+    distribution "d1=1, d2=1", pdf "f" parameters "1,1":
+    distribution "d1=10, d2=1", pdf "f" parameters "10,1":
+    distribution "d1=5, d2=5", pdf "f" parameters "5,5":
+    distribution "d1=100, d2=100", pdf "f" parameters "100,100":
+    legend position "top right":
+
+plot "Distribuição Bimodal", x "-5,6" y "0,0.6":
+    distribution "Simétrica", pdf "bimodal" parameters "0.5,-2,0.8,2,0.8":
+    distribution "Assimétrica", pdf "bimodal" parameters "0.7,-1,0.5,3,1":
     legend position "top right":`
 
 

@@ -107,6 +107,29 @@ const Math_chi_squared = (x, k) => {
 }
 
 /*
+	Função de densidade de probabilidade - Distribuição Bimodal
+*/
+
+const Math_bimodal = (x, p, mu1, sigma1, mu2, sigma2) => {
+	return p * Math_normal(x,mu1,sigma1) + (1-p) * Math_normal(x,mu2,sigma2);
+}
+
+/*
+	Função de densidade de probabilidade - Distribuição F
+*/
+
+const Math_f = (x, d1, d2) => {
+    if (x <= 0 || d1 <= 0 || d2 <= 0) return 0;
+    const logB = _aux_log_gamma(d1 / 2) + _aux_log_gamma(d2 / 2) - _aux_log_gamma((d1 + d2) / 2);
+    const logPDF = (d1 / 2) * Math.log(d1) 
+                 + (d2 / 2) * Math.log(d2) 
+                 + (d1 / 2 - 1) * Math.log(x) 
+                 - ((d1 + d2) / 2) * Math.log(d1 * x + d2) 
+                 - logB;
+    return Math.exp(logPDF);
+}
+
+/*
 	Função de densidade de probabilidade - Distribuição Uniforme Discreta
 */
 const Math_discrete_uniform = (x, a, b) => {
@@ -271,7 +294,7 @@ const content_mathFunctions = [
 // Funções criadas para serem chamadas com Math_X
 const content_artificialFunctions = [
 	'gcd', 'lcm',
-	'normal', 'uniform', 'exponential', 'gamma', 'beta', 'chi_squared',
+	'normal', 'uniform', 'exponential', 'gamma', 'beta', 'chi_squared', 'bimodal', 'f',
 	'discrete_uniform', 'bernoulli', 'binomial', 'poisson', 'geometric'
 ]
 
@@ -607,6 +630,17 @@ class DeltaPlot extends HTMLElement {
 					params = parse_tuple(funcObj.getAttribute("data-parameters"), 1) || [1];
 					parsedFunction = (xxx) => Math_chi_squared(xxx, params[0]);
 					label = label || "Dist. Qui-Quadrado";
+					break;
+				case "bimodal":
+					params = parse_tuple(funcObj.getAttribute("data-parameters"), 5) || [0.5, -1, 1, 1, 1];
+					parsedFunction = (xxx) => Math_bimodal(xxx, params[0], params[1], params[2], params[3], params[4]);
+					label = label || "Dist. Bimodal";
+					console.log("own")
+					break;
+				case "f":
+					params = parse_tuple(funcObj.getAttribute("data-parameters"), 2) || [5, 2];
+					parsedFunction = (xxx) => Math_f(xxx, params[0], params[1]);
+					label = label || "Dist. F";
 					break;
 				case "discrete_uniform":
 					params = parse_tuple(funcObj.getAttribute("data-parameters"), 2) || [1, 6];
