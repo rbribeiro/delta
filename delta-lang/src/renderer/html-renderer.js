@@ -66,15 +66,14 @@ class DeltaRenderer {
      * Numbering algorithm
      * Handles numbered/unnumbered sections and inherited numbering contexts
      */
-    calculateNumbering(node, prefix = '0', inheritedCounters = null) {
+    calculateNumbering(node, sectionPrefix = '0', mathPrefix = '0', inheritedCounters = null) {
         // If this node is a leaf (text) or has no children, stop.
         if (!node.children) return;
 
-        // We prepare to count the children of THIS node.
         let sectionCounter = 0;
         
-        // If we received counters from a parent (Section*), use them. Otherwise (eg. we entered a new valid Section), start with {}.
-        let mathCounters = inheritedCounters || {}; 
+        // If inheritedCounters is passed, we are sharing the same object (reference)
+        let mathCounters = inheritedCounters || {};
 
         // Helper to get/increment math counter
         const getMathNumber = (type, isUnnumbered) => {
@@ -83,9 +82,8 @@ class DeltaRenderer {
             if (!mathCounters[type]) mathCounters[type] = 0;
             mathCounters[type]++;
             
-            // return eg. "1.2.1" (Prefix (section). Counter (block))
-            // if prefix is "0" (no section yet), result is "0.1"
-            return `${prefix}.${mathCounters[type]}`;
+            // Change: we use 'mathPrefix' (e.g. "1"), NOT 'sectionPrefix' (e.g. "1.2")
+            return `${mathPrefix}.${mathCounters[type]}`;
         };
 
         // Pass through the children
@@ -95,24 +93,38 @@ class DeltaRenderer {
             if (child.type === 'section') {
                 
                 if (child.isUnnumbered) {
-                    this.calculateNumbering(child, prefix, mathCounters);
+                    this.calculateNumbering(child, sectionPrefix, mathPrefix, mathCounters);
                     
                 } else {
                     sectionCounter++;
                     
-                    let newPrefix;
+                    let newSectionPrefix;
 
                     // If we are at the root ('0') but this is a subsection (## or ###...),
                     // we prefix it with "0." explicitly.
-                    if (prefix === '0' && child.level > 1) {
-                         newPrefix = `0.${sectionCounter}`;
+                    if (sectionPrefix === '0' && child.level > 1) {
+                         newSectionPrefix = `0.${sectionCounter}`;
                     } else {
                          // Standard logic: If root, just "1". If nested, "1.1".
-                         newPrefix = prefix === '0' ? `${sectionCounter}` : `${prefix}.${sectionCounter}`;
+                         newSectionPrefix = sectionPrefix === '0' ? `${sectionCounter}` : `${sectionPrefix}.${sectionCounter}`;
                     }
 
-                    child.sectionNumber = newPrefix;
-                    this.calculateNumbering(child, newPrefix, {});
+                    child.sectionNumber = newSectionPrefix;
+
+                    let newMathPrefix;
+                    let nextCounters;
+
+                    if (child.level === 1) {
+                        newMathPrefix = newSectionPrefix;
+                        nextCounters = {} // Reset counters for level 1 section elements
+                    }
+                    else {
+                        newMathPrefix = mathPrefix;
+                        nextCounters = mathCounters;
+                    }
+
+
+                    this.calculateNumbering(child, newSectionPrefix, newMathPrefix, nextCounters);
                 }
             } 
             
@@ -126,13 +138,13 @@ class DeltaRenderer {
                 }
 
                 // Then we recurse deeper just in case the theorem has nested blocks (eg. an equation inside it)
-                this.calculateNumbering(child, prefix, mathCounters); 
+                this.calculateNumbering(child, sectionPrefix, mathPrefix, mathCounters); 
             }
             
             // 3rd scenario generic formatting (bold, italic, divs)
             else {
                 // Just pass the current state through
-                this.calculateNumbering(child, prefix, mathCounters);
+                this.calculateNumbering(child, sectionPrefix, mathPrefix, mathCounters);
             }
         });
     }
