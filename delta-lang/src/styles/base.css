@@ -98,8 +98,6 @@
     opacity: 1;
 }
 
-
-
 delta-note, delta-remark {
     display: block;
     margin: 1.5rem 0;
@@ -138,7 +136,6 @@ delta-remark > p:last-of-type, delta-note > p:last-of-type {
     margin-bottom: 0;
 }
 
-
 /************** 
  * DELTA QUOTE
  * ***********/
@@ -176,7 +173,6 @@ delta-quote {
 .delta-quote-body {
   flex: 1;
 }
-
 
 .delta-quote-author {
   display: block;
