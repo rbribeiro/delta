@@ -35,6 +35,7 @@ body {
 }
 
 .editor-header,
+
 .preview-header {
     background: var(--header-bg);
     color: var(--text-color);
@@ -42,6 +43,7 @@ body {
 }
 
 .editor-controls button:hover,
+
 .preview-controls button:hover {
     background-color: var(--hover-bg);
 }
@@ -54,3 +56,29 @@ body.dark-theme #editor-fallback {
 .preview-panel {
     color: var(--text-default);
 }
+
+.preview-reading-mode .editor-panel {
+  display: none;
+}
+
+.preview-reading-mode .preview-panel {
+  width: 100vw;
+  max-width: none;
+}
+
+.preview-reading-mode .preview-header {
+  position: sticky;
+  top: 0;
+  background: var(--bg-panel, #fff);
+  z-index: 10;
+  border-bottom: 1px solid #ddd;
+}
+
+.preview-reading-mode #preview {
+  max-width: 900px;
+  margin: auto;
+  padding: 3rem 2rem;
+  font-size: 1.1rem;
+  line-height: 1.75;
+}
+
