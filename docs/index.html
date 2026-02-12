@@ -8,24 +8,72 @@
 </head>
 <body class="bg-white min-h-screen font-sans">
 
-  <!-- Header -->
 <header class="relative z-20 max-w-7xl mx-auto px-8 py-6 flex justify-between items-center">
-    <div class="flex items-center gap-3">
+
+  <!-- Logo -->
+<div class="flex items-center gap-3">
+  <a href="index.html">
     <video
       src="arquivos/delta-logo.mp4"
       autoplay
       muted
       playsinline
       preload="auto"
-      class="h-16 w-auto object-contain"
-
+      class="h-16 w-auto object-contain cursor-pointer"
     ></video>
-    <!-- <span class="text-lg font-semibold">Delta</span> -->
-    </div>
-    <button class="border px-5 py-2 rounded-full text-sm hover:bg-gray-100 transition">
-      Check templates
-    </button>
-  </header>
+  </a>
+</div>
+
+
+  </div>
+
+  <!-- Desktop Menu -->
+  <nav class="hidden md:flex items-center gap-4">
+    <a href="templates.html" class="text-sm font-medium hover:text-purple-600 transition">
+      Templates
+    </a>
+    <a href="#features" class="text-sm font-medium hover:text-purple-600 transition">
+      Features
+    </a>
+    <a href="documentation.html" class="text-sm font-medium hover:text-purple-600 transition">
+      Docs
+    </a>
+    <a href="../editor/index.html"
+       class="ml-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-5 py-2 rounded-full text-sm font-semibold shadow hover:scale-105 transition">
+      Open Editor
+    </a>
+  </nav>
+
+  <!-- Mobile Button -->
+  <button id="menu-btn" class="md:hidden text-gray-700">
+    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  </button>
+
+  <!-- Mobile Menu -->
+  <div id="mobile-menu"
+    class="hidden absolute top-full left-0 w-full bg-white shadow-lg border-t py-6 flex flex-col items-center gap-5 text-sm font-medium md:hidden">
+    <a href="templates.html" class="hover:text-purple-600 transition">Templates</a>
+    <a href="#features" class="hover:text-purple-600 transition">Features</a>
+    <a href="#get-started" class="hover:text-purple-600 transition">Docs</a>
+    <a href="editor.html"
+       class="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-full font-semibold shadow">
+      Open Editor
+    </a>
+  </div>
+
+</header>
+
+<script>
+  const btn = document.getElementById('menu-btn');
+  const menu = document.getElementById('mobile-menu');
+
+  btn.addEventListener('click', () => {
+    menu.classList.toggle('hidden');
+  });
+</script>
 
   <!-- Hero -->
 <main class="flex flex-col items-center justify-center text-center px-6">
@@ -40,7 +88,7 @@
   ></video>
 
   <p class="text-gray-600 max-w-xl mb-10 text-lg relative z-10">
-    Create dynamic papers, books, and presentations powered by Delta.
+    Create dynamic papers, books, and presentations with Delta’s interactive platform.
   </p>
 
   <div class="flex gap-4">
@@ -51,10 +99,6 @@
   </div>
 
 </main>
-
-
-
-
 
   <section id="video-test" class="max-w-7xl mx-auto px-6 py-20">
         <div class="flex gap-6 items-start">
@@ -139,7 +183,7 @@
       <li>
         <span class="font-bold text-purple-600">4.</span>
         Explore the
-        <a href="#" class="text-pink-500 underline font-medium">documentation</a>
+        <a href="documentation.html" class="text-pink-500 underline font-medium">documentation</a>
         for advanced features.
       </li>
     </ol>
@@ -147,14 +191,110 @@
 </section>
 
 
+<section id="developers" class="py-28">
+  <div class="max-w-7xl mx-auto px-6 space-y-16">
+
+    <!-- Title -->
+    <div class="text-center space-y-3">
+      <h3 class="text-4xl font-bold bg-gradient-to-r from-purple-700 via-indigo-600 to-pink-600 bg-clip-text text-transparent">
+        Built by the Delta Team
+      </h3>
+    <p class="text-gray-600 max-w-xl mx-auto">
+      A group of mathematicians from impatech 
+      rethinking how mathematics is written and presented.
+    </p>
+
+    </div>
+
+    <!-- Grid -->
+    <div class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10 justify-center">
+
+      <!-- Dev Card -->
+      <div class="group rounded-2xl p-[2px] bg-gradient-to-br from-purple-500 via-indigo-500 to-pink-500 hover:scale-105 transition">
+        <div class="bg-white rounded-2xl p-8 text-center h-full">
+          <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white font-bold text-xl">
+            A
+          </div>
+          <h4 class="font-semibold text-lg text-gray-800">Rodrigo Ribeiro</h4>
+          <p class="text-sm text-gray-500">Founder</p>
+        </div>
+      </div>
+
+      <div class="group rounded-2xl p-[2px] bg-gradient-to-br from-purple-500 via-indigo-500 to-pink-500 hover:scale-105 transition">
+        <div class="bg-white rounded-2xl p-8 text-center h-full">
+          <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-indigo-400 to-purple-400 flex items-center justify-center text-white font-bold text-xl">
+            B
+          </div>
+          <h4 class="font-semibold text-lg text-gray-800">Bianca Zavadisk de Abreu</h4>
+          <p class="text-sm text-gray-500">Frontend</p>
+        </div>
+      </div>
+
+      <div class="group rounded-2xl p-[2px] bg-gradient-to-br from-purple-500 via-indigo-500 to-pink-500 hover:scale-105 transition">
+        <div class="bg-white rounded-2xl p-8 text-center h-full">
+          <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-pink-400 to-purple-400 flex items-center justify-center text-white font-bold text-xl">
+            C
+          </div>
+          <h4 class="font-semibold text-lg text-gray-800">Maria Eduarda Carvalho Rêgo Martins</h4>
+          <p class="text-sm text-gray-500">Frontend</p>
+        </div>
+      </div>
+
+      <div class="group rounded-2xl p-[2px] bg-gradient-to-br from-purple-500 via-indigo-500 to-pink-500 hover:scale-105 transition">
+        <div class="bg-white rounded-2xl p-8 text-center h-full">
+          <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-indigo-400 to-pink-400 flex items-center justify-center text-white font-bold text-xl">
+            D
+          </div>
+          <h4 class="font-semibold text-lg text-gray-800">Paulo Vitor Correia de Oliveira</h4>
+          <p class="text-sm text-gray-500">Backend</p>
+        </div>
+      </div>
+
+      <div class="group rounded-2xl p-[2px] bg-gradient-to-br from-purple-500 via-indigo-500 to-pink-500 hover:scale-105 transition">
+        <div class="bg-white rounded-2xl p-8 text-center h-full">
+          <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-400 to-indigo-400 flex items-center justify-center text-white font-bold text-xl">
+            E
+          </div>
+          <h4 class="font-semibold text-lg text-gray-800">Tainá Isabela Queiroz Drumond</h4>
+          <p class="text-sm text-gray-500">Backend</p>
+        </div>
+      </div>
+
+      <div class="group rounded-2xl p-[2px] bg-gradient-to-br from-purple-500 via-indigo-500 to-pink-500 hover:scale-105 transition">
+        <div class="bg-white rounded-2xl p-8 text-center h-full">
+          <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-indigo-400 to-purple-400 flex items-center justify-center text-white font-bold text-xl">
+            F
+          </div>
+          <h4 class="font-semibold text-lg text-gray-800">Pedro Pereira Carvalho</h4>
+          <p class="text-sm text-gray-500">Backend</p>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+
+<footer class="mt-32 text-center text-sm text-gray-500">
+
   <!-- Categories -->
-  <section class="mt-24 border-t pt-8 flex justify-center gap-10 text-gray-600 text-sm">
+  <section class="border-t pt-8 flex justify-center gap-10 text-gray-600">
     <span>Math</span>
     <span>Computer Science</span>
-    <span>AI</span>
-    <span>Data</span>
-    <span>Science</span>
+    <span>Data Science</span>
+    <span>Documentation</span>
+    <span>Purpose</span>
   </section>
 
+  <!-- Attribution -->
+  <p class="mt-6 text-gray-500">
+    Software developed by <span class="font-medium text-gray-700">impatech</span>
+  </p>
+
+</footer>
+
+
+  
 </body>
 </html>
