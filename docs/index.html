@@ -1,166 +1,324 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Delta — Dynamic Math Papers & Presentations</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Delta</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 min-h-screen font-sans">
-  <!-- Header -->
-  <header class="bg-white shadow-md">
-    <div class="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
-      <h1 class="text-3xl font-bold text-purple-700">Delta</h1>
-      <nav>
-        <a href="#features" class="text-purple-600 hover:text-pink-500 mx-4 font-medium">Features</a>
-        <a href="#get-started" class="text-purple-600 hover:text-pink-500 mx-4 font-medium">Get Started</a>
-        <a href="#team" class="text-purple-600 hover:text-pink-500 mx-4 font-medium">Team</a>
-      </nav>
-    </div>
-  </header>
+<body class="bg-white min-h-screen font-sans">
 
-  <!-- Hero / Goal -->
-  <section class="max-w-4xl mx-auto px-6 py-16 text-center">
-    <h2 class="text-4xl font-extrabold text-purple-700 mb-4">Revolutionizing Scientific Diffusion</h2>
-    <p class="text-lg text-gray-700 mb-6">
-      Delta is a markup language based on web technologies for creating dynamic math papers, books, and presentations. 
-      Bring your scientific work to life with interactive elements, beautiful layouts, and seamless integration of HTML, CSS, and JavaScript.
-    </p>
-    <a href="#get-started" class="inline-block bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:scale-105 transition">Get Started</a>
-  </section>
+<header class="relative z-20 max-w-7xl mx-auto px-8 py-6 flex justify-between items-center">
 
-  <!-- Features -->
-  <section id="features" class="max-w-6xl mx-auto px-6 py-12">
-    <h3 class="text-3xl font-bold text-purple-700 text-center mb-10">Main Features</h3>
-   <div class="grid md:grid-cols-3 gap-8">
-  <div class="bg-white rounded-xl shadow-lg p-6 border-t-4 border-purple-400 text-center">
-    <!-- Dynamic Content Icon: Academic Cap -->
-    <svg class="w-10 h-10 text-purple-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0v6m0 0c-3.866 0-7-1.343-7-3V10m7 10c3.866 0 7-1.343 7-3V10"></path>
-    </svg>
-    <h4 class="text-xl font-semibold text-purple-600 mb-2">Dynamic Content</h4>
-    <p class="text-gray-600">Embed interactive math, code, and visualizations directly into your papers and presentations.</p>
-  </div>
-  <div class="bg-white rounded-xl shadow-lg p-6 border-t-4 border-pink-400 text-center">
-    <!-- Beautiful Layouts Icon: Sparkles -->
-    <svg class="w-10 h-10 text-pink-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M19 21v-4m2 2h-4M12 8v8m4-4H8"></path>
-    </svg>
-    <h4 class="text-xl font-semibold text-pink-600 mb-2">Beautiful Layouts</h4>
-    <p class="text-gray-600">Leverage modern web design for stunning, responsive documents and slides.</p>
-  </div>
-  <div class="bg-white rounded-xl shadow-lg p-6 border-t-4 border-blue-400 text-center">
-    <!-- Web Technology Powered Icon: Code -->
-    <svg class="w-10 h-10 text-blue-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 18l6-6-6-6M8 6l-6 6 6 6"></path>
-    </svg>
-    <h4 class="text-xl font-semibold text-blue-600 mb-2">Web Technology Powered</h4>
-    <p class="text-gray-600">Use HTML, CSS, and JavaScript for full customization and extensibility.</p>
-  </div>
+  <!-- Logo -->
+<div class="flex items-center gap-3">
+  <a href="index.html">
+    <video
+      src="arquivos/delta-logo.mp4"
+      autoplay
+      muted
+      playsinline
+      preload="auto"
+      class="h-16 w-auto object-contain cursor-pointer"
+    ></video>
+  </a>
 </div>
-  </section>
 
-  <!-- Get Started -->
-  <section id="get-started" class="max-w-4xl mx-auto px-6 py-12 text-center">
-    <h3 class="text-3xl font-bold text-purple-700 mb-6">How to Get Started</h3>
-    <ol class="text-left mx-auto max-w-xl space-y-4 text-gray-700">
-      <li><span class="font-bold text-purple-600">1.</span> Install Delta via npm: <code class="bg-gray-100 px-2 py-1 rounded">npm install delta-markup</code></li>
-      <li><span class="font-bold text-purple-600">2.</span> Write your first <span class="font-mono text-pink-600">.delta</span> file using familiar web syntax.</li>
-      <li><span class="font-bold text-purple-600">3.</span> Render and share interactive documents with the Delta CLI or web app.</li>
-      <li><span class="font-bold text-purple-600">4.</span> Explore the <a href="#" class="text-pink-500 underline">documentation</a> for advanced features.</li>
-    </ol>
-  </section>
 
-  <!-- Team -->
-<section id="team" class="max-w-6xl mx-auto px-6 py-12">
-  <h3 class="text-3xl font-bold text-indigo-700 text-center mb-10">Meet the Team</h3>
-  <div class="flex flex-col gap-12">
-    <!-- Core Web Technologies Group -->
-    <div>
-      <h4 class="text-2xl font-semibold text-teal-600 mb-6 text-center">Core Web Technologies</h4>
-       <div class="flex flex-wrap justify-center gap-8">
-         <div class="bg-white rounded-xl shadow-lg p-6 w-64 text-center">
-           <img src="https://i.pravatar.cc/100?img=1" alt="Gabriel de Souza Vieira" class="mx-auto rounded-full mb-4 w-20 h-20">
-           <h5 class="text-xl font-semibold text-indigo-600">Gabriel de Souza Vieira</h5>
-           <p class="text-gray-600">Core Web Technologies</p>
-         </div>
-         <div class="bg-white rounded-xl shadow-lg p-6 w-64 text-center">
-           <img src="https://i.pravatar.cc/100?img=2" alt="Maria Clara Carvalho Fernandes" class="mx-auto rounded-full mb-4 w-20 h-20">
-           <h5 class="text-xl font-semibold text-indigo-600">Maria Clara Carvalho Fernandes</h5>
-           <p class="text-gray-600">Core Web Technologies</p>
-         </div>
-         <div class="bg-white rounded-xl shadow-lg p-6 w-64 text-center">
-           <img src="https://i.pravatar.cc/100?img=3" alt="Paulo Vitor Correia de Oliveira" class="mx-auto rounded-full mb-4 w-20 h-20">
-           <h5 class="text-xl font-semibold text-indigo-600">Paulo Vitor Correia de Oliveira</h5>
-           <p class="text-gray-600">Core Web Technologies</p>
-         </div>
-         <div class="bg-white rounded-xl shadow-lg p-6 w-64 text-center">
-           <img src="https://i.pravatar.cc/100?img=4" alt="Maria Eduarda Carvalho Rêgo Martins" class="mx-auto rounded-full mb-4 w-20 h-20">
-           <h5 class="text-xl font-semibold text-indigo-600">Maria Eduarda Carvalho Rêgo Martins</h5>
-           <p class="text-gray-600">Core Web Technologies</p>
-         </div>
-         <div class="bg-white rounded-xl shadow-lg p-6 w-64 text-center">
-           <img src="https://i.pravatar.cc/100?img=5" alt="Francisco José Gomes de Souza Júnior" class="mx-auto rounded-full mb-4 w-20 h-20">
-           <h5 class="text-xl font-semibold text-indigo-600">Francisco José Gomes de Souza Júnior</h5>
-           <p class="text-gray-600">Core Web Technologies</p>
-         </div>
-         <div class="bg-white rounded-xl shadow-lg p-6 w-64 text-center">
-           <img src="https://i.pravatar.cc/100?img=6" alt="Richard elias soares viana" class="mx-auto rounded-full mb-4 w-20 h-20">
-           <h5 class="text-xl font-semibold text-indigo-600">Richard elias soares viana</h5>
-           <p class="text-gray-600">Core Web Technologies</p>
-         </div>
-         <div class="bg-white rounded-xl shadow-lg p-6 w-64 text-center">
-           <img src="https://i.pravatar.cc/100?img=7" alt="Pedro Pereira Carvalho" class="mx-auto rounded-full mb-4 w-20 h-20">
-           <h5 class="text-xl font-semibold text-indigo-600">Pedro Pereira Carvalho</h5>
-           <p class="text-gray-600">Core Web Technologies</p>
-         </div>
-       </div>
+  </div>
+
+  <!-- Desktop Menu -->
+  <nav class="hidden md:flex items-center gap-4">
+    <a href="templates.html" class="text-sm font-medium hover:text-purple-600 transition">
+      Templates
+    </a>
+    <a href="#features" class="text-sm font-medium hover:text-purple-600 transition">
+      Features
+    </a>
+    <a href="documentation.html" class="text-sm font-medium hover:text-purple-600 transition">
+      Docs
+    </a>
+    <a href="../editor/index.html"
+       class="ml-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-5 py-2 rounded-full text-sm font-semibold shadow hover:scale-105 transition">
+      Open Editor
+    </a>
+  </nav>
+
+  <!-- Mobile Button -->
+  <button id="menu-btn" class="md:hidden text-gray-700">
+    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  </button>
+
+  <!-- Mobile Menu -->
+  <div id="mobile-menu"
+    class="hidden absolute top-full left-0 w-full bg-white shadow-lg border-t py-6 flex flex-col items-center gap-5 text-sm font-medium md:hidden">
+    <a href="templates.html" class="hover:text-purple-600 transition">Templates</a>
+    <a href="#features" class="hover:text-purple-600 transition">Features</a>
+    <a href="#get-started" class="hover:text-purple-600 transition">Docs</a>
+    <a href="editor.html"
+       class="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-full font-semibold shadow">
+      Open Editor
+    </a>
+  </div>
+
+</header>
+
+<script>
+  const btn = document.getElementById('menu-btn');
+  const menu = document.getElementById('mobile-menu');
+
+  btn.addEventListener('click', () => {
+    menu.classList.toggle('hidden');
+  });
+</script>
+
+  <!-- Hero -->
+<main class="flex flex-col items-center justify-center text-center px-6">
+  
+  <video
+    src="arquivos/hero-title.mp4"
+    autoplay
+    muted
+    playsinline
+    preload="auto"
+    class="w-[520px] max-w-full h-auto mb-2"
+  ></video>
+
+  <p class="text-gray-600 max-w-xl mb-10 text-lg relative z-10">
+    Create dynamic papers, books, and presentations with Delta’s interactive platform.
+  </p>
+
+  <div class="flex gap-4">
+    <a href="#get-started"
+      class="inline-block bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:scale-105 transition">
+      Start Now
+    </a>
+  </div>
+
+</main>
+
+  <section id="video-test" class="max-w-7xl mx-auto px-6 py-20">
+        <div class="flex gap-6 items-start">
+      <!-- Video -->
+      <video 
+        src="arquivos/visualizacao.mp4" 
+        autoplay 
+        muted 
+        loop 
+        playsinline
+        class="rounded-xl shadow-xl w-full border"
+      ></video>
     </div>
-    <!-- Python Group -->
-    <div>
-      <h4 class="text-2xl font-semibold text-yellow-600 mb-6 text-center">Python Group</h4>
-       <div class="flex flex-wrap justify-center gap-8">
-         <div class="bg-white rounded-xl shadow-lg p-6 w-64 text-center">
-           <img src="https://i.pravatar.cc/100?img=8" alt="Bianca Zavadisk de Abreu" class="mx-auto rounded-full mb-4 w-20 h-20">
-           <h5 class="text-xl font-semibold text-indigo-600">Bianca Zavadisk de Abreu</h5>
-           <p class="text-gray-600">Python Group</p>
-         </div>
-         <div class="bg-white rounded-xl shadow-lg p-6 w-64 text-center">
-           <img src="https://i.pravatar.cc/100?img=9" alt="Kaio Vitor Ferreira Costa" class="mx-auto rounded-full mb-4 w-20 h-20">
-           <h5 class="text-xl font-semibold text-indigo-600">Kaio Vitor Ferreira Costa</h5>
-           <p class="text-gray-600">Python Group</p>
-         </div>
-         <div class="bg-white rounded-xl shadow-lg p-6 w-64 text-center">
-           <img src="https://i.pravatar.cc/100?img=10" alt="Tainá Isabela Queiroz Drumond" class="mx-auto rounded-full mb-4 w-20 h-20">
-           <h5 class="text-xl font-semibold text-indigo-600">Tainá Isabela Queiroz Drumond</h5>
-           <p class="text-gray-600">Python Group</p>
-         </div>
-         <div class="bg-white rounded-xl shadow-lg p-6 w-64 text-center">
-           <img src="https://i.pravatar.cc/100?img=11" alt="Tomaz de Lucena Cavalcante" class="mx-auto rounded-full mb-4 w-20 h-20">
-           <h5 class="text-xl font-semibold text-indigo-600">Tomaz de Lucena Cavalcante</h5>
-           <p class="text-gray-600">Python Group</p>
-         </div>
-         <div class="bg-white rounded-xl shadow-lg p-6 w-64 text-center">
-           <img src="https://i.pravatar.cc/100?img=12" alt="Jonathas David de Lima Santos" class="mx-auto rounded-full mb-4 w-20 h-20">
-           <h5 class="text-xl font-semibold text-indigo-600">Jonathas David de Lima Santos</h5>
-           <p class="text-gray-600">Python Group</p>
-         </div>
-         <div class="bg-white rounded-xl shadow-lg p-6 w-64 text-center">
-           <img src="https://i.pravatar.cc/100?img=13" alt="Gustavo Sousa Cardoso" class="mx-auto rounded-full mb-4 w-20 h-20">
-           <h5 class="text-xl font-semibold text-indigo-600">Gustavo Sousa Cardoso</h5>
-           <p class="text-gray-600">Python Group</p>
-         </div>
-       </div>
+  
+  </section>
+
+
+<section id="features" class="bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 py-20">
+  <div class="max-w-7xl mx-auto px-6 space-y-10">
+
+    <h3 class="text-4xl font-bold text-purple-700 text-center mb-14">Main Features</h3>
+  
+
+    <div class="grid md:grid-cols-3 gap-8">
+    <div class="bg-white rounded-xl shadow-lg p-6 border-t-4 border-purple-400 text-center">
+      <!-- Dynamic Content Icon: Academic Cap -->
+      <svg class="w-10 h-10 text-purple-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0v6m0 0c-3.866 0-7-1.343-7-3V10m7 10c3.866 0 7-1.343 7-3V10"></path>
+      </svg>
+      <h4 class="text-xl font-semibold text-purple-600 mb-2">Dynamic Content</h4>
+      <p class="text-gray-600">Embed interactive math, code, and visualizations directly into your papers and presentations.</p>
+    </div>
+    <div class="bg-white rounded-xl shadow-lg p-6 border-t-4 border-pink-400 text-center">
+      <!-- Beautiful Layouts Icon: Sparkles -->
+      <svg class="w-10 h-10 text-pink-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M19 21v-4m2 2h-4M12 8v8m4-4H8"></path>
+      </svg>
+      <h4 class="text-xl font-semibold text-pink-600 mb-2">Beautiful Layouts</h4>
+      <p class="text-gray-600">Leverage modern web design for stunning, responsive documents and slides.</p>
+    </div>
+    <div class="bg-white rounded-xl shadow-lg p-6 border-t-4 border-blue-400 text-center">
+      <!-- Web Technology Powered Icon: Code -->
+      <svg class="w-10 h-10 text-blue-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 18l6-6-6-6M8 6l-6 6 6 6"></path>
+      </svg>
+      <h4 class="text-xl font-semibold text-blue-600 mb-2">Web Technology Powered</h4>
+      <p class="text-gray-600">Use HTML, CSS, and JavaScript for full customization and extensibility.</p>
+    </div>
+
+
+    
+      <div class="col-span-full bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl shadow-lg p-6 text-center">
+      <h4 class="text-lg font-semibold mb-1">Export Anywhere</h4>
+      <p class="text-sm opacity-90">
+        Export to web, PDF, slides, and notebooks with one command.
+      </p>
+    </div>
     </div>
   </div>
 </section>
-```
+
+<!-- Get Started -->
+<section id="get-started" class="mt-24">
+
+  <div class="max-w-4xl mx-auto px-6 text-center bg-white/70 backdrop-blur rounded-3xl shadow-xl py-12 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 py-20">
+    <h3 class="text-4xl font-bold text-purple-700 mb-8">How to Get Started</h3>
+
+    <ol class="text-left mx-auto max-w-xl space-y-5 text-gray-700 text-lg">
+      <li>
+        <span class="font-bold text-purple-600">1.</span>
+        Install Delta via npm:
+        <code class="bg-purple-100 text-purple-700 px-3 py-1 rounded-lg ml-1">npm install delta-markup</code>
+      </li>
+      <li>
+        <span class="font-bold text-purple-600">2.</span>
+        Write your first <span class="font-mono text-pink-600">.delta</span> file using familiar web syntax.
+      </li>
+      <li>
+        <span class="font-bold text-purple-600">3.</span>
+        Render and share interactive documents with the Delta CLI or web app.
+      </li>
+      <li>
+        <span class="font-bold text-purple-600">4.</span>
+        Explore the
+        <a href="documentation.html" class="text-pink-500 underline font-medium">documentation</a>
+        for advanced features.
+      </li>
+    </ol>
+  </div>
+</section>
 
 
-  <!-- Footer -->
-  <footer class="bg-white mt-12 py-6 text-center text-gray-500">
-    &copy; 2024 Delta Project. All rights reserved.
-  </footer>
+<section id="developers" class="py-28">
+  <div class="max-w-7xl mx-auto px-6 space-y-16">
+
+    <!-- Title -->
+    <div class="text-center space-y-3">
+      <h3 class="text-4xl font-bold bg-gradient-to-r from-purple-700 via-indigo-600 to-pink-600 bg-clip-text text-transparent">
+        Built by the Delta Team
+      </h3>
+    <p class="text-gray-600 max-w-xl mx-auto">
+      A group of mathematicians from impatech 
+      rethinking how mathematics is written and presented.
+    </p>
+
+    </div>
+
+    <!-- Grid -->
+    <div class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10 justify-center">
+
+      <!-- Dev Card -->
+      <div class="group rounded-2xl p-[2px] bg-gradient-to-br from-purple-500 via-indigo-500 to-pink-500 hover:scale-105 transition">
+        <div class="bg-white rounded-2xl p-8 text-center h-full">
+          <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white font-bold text-xl">
+            A
+          </div>
+          <h4 class="font-semibold text-lg text-gray-800">Rodrigo Ribeiro</h4>
+          <p class="text-sm text-gray-500">Founder</p>
+        </div>
+      </div>
+
+      <div class="group rounded-2xl p-[2px] bg-gradient-to-br from-purple-500 via-indigo-500 to-pink-500 hover:scale-105 transition">
+        <div class="bg-white rounded-2xl p-8 text-center h-full">
+          <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-indigo-400 to-purple-400 flex items-center justify-center text-white font-bold text-xl">
+            B
+          </div>
+          <h4 class="font-semibold text-lg text-gray-800">Bianca Zavadisk de Abreu</h4>
+          <p class="text-sm text-gray-500">Frontend</p>
+        </div>
+      </div>
+
+      <div class="group rounded-2xl p-[2px] bg-gradient-to-br from-purple-500 via-indigo-500 to-pink-500 hover:scale-105 transition">
+        <div class="bg-white rounded-2xl p-8 text-center h-full">
+          <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-pink-400 to-purple-400 flex items-center justify-center text-white font-bold text-xl">
+            C
+          </div>
+          <h4 class="font-semibold text-lg text-gray-800">Maria Eduarda Carvalho Rêgo Martins</h4>
+          <p class="text-sm text-gray-500">Frontend</p>
+        </div>
+      </div>
+
+      <div class="group rounded-2xl p-[2px] bg-gradient-to-br from-purple-500 via-indigo-500 to-pink-500 hover:scale-105 transition">
+        <div class="bg-white rounded-2xl p-8 text-center h-full">
+          <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-indigo-400 to-pink-400 flex items-center justify-center text-white font-bold text-xl">
+            D
+          </div>
+          <h4 class="font-semibold text-lg text-gray-800">Paulo Vitor Correia de Oliveira</h4>
+          <p class="text-sm text-gray-500">Backend</p>
+        </div>
+      </div>
+
+      <div class="group rounded-2xl p-[2px] bg-gradient-to-br from-purple-500 via-indigo-500 to-pink-500 hover:scale-105 transition">
+        <div class="bg-white rounded-2xl p-8 text-center h-full">
+          <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-400 to-indigo-400 flex items-center justify-center text-white font-bold text-xl">
+            E
+          </div>
+          <h4 class="font-semibold text-lg text-gray-800">Tainá Isabela Queiroz Drumond</h4>
+          <p class="text-sm text-gray-500">Backend</p>
+        </div>
+      </div>
+
+      <div class="group rounded-2xl p-[2px] bg-gradient-to-br from-purple-500 via-indigo-500 to-pink-500 hover:scale-105 transition">
+        <div class="bg-white rounded-2xl p-8 text-center h-full">
+          <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-indigo-400 to-purple-400 flex items-center justify-center text-white font-bold text-xl">
+            F
+          </div>
+          <h4 class="font-semibold text-lg text-gray-800">Pedro Pereira Carvalho</h4>
+          <p class="text-sm text-gray-500">Backend</p>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+
+<footer class="mt-32 border-t pt-12 pb-10 text-sm text-gray-500">
+
+  <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-12 text-center md:text-left">
+
+    <!-- Navigation -->
+    <div class="space-y-3">
+      <h4 class="text-gray-700 font-semibold">Platform</h4>
+      <ul class="space-y-2">
+        <li><a href="../docs/documentation.html" class="hover:text-purple-600">Documentation</a></li>
+        <li><a href="../editor/index.html" class="hover:text-purple-600">Editor</a></li>
+        <li><a href="#" class="hover:text-purple-600">Language Reference</a></li>
+      </ul>
+    </div>
+
+    <!-- Research -->
+    <div class="space-y-3">
+      <h4 class="text-gray-700 font-semibold">Research</h4>
+      <ul class="space-y-2">
+        <li><a href="#" class="hover:text-purple-600">Academic Vision</a></li>
+        <li><a href="#" class="hover:text-purple-600">Publications</a></li>
+        <li><a href="#" class="hover:text-purple-600">Team</a></li>
+      </ul>
+    </div>
+
+    <!-- Contact -->
+    <div class="space-y-3">
+      <h4 class="text-gray-700 font-semibold">Contact</h4>
+      <ul class="space-y-2">
+        <li><a href="#" class="hover:text-purple-600">GitHub</a></li>
+        <li><a href="#" class="hover:text-purple-600">Email</a></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- Bottom -->
+  <div class="mt-12 text-center text-xs text-gray-400">
+    © 2026 Delta — Software developed by <span class="font-medium text-gray-700">impatech</span>
+  </div>
+
+</footer>
+
+
+  
 </body>
 </html>

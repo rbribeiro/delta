@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Delta</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white min-h-screen font-sans">
+
+<header class="relative z-20 max-w-7xl mx-auto px-8 py-6 flex justify-between items-center">
+
+  <!-- Logo -->
+<div class="flex items-center gap-3">
+  <a href="index.html">
+    <video
+      src="arquivos/delta-logo.mp4"
+      autoplay
+      muted
+      playsinline
+      preload="auto"
+      class="h-16 w-auto object-contain cursor-pointer"
+    ></video>
+  </a>
+</div>
+
+
+  </div>
+
+  <!-- Desktop Menu -->
+  <nav class="hidden md:flex items-center gap-4">
+    <a href="templates.html" class="text-sm font-medium hover:text-purple-600 transition">
+      Templates
+    </a>
+    <a href="#get-started" class="text-sm font-medium hover:text-purple-600 transition">
+      Docs
+    </a>
+    <a href="../editor/index.html"
+       class="ml-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-5 py-2 rounded-full text-sm font-semibold shadow hover:scale-105 transition">
+      Open Editor
+    </a>
+  </nav>
+
+  <!-- Mobile Button -->
+  <button id="menu-btn" class="md:hidden text-gray-700">
+    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  </button>
+
+  <!-- Mobile Menu -->
+  <div id="mobile-menu"
+    class="hidden absolute top-full left-0 w-full bg-white shadow-lg border-t py-6 flex flex-col items-center gap-5 text-sm font-medium md:hidden">
+    <a href="templates.html" class="hover:text-purple-600 transition">Templates</a>
+    <a href="#features" class="hover:text-purple-600 transition">Features</a>
+    <a href="#get-started" class="hover:text-purple-600 transition">Docs</a>
+    <a href="editor.html"
+       class="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-full font-semibold shadow">
+      Open Editor
+    </a>
+  </div>
+
+</header>
+
+<script>
+  const btn = document.getElementById('menu-btn');
+  const menu = document.getElementById('mobile-menu');
+
+  btn.addEventListener('click', () => {
+    menu.classList.toggle('hidden');
+  });
+</script>
+
+
+<!-- =======================
+ Architecture
+======================== -->
+<section id="architecture" class="py-24">
+  <div class="max-w-6xl mx-auto px-6 space-y-12">
+
+    <div class="text-center space-y-4">
+      <h3 class="text-3xl font-bold text-purple-700">System Architecture</h3>
+      <p class="text-gray-600 max-w-3xl mx-auto">
+        Delta follows a layered architecture separating language parsing,
+        semantic transformation, and output rendering.
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8">
+
+      <div class="bg-white rounded-xl shadow p-6 space-y-3">
+        <h4 class="font-semibold text-purple-600">Frontend Layer (HTML + CSS)</h4>
+        <p class="text-sm text-gray-600">
+          Browser-based editor, preview engine, syntax highlighting, and UI logic.
+        </p>
+      </div>
+
+      <div class="bg-white rounded-xl shadow p-6 space-y-3">
+        <h4 class="font-semibold text-purple-600">Core Engine (Java Script)</h4>
+        <p class="text-sm text-gray-600">
+          Lexer, parser, abstract syntax tree, semantic analyzer, and transformation pipeline.
+        </p>
+      </div>
+
+      <div class="bg-white rounded-xl shadow p-6 space-y-3">
+        <h4 class="font-semibold text-purple-600">Export Pipeline (Python)</h4>
+        <p class="text-sm text-gray-600">
+          PDF rendering, slide generation, LaTeX bridges, and automation tooling.
+        </p>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<!-- =======================
+ Setup & Installation
+======================== -->
+<section id="setup" class="py-24 bg-gray-100">
+  <div class="max-w-6xl mx-auto px-6 space-y-12">
+
+    <div class="text-center space-y-4">
+      <h3 class="text-3xl font-bold text-purple-700">Setup & Installation</h3>
+      <p class="text-gray-600 max-w-3xl mx-auto">
+        This section describes how to run Delta locally for development or deployment.
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-10">
+
+      <div class="bg-white rounded-xl shadow p-8 space-y-4">
+        <h4 class="font-semibold text-purple-600">Requirements</h4>
+        <ul class="list-disc list-inside text-gray-600 text-sm space-y-2">
+          <li>Modern web browser (Chrome, Firefox, Safari)</li>
+          <li>Python 3.9+</li>
+          <li>Node.js (optional, for frontend tooling)</li>
+        </ul>
+      </div>
+
+      <div class="bg-white rounded-xl shadow p-8 space-y-4">
+        <h4 class="font-semibold text-purple-600">Local Installation</h4>
+        <pre class="bg-gray-900 text-gray-100 rounded-lg p-4 text-sm overflow-x-auto"><code>
+git clone https://github.com/rbribeiro/delta.git
+cd delta
+
+# Start backend engine
+./gradlew run
+
+# Start frontend (optional dev server)
+npm install
+npm run dev
+        </code></pre>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<!-- =======================
+ Usage
+======================== -->
+<section id="usage" class="py-24">
+  <div class="max-w-6xl mx-auto px-6 space-y-12">
+
+    <div class="text-center space-y-4">
+      <h3 class="text-3xl font-bold text-purple-700">Using Delta</h3>
+      <p class="text-gray-600 max-w-3xl mx-auto">
+        Write once — export everywhere. This section introduces the basic workflow.
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8">
+
+      <div class="bg-white rounded-xl shadow p-6 space-y-3">
+        <h4 class="font-semibold text-purple-600">1. Write</h4>
+        <p class="text-sm text-gray-600">
+          Author structured content using Delta blocks such as theorems, proofs,
+          definitions, examples, and exercises.
+        </p>
+      </div>
+
+      <div class="bg-white rounded-xl shadow p-6 space-y-3">
+        <h4 class="font-semibold text-purple-600">2. Preview</h4>
+        <p class="text-sm text-gray-600">
+          Instantly preview how your document renders as lecture notes or slides.
+        </p>
+      </div>
+
+      <div class="bg-white rounded-xl shadow p-6 space-y-3">
+        <h4 class="font-semibold text-purple-600">3. Export</h4>
+        <p class="text-sm text-gray-600">
+          Generate PDFs, slides, web pages, and academic papers with a single click.
+        </p>
+      </div>
+
+    </div>
+
+  </section>
+
+<section class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+
+  <!-- Video Column -->
+
+        <div class="flex-1 flex items-center justify-center bg-white">
+          <video 
+            src="arquivos/example.mp4" 
+            autoplay 
+            muted 
+            loop 
+            playsinline
+            class="max-h-full max-w-full object-contain"
+          ></video>
+        </div>
+
+
+  <!-- Editor Column -->
+  <div class="bg-gray-900 text-gray-100 rounded-2xl shadow-xl p-6 font-mono text-sm relative">
+
+    <!-- Top Bar -->
+    <div class="flex items-center justify-between mb-4">
+      <span class="text-xs text-gray-400">proof.delta</span>
+      <div class="flex gap-3">
+        <button id="copyBtn"
+          class="px-3 py-1.5 rounded-md bg-gray-700 hover:bg-gray-600 text-xs transition">
+          Copy code
+        </button>
+    <a href="../editor/index.html" target="_blank"
+    class="px-3 py-1.5 rounded-md bg-violet-600 hover:bg-violet-500 text-xs font-semibold transition text-white inline-flex items-center">
+    Open editor
+    </a>
+
+      </div>
+    </div>
+
+    <!-- Code Block -->
+    <pre id="codeBlock" class="overflow-x-auto leading-relaxed whitespace-pre-wrap">
+theorem "Fundamental Theorem of Calculus":
+  statement:
+    Let f be continuous on [a,b].
+  proof:
+    By the mean value theorem...
+
+proof:
+  Vamos demonstrar este teorema fundamental passo a passo.
+  step "Configuração inicial":
+    Seja $S = \{x \in [a,c] : f(x) < k\}$. Este conjunto é limitado superiormente por b.
+    hint:
+      O conjunto S é não-vazio pois $a \in S$ (assumindo $f(a) < k$).
+  step "Aplicação do supremo":
+    Por ser limitado superiormente, S possui supremo. Seja $c = \sup(S)$.
+    hint:
+      Lembre-se que todo conjunto limitado superiormente possui supremo nos reais.
+    </pre>
+
+  </div>
+</section>
+
+<!-- Copy Button Script -->
+<script>
+  const copyBtn = document.getElementById("copyBtn");
+  const codeBlock = document.getElementById("codeBlock");
+
+  copyBtn.addEventListener("click", () => {
+    navigator.clipboard.writeText(codeBlock.innerText);
+    copyBtn.innerText = "Copied!";
+    setTimeout(() => copyBtn.innerText = "Copy code", 1500);
+  });
+</script>
+
+<section class="py-10 "></section>
+
+<!-- =======================
+ API & Internal Interfaces
+======================== -->
+<section id="api" class="py-24 bg-gray-100">
+  <div class="max-w-6xl mx-auto px-6 space-y-12">
+
+    <div class="text-center space-y-4">
+      <h3 class="text-3xl font-bold text-purple-700">API & Internal Interfaces</h3>
+      <p class="text-gray-600 max-w-3xl mx-auto">
+        Delta exposes internal APIs between its frontend, compiler engine, and export pipeline.
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8">
+
+      <div class="bg-white rounded-xl shadow p-6 space-y-3">
+        <h4 class="font-semibold text-purple-600">Frontend → Engine</h4>
+        <p class="text-sm text-gray-600">
+          JSON-based AST transport for real-time compilation and preview rendering.
+        </p>
+      </div>
+
+      <div class="bg-white rounded-xl shadow p-6 space-y-3">
+        <h4 class="font-semibold text-purple-600">Engine → Exporters</h4>
+        <p class="text-sm text-gray-600">
+          Structured intermediate representation consumed by Python export modules.
+        </p>
+      </div>
+
+      <div class="bg-white rounded-xl shadow p-6 space-y-3">
+        <h4 class="font-semibold text-purple-600">CLI Interface</h4>
+        <p class="text-sm text-gray-600">
+          Command-line tooling for batch conversion and automated workflows.
+        </p>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<!-- =======================
+ Contributing
+======================== -->
+<section id="contributing" class="py-24">
+  <div class="max-w-6xl mx-auto px-6 space-y-12">
+
+    <div class="text-center space-y-4">
+      <h3 class="text-3xl font-bold text-purple-700">Contributing</h3>
+      <p class="text-gray-600 max-w-3xl mx-auto">
+        Delta is an academic open-source project developed at IMPATECH.
+        Contributions from students, researchers, and educators are welcome.
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8">
+
+      <div class="bg-white rounded-xl shadow p-6 space-y-3">
+        <h4 class="font-semibold text-purple-600">Bug Reports</h4>
+        <p class="text-sm text-gray-600">
+          Report issues with reproducible examples and expected behavior.
+        </p>
+      </div>
+
+      <div class="bg-white rounded-xl shadow p-6 space-y-3">
+        <h4 class="font-semibold text-purple-600">Feature Proposals</h4>
+        <p class="text-sm text-gray-600">
+          Suggest new language constructs, exporters, or integrations.
+        </p>
+      </div>
+
+      <div class="bg-white rounded-xl shadow p-6 space-y-3">
+        <h4 class="font-semibold text-purple-600">Code Contributions</h4>
+        <p class="text-sm text-gray-600">
+          Submit pull requests for frontend, compiler, or exporter modules.
+        </p>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+
+
+
+<footer class="mt-32 border-t pt-12 pb-10 text-sm text-gray-500">
+
+  <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-12 text-center md:text-left">
+
+    <!-- Navigation -->
+    <div class="space-y-3">
+      <h4 class="text-gray-700 font-semibold">Platform</h4>
+      <ul class="space-y-2">
+        <li><a href="../docs/documentation.html" class="hover:text-purple-600">Documentation</a></li>
+        <li><a href="../editor/index.html" class="hover:text-purple-600">Editor</a></li>
+        <li><a href="#" class="hover:text-purple-600">Language Reference</a></li>
+      </ul>
+    </div>
+
+    <!-- Research -->
+    <div class="space-y-3">
+      <h4 class="text-gray-700 font-semibold">Research</h4>
+      <ul class="space-y-2">
+        <li><a href="#" class="hover:text-purple-600">Academic Vision</a></li>
+        <li><a href="#" class="hover:text-purple-600">Publications</a></li>
+        <li><a href="#" class="hover:text-purple-600">Team</a></li>
+      </ul>
+    </div>
+
+    <!-- Contact -->
+    <div class="space-y-3">
+      <h4 class="text-gray-700 font-semibold">Contact</h4>
+      <ul class="space-y-2">
+        <li><a href="#" class="hover:text-purple-600">GitHub</a></li>
+        <li><a href="#" class="hover:text-purple-600">Email</a></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- Bottom -->
+  <div class="mt-12 text-center text-xs text-gray-400">
+    © 2026 Delta — Software developed by <span class="font-medium text-gray-700">impatech</span>
+  </div>
+
+</footer>
+
+
+  
+</body>
+</html>

@@ -38,6 +38,8 @@
   @apply inline-block bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:scale-105 transition;
 }
 
+
+
 /* Features */
 .features {
   @apply max-w-6xl mx-auto px-6 py-12;

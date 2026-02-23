@@ -669,8 +669,17 @@ class DeltaEditor {
 
 }
 
+const fullscreenBtn = document.getElementById("fullscreen-btn");
+const appRoot = document.querySelector(".editor-container");
+
+fullscreenBtn.addEventListener("click", () => {
+  appRoot.classList.toggle("preview-reading-mode");
+});
+
 // Initialize the editor when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     window.deltaEditor = new DeltaEditor();
     window.deltaEditor.init();
 });
+
+
