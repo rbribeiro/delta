@@ -16,10 +16,10 @@ const doc = (body: string) =>
 const countBr = (html: string) => (html.match(/<br>/g) ?? []).length;
 
 describe("linebreaks", () => {
-  it("turns a blank line between prose into one <br>", () => {
+  it("turns a blank line between prose into one break (<br><br>)", () => {
     const { html } = compile(doc(`First paragraph.\n\nSecond paragraph.`));
-    expect(html).toContain("First paragraph.<br>");
-    expect(countBr(html)).toBe(1);
+    expect(html).toContain("First paragraph.<br><br>Second paragraph.");
+    expect(countBr(html)).toBe(2);
   });
 
   it("leaves a single newline (soft wrap) as collapsible whitespace, no <br>", () => {
@@ -28,9 +28,9 @@ describe("linebreaks", () => {
     expect(html).toContain("A sentence wrapped\nacross two lines.");
   });
 
-  it("collapses several blank lines into a single <br>", () => {
+  it("collapses several blank lines into a single break (<br><br>)", () => {
     const { html } = compile(doc(`First.\n\n\n\nSecond.`));
-    expect(countBr(html)).toBe(1);
+    expect(countBr(html)).toBe(2);
   });
 
   it("does not emit a break at the start or end of a text node", () => {
@@ -47,7 +47,7 @@ describe("linebreaks", () => {
 
   it("inserts a break after an inline element when a blank line follows", () => {
     const { html } = compile(doc(`Lead <em>x</em>.\n\nNext paragraph.`));
-    expect(countBr(html)).toBe(1);
-    expect(html).toContain("</delta-em>.<br>Next paragraph.");
+    expect(countBr(html)).toBe(2);
+    expect(html).toContain("</delta-em>.<br><br>Next paragraph.");
   });
 });
