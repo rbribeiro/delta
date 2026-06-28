@@ -15,6 +15,7 @@ delta-chapter,
 delta-eyebrow,
 delta-title,
 delta-deck,
+delta-intro,
 delta-meta,
 delta-meta-item,
 delta-section,
@@ -132,6 +133,21 @@ h4.subsub {
   text-transform: uppercase;
   color: var(--delta-accent-ink);
   margin: 0 0 8px;
+}
+
+/* Section intro — a newspaper-style deck: the section's lead paragraph, set
+   larger than body text and spanning the full writing width by reclaiming the
+   sidenote rail on the right (like .bleed). Sits right under the heading; the
+   narrow breakpoint below drops the reclaim when the rail collapses. */
+delta-intro {
+  margin: 2px 0 var(--delta-block-gap);
+  margin-right: calc(-1 * (var(--delta-col-gap) + var(--delta-margin-w)));
+  min-width: 0;
+  font-size: var(--delta-t-deck);
+  line-height: 1.45;
+  font-weight: 400;
+  color: var(--delta-ink-soft);
+  text-wrap: pretty;
 }
 
 :is(delta-section, delta-subsection, delta-subsubsection) > delta-meta {
@@ -260,6 +276,7 @@ delta-mark {
   :is(delta-page, delta-chapter) > :is(delta-eyebrow, delta-title, delta-deck, delta-meta) {
     margin-right: 0;
   }
+  delta-intro { margin-right: 0; } /* rail collapses — drop the bleed */
 }
 
 @media (max-width: 640px) {

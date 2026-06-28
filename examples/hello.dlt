@@ -13,6 +13,9 @@
       Learning Delta
     </eyebrow>
     <title>Introduction</title>
+    <intro>
+      This is a simple example of a Delta document. It shows the main features of the language, and how to use them.
+    </intro>
     Delta turns strict XML into a single offline HTML file. Inline math like
     $e^{i\pi} + 1 = 0$ just works, and symbols like $a < b$ are fine inside math. We can also write external links like <link to="http://en.wikipedia.org/wiki/Delta_(letter)">this</link>.
 
