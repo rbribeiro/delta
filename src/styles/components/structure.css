@@ -98,22 +98,7 @@ h2.section {
   line-height: var(--delta-leading-tight);
   letter-spacing: -0.012em;
   margin: 0 0 10px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
   text-wrap: balance;
-}
-h2.section .num {
-  font-family: var(--delta-sans);
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: var(--delta-tracking-cap);
-  color: var(--delta-accent-ink);
-  background: var(--delta-accent-soft);
-  padding: 4px 10px;
-  border-radius: var(--delta-radius-pill);
-  white-space: nowrap;
 }
 
 h3.sub {
@@ -123,8 +108,12 @@ h3.sub {
   letter-spacing: -0.005em;
   margin: 0 0 8px;
 }
+
+/* Heading numbers: a quiet gray figure scaled to its own heading text size, so
+   every level shares one consistent treatment. */
+h2.section .num,
 h3.sub .num,
-h4.subsub .num { color: var(--delta-mute); margin-right: 0.5em; }
+h4.subsub .num { color: var(--delta-mute); margin-right: 0.4em; }
 
 h4.subsub {
   font-family: var(--delta-serif);
@@ -136,9 +125,13 @@ h4.subsub {
 
 /* -- Section front matter (reused chapter elements, quieter) ----------- */
 :is(delta-section, delta-subsection, delta-subsubsection) > delta-eyebrow {
-  font-size: 11px;
+  font-family: var(--delta-sans);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: var(--delta-tracking-cap);
+  text-transform: uppercase;
   color: var(--delta-accent-ink);
-  margin: 0 0 6px;
+  margin: 0 0 8px;
 }
 
 :is(delta-section, delta-subsection, delta-subsubsection) > delta-meta {
@@ -281,9 +274,6 @@ delta-mark {
 
   :is(delta-page, delta-chapter) > delta-meta { gap: 14px 24px; padding-top: 14px; }
   :is(delta-page, delta-chapter) > delta-meta > delta-meta-item { min-width: 42%; }
-
-  h2.section { gap: 10px; }
-  h2.section .num { font-size: 11px; padding: 3px 8px; }
 }
 
 @media (max-width: 380px) {
