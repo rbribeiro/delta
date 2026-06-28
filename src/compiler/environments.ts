@@ -44,6 +44,7 @@ export const ENVIRONMENTS: Record<string, EnvironmentSpec> = {
   video: { counter: "video", prefixWith: "section" },
   youtube: { counter: "video", prefixWith: "section" },
   audio: { counter: "audio", prefixWith: "section" },
+  table: { counter: "table", prefixWith: "section" },
 
 };
 
