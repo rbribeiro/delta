@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { elements, type ElementNode } from "./ast";
-import { warn, type CompileContext } from "./context";
+import { addDep, warn, type CompileContext } from "./context";
 import { parse } from "./parse";
 import { preprocess } from "./preprocess";
 
@@ -112,6 +112,7 @@ function loadRefFile(src: string, ctx: CompileContext, bib: ElementNode): void {
     warn(ctx, `bibliography file not found: ${src}`, bib.pos);
     return;
   }
+  addDep(ctx, abs);
   // Diagnostics from the .ref point at the .ref (mirrors include.ts's file swap).
   const prevFile = ctx.file;
   ctx.file = abs;

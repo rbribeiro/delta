@@ -30,7 +30,8 @@ const TABLE = `
 describe("table", () => {
   it("passes the table tags through to delta-* custom elements (no compiler change)", () => {
     const { html } = compile(doc(TABLE));
-    expect(html).toContain('<delta-table id="t:data" max-height="420px">');
+    // Tolerate extra compiler-added attributes (e.g. num="1.1" once tables are numbered).
+    expect(html).toMatch(/<delta-table id="t:data" max-height="420px"[ >]/);
     expect(html).toContain("<delta-header>");
     expect(html).toContain("<delta-row>");
     expect(html).toContain('<delta-column align="right">');

@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, extname, resolve } from "node:path";
 import { elements, type ElementNode } from "./ast";
-import { warn, type CompileContext } from "./context";
+import { addDep, warn, type CompileContext } from "./context";
 
 
 const MIME: Record<string, string> = {
@@ -45,7 +45,9 @@ export function inlineFigures(doc: ElementNode, ctx: CompileContext): void {
       continue;
     }
     try {
-      const data = readFileSync(resolve(base, src));
+      const imgPath = resolve(base, src);
+      const data = readFileSync(imgPath);
+      addDep(ctx, imgPath);
       el.attrs.src = `data:${mime};base64,${data.toString("base64")}`;
     } catch {
       warn(ctx, `figure image not found: ${src}`, el.pos);

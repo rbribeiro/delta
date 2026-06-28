@@ -53,6 +53,6 @@ export const ENVIRONMENTS: Record<string, EnvironmentSpec> = {
  */
 export const COUNTER_RESETS: Record<string, string[]> = {
   chapter: ["section"],
-  section: ["subsection", "subsubsection", "theorem", "proposition", "lemma", "corollary", "conjecture", "definition", "example", "claim", "observation", "exercise", "problem", "equation", "equations", "figure", "video", "youtube", "audio", "remark"],
+  section: ["subsection", "subsubsection", "theorem", "proposition", "lemma", "corollary", "conjecture", "definition", "example", "claim", "observation", "exercise", "problem", "equation", "equations", "figure", "video", "youtube", "audio", "remark", "table"],
   subsection: ["subsubsection"],
 };

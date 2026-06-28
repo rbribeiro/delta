@@ -3,6 +3,7 @@
  * Passes communicate through it (and through node attrs). Nothing else is shared. 
 **** ***********************/
 
+import { resolve } from "node:path";
 import type { ElementNode, Node, Position } from "./ast";
 
 export interface Diagnostic {
@@ -76,6 +77,9 @@ export interface CompileContext {
 
   themeAccent?: string;
 
+  /** Absolute paths of every user file this compile read (entry, includes, theme,
+   *  imports, bibliography, figures); the CLI's `--watch` watches exactly this set. */
+  deps: Set<string>;
 }
 
 /** Context constructor */
@@ -91,7 +95,13 @@ export function createContext(file: string): CompileContext {
     imports: [],
     papers: new Map(),
     citedPapers: [],
+    deps: new Set(),
   };
+}
+
+/** Record a user file this compile read, as an absolute path (for `--watch`). */
+export function addDep(ctx: CompileContext, p: string): void {
+  ctx.deps.add(resolve(p));
 }
 
 export function error(ctx: CompileContext, message: string, pos?: Position): void {

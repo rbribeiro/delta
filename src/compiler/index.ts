@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { createContext, error, hasErrors, type CompileContext, type Diagnostic } from "./context";
+import { addDep, createContext, error, hasErrors, type CompileContext, type Diagnostic } from "./context";
 import { emit } from "./emit";
 import { inlineFigures } from "./figures";
 import { resolveIncludes } from "./include";
@@ -18,6 +18,8 @@ import { loadBibliography, resolveCitations } from "./bibliography";
 export interface CompileResult {
   html?: string; // Only present if compilation succeeded.
   diagnostics: Diagnostic[];
+  /** Absolute paths of every user file read while compiling (for `--watch`). */
+  deps: string[];
 }
 
 /**
@@ -67,8 +69,9 @@ export function compileFile(path: string): CompileResult {
     source = readFileSync(path, "utf8");
   } catch (e) {
     error(ctx, e instanceof Error ? e.message : String(e));
-    return { diagnostics: ctx.diagnostics };
+    return { diagnostics: ctx.diagnostics, deps: [...ctx.deps] };
   }
+  addDep(ctx, path);
   const html = compileSource(source, ctx);
-  return { html, diagnostics: ctx.diagnostics };
+  return { html, diagnostics: ctx.diagnostics, deps: [...ctx.deps] };
 }

@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import type { ElementNode } from "./ast";
-import { warn, type CompileContext } from "./context";
+import { addDep, warn, type CompileContext } from "./context";
 
 /**
  * Resolves `<document theme="my.css">`: reads the author's stylesheet at compile
@@ -38,12 +38,14 @@ export function resolveTheme(doc: ElementNode, ctx: CompileContext): void {
   }
 
   let css: string;
+  const themePath = resolve(dirname(ctx.file), themeAttr);
   try {
-    css = readFileSync(resolve(dirname(ctx.file), themeAttr), "utf8");
+    css = readFileSync(themePath, "utf8");
   } catch {
     warn(ctx, `theme file not found: ${themeAttr}`, doc.pos);
     return;
   }
+  addDep(ctx, themePath);
 
   if (EXTERNAL_REF.test(css)) {
     warn(ctx, `theme '${themeAttr}' references an external resource; output may not work offline`, doc.pos);

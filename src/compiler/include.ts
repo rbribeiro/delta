@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, relative, resolve, sep } from "node:path";
 import { type ElementNode, type Node, findElementById } from "./ast";
-import { error, type CompileContext } from "./context";
+import { addDep, error, type CompileContext } from "./context";
 import { parse } from "./parse";
 import { preprocess } from "./preprocess";
 
@@ -70,6 +70,7 @@ function expand(
     error(ctx, `include file not found: ${src}`, inc.pos);
     return [];
   }
+  addDep(ctx, abs);
 
   // Attribute diagnostics from the included file to the included file.
   const prevFile = ctx.file;

@@ -4,6 +4,7 @@ import { elements, type ElementNode } from "./ast";
 import { loadBibliography, numberCitations, fillBibliography } from "./bibliography";
 import type { ProjectConfig } from "./config";
 import {
+  addDep,
   createContext,
   error,
   hasErrors,
@@ -29,6 +30,8 @@ export interface ProjectResult {
   /** One per input, in declaration order; written verbatim by the CLI. */
   outputs: { path: string; html: string }[];
   diagnostics: Diagnostic[];
+  /** Absolute paths of every user file read across all inputs (for `--watch`). */
+  deps: string[];
 }
 
 /** Flat output name for an input: `chapters/01.dlt` → `01.html`. */
@@ -55,6 +58,7 @@ export function compileProject(config: ProjectConfig): ProjectResult {
   const projectDiags: Diagnostic[] = [];
   const ctxs: CompileContext[] = [];
   const gather = (): Diagnostic[] => [...projectDiags, ...ctxs.flatMap((c) => c.diagnostics)];
+  const collectDeps = (): string[] => [...new Set(ctxs.flatMap((c) => [...c.deps]))];
 
   // Flat layout: outputs collide if two inputs share a basename.
   const seen = new Map<string, string>();
@@ -70,7 +74,7 @@ export function compileProject(config: ProjectConfig): ProjectResult {
     }
     seen.set(out, input);
   }
-  if (projectDiags.some((d) => d.severity === "error")) return { outputs: [], diagnostics: gather() };
+  if (projectDiags.some((d) => d.severity === "error")) return { outputs: [], diagnostics: gather(), deps: collectDeps() };
 
   // Phase 1 — read, parse, splice includes. Each file gets its own ctx (with the
   // shared registries swapped in) so diagnostics stay attributed to it.
@@ -90,6 +94,7 @@ export function compileProject(config: ProjectConfig): ProjectResult {
       error(ctx, e instanceof Error ? e.message : String(e));
       continue;
     }
+    addDep(ctx, input);
     const doc = parse(preprocess(source), ctx);
     if (!doc) continue;
     resolveIncludes(doc, ctx);
@@ -97,7 +102,7 @@ export function compileProject(config: ProjectConfig): ProjectResult {
     files.push({ ctx, doc, outName: ctx.outName });
   }
   // A missing file, parse error, or bad include fails the whole project.
-  if (ctxs.some(hasErrors)) return { outputs: [], diagnostics: gather() };
+  if (ctxs.some(hasErrors)) return { outputs: [], diagnostics: gather(), deps: collectDeps() };
 
   // Phase 2 — bibliography & citations, project-wide. Papers from every file load
   // into the shared registry; cites number across files in first-appearance order.
@@ -166,7 +171,7 @@ export function compileProject(config: ProjectConfig): ProjectResult {
     path: join(config.outDir, f.outName),
     html: emit(f.doc, f.ctx, globalById),
   }));
-  return { outputs, diagnostics: gather() };
+  return { outputs, diagnostics: gather(), deps: collectDeps() };
 }
 
 function hasBibliography(doc: ElementNode): boolean {

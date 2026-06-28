@@ -1,11 +1,38 @@
 {
-  "name": "delta",
+  "name": "delta-lang",
   "version": "0.1.0",
   "description": "Delta — a LaTeX-inspired XML markup language for interactive papers, books and presentations, compiled to standalone offline HTML.",
   "type": "module",
   "license": "MIT",
+  "author": "Rodrigo Ribeiro <rb.ribeiro9@gmail.com>",
+  "homepage": "https://github.com/rbribeiro/delta#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rbribeiro/delta.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rbribeiro/delta/issues"
+  },
+  "keywords": [
+    "latex",
+    "markup",
+    "xml",
+    "katex",
+    "math",
+    "compiler",
+    "offline",
+    "html",
+    "static-site",
+    "papers",
+    "cli",
+    "delta"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "bin": {
-    "delta": "./dist/cli.js"
+    "delta": "dist/cli.js",
+    "dlt": "dist/cli.js"
   },
   "files": [
     "dist"
@@ -23,7 +50,9 @@
     "preexample": "npm run assets",
     "example": "tsx src/cli.ts build examples/hello.dlt -o out.html",
     "preexample:project": "npm run assets",
-    "example:project": "tsx src/cli.ts build examples/project/project.toml"
+    "example:project": "tsx src/cli.ts build examples/project/project.toml",
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run typecheck && npm test"
   },
   "dependencies": {
     "highlight.js": "^11.11.1",

@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import type { ElementNode } from "./ast";
-import { warn, error,  type CompileContext, type ImportEntry } from "./context";
+import { addDep, warn, error,  type CompileContext, type ImportEntry } from "./context";
 import { EXTERNAL_REF } from "./theme";
 
 
@@ -56,6 +56,7 @@ export function resolveImports(doc: ElementNode, ctx: CompileContext): void {
     seen.add(jsPath);
 
     const js = readFileSync(jsPath, "utf8");
+    addDep(ctx, jsPath);
     if (JS_EXTERNAL_REF.test(js)) {
       warn(ctx, `import '${src}' references an external resource; output may not work offline`, node.pos);
     }
@@ -64,6 +65,7 @@ export function resolveImports(doc: ElementNode, ctx: CompileContext): void {
     let css: string | undefined;
     if (existsSync(cssPath)) {
       css = readFileSync(cssPath, "utf8");
+      addDep(ctx, cssPath);
       if (EXTERNAL_REF.test(css)) {
         warn(ctx, `import theme '${src}/theme.css' references an external resource; output may not work offline`, node.pos);
       }
