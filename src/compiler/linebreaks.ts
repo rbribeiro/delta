@@ -61,6 +61,6 @@ function splitText(text: string): Node[] {
   return pieces.flatMap((p, i) =>
     i === 0
       ? [{ type: "text", text: p } as Node]
-      : [{ type: "raw", html: "<br>" } as Node, { type: "text", text: p } as Node],
+      : [{ type: "raw", html: "<br><br>" } as Node, { type: "text", text: p } as Node],
   );
 }
