@@ -69,8 +69,9 @@ export function emit(
         .join("\n") + "\n"
     : "";
 
+  const dataAccent = ctx.themeAccent ? ` data-accent="${escapeAttr(ctx.themeAccent)}"` : "";
   return `<!DOCTYPE html>
-<html lang="${escapeAttr(ctx.lang)}" data-accent="${escapeAttr(ctx.themeAccent ?? "")}">
+<html lang="${escapeAttr(ctx.lang)}"${dataAccent}>
 <head>
 ${head}
 </head>
