@@ -12,6 +12,7 @@ import { resolveReferences } from "./references";
 import { resolveTheme } from "./theme";
 import { buildToc } from "./toc";
 import { resolveImports } from "./imports";
+import { resolveLineBreaks } from "./linebreaks";
 import { loadBibliography, resolveCitations } from "./bibliography";
 
 export interface CompileResult {
@@ -49,6 +50,7 @@ export function compileSource(source: string, ctx: CompileContext): string | und
   inlineFigures(doc, ctx); // read figure images and embed them as data: URIs
   resolveTheme(doc, ctx); // read <document theme> CSS; emit inlines it last
   resolveImports(doc,ctx); // inline <import> packs (themes are inlined before the author theme, JS after the runtime)
+  resolveLineBreaks(doc); // blank lines in prose become a single <br> (after every other pass)
   return emit(doc, ctx);
 }
 

@@ -17,6 +17,7 @@ import { inlineFigures } from "./figures";
 import { resolveImports } from "./imports";
 import { resolveIncludes } from "./include";
 import { renderMath } from "./math";
+import { resolveLineBreaks } from "./linebreaks";
 import { freshNumbering, numberDocument } from "./numbering";
 import { parse } from "./parse";
 import { preprocess } from "./preprocess";
@@ -157,6 +158,7 @@ export function compileProject(config: ProjectConfig): ProjectResult {
     inlineFigures(f.doc, f.ctx);
     resolveTheme(f.doc, f.ctx);
     resolveImports(f.doc, f.ctx);
+    resolveLineBreaks(f.doc); // blank lines in prose become a single <br> (after every other pass)
   }
 
   // Phase 5 — emit. `globalById` spans every file, so cross-file targets snapshot in.
