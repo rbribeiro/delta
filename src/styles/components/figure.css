@@ -1,0 +1,91 @@
+/* figure.css (+ video) — framed media + caption shared by <delta-figure>,
+   <delta-video> and <delta-youtube>: .figure/.video (layout), .figure-frame/
+   .video-frame (the box), .video-media (the player), .figure-cap/.video-cap.
+   PARTIAL: <delta-youtube> emits an iframe.video-media (styled here); the full
+   figure/video runtime is staged. Tokens via var(--delta-*). */
+
+@layer delta.components {
+
+delta-figure { display: block; }
+delta-video,
+delta-youtube,
+delta-audio { display: block; }
+delta-caption { display: block; } 
+
+/* Figures and videos share the outer layout and caption — only how the media
+   sits in the frame differs (a figure mats + centres; a video fills). */
+.figure,
+.video {
+  margin: 36px 0 var(--delta-block-gap);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Shared framed box: border, radius, shadow; clip media to the corners. */
+.figure-frame,
+.video-frame {
+  background: var(--delta-surface-1);
+  border: var(--delta-hairline) solid var(--delta-rule);
+  border-radius: var(--delta-radius);
+  overflow: hidden;
+  box-shadow: var(--delta-shadow);
+}
+
+/* A figure mats its visual and centres it. */
+.figure-frame {
+  padding: 12px;
+  text-align: center; /* centre inline / inline-block media */
+}
+/* Centre block-level media too (img/svg are display:block per base.css). */
+.figure-frame > * {
+  margin-inline: auto;
+}
+
+/* A video fills the frame edge-to-edge. */
+.video-media {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 0;
+}
+/* YouTube iframes have no intrinsic ratio — give them a 16:9 box. */
+iframe.video-media {
+  aspect-ratio: 16 / 9;
+}
+/* Audio reuses the framed box; the native control bar fills the width. */
+.audio-media {
+  display: block;
+  width: 100%;
+}
+.video-missing {
+  display: block;
+  padding: 24px;
+  text-align: center;
+  font-family: var(--delta-sans);
+  font-size: 13px;
+  color: var(--delta-mute);
+}
+
+/* Shared caption, centred under the media; the "Fig./Video N" label is an
+   inline prefix before the centred text. */
+.figure-cap,
+.video-cap {
+  text-align: center;
+  font-family: var(--delta-serif);
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--delta-mute);
+}
+.figure-cap .lbl,
+.video-cap .lbl {
+  font-family: var(--delta-sans);
+  font-size: 11.5px;
+  letter-spacing: var(--delta-tracking-cap);
+  text-transform: uppercase;
+  color: var(--delta-ink);
+  margin-right: 0.6em;
+  white-space: nowrap;
+}
+
+}

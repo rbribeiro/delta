@@ -1,0 +1,52 @@
+/* link.css — <delta-link>: an underlined anchor (.ext-link) that, when off-site,
+   also carries the external-link icon (.ext-icon) and a screen-reader new-tab
+   hint (.ext-sr). STAGED — link.js builds the inner <a>; styling lives here. */
+
+@layer delta.components {
+
+delta-link { display: inline; }
+
+.ext-link {
+  color: var(--delta-accent-ink);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, var(--delta-accent-ink) 40%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  transition: text-decoration-color var(--delta-dur-fast) var(--delta-ease);
+}
+.ext-link:hover { text-decoration-color: var(--delta-accent-ink); }
+
+/* Inline icon — overrides base.css `svg { display: block }`. */
+.ext-icon {
+  display: inline-block;
+  width: 0.8em;
+  height: 0.8em;
+  margin-left: 0.15em;
+  vertical-align: -0.08em;
+}
+
+/* Visually-hidden "(opens in new tab)" hint, available to screen readers. */
+.ext-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* In print, spell out the URL and drop the (meaningless) icon. */
+@media print {
+  .ext-link::after {
+    content: " (" attr(href) ")";
+    font-size: 0.85em;
+    color: var(--delta-mute);
+    word-break: break-all;
+  }
+  .ext-icon { display: none; }
+}
+
+}

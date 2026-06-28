@@ -1,0 +1,14 @@
+<document>
+    <section>
+        <title>Section from a separate file.</title>
+        Delta supports including content from other files. This is useful for splitting a large document into smaller, more manageable pieces, or for reusing content across multiple documents. The included file can contain any valid Delta content, and it will be processed as if it were part of the main document.
+        <subsection>
+            <title>Subsection in the included file.</title>
+            This is a subsection within the included file. It demonstrates that the structure of the included content is preserved when it is incorporated into the main document.
+        </subsection>
+        <ref to="thm:pyth" />
+    </section>
+
+
+
+</document>

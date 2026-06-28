@@ -1,0 +1,9 @@
+node_modules/
+dist/
+out.html
+examples/project/out/
+src/generated/
+*.tsbuildinfo
+.DS_Store
+CLAUDE.md
+.claude/

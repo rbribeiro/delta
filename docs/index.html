@@ -1,324 +1,391 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Delta</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Delta — papers can be better</title>
+  <meta name="description" content="Delta is a markup language for interactive scientific papers — graphs you can explore, inline simulations, living data, and results you read in place. Written for scientists, not web developers.">
+
+  <link rel="icon" href="favicon.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
 </head>
-<body class="bg-white min-h-screen font-sans">
+<body>
 
-<header class="relative z-20 max-w-7xl mx-auto px-8 py-6 flex justify-between items-center">
-
-  <!-- Logo -->
-<div class="flex items-center gap-3">
-  <a href="index.html">
-    <video
-      src="arquivos/delta-logo.mp4"
-      autoplay
-      muted
-      playsinline
-      preload="auto"
-      class="h-16 w-auto object-contain cursor-pointer"
-    ></video>
-  </a>
-</div>
-
-
-  </div>
-
-  <!-- Desktop Menu -->
-  <nav class="hidden md:flex items-center gap-4">
-    <a href="templates.html" class="text-sm font-medium hover:text-purple-600 transition">
-      Templates
-    </a>
-    <a href="#features" class="text-sm font-medium hover:text-purple-600 transition">
-      Features
-    </a>
-    <a href="documentation.html" class="text-sm font-medium hover:text-purple-600 transition">
-      Docs
-    </a>
-    <a href="../editor/index.html"
-       class="ml-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-5 py-2 rounded-full text-sm font-semibold shadow hover:scale-105 transition">
-      Open Editor
-    </a>
-  </nav>
-
-  <!-- Mobile Button -->
-  <button id="menu-btn" class="md:hidden text-gray-700">
-    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-        d="M4 6h16M4 12h16M4 18h16" />
-    </svg>
-  </button>
-
-  <!-- Mobile Menu -->
-  <div id="mobile-menu"
-    class="hidden absolute top-full left-0 w-full bg-white shadow-lg border-t py-6 flex flex-col items-center gap-5 text-sm font-medium md:hidden">
-    <a href="templates.html" class="hover:text-purple-600 transition">Templates</a>
-    <a href="#features" class="hover:text-purple-600 transition">Features</a>
-    <a href="#get-started" class="hover:text-purple-600 transition">Docs</a>
-    <a href="editor.html"
-       class="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-full font-semibold shadow">
-      Open Editor
-    </a>
-  </div>
-
-</header>
-
-<script>
-  const btn = document.getElementById('menu-btn');
-  const menu = document.getElementById('mobile-menu');
-
-  btn.addEventListener('click', () => {
-    menu.classList.toggle('hidden');
-  });
-</script>
-
-  <!-- Hero -->
-<main class="flex flex-col items-center justify-center text-center px-6">
-  
-  <video
-    src="arquivos/hero-title.mp4"
-    autoplay
-    muted
-    playsinline
-    preload="auto"
-    class="w-[520px] max-w-full h-auto mb-2"
-  ></video>
-
-  <p class="text-gray-600 max-w-xl mb-10 text-lg relative z-10">
-    Create dynamic papers, books, and presentations with Delta’s interactive platform.
-  </p>
-
-  <div class="flex gap-4">
-    <a href="#get-started"
-      class="inline-block bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:scale-105 transition">
-      Start Now
-    </a>
-  </div>
-
-</main>
-
-  <section id="video-test" class="max-w-7xl mx-auto px-6 py-20">
-        <div class="flex gap-6 items-start">
-      <!-- Video -->
-      <video 
-        src="arquivos/visualizacao.mp4" 
-        autoplay 
-        muted 
-        loop 
-        playsinline
-        class="rounded-xl shadow-xl w-full border"
-      ></video>
+  <!-- ============================ NAV ============================ -->
+  <header class="nav">
+    <div class="wrap">
+      <a class="brand" href="#top" aria-label="Delta home">
+        <img class="mark" src="logo.svg" alt="" width="22" height="25">
+        <span class="word">Delta</span>
+      </a>
+      <nav class="nav-links">
+        <a href="#why">Why</a>
+        <a href="#install">Install</a>
+        <a href="#example">Example</a>
+        <!-- TODO: point to ./<doc>.html once the HTML docs land in docs/ -->
+        <a href="https://github.com/rbribeiro/delta-parser/tree/main/docs">Docs</a>
+        <a class="btn ghost" href="https://github.com/rbribeiro/delta-parser">GitHub ↗</a>
+      </nav>
     </div>
-  
+  </header>
+
+  <!-- ============================ HERO =========================== -->
+  <main id="top">
+    <section class="hero">
+      <div class="wrap">
+        <div class="hero-copy">
+          <span class="eyebrow">By mathematicians and students — for scientists and students</span>
+          <h1>Papers can be<br><span class="accent">better.</span></h1>
+          <p class="deck">
+            PDF freezes a paper into static ink. Delta brings it to the web — with
+            graphs your readers can explore, simulations that run inline, data they
+            can poke at, and results they read in place. You write the science; you
+            never touch the web part.
+          </p>
+          <div class="cta">
+            <a class="btn primary" href="#install">Get started <span class="arrow">→</span></a>
+            <a class="btn ghost" href="https://github.com/rbribeiro/delta-parser/tree/main/docs">Read the docs</a>
+          </div>
+          <p class="micro"><span class="dot"></span> A LaTeX-like markup · math built in · no web development required</p>
+        </div>
+
+        <div class="hero-visual">
+          <div class="window">
+            <div class="window-bar">
+              <i></i><i></i><i></i>
+              <span class="file">wave.dlt &rarr; figure</span>
+              <span class="live">live</span>
+            </div>
+            <div class="window-body">
+              <div class="fig">
+                <span class="fig-tag">Figure 1</span>
+                <svg class="plot" viewBox="0 0 320 170" role="img" aria-label="A wave you can tune">
+                  <line class="grid" x1="0" y1="42" x2="320" y2="42" />
+                  <line class="axis" x1="0" y1="85" x2="320" y2="85" />
+                  <line class="grid" x1="0" y1="128" x2="320" y2="128" />
+                  <path class="wave" id="wave" d="" />
+                </svg>
+                <div class="control">
+                  <label class="control-label" for="freq">Frequency ω</label>
+                  <input id="freq" class="slider" type="range" min="1" max="8" step="0.1" value="3">
+                  <output id="freqval" class="control-val" for="freq">3.0</output>
+                </div>
+                <p class="fig-cap">Drag to tune the wave — the figure updates live, right inside the paper.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- ========================== WHY =========================== -->
+    <section id="why">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Why Delta</span>
+          <h2>The web already has everything a smarter paper needs.</h2>
+        </div>
+
+        <div class="why-prose">
+          <p class="lead">
+            Delta began with a frustration. Its creator — a mathematician — was tired of
+            flattening living ideas into static PDF: a theorem you can't unfold, a figure
+            you can't touch, a reference that's just a number on the page.
+          </p>
+          <p>
+            Yet the web solved this years ago. Interaction, motion, math that renders,
+            links that actually link — every ingredient of a smarter paper has been sitting
+            right there. Papers just never moved to it.
+          </p>
+          <p>
+            So Delta brings them across — without giving up what makes a paper a paper:
+            rigor, numbering, citations. You write in a familiar LaTeX-like markup and
+            Delta does the web for you — no JavaScript to learn, no front-end to build.
+            Made <em>by mathematicians and students, for scientists and students.</em>
+            Because papers can be better.
+          </p>
+        </div>
+
+        <div class="principles">
+          <div class="principle">
+            <span class="num">01</span>
+            <h3>Interactive figures &amp; video</h3>
+            <p>Graphs your readers can pan, zoom, and probe — and video that lives inside the paper, not a link that sends them somewhere else.</p>
+          </div>
+          <div class="principle">
+            <span class="num">02</span>
+            <h3>Inline simulations</h3>
+            <p>Embed a running simulation right in the argument. A reader changes a parameter and watches the result respond, without leaving the page.</p>
+          </div>
+          <div class="principle">
+            <span class="num">03</span>
+            <h3>Living data</h3>
+            <p>Tables and datasets aren't frozen pictures. Readers can sort, filter, and explore the numbers behind your claims for themselves.</p>
+          </div>
+          <div class="principle">
+            <span class="num">04</span>
+            <h3>Results that come to you</h3>
+            <p>Cite a theorem and read it right where you are. No scrolling back to page 1 to remember what Lemma 2.3 actually said.</p>
+          </div>
+          <div class="principle">
+            <span class="num">05</span>
+            <h3>Written for scientists</h3>
+            <p>The audience isn't web developers. You author in a LaTeX-like markup; Delta turns it into a living document — no coding required.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- ========================= INSTALL ======================== -->
+    <section id="install">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Install</span>
+          <h2>Install the CLI, build your paper.</h2>
+          <p>Delta is a command-line tool that runs on <a href="https://nodejs.org" target="_blank" rel="noopener">Node.js</a> (which bundles <code>npm</code>). Install Node for your system, then install Delta from npm.</p>
+        </div>
+
+        <div class="steps">
+          <!-- Step 1 — Node.js + npm -->
+          <div class="step">
+            <span class="step-label">1 · Install Node.js</span>
+            <div class="code" id="node-install">
+              <div class="code-head">
+                <div class="code-tabs" role="tablist" aria-label="Operating system">
+                  <button class="code-tab is-active" type="button" data-os="win" data-clip="winget install OpenJS.NodeJS.LTS&#10;node -v && npm -v">Windows</button>
+                  <button class="code-tab" type="button" data-os="mac" data-clip="brew install node&#10;node -v && npm -v">macOS</button>
+                  <button class="code-tab" type="button" data-os="deb" data-clip="sudo apt update&#10;sudo apt install nodejs npm&#10;node -v && npm -v">Ubuntu</button>
+                </div>
+                <button class="copy" data-clip="winget install OpenJS.NodeJS.LTS&#10;node -v && npm -v">Copy</button>
+              </div>
+              <pre class="code-panel is-active" data-os="win"><code><span class="cm"># download the LTS installer from nodejs.org, or use winget:</span>
+<span class="pr">&gt;</span> winget install OpenJS.NodeJS.LTS
+
+<span class="cm"># then check it worked</span>
+<span class="pr">&gt;</span> node -v && npm -v</code></pre>
+              <pre class="code-panel" data-os="mac" hidden><code><span class="cm"># download the LTS installer from nodejs.org, or use Homebrew:</span>
+<span class="pr">$</span> brew install node
+
+<span class="cm"># then check it worked</span>
+<span class="pr">$</span> node -v && npm -v</code></pre>
+              <pre class="code-panel" data-os="deb" hidden><code><span class="cm"># install Node.js + npm from apt</span>
+<span class="pr">$</span> sudo apt update
+<span class="pr">$</span> sudo apt install nodejs npm
+
+<span class="cm"># then check it worked</span>
+<span class="pr">$</span> node -v && npm -v</code></pre>
+            </div>
+          </div>
+
+          <!-- Step 2 — Delta -->
+          <div class="step">
+            <span class="step-label">2 · Install Delta</span>
+            <div class="code">
+              <div class="code-head">
+                <span class="label"><span class="dot"></span>terminal</span>
+                <button class="copy" data-clip="npm install -g delta&#10;delta build paper.dlt -o paper.html&#10;delta build project.toml">Copy</button>
+              </div>
+              <pre><code><span class="cm"># install the Delta CLI from npm</span>
+<span class="pr">$</span> npm install -g delta
+
+<span class="cm"># build a document</span>
+<span class="pr">$</span> delta build paper.dlt -o paper.html
+
+<span class="cm"># ...or a whole multi-file project</span>
+<span class="pr">$</span> delta build project.toml</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================= EXAMPLE ======================== -->
+    <section id="example">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">What Delta looks like</span>
+          <h2>Familiar markup in, a living document out.</h2>
+          <p>Author with simple tags and inline <code>$math$</code>, the way you'd write LaTeX. Delta numbers it, renders the math, and turns it into an interactive document.</p>
+        </div>
+
+        <div class="snippet-grid">
+          <div class="code">
+            <div class="code-head">
+              <span class="label"><span class="dot"></span>hello.dlt</span>
+              <button class="copy" data-clip="&lt;theorem id=&quot;thm:pyth&quot;&gt;&#10;  &lt;title&gt;Pythagorean Theorem&lt;/title&gt;&#10;  &lt;meta&gt;&#10;    &lt;meta-item key=&quot;Author&quot;&gt;Pythagoras&lt;/meta-item&gt;&#10;  &lt;/meta&gt;&#10;  For a right triangle with legs $a$, $b$&#10;  and hypotenuse $c$,&#10;  &lt;equation id=&quot;eq:pyth&quot;&gt;a^2 + b^2 = c^2&lt;/equation&gt;&#10;&lt;/theorem&gt;">Copy</button>
+            </div>
+            <pre><code><span class="pn">&lt;</span><span class="tag">theorem</span> <span class="at">id</span>=<span class="va">"thm:pyth"</span><span class="pn">&gt;</span>
+  <span class="pn">&lt;</span><span class="tag">title</span><span class="pn">&gt;</span>Pythagorean Theorem<span class="pn">&lt;/</span><span class="tag">title</span><span class="pn">&gt;</span>
+  <span class="pn">&lt;</span><span class="tag">meta</span><span class="pn">&gt;</span>
+    <span class="pn">&lt;</span><span class="tag">meta-item</span> <span class="at">key</span>=<span class="va">"Author"</span><span class="pn">&gt;</span>Pythagoras<span class="pn">&lt;/</span><span class="tag">meta-item</span><span class="pn">&gt;</span>
+  <span class="pn">&lt;/</span><span class="tag">meta</span><span class="pn">&gt;</span>
+  For a right triangle with legs <span class="mt">$a$</span>, <span class="mt">$b$</span>
+  and hypotenuse <span class="mt">$c$</span>,
+  <span class="pn">&lt;</span><span class="tag">equation</span> <span class="at">id</span>=<span class="va">"eq:pyth"</span><span class="pn">&gt;</span><span class="mt">a^2 + b^2 = c^2</span><span class="pn">&lt;/</span><span class="tag">equation</span><span class="pn">&gt;</span>
+<span class="pn">&lt;/</span><span class="tag">theorem</span><span class="pn">&gt;</span></code></pre>
+          </div>
+
+          <div class="render-to" aria-hidden="true">
+            <span class="a">→</span>
+            <span>renders to</span>
+          </div>
+
+          <div class="preview-frame">
+            <div class="box">
+              <span class="box-tag">Theorem 1.1 <span class="t">Pythagorean Theorem</span></span>
+              <p>
+                For a right triangle with legs <span class="math">a</span>,
+                <span class="math">b</span> and hypotenuse <span class="math">c</span>,
+              </p>
+              <span class="eq">a<sup>2</sup> + b<sup>2</sup> = c<sup>2</sup><span class="num">(1.1)</span></span>
+              <div class="box-meta">
+                <span><span class="k">Author</span><span class="v">Pythagoras</span></span>
+              </div>
+            </div>
+            <p class="demo-prose">
+              And the result comes to the reader: by
+              <span class="xref" tabindex="0" role="button">Theorem&nbsp;1.1<span class="xref-pop"><strong>Theorem 1.1 — Pythagorean Theorem.</strong> For a right triangle with legs <span class="math">a</span>, <span class="math">b</span> and hypotenuse <span class="math">c</span>, <span class="math">a<sup>2</sup>&nbsp;+&nbsp;b<sup>2</sup>&nbsp;=&nbsp;c<sup>2</sup></span>.</span></span>
+              the legs decide the hypotenuse — hover it and read the statement in place, no scrolling back.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ======================= DOCS BAND ========================= -->
+  <section class="docs-band">
+    <div class="wrap">
+      <div>
+        <h2>Read the full documentation.</h2>
+        <!-- TODO: swap to ./<doc>.html once HTML docs are published in docs/ -->
+        <p>The architecture, the compiler pipeline pass by pass, the build system, and the guide to adding your own environments.</p>
+      </div>
+      <a class="btn primary" href="https://github.com/rbribeiro/delta-parser/tree/main/docs">Open the docs <span class="arrow">→</span></a>
+    </div>
   </section>
 
+  <!-- ========================== TEAM =========================== -->
+  <section id="team">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">The team</span>
+        <h2>Delta members.</h2>
+        <p>Made by mathematicians and students, for scientists, mathematicians, and students. The project is young — there is plenty of room to leave your mark.</p>
+      </div>
 
-<section id="features" class="bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 py-20">
-  <div class="max-w-7xl mx-auto px-6 space-y-10">
-
-    <h3 class="text-4xl font-bold text-purple-700 text-center mb-14">Main Features</h3>
-  
-
-    <div class="grid md:grid-cols-3 gap-8">
-    <div class="bg-white rounded-xl shadow-lg p-6 border-t-4 border-purple-400 text-center">
-      <!-- Dynamic Content Icon: Academic Cap -->
-      <svg class="w-10 h-10 text-purple-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0v6m0 0c-3.866 0-7-1.343-7-3V10m7 10c3.866 0 7-1.343 7-3V10"></path>
-      </svg>
-      <h4 class="text-xl font-semibold text-purple-600 mb-2">Dynamic Content</h4>
-      <p class="text-gray-600">Embed interactive math, code, and visualizations directly into your papers and presentations.</p>
-    </div>
-    <div class="bg-white rounded-xl shadow-lg p-6 border-t-4 border-pink-400 text-center">
-      <!-- Beautiful Layouts Icon: Sparkles -->
-      <svg class="w-10 h-10 text-pink-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M19 21v-4m2 2h-4M12 8v8m4-4H8"></path>
-      </svg>
-      <h4 class="text-xl font-semibold text-pink-600 mb-2">Beautiful Layouts</h4>
-      <p class="text-gray-600">Leverage modern web design for stunning, responsive documents and slides.</p>
-    </div>
-    <div class="bg-white rounded-xl shadow-lg p-6 border-t-4 border-blue-400 text-center">
-      <!-- Web Technology Powered Icon: Code -->
-      <svg class="w-10 h-10 text-blue-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 18l6-6-6-6M8 6l-6 6 6 6"></path>
-      </svg>
-      <h4 class="text-xl font-semibold text-blue-600 mb-2">Web Technology Powered</h4>
-      <p class="text-gray-600">Use HTML, CSS, and JavaScript for full customization and extensibility.</p>
-    </div>
-
-
-    
-      <div class="col-span-full bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl shadow-lg p-6 text-center">
-      <h4 class="text-lg font-semibold mb-1">Export Anywhere</h4>
-      <p class="text-sm opacity-90">
-        Export to web, PDF, slides, and notebooks with one command.
-      </p>
-    </div>
-    </div>
-  </div>
-</section>
-
-<!-- Get Started -->
-<section id="get-started" class="mt-24">
-
-  <div class="max-w-4xl mx-auto px-6 text-center bg-white/70 backdrop-blur rounded-3xl shadow-xl py-12 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 py-20">
-    <h3 class="text-4xl font-bold text-purple-700 mb-8">How to Get Started</h3>
-
-    <ol class="text-left mx-auto max-w-xl space-y-5 text-gray-700 text-lg">
-      <li>
-        <span class="font-bold text-purple-600">1.</span>
-        Install Delta via npm:
-        <code class="bg-purple-100 text-purple-700 px-3 py-1 rounded-lg ml-1">npm install delta-markup</code>
-      </li>
-      <li>
-        <span class="font-bold text-purple-600">2.</span>
-        Write your first <span class="font-mono text-pink-600">.delta</span> file using familiar web syntax.
-      </li>
-      <li>
-        <span class="font-bold text-purple-600">3.</span>
-        Render and share interactive documents with the Delta CLI or web app.
-      </li>
-      <li>
-        <span class="font-bold text-purple-600">4.</span>
-        Explore the
-        <a href="documentation.html" class="text-pink-500 underline font-medium">documentation</a>
-        for advanced features.
-      </li>
-    </ol>
-  </div>
-</section>
-
-
-<section id="developers" class="py-28">
-  <div class="max-w-7xl mx-auto px-6 space-y-16">
-
-    <!-- Title -->
-    <div class="text-center space-y-3">
-      <h3 class="text-4xl font-bold bg-gradient-to-r from-purple-700 via-indigo-600 to-pink-600 bg-clip-text text-transparent">
-        Built by the Delta Team
-      </h3>
-    <p class="text-gray-600 max-w-xl mx-auto">
-      A group of mathematicians from impatech 
-      rethinking how mathematics is written and presented.
-    </p>
-
-    </div>
-
-    <!-- Grid -->
-    <div class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10 justify-center">
-
-      <!-- Dev Card -->
-      <div class="group rounded-2xl p-[2px] bg-gradient-to-br from-purple-500 via-indigo-500 to-pink-500 hover:scale-105 transition">
-        <div class="bg-white rounded-2xl p-8 text-center h-full">
-          <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white font-bold text-xl">
-            A
+      <div class="team-grid">
+        <div class="member">
+          <div class="avatar">RR</div>
+          <div>
+            <div class="name">Rodrigo Ribeiro</div>
+            <div class="role">Creator &amp; maintainer</div>
+            <div class="links"><a href="https://github.com/rbribeiro">@rbribeiro</a></div>
           </div>
-          <h4 class="font-semibold text-lg text-gray-800">Rodrigo Ribeiro</h4>
-          <p class="text-sm text-gray-500">Founder</p>
         </div>
       </div>
 
-      <div class="group rounded-2xl p-[2px] bg-gradient-to-br from-purple-500 via-indigo-500 to-pink-500 hover:scale-105 transition">
-        <div class="bg-white rounded-2xl p-8 text-center h-full">
-          <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-indigo-400 to-purple-400 flex items-center justify-center text-white font-bold text-xl">
-            B
-          </div>
-          <h4 class="font-semibold text-lg text-gray-800">Bianca Zavadisk de Abreu</h4>
-          <p class="text-sm text-gray-500">Frontend</p>
-        </div>
+      <div class="contributors">
+        <span class="lbl">Contributors</span>
+        No contributors yet — <a href="https://github.com/rbribeiro/delta-parser/blob/main/docs/CONTRIBUTING.md">be the first</a>.
       </div>
-
-      <div class="group rounded-2xl p-[2px] bg-gradient-to-br from-purple-500 via-indigo-500 to-pink-500 hover:scale-105 transition">
-        <div class="bg-white rounded-2xl p-8 text-center h-full">
-          <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-pink-400 to-purple-400 flex items-center justify-center text-white font-bold text-xl">
-            C
-          </div>
-          <h4 class="font-semibold text-lg text-gray-800">Maria Eduarda Carvalho Rêgo Martins</h4>
-          <p class="text-sm text-gray-500">Frontend</p>
-        </div>
-      </div>
-
-      <div class="group rounded-2xl p-[2px] bg-gradient-to-br from-purple-500 via-indigo-500 to-pink-500 hover:scale-105 transition">
-        <div class="bg-white rounded-2xl p-8 text-center h-full">
-          <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-indigo-400 to-pink-400 flex items-center justify-center text-white font-bold text-xl">
-            D
-          </div>
-          <h4 class="font-semibold text-lg text-gray-800">Paulo Vitor Correia de Oliveira</h4>
-          <p class="text-sm text-gray-500">Backend</p>
-        </div>
-      </div>
-
-      <div class="group rounded-2xl p-[2px] bg-gradient-to-br from-purple-500 via-indigo-500 to-pink-500 hover:scale-105 transition">
-        <div class="bg-white rounded-2xl p-8 text-center h-full">
-          <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-400 to-indigo-400 flex items-center justify-center text-white font-bold text-xl">
-            E
-          </div>
-          <h4 class="font-semibold text-lg text-gray-800">Tainá Isabela Queiroz Drumond</h4>
-          <p class="text-sm text-gray-500">Backend</p>
-        </div>
-      </div>
-
-      <div class="group rounded-2xl p-[2px] bg-gradient-to-br from-purple-500 via-indigo-500 to-pink-500 hover:scale-105 transition">
-        <div class="bg-white rounded-2xl p-8 text-center h-full">
-          <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-indigo-400 to-purple-400 flex items-center justify-center text-white font-bold text-xl">
-            F
-          </div>
-          <h4 class="font-semibold text-lg text-gray-800">Pedro Pereira Carvalho</h4>
-          <p class="text-sm text-gray-500">Backend</p>
-        </div>
-      </div>
-
     </div>
+  </section>
 
-  </div>
-</section>
-
-
-<footer class="mt-32 border-t pt-12 pb-10 text-sm text-gray-500">
-
-  <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-12 text-center md:text-left">
-
-    <!-- Navigation -->
-    <div class="space-y-3">
-      <h4 class="text-gray-700 font-semibold">Platform</h4>
-      <ul class="space-y-2">
-        <li><a href="../docs/documentation.html" class="hover:text-purple-600">Documentation</a></li>
-        <li><a href="../editor/index.html" class="hover:text-purple-600">Editor</a></li>
-        <li><a href="#" class="hover:text-purple-600">Language Reference</a></li>
-      </ul>
+  <!-- ========================= FOOTER ========================== -->
+  <footer class="footer">
+    <div class="wrap">
+      <a class="brand" href="#top">
+        <img class="mark" src="logo.svg" alt="" width="22" height="25">
+        <span class="word">Delta</span>
+      </a>
+      <div class="foot-links">
+        <a href="https://github.com/rbribeiro/delta-parser">GitHub</a>
+        <a href="https://github.com/rbribeiro/delta-parser/tree/main/docs">Docs</a>
+        <span>MIT licensed</span>
+      </div>
+      <span>© 2026 Rodrigo Ribeiro</span>
     </div>
+  </footer>
 
-    <!-- Research -->
-    <div class="space-y-3">
-      <h4 class="text-gray-700 font-semibold">Research</h4>
-      <ul class="space-y-2">
-        <li><a href="#" class="hover:text-purple-600">Academic Vision</a></li>
-        <li><a href="#" class="hover:text-purple-600">Publications</a></li>
-        <li><a href="#" class="hover:text-purple-600">Team</a></li>
-      </ul>
-    </div>
+  <script>
+    document.querySelectorAll('.copy').forEach(function (btn) {
+      btn.addEventListener('click', async function () {
+        try {
+          await navigator.clipboard.writeText(btn.dataset.clip);
+          var prev = btn.textContent;
+          btn.textContent = 'Copied';
+          btn.classList.add('ok');
+          setTimeout(function () {
+            btn.textContent = prev;
+            btn.classList.remove('ok');
+          }, 1400);
+        } catch (e) { /* clipboard unavailable */ }
+      });
+    });
 
-    <!-- Contact -->
-    <div class="space-y-3">
-      <h4 class="text-gray-700 font-semibold">Contact</h4>
-      <ul class="space-y-2">
-        <li><a href="#" class="hover:text-purple-600">GitHub</a></li>
-        <li><a href="#" class="hover:text-purple-600">Email</a></li>
-      </ul>
-    </div>
+    // Hero figure — a live, tunable wave, so a Delta figure visibly responds
+    // instead of sitting there as a picture. The slider sets ω; absent
+    // reduced-motion, the phase drifts so it reads as alive at a glance.
+    (function () {
+      var wave = document.getElementById('wave');
+      if (!wave) return;
+      var freq = document.getElementById('freq');
+      var out = document.getElementById('freqval');
+      var W = 320, MID = 85, AMP = 55, N = 120, phase = 0;
+      var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      function draw() {
+        var k = parseFloat(freq.value), d = '', i, x, y;
+        for (i = 0; i <= N; i++) {
+          x = (i / N) * W;
+          y = MID - AMP * Math.sin((i / N) * k * Math.PI * 2 + phase);
+          d += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ' ' + y.toFixed(1) + ' ';
+        }
+        wave.setAttribute('d', d.trim());
+        out.textContent = k.toFixed(1);
+      }
+      freq.addEventListener('input', draw);
+      if (reduce) { draw(); }
+      else { (function tick() { phase += 0.012; draw(); requestAnimationFrame(tick); })(); }
+    })();
 
-  </div>
-
-  <!-- Bottom -->
-  <div class="mt-12 text-center text-xs text-gray-400">
-    © 2026 Delta — Software developed by <span class="font-medium text-gray-700">impatech</span>
-  </div>
-
-</footer>
-
-
-  
+    // Install — OS tabs: switch the Node.js panel and aim the copy button at it.
+    (function () {
+      var card = document.getElementById('node-install');
+      if (!card) return;
+      var tabs = card.querySelectorAll('.code-tab');
+      var copy = card.querySelector('.code-head .copy');
+      function select(os) {
+        tabs.forEach(function (t) {
+          var on = t.dataset.os === os;
+          t.classList.toggle('is-active', on);
+          t.setAttribute('aria-selected', String(on));
+          if (on && copy) copy.dataset.clip = t.dataset.clip;
+        });
+        card.querySelectorAll('.code-panel').forEach(function (p) {
+          var on = p.dataset.os === os;
+          p.classList.toggle('is-active', on);
+          p.hidden = !on;
+        });
+      }
+      tabs.forEach(function (t) {
+        t.addEventListener('click', function () { select(t.dataset.os); });
+      });
+      // Pre-select the visitor's OS (fallback: Windows).
+      var ua = (navigator.userAgent || '').toLowerCase();
+      var os = ua.indexOf('mac') > -1 ? 'mac'
+        : (ua.indexOf('linux') > -1 || ua.indexOf('x11') > -1) ? 'deb' : 'win';
+      select(os);
+    })();
+  </script>
 </body>
 </html>

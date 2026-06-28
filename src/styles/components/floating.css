@@ -1,0 +1,122 @@
+/* floating.css — <delta-floating>: a fixed corner button that expands into a
+   floating panel (DeltaFloating, runtime/elements/floating.ts). The button (.floating-fab)
+   is pinned bottom-right; the panel composes on top of the shared .delta-pop bubble
+   (popover.css) — Delta.popover sets its position and toggles visibility — so this only
+   adds sizing, the header (.floating-hd / .floating-x) and the scrollable body
+   (.floating-body). Tokens via var(--delta-*); modeled on the staged .twk-* chrome. */
+
+@layer delta.components {
+
+/* The element itself takes no layout box; its only in-flow child (the FAB) is fixed. */
+delta-floating { display: contents; }
+
+/* Floating action button — a pill pinned to the bottom-right corner. */
+.floating-fab {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  appearance: none;
+  padding: 9px 15px;
+  border: var(--delta-hairline) solid var(--delta-rule);
+  border-radius: var(--delta-radius-pill);
+  background: var(--delta-surface-1);
+  color: var(--delta-ink);
+  font-family: var(--delta-sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: var(--delta-shadow-lift);
+  transition: background var(--delta-dur-fast) var(--delta-ease),
+              color var(--delta-dur-fast) var(--delta-ease),
+              opacity var(--delta-dur-fast) var(--delta-ease);
+}
+.floating-fab:hover {
+  background: var(--delta-surface-2);
+  color: var(--delta-accent-ink);
+}
+.floating-fab[aria-expanded="true"] { opacity: 0.55; }
+.floating-icon { font-size: 1.05em; line-height: 1; }
+
+/* The panel rides on .delta-pop (surface/border/radius/shadow/caret/entrance from
+   popover.css); widen it, cap its height and let the body scroll. `display` is set
+   ONLY in the open states — an unconditional `display` here would override the UA
+   `[popover]:not(:popover-open){display:none}` rule (and popover.css's fallback
+   `.delta-pop:not([popover])`), leaving the panel permanently visible so close/toggle
+   appear to do nothing. */
+.floating-panel.delta-pop {
+  width: min(320px, 92vw);
+  max-width: none;
+  max-height: calc(100vh - 32px);
+  padding: 0;
+  flex-direction: column;
+  overflow: hidden;
+}
+.floating-panel.delta-pop:popover-open,
+.floating-panel.delta-pop.is-open:not([popover]) {
+  display: flex;
+}
+
+.floating-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 10px 10px 16px;
+  border-bottom: var(--delta-hairline) solid var(--delta-rule-soft);
+  user-select: none;
+}
+.floating-title {
+  font-family: var(--delta-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--delta-tracking-cap);
+  text-transform: uppercase;
+  color: var(--delta-mute);
+}
+.floating-x {
+  flex: none;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--delta-mute);
+  width: 24px;
+  height: 24px;
+  border-radius: var(--delta-radius-sm);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--delta-dur-fast) var(--delta-ease),
+              color var(--delta-dur-fast) var(--delta-ease);
+}
+.floating-x:hover {
+  background: var(--delta-surface-2);
+  color: var(--delta-ink);
+}
+
+.floating-body {
+  padding: 8px 14px 14px;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* A toc nested in the panel sheds its own card chrome (border/bg/padding live in
+   toc.css) so the panel doesn't double up the surface. */
+.floating-body .toc {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.floating-body .toc-title { display: none; } /* the panel header already names it */
+
+@media print {
+  .floating-fab,
+  .floating-panel { display: none !important; }
+}
+
+}

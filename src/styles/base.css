@@ -1,0 +1,569 @@
+/* ==================================================================
+   DELTA BASE LAYER · base.css
+   Owns the theme tokens, the page grid, base typography, and a small
+   set of utility classes and shared interactive primitives (buttons,
+   inputs, range sliders, widget shell, tables, code blocks).
+
+   This is the default look for both `article` and `book` documents.
+   Delta's own chrome (section headings, theorem/proof boxes, equation
+   numbers) lives next to each feature in `components/<name>.css`
+   (wrapped in @layer delta.components). Per-document-type token
+   overrides live in `themes/<type>.css` (@layer delta.theme) and are
+   selected by `<document type="…">`.
+
+   All tokens are namespaced `--delta-*`; theming = override those.
+
+   -- TABLE OF CONTENTS -----------------------------------------------
+   1. TOKENS              colors · type · scale · layout · motion
+   2. RESET & BASE        box-sizing, body, selection, media
+   3. TYPOGRAPHY          base text, prose, links, smcaps utilities
+   4. PAGE LAYOUT         .page (flow column + sidenote rail) · .sidenote
+                          · .bleed
+   5. SHARED INTERACTIVE  .btn · .input · .range · .field-label · .kbd
+                          .widget shell (head/body/foot)
+   6. TABLES & CODE       .table-wrap · table.t · .code
+   7. RESPONSIVE          tablet → phone breakpoints (for the rules above)
+   ================================================================== */
+
+
+/* Cascade order — declared once, here, in the first stylesheet the page
+   loads. Components live in @layer delta.components, per-type themes in
+   @layer delta.theme, so themes always win regardless of <style> order.
+   (Unlayered rules — e.g. inlined KaTeX — still beat all of these.) */
+@layer delta.base, delta.components, delta.theme;
+
+@layer delta.base {
+
+/* --- 1. TOKENS --------------------------------------------------- */
+
+:root {
+  /* -- color */
+  --delta-paper:        oklch(0.965 0.012 78);
+  --delta-paper-edge:   oklch(0.945 0.014 78);
+  --delta-surface-1:    oklch(0.985 0.008 78);
+  --delta-surface-2:    oklch(0.935 0.012 78);
+  --delta-ink:          oklch(0.18 0.006 75);
+  --delta-ink-soft:     oklch(0.34 0.006 75);
+  --delta-mute:         oklch(0.56 0.008 75);
+  --delta-rule:         oklch(0.86 0.012 78);
+  --delta-rule-soft:    oklch(0.91 0.012 78);
+
+  --delta-accent:       oklch(0.80 0.062 150);
+  --delta-accent-ink:   oklch(0.38 0.07  150);
+  --delta-accent-soft:  oklch(0.93 0.04  150);
+
+  --delta-ok:           oklch(0.46 0.10 150);
+  --delta-warn:         oklch(0.50 0.13 22);
+
+  --delta-code-bg:      oklch(0.21 0.008 75);
+  --delta-code-fg:      oklch(0.94 0.005 75);
+  --delta-code-line:    oklch(0.32 0.008 75);
+  --delta-code-mute:    oklch(0.62 0.012 75);
+
+  /* -- chrome (consumed by components/*.css; override per theme) */
+  --delta-env-bg:       var(--delta-surface-2);
+  --delta-env-border:   var(--delta-accent-ink);
+
+  /* -- type families */
+  --delta-serif:        "Newsreader", "Source Serif 4", ui-serif, Georgia, serif;
+  --delta-sans:         ui-sans-serif, -apple-system, "Helvetica Neue", system-ui, sans-serif;
+  --delta-mono:         "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* -- type scale (clamped where it matters) */
+  --delta-t-base:       18px;
+  --delta-t-lede:       1em;
+  --delta-t-h1:         clamp(44px, 5.6vw, 84px);
+  --delta-t-h2:         clamp(24px, 2.6vw, 30px);
+  --delta-t-h3:         clamp(18px, 1.9vw, 21px);
+  --delta-t-h4:         clamp(16px, 1.5vw, 18px);
+  --delta-t-deck:       clamp(18px, 1.7vw, 22px);
+  --delta-t-small:      0.78em;
+  --delta-leading:      1.65;
+  --delta-leading-tight:1.15;
+  --delta-tracking-cap: 0.12em;
+
+  /* -- layout */
+  --delta-measure:      64ch;          /* main text column width */
+  --delta-margin-w:     16ch;          /* sidenote rail (floated marginalia) */
+  --delta-col-gap:      56px;          /* gap between text column and rail */
+  --delta-page-max:     1240px;
+  --delta-page-pad-x:   40px;
+  --delta-page-pad-y:   64px;
+  --delta-section-gap:  80px;
+  --delta-block-gap:    28px;
+
+  /* -- shape */
+  --delta-radius-sm:    4px;
+  --delta-radius:       6px;
+  --delta-radius-lg:    10px;
+  --delta-radius-pill:  100px;
+  --delta-hairline:     1px;
+  --delta-random-rotation: 1deg;
+
+  /* -- shadow — warm-toned, very low contrast; only on lifted blocks */
+  --delta-shadow-sm:    0 1px 2px rgba(60, 50, 30, .045);
+  --delta-shadow:       0 1px 1px rgba(60, 50, 30, .035),
+                        0 6px 18px rgba(60, 50, 30, .055);
+  --delta-shadow-lift:  0 1px 2px rgba(60, 50, 30, .04),
+                        0 14px 36px rgba(60, 50, 30, .07);
+  --delta-shadow-code:  0 1px 1px rgba(0, 0, 0, .04),
+                        0 10px 28px rgba(0, 0, 0, .10);
+
+  /* -- motion */
+  --delta-ease:         cubic-bezier(.2,.7,.2,1);
+  --delta-dur-fast:     .15s;
+  --delta-dur:          .25s;
+  --delta-dur-slow:     .45s;
+}
+
+/* accent palettes — override three vars only */
+[data-accent="sage"]       { --delta-accent: oklch(0.80 0.062 150); --delta-accent-ink: oklch(0.38 0.07  150); --delta-accent-soft: oklch(0.94 0.04 150); }
+[data-accent="rose"]       { --delta-accent: oklch(0.81 0.068 22);  --delta-accent-ink: oklch(0.42 0.10  22);  --delta-accent-soft: oklch(0.95 0.04 22);  }
+[data-accent="periwinkle"] { --delta-accent: oklch(0.78 0.072 270); --delta-accent-ink: oklch(0.42 0.10  270); --delta-accent-soft: oklch(0.94 0.04 270); }
+[data-accent="butter"]     { --delta-accent: oklch(0.86 0.082 92);  --delta-accent-ink: oklch(0.42 0.09  92);  --delta-accent-soft: oklch(0.96 0.05 92);  }
+[data-accent="ink"]        { --delta-accent: oklch(0.78 0.04  245); --delta-accent-ink: oklch(0.32 0.06  245); --delta-accent-soft: oklch(0.93 0.03 245); }
+
+
+/* --- 2. RESET & BASE -------------------------------------------- */
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+html { background: var(--delta-paper); }
+
+body {
+  color: var(--delta-ink);
+  background: var(--delta-paper);
+  font-family: var(--delta-serif);
+  font-size: var(--delta-t-base);
+  line-height: var(--delta-leading);
+  font-optical-sizing: auto;
+  font-variation-settings: "opsz" 16;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: var(--delta-accent-soft); color: var(--delta-ink); }
+
+img, svg { max-width: 100%; height: auto; display: block; }
+
+
+/* --- 3. TYPOGRAPHY ---------------------------------------------- */
+
+.eyebrow,
+.tag,
+.smcaps-tag {
+  font-family: var(--delta-sans);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--delta-mute);
+}
+
+p {
+  line-height: var(--delta-leading);
+  margin: 0 0 1.05em;
+  text-wrap: pretty;
+  hyphens: auto;
+}
+
+.lede::first-line {
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.08em;
+}
+.lede::first-letter {
+  font-family: var(--delta-serif);
+  font-weight: 500;
+  initial-letter: 3 2;
+  -webkit-initial-letter: 3 2;
+  color: var(--delta-accent-ink);
+  margin-right: 8px;
+}
+
+a {
+  color: var(--delta-accent-ink);
+  text-decoration: none;
+}
+.ref {
+  color: var(--delta-accent-ink);
+  border-bottom: 1px dashed color-mix(in oklab, var(--delta-accent-ink) 50%, transparent);
+  padding-bottom: 1px;
+  cursor: pointer;
+  transition: background var(--delta-dur-fast) var(--delta-ease), border-color var(--delta-dur-fast) var(--delta-ease);
+}
+.ref:hover {
+  background: color-mix(in oklab, var(--delta-accent-soft) 60%, transparent);
+  border-color: var(--delta-accent-ink);
+}
+
+.smcaps  { font-variant-caps: all-small-caps; letter-spacing: 0.08em; }
+.dot-sep { color: var(--delta-rule); margin: 0 10px; }
+
+
+
+/* --- 4. PAGE LAYOUT --------------------------------------------- */
+
+/* The page is a single flow column the width of the measure, with a
+   reserved right rail (gap + --delta-margin-w) that floated sidenotes
+   drop into so they sit beside the line that references them. .bleed
+   reclaims the rail to span the full writing area. Content nests as a
+   real document tree (delta-document » delta-section » delta-subsection).
+   `delta-document` is the compiled root, so it carries the page model. */
+.page,
+delta-document {
+  display: block;
+  max-width: min(var(--delta-page-max),
+                 calc(var(--delta-measure) + var(--delta-col-gap) + var(--delta-margin-w)));
+  margin: 0 auto;
+  /* reserve the rail on the right so normal flow stays within --delta-measure */
+  padding: var(--delta-page-pad-y)
+           calc(var(--delta-page-pad-x) + var(--delta-col-gap) + var(--delta-margin-w))
+           calc(var(--delta-page-pad-y) * 2.5)
+           var(--delta-page-pad-x);
+}
+
+.sidenote {
+  float: right;
+  clear: right;
+  width: var(--delta-margin-w);
+  margin-right: calc(-1 * (var(--delta-col-gap) + var(--delta-margin-w)));
+  margin-bottom: var(--delta-block-gap);
+}
+
+.bleed {
+  /* reclaim the reserved rail to span measure + gap + rail */
+  margin-right: calc(-1 * (var(--delta-col-gap) + var(--delta-margin-w)));
+  min-width: 0;
+}
+
+
+/* --- 5. SHARED INTERACTIVE PRIMITIVES --------------------------- */
+
+/* buttons */
+.btn {
+  font-family: var(--delta-sans);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 9px 16px;
+  border-radius: var(--delta-radius);
+  border: var(--delta-hairline) solid var(--delta-rule);
+  background: var(--delta-surface-1);
+  color: var(--delta-ink);
+  cursor: pointer;
+  transition: background var(--delta-dur-fast) var(--delta-ease),
+              filter var(--delta-dur-fast) var(--delta-ease),
+              color var(--delta-dur-fast) var(--delta-ease);
+  letter-spacing: 0.005em;
+  white-space: nowrap;
+}
+.btn:hover { background: var(--delta-surface-2); }
+.btn.primary {
+  background: var(--delta-accent-ink);
+  color: var(--delta-paper);
+  border-color: var(--delta-accent-ink);
+}
+.btn.primary:hover { filter: brightness(1.06); }
+.btn.ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--delta-ink-soft);
+}
+.btn.ghost:hover { background: var(--delta-surface-2); color: var(--delta-ink); }
+.btn:disabled { opacity: 0.4; cursor: default; }
+
+/* inputs */
+.input {
+  font-family: var(--delta-mono);
+  font-size: 14px;
+  padding: 9px 12px;
+  border-radius: var(--delta-radius);
+  border: var(--delta-hairline) solid var(--delta-rule);
+  background: var(--delta-paper);
+  color: var(--delta-ink);
+  outline: none;
+  transition: border-color var(--delta-dur-fast) var(--delta-ease),
+              box-shadow var(--delta-dur-fast) var(--delta-ease);
+  width: 100%;
+}
+.input:focus {
+  border-color: var(--delta-accent-ink);
+  box-shadow: 0 0 0 3px var(--delta-accent-soft);
+}
+.field-label {
+  font-family: var(--delta-sans);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--delta-mute);
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* range / slider */
+.range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 22px;
+  background: transparent;
+  cursor: pointer;
+}
+.range::-webkit-slider-runnable-track { height: 2px; background: var(--delta-rule); border-radius: 2px; }
+.range::-moz-range-track              { height: 2px; background: var(--delta-rule); border-radius: 2px; }
+.range::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--delta-paper);
+  border: 1.5px solid var(--delta-accent-ink);
+  margin-top: -8px;
+  box-shadow: var(--delta-shadow-sm);
+  transition: transform var(--delta-dur-fast) var(--delta-ease);
+}
+.range::-webkit-slider-thumb:hover { transform: scale(1.08); }
+.range::-moz-range-thumb {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--delta-paper);
+  border: 1.5px solid var(--delta-accent-ink);
+  box-shadow: var(--delta-shadow-sm);
+}
+
+/* widget shell — bordered card with optional head / body / foot regions.
+   Used by any interactive component (Fourier widgets, derivation slides,
+   future authoring widgets). Pure container styling — visual extras live
+   in each component's own CSS. */
+.widget {
+  background: var(--delta-surface-1);
+  border: var(--delta-hairline) solid var(--delta-rule);
+  border-radius: var(--delta-radius-lg);
+  margin: 36px 0 var(--delta-block-gap);
+  overflow: hidden;
+  box-shadow: var(--delta-shadow-lift);
+}
+.widget-head {
+  padding: 14px 22px;
+  border-bottom: var(--delta-hairline) solid var(--delta-rule-soft);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: baseline;
+  justify-content: space-between;
+  background: var(--delta-paper);
+}
+.widget-head .lbl {
+  font-family: var(--delta-sans);
+  font-size: 11px;
+  letter-spacing: var(--delta-tracking-cap);
+  text-transform: uppercase;
+  color: var(--delta-accent-ink);
+}
+.widget-head .ttl {
+  font-family: var(--delta-serif);
+  font-size: 17px;
+  font-weight: 500;
+  margin-left: 12px;
+  color: var(--delta-ink);
+}
+.widget-head .meta {
+  font-family: var(--delta-mono);
+  font-size: 12px;
+  color: var(--delta-mute);
+}
+.widget-body { padding: 22px; }
+.widget-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 18px;
+  padding: 14px 22px;
+  border-top: var(--delta-hairline) solid var(--delta-rule-soft);
+  background: var(--delta-paper);
+  font-family: var(--delta-sans);
+  font-size: 13px;
+  color: var(--delta-ink-soft);
+}
+.widget-foot label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+
+.kbd {
+  font-family: var(--delta-mono);
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: var(--delta-radius-sm);
+  background: var(--delta-surface-2);
+  border: var(--delta-hairline) solid var(--delta-rule);
+  color: var(--delta-ink-soft);
+}
+
+/* The anchored popover shell (.delta-pop) moved to components/popover.css,
+   next to its controller (src/runtime/utils.ts). */
+
+
+/* --- 6. TABLES & CODE ------------------------------------------- */
+
+.table-wrap {
+  overflow-x: auto;
+  margin: 30px 0;
+}
+table.t {
+  width: 100%;
+  min-width: 480px;
+  border-collapse: collapse;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums lining-nums;
+  margin: 0;
+}
+table.t caption {
+  text-align: left;
+  font-family: var(--delta-sans);
+  font-size: 11.5px;
+  letter-spacing: var(--delta-tracking-cap);
+  text-transform: uppercase;
+  color: var(--delta-ink);
+  padding: 0 0 12px;
+}
+table.t thead th {
+  text-align: left;
+  font-family: var(--delta-sans);
+  font-weight: 500;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--delta-mute);
+  padding: 0 14px 8px;
+  border-bottom: var(--delta-hairline) solid var(--delta-ink);
+}
+table.t tbody td {
+  padding: 11px 14px;
+  border-bottom: var(--delta-hairline) solid var(--delta-rule-soft);
+  vertical-align: top;
+}
+table.t tbody tr:last-child td { border-bottom: var(--delta-hairline) solid var(--delta-ink); }
+table.t .num { text-align: right; font-variant-numeric: tabular-nums; }
+table.t .mono { font-family: var(--delta-mono); font-size: 13px; }
+
+.code {
+  background: var(--delta-code-bg);
+  color: var(--delta-code-fg);
+  border-radius: var(--delta-radius-lg);
+  padding: 18px 20px;
+  font-family: var(--delta-mono);
+  font-size: 13.5px;
+  line-height: 1.62;
+  overflow-x: auto;
+  margin: var(--delta-block-gap) 0;
+  position: relative;
+  -webkit-overflow-scrolling: touch;
+  box-shadow: var(--delta-shadow-code);
+}
+.code-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--delta-sans);
+  font-size: 11px;
+  letter-spacing: var(--delta-tracking-cap);
+  text-transform: uppercase;
+  color: var(--delta-code-mute);
+  margin: -4px 0 14px;
+  padding-bottom: 12px;
+  border-bottom: var(--delta-hairline) solid var(--delta-code-line);
+}
+.code-head .dot {
+  display: inline-block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--delta-accent);
+  margin-right: 9px;
+  vertical-align: 1px;
+}
+.code .k { color: oklch(0.86 0.085 92); }
+.code .s { color: oklch(0.85 0.062 150); }
+.code .n { color: oklch(0.84 0.06 22); }
+.code .c { color: oklch(0.58 0.012 75); font-style: italic; }
+.code .f { color: oklch(0.84 0.05 270); }
+.code .op{ color: oklch(0.86 0.01 75); }
+.code .l {
+  color: var(--delta-code-mute);
+  user-select: none;
+  padding-right: 16px;
+  display: inline-block;
+  min-width: 28px;
+  text-align: right;
+}
+
+
+/* --- 7. RESPONSIVE ---------------------------------------------- */
+
+@media (max-width: 1200px) {
+  :root {
+    --delta-col-gap: 40px;
+    --delta-page-pad-x: 32px;
+    --delta-page-pad-y: 56px;
+    --delta-section-gap: 64px;
+  }
+}
+
+@media (max-width: 980px) {
+  :root {
+    --delta-col-gap: 0;
+    --delta-page-pad-x: 28px;
+    --delta-page-pad-y: 44px;
+    --delta-section-gap: 56px;
+    --delta-t-base: 17px;
+  }
+  /* Collapse the rail: full-width flow, sidenotes stack inline. */
+  .page,
+  delta-document {
+    max-width: min(var(--delta-page-max), calc(var(--delta-measure) + 8ch));
+    padding: var(--delta-page-pad-y) var(--delta-page-pad-x) calc(var(--delta-page-pad-y) * 2.5);
+  }
+  .sidenote {
+    float: none;
+    clear: none;
+    width: auto;
+    margin: 16px 0;
+  }
+  .bleed { margin-right: 0; }
+  .widget-body { padding: 18px; }
+  .widget-head, .widget-foot { padding: 12px 18px; }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --delta-page-pad-x: 18px;
+    --delta-page-pad-y: 30px;
+    --delta-section-gap: 44px;
+    --delta-block-gap: 22px;
+    --delta-t-base: 16.5px;
+  }
+  .lede::first-letter { initial-letter: 2 1.5; -webkit-initial-letter: 2 1.5; }
+  .widget-head { padding: 12px 14px; }
+  .widget-body { padding: 14px; }
+  .widget-foot { padding: 12px 14px; font-size: 12.5px; }
+  .widget-head .ttl { margin-left: 0; display: block; font-size: 15.5px; }
+
+  table.t { font-size: 14px; }
+  table.t thead th { padding: 0 10px 8px; }
+  table.t tbody td { padding: 9px 10px; }
+
+  .code { padding: 14px 14px; font-size: 12.5px; }
+  .code-head { font-size: 10px; }
+}
+
+@media (max-width: 380px) {
+  :root { --delta-t-base: 16px; --delta-page-pad-x: 14px; }
+}
+
+@media print {
+  body { background: white; color: black; }
+  .widget-foot { display: none; }
+  .widget { break-inside: avoid; }
+}
+
+} /* @layer delta.base */

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="121.01638mm"
+   height="119.07436mm"
+   viewBox="0 0 121.01638 119.07436"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
+   sodipodi:docname="delta_logo.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#000000"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="true"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showguides="true"
+     inkscape:zoom="0.81847605"
+     inkscape:cx="423.95865"
+     inkscape:cy="721.46277"
+     inkscape:window-width="1416"
+     inkscape:window-height="910"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1">
+    <inkscape:page
+       x="0"
+       y="0"
+       width="121.01638"
+       height="119.07436"
+       id="page2"
+       margin="0"
+       bleed="0" />
+  </sodipodi:namedview>
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-66.387602,-169.0053)">
+    <g
+       id="g7-64"
+       transform="matrix(9.8641218,0,0,9.8641218,-193.93581,-1118.8588)">
+      <path
+         d="m 35.593184,130.56687 h -1.523997 l -5.583759,12.02265 h 1.523997 z"
+         id="text1-3"
+         style="font-weight:bold;font-size:16.9333px;font-family:'Nimbus Roman';-inkscape-font-specification:'Nimbus Roman, Bold';fill:#241f1c;stroke-width:0.264583"
+         aria-label="/"
+         sodipodi:nodetypes="ccccc" />
+      <path
+         d="m 33.498693,130.56044 h -1.523997 l -5.583759,12.02265 h 1.523997 z"
+         id="text1-3-1"
+         style="font-weight:bold;font-size:16.9333px;font-family:'Nimbus Roman';-inkscape-font-specification:'Nimbus Roman, Bold';fill:#241f1c;stroke-width:0.264583"
+         aria-label="/"
+         sodipodi:nodetypes="ccccc" />
+      <path
+         d="m 30.473,142.5431 8.000454,0.0888 0.185821,-0.28313 -3.772654,-7.94577 -0.808268,1.84038 2.288392,5.37047 -5.500332,-0.0192 z"
+         id="text3-3"
+         style="font-weight:bold;font-size:16.9333px;font-family:'Nimbus Roman';-inkscape-font-specification:'Nimbus Roman, Bold';fill:#6c5d53;stroke-width:0.264583"
+         aria-label="&gt;"
+         sodipodi:nodetypes="cccccccc" />
+    </g>
+  </g>
+</svg>

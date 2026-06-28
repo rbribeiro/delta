@@ -1,0 +1,114 @@
+/* list.css — ordered & unordered lists. DeltaList (runtime/elements/list.ts)
+   converts <delta-list>/<delta-item> into semantic <ol class="delta-list">
+   with <li class="delta-list-item"> and records the marker style on
+   data-marker. Markers are drawn here with CSS counters + ::before (not native
+   ::marker) so they can take Delta's accent ink, tabular figures and a tidy
+   right-aligned gutter. All knobs are --delta-list-* tokens scoped to the list,
+   so a theme can restyle every list by overriding them. Tokens via var(--delta-*). */
+
+@layer delta.components {
+
+/* Pre-upgrade / no-JS fallback: show the raw tags as a plain list. */
+delta-list { display: block; margin: var(--delta-block-gap) 0; }
+delta-item { display: list-item; margin-left: 1.5em; }
+
+.delta-list {
+  /* -- tunable knobs (override in a theme to restyle every list) -- */
+  --delta-list-indent:   2.1em;                 /* marker gutter width   */
+  --delta-list-gap:      0.7em;                 /* marker → text spacing */
+  --delta-list-item-gap: 0.5em;                 /* vertical gap per item */
+  --delta-list-marker:   var(--delta-accent-ink);
+  --delta-list-bullet:   var(--delta-accent);
+
+  margin: var(--delta-block-gap) 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: delta-item;                    /* each list numbers from 1 */
+}
+
+/* Nested lists tuck in tighter and drop the surrounding block gap. */
+.delta-list .delta-list { margin: var(--delta-list-item-gap) 0 0; }
+
+.delta-list-item {
+  position: relative;
+  margin: 0 0 var(--delta-list-item-gap);
+  padding-left: var(--delta-list-indent);
+  line-height: var(--delta-leading);
+  counter-increment: delta-item;
+  text-wrap: pretty;
+}
+.delta-list-item:last-child { margin-bottom: 0; }
+/* Block children (paragraphs, nested lists, equations) shed their outer gaps. */
+.delta-list-item > :first-child { margin-top: 0; }
+.delta-list-item > :last-child  { margin-bottom: 0; }
+
+/* -- Marker base ------------------------------------------------------- */
+.delta-list-item::before {
+  position: absolute;
+  left: 0;
+  width: calc(var(--delta-list-indent) - var(--delta-list-gap));
+  font-family: var(--delta-sans);
+  color: var(--delta-list-marker);
+}
+
+/* -- Ordered markers: numbers / letters, right-aligned against the text -- */
+.delta-list[data-marker="decimal"]     > .delta-list-item::before { content: counter(delta-item, decimal) "."; }
+.delta-list[data-marker="alpha"]       > .delta-list-item::before { content: counter(delta-item, lower-alpha) "."; }
+.delta-list[data-marker="alpha-upper"] > .delta-list-item::before { content: counter(delta-item, upper-alpha) "."; }
+.delta-list[data-marker="roman"]       > .delta-list-item::before { content: counter(delta-item, lower-roman) "."; }
+.delta-list[data-marker="roman-upper"] > .delta-list-item::before { content: counter(delta-item, upper-roman) "."; }
+
+:is(
+  .delta-list[data-marker="decimal"],
+  .delta-list[data-marker="alpha"],
+  .delta-list[data-marker="alpha-upper"],
+  .delta-list[data-marker="roman"],
+  .delta-list[data-marker="roman-upper"]
+) > .delta-list-item::before {
+  top: 0;
+  text-align: right;
+  font-size: 0.9em;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: 0.01em;
+}
+
+/* -- Unordered: a filled accent dot on the first line ------------------ */
+.delta-list[data-marker="bullet"] > .delta-list-item::before {
+  content: "";
+  width: 0.4em;
+  height: 0.4em;
+  left: 0.25em;
+  top: calc(var(--delta-list-bullet-y, 0.5) * var(--delta-leading) * 1em);
+  margin-top: -0.2em;
+  border-radius: 50%;
+  background: var(--delta-list-bullet);
+}
+/* Nested unordered lists vary the bullet so depth reads at a glance:
+   level 2 → a hollow ring, level 3+ → a short dash. */
+.delta-list .delta-list[data-marker="bullet"] > .delta-list-item::before {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.4px var(--delta-list-bullet);
+}
+.delta-list .delta-list .delta-list[data-marker="bullet"] > .delta-list-item::before {
+  width: 0.5em;
+  height: 2px;
+  margin-top: -1px;
+  border-radius: 1px;
+  box-shadow: none;
+  background: var(--delta-list-bullet);
+}
+
+/* -- Unordered: en-dash marker ---------------------------------------- */
+.delta-list[data-marker="dash"] > .delta-list-item::before {
+  content: "–";
+  top: 0;
+  left: 0.1em;
+  color: var(--delta-list-bullet);
+}
+
+/* -- Unordered: no marker (flush list) -------------------------------- */
+.delta-list[data-marker="none"] { --delta-list-indent: 0; }
+.delta-list[data-marker="none"] > .delta-list-item::before { content: none; }
+
+}

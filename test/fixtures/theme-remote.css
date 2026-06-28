@@ -1,0 +1,5 @@
+/* Test fixture: a theme that smuggles in an external resource (warned, still inlined). */
+@import url("https://x.test/a.css");
+:root {
+  --delta-accent: #2980b9;
+}

@@ -1,0 +1,19 @@
+<document type="book">
+    <section id="sec:identities">
+      <title>Algebraic identities</title>
+
+      Numbering continues across the project: this is chapter 2, even though it
+      lives in a different file. We can also reach back to results from chapter
+      one — recall <ref to="thm:pyth"/>. Clicking it previews a copy of the theorem
+      shipped into this page, and the jump button opens its home chapter.
+
+      <theorem id="thm:binomial">
+        <title>Binomial square</title>
+        For all real $a$ and $b$, $$(a + b)^2 = a^2 + 2ab + b^2.$$
+      </theorem>
+
+      Setting $b \to -b$ recovers the difference of squares, a cousin of the
+      geometric result <ref to="thm:pyth"/> rests on. The historical thread runs
+      back through the classics <cite paper="euclid"/>.
+    </section>
+</document>

@@ -1,0 +1,139 @@
+/* code.css — `<code lang>` highlighted display block + inline `<c>`. highlight.js
+   runs at compile time (src/compiler/code.ts) and ships only class-based spans;
+   this maps them onto Delta's code palette and styles the chrome the runtime
+   builds (header, copy button, line-number gutter). Tokens via var(--delta-*). */
+
+@layer delta.components {
+
+/* inline literal code */
+delta-c {
+  font-family: var(--delta-mono);
+  font-size: 0.86em;
+  padding: 0.12em 0.4em;
+  border-radius: var(--delta-radius-sm);
+  background: var(--delta-surface-2);
+  border: var(--delta-hairline) solid var(--delta-rule);
+  color: var(--delta-ink);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* highlighted display block — a dark card. white-space:pre keeps it readable even
+   before the runtime upgrades it (progressive enhancement). */
+delta-code {
+  display: block;
+  margin: var(--delta-block-gap) 0;
+  background: var(--delta-code-bg);
+  color: var(--delta-code-fg);
+  border-radius: var(--delta-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--delta-shadow-code);
+  font-family: var(--delta-mono);
+  font-size: 13.5px;
+  line-height: 1.62;
+  white-space: pre;
+}
+
+/* header: language label + copy button */
+.code-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: var(--delta-hairline) solid var(--delta-code-line);
+  font-family: var(--delta-sans);
+  white-space: normal;
+}
+.code-lang {
+  font-size: 11px;
+  letter-spacing: var(--delta-tracking-cap);
+  text-transform: uppercase;
+  color: var(--delta-code-mute);
+}
+.code-copy {
+  font-family: var(--delta-sans);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--delta-code-fg);
+  background: color-mix(in oklab, var(--delta-code-fg) 12%, transparent);
+  border: var(--delta-hairline) solid var(--delta-code-line);
+  border-radius: var(--delta-radius-pill);
+  padding: 4px 12px;
+  cursor: pointer;
+  transition: background var(--delta-dur-fast) var(--delta-ease);
+}
+.code-copy:hover { background: color-mix(in oklab, var(--delta-code-fg) 22%, transparent); }
+.code-copy.is-copied {
+  color: var(--delta-accent);
+  border-color: color-mix(in oklab, var(--delta-accent) 50%, transparent);
+}
+
+/* body: line-number gutter + scrolling source */
+.code-body {
+  display: flex;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.code-gutter {
+  flex: none;
+  padding: 16px 14px 16px 16px;
+  text-align: right;
+  color: var(--delta-code-mute);
+  white-space: pre;
+  user-select: none;
+  -webkit-user-select: none;
+  border-right: var(--delta-hairline) solid var(--delta-code-line);
+}
+.code-src {
+  margin: 0;
+  padding: 16px 18px;
+  white-space: pre;
+}
+.code-src code { font-family: inherit; background: none; padding: 0; }
+
+/* folded: the header bar stays; collapse.css hides the .collapse-body */
+delta-code.is-collapsed { padding-bottom: 0; }
+
+/* --- highlight.js classes → Delta code palette --------------------------------
+   Reuses the oklch values base.css already uses for .code .k/.s/.n/.c/.f/.op. */
+delta-code .hljs-keyword,
+delta-code .hljs-selector-tag,
+delta-code .hljs-name,
+delta-code .hljs-tag { color: oklch(0.86 0.085 92); }
+
+delta-code .hljs-string,
+delta-code .hljs-regexp,
+delta-code .hljs-symbol,
+delta-code .hljs-meta .hljs-string { color: oklch(0.85 0.062 150); }
+
+delta-code .hljs-number,
+delta-code .hljs-literal { color: oklch(0.84 0.06 22); }
+
+delta-code .hljs-comment,
+delta-code .hljs-quote { color: oklch(0.58 0.012 75); font-style: italic; }
+
+delta-code .hljs-title,
+delta-code .hljs-title.function_,
+delta-code .hljs-section,
+delta-code .hljs-built_in { color: oklch(0.84 0.05 270); }
+
+delta-code .hljs-attr,
+delta-code .hljs-attribute,
+delta-code .hljs-variable,
+delta-code .hljs-template-variable,
+delta-code .hljs-type,
+delta-code .hljs-property,
+delta-code .hljs-params { color: var(--delta-code-fg); }
+
+delta-code .hljs-operator,
+delta-code .hljs-punctuation,
+delta-code .hljs-meta { color: oklch(0.86 0.01 75); }
+
+delta-code .hljs-emphasis { font-style: italic; }
+delta-code .hljs-strong { font-weight: 700; }
+delta-code .hljs-deletion { color: var(--delta-warn); }
+delta-code .hljs-addition { color: var(--delta-ok); }
+
+}

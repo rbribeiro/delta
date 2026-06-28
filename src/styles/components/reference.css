@@ -1,0 +1,89 @@
+/* reference.css — <delta-ref>: a cross-reference that previews its target in a
+   hovercard (.xref-pop) built on the shared .delta-pop shell (base.css), instead
+   of jumping. STAGED — reference.js builds the inner <a> and the card. The trigger
+   reuses the dashed .ref look. Tokens via var(--delta-*). */
+
+@layer delta.components {
+
+delta-ref { display: inline; }
+
+/* The inline trigger — a self-contained, .ref-like affordance (it's a <button>,
+   so it resets the native chrome and inherits the prose font). */
+.xref {
+  font: inherit;
+  color: var(--delta-accent-ink);
+  background: none;
+  border: 0;
+  border-bottom: 1px dashed color-mix(in oklab, var(--delta-accent-ink) 50%, transparent);
+  padding: 0 1px;
+  cursor: pointer;
+  transition: background var(--delta-dur-fast) var(--delta-ease),
+              border-color var(--delta-dur-fast) var(--delta-ease);
+}
+.xref:hover {
+  background: color-mix(in oklab, var(--delta-accent-soft) 60%, transparent);
+  border-color: var(--delta-accent-ink);
+}
+
+/* Card content chrome on top of the shared .delta-pop shell. */
+.xref-pop { width: max-content; max-width: min(40ch, 92vw); padding: 10px 13px; }
+
+.xref-pop-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.xref-pop-label {
+  font-family: var(--delta-sans);
+  font-size: 11px;
+  letter-spacing: var(--delta-tracking-cap);
+  text-transform: uppercase;
+  color: var(--delta-mute);
+}
+.xref-go {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px; height: 24px;
+  padding: 0;
+  color: var(--delta-accent-ink);
+  background: var(--delta-accent-soft);
+  border: var(--delta-hairline) solid var(--delta-rule);
+  border-radius: var(--delta-radius);
+  cursor: pointer;
+  transition: background var(--delta-dur-fast) var(--delta-ease);
+}
+.xref-go:hover { background: var(--delta-surface-2); }
+.xref-go svg { width: 15px; height: 15px; display: block; }
+
+.xref-pop-body {
+  max-height: 40vh;
+  overflow: auto;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.xref-pop-body > :first-child { margin-top: 0; }
+.xref-pop-body > :last-child  { margin-bottom: 0; }
+.xref-pop-body img { max-height: 30vh; width: auto; }
+
+/* Flatten a cloned theorem .box so it reads as plain preview content
+   (no floating pill, border, or shadow inside the small card). */
+.xref-pop-body .box {
+  margin: 0; padding: 0; border: 0; box-shadow: none; background: none;
+}
+.xref-pop-body .box-tag {
+  position: static; margin: 0 0 4px; transform: none;
+}
+.xref-pop-body :is(h2, h3, h4) { margin: 0; }
+
+/* Brief accent flash on the target when the reader jumps to it. */
+.is-xref-target { animation: xref-flash 2s var(--delta-ease); border-radius: var(--delta-radius); }
+@keyframes xref-flash {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; background: transparent; }
+  12%      { box-shadow: 0 0 0 4px var(--delta-accent-soft); background: var(--delta-accent-soft); }
+}
+
+}

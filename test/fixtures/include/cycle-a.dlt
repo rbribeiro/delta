@@ -1,0 +1,3 @@
+<document>
+  <section><title>A</title><include src="cycle-b.dlt"/></section>
+</document>

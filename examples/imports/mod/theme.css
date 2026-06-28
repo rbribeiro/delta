@@ -1,0 +1,17 @@
+/* Styling for the <callout> element defined in this pack. Uses the design
+   system's --delta-* tokens so it inherits the document theme; the author's
+   <document theme> can still override it (it is inlined after this). */
+delta-callout {
+  display: block;
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  border-left: 4px solid var(--delta-accent, #c0392b);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--delta-accent, #c0392b) 8%, transparent);
+}
+
+delta-callout .callout-label {
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+  color: var(--delta-accent, #c0392b);
+}

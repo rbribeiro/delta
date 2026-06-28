@@ -1,0 +1,146 @@
+<document lang="pt" type="article" theme="style/example.css" theme-accent="sage">
+  <title>Hello, <em>delta</em></title>
+
+  <import src="imports/mod" />
+
+  <floating>
+    <toc />
+  </floating>
+  
+
+  <section id="sec:intro">
+    <eyebrow>
+      Learning Delta
+    </eyebrow>
+    <title>Introduction</title>
+    Delta turns strict XML into a single offline HTML file. Inline math like
+    $e^{i\pi} + 1 = 0$ just works, and symbols like $a < b$ are fine inside math. We can also write external links like <link to="http://en.wikipedia.org/wiki/Delta_(letter)">this</link>.
+
+    <callout label="Tip">
+      This box is rendered by a custom element from an imported pack
+      (its JS and CSS are inlined into the standalone output).
+    </callout>
+
+    <theorem id="thm:pyth" collapsible="true">
+      <title>Pythagorean Theorem</title>
+      <meta>
+        <meta-item key="Author">Pitágoras</meta-item>
+        <meta-item key="Year">500 B.C</meta-item>
+      </meta>
+      For a right triangle with legs $a$, $b$ and hypotenuse $c$,
+      <equation id="eq:pyth">a^2 + b^2 = c^2</equation>
+    </theorem>
+
+    <proof collapsible="true" of="thm:pyth">
+      Left as an exercise for the reader — it costs \$0 to try. You can see a hint here <hint>Hint body</hint>
+    </proof>
+  
+    <subsection id="subsec:id">
+     
+      <title>Subsection</title>
+      This is a subsection.
+    This is a reference to <ref to="sec:intro" /> and to <ref to="subsec:id" />
+
+    </subsection>
+  </section>
+
+  <section id="sec:numbering">
+    <title>Numbering</title>
+
+    <lemma id="lem:counting">
+      <title>Counters reset</title>
+      The theorem family shares one counter, prefixed by the section:
+      this lemma is numbered 2.1 because the section incremented.
+    </lemma>
+     <sidenote>
+      <title>Title</title>
+      This note goes to the margin.
+    </sidenote>
+    <equations id="eq:aligned">
+      (a + b)^2 &= a^2 + 2ab + b^2 \\
+                &= c^2 + 2ab
+    </equations>
+    <remark id="remark">
+      <title>This is the remark's title</title>
+        This is the remark's content.
+    </remark>
+  </section>
+
+  <section collapsible="true" collapsed="true">
+    <title>Media</title>
+    <youtube src="https://youtu.be/l6DKRf-fAAM?si=YnUjj9qRqVKEUzW3">
+        <caption>Um vídeo do YouTube incorporado, preenchendo o quadro em 16:9.</caption>
+    </youtube>
+    Podemos também incorporar uma figura local, usando a tag &lt;figure&gt;  e um caminho relativo:
+    <figure src="img.png">
+      <caption>Figura local, também com legenda.</caption>
+    </figure>
+  </section>
+  <section>
+    <title>Referring to other elements</title>
+    We can refer to other elements by their ID, and the reference will be replaced by the target's title or caption, prefixed by the element type. For example, <ref to="thm:pyth"/> refers to the Pythagorean Theorem, and <ref to="eq:pyth"/> refers to the equation within it. The lemma is <ref to="lem:counting"/>, and the remark is <ref to="eq:aligned"/>.
+
+    We can also cite papers from a bibliography: the result is classical <cite paper="pythagoras"/>, and a full treatment appears in the standard sources <cite papers="euclid,pythagoras"/>.
+
+    <solution>
+      <title>Proof's title</title>
+      This is a proof with a title.
+    </solution>
+  </section>
+
+  <section id="sec:code">
+    <title>Code</title>
+    Inline code like <c>git status</c> stays literal, even with symbols like &lt; and &amp;.
+    A highlighted block, with a language label, copy button and line numbers:
+    <code lang="python">
+      def fib(n):
+          # the classic, in O(n)
+          a, b = 0, 1
+          for _ in range(n):
+              a, b = b, a + b
+          return a
+    </code>
+  </section>
+
+  <include src="include.dlt" />
+
+  <section>
+    <title>Including specific elements from another file</title>
+    Delta supports including specific elements from other files. This is useful for reusing content across multiple documents. The included file can contain any valid Delta content, and it will be processed as if it were part of the main document. In this example, we include only the Weierstrass Theorem from the included file, demonstrating that we can selectively include content based on its ID.
+    <include src="includeElement.dlt" target-id="thm:weiestrass" />
+  </section>
+
+  <section>
+    <title>Formatting text</title>
+    You can format text using various tags. For example, you can make text <em>emphasis</em>, <i>italic</i>, <strong>bold</strong>, or <u>underlined</u>, or strikeout text with <s>strikethrough</s>. Highlight <mark>text (to be highlighted)</mark> to draw attention
+  </section>
+
+  <section>
+    <title>Lists</title>
+    Delta supports both ordered and unordered lists. Write <c><list></c> for a bulleted list, or pick how an ordered list enumerates with the <c>marker</c> attribute: <c>marker="number"</c> for 1, 2, 3, <c>marker="alpha"</c> for a, b, c (use <c>marker="A"</c> for capitals), or <c>marker="roman"</c> for i, ii, iii. Each entry is an <c><item></c>; nest a <c><list></c> inside an item and the inner level keeps its own numbering. An ordered list can also <c>start</c> at any number.
+    <list marker="number">
+      <item>First item</item>
+      <item>Second item</item>
+      <item>Third item, with a nested alphabetical list:
+        <list marker="alpha">
+          <item>Nested item one</item>
+          <item>Nested item two</item>
+        </list>
+      </item>
+    </list>
+    Unordered lists vary their bullet by depth, and you can resume numbering anywhere:
+    <list>
+      <item>A bulleted point
+        <list>
+          <item>A nested point, drawn with a hollow marker</item>
+        </list>
+      </item>
+      <item>Another point</item>
+    </list>
+    <list marker="roman" start="4">
+      <item>The fourth step</item>
+      <item>The fifth step</item>
+    </list>
+  </section>
+  <bibliography src="refs.ref" />
+</document>

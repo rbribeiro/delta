@@ -1,0 +1,28 @@
+/* sidenote.css — inline marginalia, appearance only. LIVE: DeltaSidenote adds
+   .sidenote; positioning (float into the reserved rail, and the narrow-viewport
+   collapse) lives in base.css's page layout, since the rail is a page-grid
+   primitive like .bleed. Tokens via var(--delta-*). */
+
+@layer delta.components {
+
+delta-sidenote { display: block; }
+
+.sidenote {
+  font-family: var(--delta-serif);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--delta-ink-soft);
+  border-left: 2px solid var(--delta-accent);
+  padding: 2px 0 2px 14px;
+}
+.sidenote .n {
+  font-family: var(--delta-sans);
+  font-size: 10.5px;
+  letter-spacing: var(--delta-tracking-cap);
+  text-transform: uppercase;
+  color: var(--delta-accent-ink);
+  display: block;
+  margin-bottom: 6px;
+}
+
+}

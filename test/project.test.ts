@@ -1,0 +1,139 @@
+import { resolve } from "node:path";
+import { describe, expect, it } from "vitest";
+import { compileProject, type ProjectResult } from "../src/compiler/project";
+
+const DIR = "test/fixtures/project";
+
+/** Compile project fixtures (by file name, relative to the fixtures dir). */
+function build(names: string[]): ProjectResult {
+  return compileProject({ inputs: names.map((n) => resolve(DIR, n)), outDir: "out" });
+}
+
+/** The emitted HTML for one output, found by its basename. */
+function out(result: ProjectResult, name: string): string {
+  const file = result.outputs.find((o) => o.path.endsWith(name));
+  if (!file) throw new Error(`no output ${name}; got ${result.outputs.map((o) => o.path)}`);
+  return file.html;
+}
+
+interface TocEntry {
+  level: number;
+  id: string;
+  num: string;
+  title: string;
+  file?: string;
+}
+
+/** Parse the `#delta-toc` JSON island out of an output's HTML. */
+function tocIsland(html: string): TocEntry[] {
+  const m = html.match(
+    /<script type="application\/json" id="delta-toc">([\s\S]*?)<\/script>/,
+  );
+  return m ? (JSON.parse(m[1]) as TocEntry[]) : [];
+}
+
+const FILES = ["intro.dlt", "chapter1.dlt", "chapter2.dlt"];
+
+describe("compileProject", () => {
+  it("produces one output per input and reports no errors", () => {
+    const r = build(FILES);
+    expect(r.outputs.map((o) => o.path.replace(/.*\//, "")).sort()).toEqual([
+      "chapter1.html",
+      "chapter2.html",
+      "intro.html",
+    ]);
+    expect(r.diagnostics.filter((d) => d.severity === "error")).toHaveLength(0);
+  });
+
+  it("shares one counter state, so numbering continues across files", () => {
+    const r = build(FILES);
+    // chapter1 opens section 1; its theorem is 1.1.
+    expect(out(r, "chapter1.html")).toContain('id="ch1-sec" num="1"');
+    expect(out(r, "chapter1.html")).toContain('id="thm-a" num="1.1"');
+    // chapter2 continues at section 2; its theorem is 2.1.
+    expect(out(r, "chapter2.html")).toContain('id="ch2-sec" num="2"');
+    expect(out(r, "chapter2.html")).toContain('id="thm-b" num="2.1"');
+  });
+
+  it("resolves a cross-file <ref> and ships a copy of the target into the output", () => {
+    const ch2 = out(build(FILES), "chapter2.html");
+    expect(ch2).toContain('data-target-num="1.1"');
+    expect(ch2).toContain('data-target-tag="theorem"');
+    // The jump navigates to the target's own output file.
+    expect(ch2).toContain('data-target-href="chapter1.html#thm-a"');
+    // A copy of chapter1's theorem is snapshotted into chapter2 (no fetch).
+    expect(ch2).toMatch(/<template data-delta-pop="thm-a"><delta-theorem/);
+  });
+
+  it("leaves a same-file <ref> using the in-page jump (no cross-file href)", () => {
+    const ch1 = out(build(FILES), "chapter1.html");
+    expect(ch1).toContain('data-target-num="1.1"');
+    // No <delta-ref> in chapter1 carries a cross-file href (the runtime JS mentions
+    // the attribute name, so scope the check to the element).
+    expect(ch1).not.toMatch(/<delta-ref[^>]*data-target-href/);
+  });
+
+  it("numbers a cross-file <cite> project-wide and snapshots the paper", () => {
+    const ch2 = out(build(FILES), "chapter2.html");
+    expect(ch2).toContain('data-cite-nums="1"');
+    expect(ch2).toContain('data-cite-ids="ARS10"');
+    expect(ch2).toContain('data-cite-file="chapter1.html"');
+    expect(ch2).toContain('<template data-delta-pop="ARS10">');
+  });
+
+  it("renders the project bibliography with only cited papers", () => {
+    const ch1 = out(build(FILES), "chapter1.html");
+    expect(ch1).toContain('<delta-paper id="ARS10"');
+    expect(ch1).not.toContain("KL98"); // loaded but never cited
+  });
+
+  it("errors on inputs that collide on a flat output name", () => {
+    const dup = compileProject({
+      inputs: [resolve(DIR, "chapter1.dlt"), resolve(DIR, "chapter1.dlt")],
+      outDir: "out",
+    });
+    expect(dup.outputs).toHaveLength(0);
+    expect(
+      dup.diagnostics.some((d) => d.severity === "error" && /duplicate output/.test(d.message)),
+    ).toBe(true);
+  });
+
+  it("keeps the offline invariant across outputs (no http(s)/link/non-data url)", () => {
+    for (const o of build(FILES).outputs) {
+      expect(o.html).not.toMatch(/(src|href)\s*=\s*["']https?:/i);
+      expect(o.html).not.toMatch(/<link/i);
+    }
+  });
+});
+
+describe("project table of contents", () => {
+  it("ships a book-wide ToC island, tagging other files' entries with their output", () => {
+    const toc = tocIsland(out(build(FILES), "chapter1.html"));
+    const byId = Object.fromEntries(toc.map((e) => [e.id, e]));
+
+    // chapter1's own heading is left untagged (same-file → in-page jump).
+    expect(byId["ch1-sec"]).toBeDefined();
+    expect(byId["ch1-sec"].file).toBeUndefined();
+
+    // chapter2's heading is tagged with its home output (cross-file jump).
+    expect(byId["ch2-sec"]?.file).toBe("chapter2.html");
+  });
+
+  it("slugs an id-less heading in a file that has no <toc> of its own", () => {
+    const r = build(FILES);
+    const toc = tocIsland(out(r, "chapter1.html"));
+    const deeper = toc.find((e) => e.title === "Deeper");
+    expect(deeper).toBeDefined();
+    expect(deeper!.id).toBe("deeper");
+    expect(deeper!.file).toBe("chapter2.html");
+    // The generated id is a real anchor in chapter2's own output.
+    expect(out(r, "chapter2.html")).toMatch(/<delta-subsection[^>]*id="deeper"/);
+  });
+
+  it("only the file with a <toc> ships an island", () => {
+    const r = build(FILES);
+    expect(out(r, "chapter1.html")).toContain('id="delta-toc"');
+    expect(out(r, "chapter2.html")).not.toContain('id="delta-toc"');
+    expect(out(r, "intro.html")).not.toContain('id="delta-toc"');
+  });
+});

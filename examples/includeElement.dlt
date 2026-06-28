@@ -1,0 +1,9 @@
+    <document>
+        <section>
+            <title>Test include</title>
+            <theorem id="thm:weiestrass">
+                <title>Weierstrass Theorem</title>
+                This theorem states that every continuous function defined on a closed interval can be uniformly approximated as closely as desired by a polynomial function. It is a fundamental result in real analysis and has important implications in various areas of mathematics.
+            </theorem>
+        </section>
+    </document>

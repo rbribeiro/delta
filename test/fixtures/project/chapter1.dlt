@@ -1,0 +1,10 @@
+<document>
+  <title>Chapter One</title>
+  <toc scope="project"/>
+  <section id="ch1-sec">
+    <title>First</title>
+    <theorem id="thm-a"><title>A</title>body</theorem>
+    See <ref to="thm-a"/> here (a same-file reference).
+  </section>
+  <bibliography src="refs.ref"/>
+</document>

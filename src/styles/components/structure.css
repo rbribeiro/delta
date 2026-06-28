@@ -1,0 +1,297 @@
+/* structure.css — runhead, chapter front-matter, section/subsection headings,
+   and block display for the layout wrappers. Section headings are LIVE:
+   DeltaSection emits <h2 class="section"> / <h3 class="sub"> / <h4 class="subsub">
+   with a <span class="num"> pill. The runhead and front-matter elements
+   (delta-runhead / delta-eyebrow / delta-deck / delta-meta) are STAGED — their
+   rules are inert until those elements ship. Consumes tokens via var(--delta-*). */
+
+@layer delta.components {
+
+/* -- Display defaults for custom elements ------------------------------ */
+delta-page,
+delta-bleed,
+delta-runhead,
+delta-chapter,
+delta-eyebrow,
+delta-title,
+delta-deck,
+delta-meta,
+delta-meta-item,
+delta-section,
+delta-subsection,
+delta-subsubsection {
+  display: block;
+}
+
+/* Sectioning containers carry the inter-section spacing; their headings own
+   only the gap down to the body, so first-child top margins don't collapse. */
+delta-section       { margin: var(--delta-section-gap) 0 0; }
+delta-subsection    { margin: 40px 0 0; }
+delta-subsubsection { margin: 28px 0 0; }
+
+/* -- Front matter ------------------------------------------------------ */
+/* Front matter spans the full writing width — reclaiming the reserved
+   sidenote rail like .bleed. The narrow breakpoint below resets it. */
+:is(delta-page, delta-chapter) > :is(delta-eyebrow, delta-title, delta-deck, delta-meta) {
+  margin-right: calc(-1 * (var(--delta-col-gap) + var(--delta-margin-w)));
+}
+
+/* The chapter title, and the document's own top-of-page title. */
+.chapter-title,
+delta-document > delta-title {
+  font-family: var(--delta-serif);
+  font-weight: 500;
+  font-size: var(--delta-t-h1);
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+  margin: 14px 0 0;
+  font-variation-settings: "opsz" 72;
+  text-wrap: balance;
+}
+.chapter-title em,
+delta-document > delta-title em {
+  font-style: italic;
+  color: var(--delta-accent-ink);
+}
+
+.chapter-deck {
+  font-size: var(--delta-t-deck);
+  line-height: 1.45;
+  color: var(--delta-ink-soft);
+  margin: 24px 0 0;
+  max-width: 36em;
+  font-weight: 400;
+  text-wrap: pretty;
+}
+
+/* Chapter/page front-matter meta: the full editorial block. */
+:is(delta-page, delta-chapter) > delta-meta {
+  margin-top: 28px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px 36px;
+  font-family: var(--delta-sans);
+  font-size: 12.5px;
+  color: var(--delta-mute);
+  border-top: var(--delta-hairline) solid var(--delta-rule);
+  padding-top: 18px;
+}
+:is(delta-page, delta-chapter) > delta-meta .k {
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: var(--delta-tracking-cap);
+  font-size: 10.5px;
+  color: var(--delta-mute);
+  margin-bottom: 4px;
+}
+:is(delta-page, delta-chapter) > delta-meta .v {
+  color: var(--delta-ink);
+  font-family: var(--delta-serif);
+  font-size: 15px;
+}
+
+/* -- Section / subsection headings ------------------------------------ */
+h2.section {
+  font-family: var(--delta-serif);
+  font-weight: 500;
+  font-size: var(--delta-t-h2);
+  line-height: var(--delta-leading-tight);
+  letter-spacing: -0.012em;
+  margin: 0 0 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  text-wrap: balance;
+}
+h2.section .num {
+  font-family: var(--delta-sans);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: var(--delta-tracking-cap);
+  color: var(--delta-accent-ink);
+  background: var(--delta-accent-soft);
+  padding: 4px 10px;
+  border-radius: var(--delta-radius-pill);
+  white-space: nowrap;
+}
+
+h3.sub {
+  font-family: var(--delta-serif);
+  font-weight: 500;
+  font-size: var(--delta-t-h3);
+  letter-spacing: -0.005em;
+  margin: 0 0 8px;
+}
+h3.sub .num,
+h4.subsub .num { color: var(--delta-mute); margin-right: 0.5em; }
+
+h4.subsub {
+  font-family: var(--delta-serif);
+  font-weight: 600;
+  font-size: var(--delta-t-h4);
+  letter-spacing: -0.003em;
+  margin: 0 0 6px;
+}
+
+/* -- Section front matter (reused chapter elements, quieter) ----------- */
+:is(delta-section, delta-subsection, delta-subsubsection) > delta-eyebrow {
+  font-size: 11px;
+  color: var(--delta-accent-ink);
+  margin: 0 0 6px;
+}
+
+:is(delta-section, delta-subsection, delta-subsubsection) > delta-meta {
+  margin-top: 16px;
+  padding-top: 10px;
+  border-top: var(--delta-hairline) solid var(--delta-rule-soft);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 20px;
+  font-family: var(--delta-sans);
+  font-size: 11px;
+  color: var(--delta-mute);
+}
+:is(delta-section, delta-subsection, delta-subsubsection) > delta-meta .k {
+  text-transform: uppercase;
+  letter-spacing: var(--delta-tracking-cap);
+  font-size: 9.5px;
+  margin-right: 0.5em;
+}
+:is(delta-section, delta-subsection, delta-subsubsection) > delta-meta .v {
+  color: var(--delta-ink-soft);
+}
+
+/* -- Running head ----------------------------------------------------- */
+.runhead {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: color-mix(in oklab, var(--delta-paper) 92%, transparent);
+  backdrop-filter: blur(8px) saturate(140%);
+  -webkit-backdrop-filter: blur(8px) saturate(140%);
+  border-bottom: var(--delta-hairline) solid var(--delta-rule-soft);
+}
+.runhead-inner {
+  max-width: var(--delta-page-max);
+  margin: 0 auto;
+  padding: 14px var(--delta-page-pad-x);
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  font-family: var(--delta-sans);
+  font-size: 12px;
+  color: var(--delta-mute);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.runhead-title {
+  color: var(--delta-ink);
+  font-family: var(--delta-serif);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 15px;
+  font-weight: 500;
+}
+.runhead-spacer { flex: 1; }
+.runhead-nav {
+  display: flex;
+  gap: 22px;
+}
+.runhead-nav a {
+  color: var(--delta-mute);
+  text-decoration: none;
+  transition: color var(--delta-dur-fast) var(--delta-ease);
+}
+.runhead-nav a:hover,
+.runhead-nav a.is-current { color: var(--delta-ink); }
+.runhead-prog {
+  height: 2px;
+  width: 60px;
+  background: var(--delta-rule);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+.runhead-prog > i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--delta-accent-ink);
+}
+
+/* -- TEXT FORMATTING ----------------------------------------------------- */
+
+delta-b {
+  display: inline-block;
+  font-weight: 500;
+}
+
+delta-i {
+  display: inline-block;
+  font-style: italic;
+}
+
+delta-em {
+  display: inline-block;
+  font-style: italic;
+  font-weight:600;
+  color: var(--delta-accent-ink);
+}
+
+delta-strong {
+  display: inline-block;
+  font-weight: 600;
+}
+
+delta-u {
+  display: inline-block;
+  text-decoration: underline dashed var(--delta-accent-ink) 1px;
+  text-underline-offset: 8px;
+}
+
+delta-s {
+  display: inline-block;
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+delta-mark {
+  display: inline-block;
+  background: var(--delta-accent-soft);
+  padding: 0 2px;
+  border-radius: var(--delta-radius-pill);
+}
+
+/* -- Narrow-viewport adjustments -------------------------------------- */
+@media (max-width: 980px) {
+  :is(delta-page, delta-chapter) > :is(delta-eyebrow, delta-title, delta-deck, delta-meta) {
+    margin-right: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .runhead-inner {
+    gap: 14px;
+    padding: 10px var(--delta-page-pad-x);
+    font-size: 11px;
+  }
+  .runhead-nav { display: none; }
+  .runhead-title { font-size: 13px; }
+  .runhead-prog { width: 40px; }
+
+  :is(delta-page, delta-chapter) > delta-meta { gap: 14px 24px; padding-top: 14px; }
+  :is(delta-page, delta-chapter) > delta-meta > delta-meta-item { min-width: 42%; }
+
+  h2.section { gap: 10px; }
+  h2.section .num { font-size: 11px; padding: 3px 8px; }
+}
+
+@media (max-width: 380px) {
+  :is(delta-page, delta-chapter) > delta-meta > delta-meta-item { min-width: 100%; }
+}
+
+@media print {
+  .runhead { display: none; }
+}
+
+}

@@ -1,107 +1,71 @@
-## **DELTA**
+# Delta
 
-> A nova forma de escrever matemática
+Delta is a LaTeX-inspired XML markup language for scientists — mathematicians in
+particular — and students to write **interactive books, articles and presentations**.
+A `.dlt` file compiles into a **single standalone HTML file** that works offline,
+straight from `file://`: math, numbering and cross-references are all resolved at
+compile time, so nothing is fetched at runtime.
 
-O **DELTA** é uma nova linguagem que visa simplificar a criação de documentos matemáticos. A solução da linguagem **DELTA** surgiu para superar as limitações do PDF. Enquanto o PDF mantém o conhecimento estático, o formato `.delta` transforma o aprendizado em uma experiência viva. Com ele, você integra vídeos, elementos interativos e recursos avançados de HTML diretamente no fluxo do texto, mesmo que você não saiba nada de programação.
+```xml
+<document lang="en" type="paper">
+  <title>Hello, Delta</title>
+  <section id="sec:intro">
+    <title>Introduction</title>
+    Inline math like $e^{i\pi} + 1 = 0$ just works — even $a < b$.
+    <theorem id="thm:pyth">
+      <title>Pythagorean Theorem</title>
+      <equation id="eq:pyth">a^2 + b^2 = c^2</equation>
+    </theorem>
+  </section>
+</document>
+```
 
+## How it works
 
----
+Every tag becomes a `<delta-tag>` custom element in the output. The **compiler
+resolves data** — LaTeX-style numbering (`Theorem 1.2`), reference targets, KaTeX
+HTML — and ships it as attributes and pre-rendered content; the **inlined runtime
+renders the chrome** (headers, collapsing, pop-overs). KaTeX itself never ships to
+the browser, only its CSS with fonts embedded as `data:` URIs.
 
-## Por que o DELTA?
+Extending Delta is meant to be easy: a new numbered environment is one row in
+[src/compiler/environments.ts](src/compiler/environments.ts), and a new interactive
+tag is one custom element under [src/runtime/elements/](src/runtime/elements/).
 
-O Delta surgiu para simplificar o trabalho de formatação em LaTeX, propondo-se como um **editor** e **compilador** focado no conteúdo, sem a aparência de código.
-Como escrever em LaTeX pode intimidar os iniciantes os quais não tem familiaridade com programação, o Delta busca tornar esse processo mais acessível. Além disso, ao desenvolvermos nosso próprio editor temos a liberdade para incorporar elementos interativos que enriquecem a experiência de leitura digital (adaptação do conteúdo à tela ou aumento de fonte) 
+## Quickstart
 
+```bash
+npm install
+npm run example        # compiles examples/hello.dlt → out.html, open it in a browser
+npm test               # vitest
+npm run build          # dist/cli.js
+node dist/cli.js build mydoc.dlt -o mydoc.html
+```
 
----
+## Status
 
-## Exemplo Comparativo
+Early scaffold: the core pipeline (preprocess → parse → number → math → emit) works
+end-to-end. See [ROADMAP.md](ROADMAP.md) for what's done and what's next, and
+[DELTA_INFO.md](DELTA_INFO.md) for the full language vision.
 
-Veja como é mais simples definir um título e subtítulo no DELTA em comparação ao LaTeX tradicional:
+## Documentation
 
-| Recurso | Sintaxe DELTA | LaTeX Tradicional |
-| :--- | :--- | :--- |
-| **Título** | `# Título` | `\title{Título}` |
-| **Seção** | `## Seção` | `\section{Seção}` |
-| **Teorema** | `theorem "Título":` | `\begin{theorem}...\end{theorem}` |
-| **Prova** | `proof:` | `\begin{proof}...\end{proof}` |
-| **Definição** | `definition "Título":` | `\begin{definition}...\end{definition}` |
-| **Lema** | `lemma "Título":` | `\begin{lemma}...\end{lemma}` |
-| **Exemplo** | `example:` | `\begin{example}...\end{example}` |
-| **Ênfase (itálico)** | `*texto*` | `\emph{texto}` |
-| **Lista numerada** | `1. Item` | `\begin{enumerate}...\end{enumerate}` |
+- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** — how the compiler works: the
+  pipeline traced end-to-end, the three core concepts (AST, context, environments
+  table), and the compile-time/runtime split. Start here to understand the repo.
+- **[docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)** — how to add features: the dev
+  workflow and the three shapes every feature takes, each with a worked example.
+- **[docs/COMPILER_BOOK.md](docs/COMPILER_BOOK.md)** — the deep field guide: a
+  chapter-by-chapter walk through every compiler pass and the context it threads.
+- **[docs/BUILDING.md](docs/BUILDING.md)** — the build: the generated assets, the CLI
+  bundle, and every npm script.
+- **[ROADMAP.md](ROADMAP.md)** — planned features in dependency order.
+- **[DELTA_INFO.md](DELTA_INFO.md)** — the language vision.
 
-  ## Exemplo de Documento em DELTA
-A linguagem DELTA foi pensada para que você escreva matemática de forma natural, como se estivesse redigindo um texto comum, sem se preocupar com comandos técnicos ou estrutura de código. Títulos, teoremas, definições e provas são escritos de maneira direta e legível, enquanto fórmulas continuam usando a notação matemática padrão. O objetivo é que seu foco esteja totalmente no conteúdo — não na formatação.
+## Authoring notes (strict XML)
 
-
-    ```delta
-    # Introdução à Análise Matemática
-
-    ## Continuidade
-
-    definition "Função contínua":
-        Dizemos que uma função $f: \mathbb{R} \to \mathbb{R}$ é contínua em um ponto $a$ se
-        $$\lim_{x \to a} f(x) = f(a).$$
-
-    theorem "Teorema do Valor Intermediário":
-        Seja $f$ contínua em $[a,b]$. Se $f(a) < 0 < f(b)$, então existe $c \in (a,b)$ tal que
-        $$f(c) = 0.$$
-
-        proof:
-            Como $f$ é contínua em $[a,b]$, sua imagem é um intervalo.
-            Como $0$ está entre $f(a)$ e $f(b)$, segue o resultado.
-
-    example:
-        Considere $f(x) = x^3 - 1$. Temos $f(0) = -1$ e $f(1) = 0$, logo existe
-        $c \in (0,1)$ tal que $f(c) = 0$.
-
----
-
-## Funcionalidades Principais
-
-* **Renderização Instantânea:** Visualize as alterações no layout em tempo real.
-* **Mapeamento Automático:** Conversão inteligente de tags Delta para HTML semântico.
-* **Layout Responsivo:** Ajuste automático de largura e tamanho de fonte para leitura em qualquer dispositivo.
-* **Barra Lateral de Navegação:** Sumário automático para documentos longos e capítulos.
-
----
-
-## Requisitos do Sistema
-
-Antes de começar, certifique-se de ter instalado:
-* **Python:** Versão 3.8 ou superior.
-* **Dependências:** Listadas no arquivo `requirements.txt` (A SER ESCRITO).
-
----
-
-##  Guia de Instalação
-
-1. Clone o repositório:
-   ```bash
-   git clone (https://github.com/rbribeiro/delta.git)
-
-2. Acesse a pasta do projeto:
-    ```bash
-    cd delta/editor
-
-3. Execute o arquivo `index.html` utilizando um servidor local.
-
-# Licença
-
-Este projeto está licenciado sob a Licença Creative Commons Atribuição–NãoComercial 4.0 Internacional.
-
-[![Licença: CC BY-NC 4.0](https://i.creativecommons.org/l/by-nc/4.0/88x31.png)](http://creativecommons.org/licenses/by-nc/4.0/)
-
-Você é livre para:
-
-- **Compartilhar** — copiar e redistribuir o material em qualquer meio ou formato  
-- **Adaptar** — remixar, transformar e criar a partir do material  
-
-Sob os seguintes termos:
-
-- **Atribuição** — Você deve dar o crédito apropriado, fornecer um link para a licença e indicar se alterações foram feitas. Isso pode ser feito de qualquer maneira razoável, desde que não sugira que o licenciante endossa você ou seu uso.
-- **NãoComercial** — Você não pode usar o material para fins comerciais.
-
-Leia a licença completa [aqui](http://creativecommons.org/licenses/by-nc/4.0/).
-
+- No valueless attributes — write `collapsible="true"`, not bare `collapsible`.
+- `<`, `>` and `&` are fine **inside math and code**; in prose, use `&lt;`, `&gt;`, `&amp;`.
+- `$…$` inline, `$$…$$` display, `\$` for a literal dollar.
+- `<equation>` is display + numbered; `<m>` is inline; `<equations>` is an aligned block
+  (use `&` and `\\` directly — no escaping inside it).

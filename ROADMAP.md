@@ -1,0 +1,115 @@
+# Delta roadmap
+
+The feature set comes from `DELTA_INFO.md`. Items are ordered so each milestone is
+usable on its own. Checked items are implemented and tested.
+
+## M1 — Core authoring loop (v0.1)
+
+- [x] 1. Preprocessor: `<`, `>`, `&` allowed inside `$…$`, `$$…$$` and raw tags; `\$` literal
+- [x] 2. Strict XML parse → generic AST with source positions and diagnostics
+- [x] 3. Data-driven numbering (`environments.ts`): theorem family shares a counter,
+       section prefixes (`1.2`), counters reset, explicit `num` override
+- [x] 4. Compile-time KaTeX: `<m>`, `<equation>`, `$…$` / `$$…$$` in prose
+- [x] 5. Emitter: every tag → `<delta-tag>`, single-file HTML, KaTeX CSS with `data:`
+       fonts, runtime IIFE inlined, **"no external resources" test**
+- [x] 6. `<ref to="…">`: `references.ts` resolves against the registry (writes `num`+`kind`), emit
+       snapshots each referenced target into `<template data-delta-pop="id">`; `delta-ref` composes the
+       localized link ("Theorem 1.1") and clicks open a `.delta-pop` preview cloned from the template
+       (no `fetch`), with a jump-to button. Unresolved/`to`-less refs warn and render as inert text
+- [x] 7. Table of contents: `<toc/>` → `toc.ts` builds the heading tree (auto-slugging ids for headings
+       without one), emit ships it as the `#delta-toc` island, `<delta-toc>` renders a nested nav that
+       smooth-scrolls + flashes the target; `depth` (default subsections) limits it at runtime
+- [x] 8. Collapsible behavior: `collapsible="true"` / `collapsed="true"` on sections and
+       environments — the label (heading / box tag / proof lead) toggles a `.collapse-body`
+       (`applyCollapsible` in `elements/shared.ts`, styled by `components/collapse.css`)
+- [x] 9. `<solution of="…">` linking to its exercise
+- [x] 10. `<meta>` / `<meta-item>` / `<author>` rendered in environment headers
+- [x] 11. Default theme: full design system (`base.css`), documented `--delta-*` tokens,
+       page+sidenote layout, JS-off fallback; shared primitives (`.btn`, `.widget`, `.code`, …)
+
+> Component **styling** for the standard library is now in `src/styles/components/*.css`
+> (`@layer delta.components`); items marked _(CSS staged)_ have their CSS in place and need only the
+> runtime element built. Note: `<youtube>` is an intentional **online-only** exception to the offline
+> invariant — its iframe loads from youtube.com at view time, and the author's URL rides through in the
+> `src` attribute.
+
+## M2 — Media & prose furniture
+
+- [x] 12. `<figure src="…">`: local image inlined as a `data:` URI at compile time (`figures.ts`),
+       numbered "Figure N" caption; missing/remote/unsupported srcs warn and render a missing note
+- [x] 13. `<video>` / `<audio>` (relative `src`, captions) and `<youtube>` embed. `<video>`/`<audio>`
+       take a **relative** `src` (ship the media file beside the HTML); `<youtube>` is the online-only
+       exception. `<video>`+`<youtube>` share a counter; `<audio>` has its own.
+- [x] 14. `<sidenote>` responsive margin notes
+- [x] 15. `<hint>` pop-over — inline `.hint-trigger` reveals the body in a `.delta-pop`
+       bubble via the shared `Delta.popover` controller (`runtime/utils.ts`)
+- [x] 16. `<equation(s)>` aligned multi-line environment (shipped early with the math pass)
+- [x] 31. `<floating>` navigation button (runtime-only, "Shape 3"): a corner button that expands
+       a panel via the shared `Delta.popover` controller (`runtime/utils.ts`), holding the author's
+       children — typically a `<toc>` (plain or `scope="project"`) so readers navigate from anywhere
+       without scrolling back. A `<title>` child labels the button + panel header (falls back to the
+       localized "Contents"). No compiler changes — `buildToc` already finds the nested `<toc>` via the
+       recursive `elements()` walk. `DeltaFloating` (`runtime/elements/floating.ts`), styled by
+       `components/floating.css`
+
+## M3 — Bibliography
+
+- [x] 17. `.ref` file loading (`bibliography.ts`): `<bibliography src="x.ref">` reads + parses a strict-XML
+       `.ref` (rooted in `<bibliography>`, wrapping `<paper id>` entries) relative to the doc, like the
+       theme/import passes; inline `<paper>` children are also accepted. The whole database is loaded into
+       `ctx.papers` — never spliced into the body; a missing/remote src or id-less/duplicate paper warns
+- [x] 18. `<cite paper="…">` / `<cite papers="a,b">`: `resolveCitations` numbers papers by first appearance
+       (one number per distinct paper, document-wide), writes parallel `data-cite-nums`/`data-cite-ids`,
+       and records each cited id in `ctx.referencedIds` so emit snapshots it into a `<template>` (offline
+       pop-over, like `<ref>`). `DeltaCite` renders "[1, 2]" (each number jumps to its entry) with a
+       `.cite-pop` hovercard; unknown ids warn, an all-unknown cite stays inert
+- [x] 19. Bibliography generated from cited papers only: `resolveCitations` fills `<bibliography>` with the
+       cited `<paper>` nodes in citation order; `DeltaBibliography` lifts them into a numbered `.notes`
+       list (localized "References" heading). Uncited entries never ship
+
+## M4 — Multi-file & projects
+
+- [x] 20. `<include src="…">` merge (`include.ts`): strips the inner `<document>`, splices children
+       before numbering, recursive with cycle detection; relative asset paths rewritten master-relative;
+       missing/cyclic/non-local src is a build error
+- [x] 21. Multi-file compilation = one project (`project.ts`): `compileProject` runs the same passes
+       across many inputs but threads shared state — one counter `NumberingState` continues numbering
+       file-to-file, and the `registry`/`papers`/`citedPapers` are shared, so a `<ref>`/`<cite>` in any
+       file resolves into any other. Emit is deferred until every file's math is rendered, then each
+       output snapshots its referenced targets (refs **and** cited papers) from a project-wide
+       `globalById` — a copy ships into each output, so pop-overs work with no `fetch`. Cross-file jumps
+       carry `data-target-href`/`data-cite-file` and navigate to the target's own output (flashing on
+       arrival); same-file links keep the in-page scroll. Citations number project-wide; the first
+       `<bibliography>` (in input order) renders the references list for the whole project.
+       `<toc scope="project">` lists the whole book: `buildProjectToc` (`toc.ts`) slugs every file's
+       headings into one ordered list tagged with each section's home output, and the runtime navigates
+       cross-file (a plain `<toc/>` still lists only its own file — both can coexist in one file)
+- [x] 22. `project.toml` (`config.ts`): `inputs` (ordered, required) + `out` (output dir, default `.`),
+       resolved relative to the toml; parsed with `smol-toml`. The CLI takes a `.toml` (or `--project`),
+       several `.dlt` inputs (a project with `-o` as the out dir), or one `.dlt` (single-file, unchanged).
+       Outputs are flat `<basename>.html`; colliding basenames are an error
+- [ ] 23. `--per-chapter` / `--per-section` output splitting (CLI flag or project.toml)
+
+## M5 — Theming & extensibility
+
+- [x] 24. `theme="my.css"` on `<document>`: author CSS resolved relative to the doc (`theme.ts`),
+       inlined **last and unlayered** by emit so it overrides core + the type theme; remote/missing =
+       warning, an `@import`/remote `url()` warns but is still inlined
+- [x] 25. Documented theme variable naming convention (`--delta-*` tokens, `@layer` cascade)
+- [x] 26. `<import src="folder/">` custom-element packs (`imports.ts`): reads a pack folder's
+       `index.js` + optional `theme.css` (relative to the doc) and inlines both — the JS in a `<script>`
+       **after** the runtime (so `window.Delta` is available; the pack registers its own `delta-*`
+       elements), the CSS in a `<style>` **before** the author theme. Imports are direct children of
+       `<document>` and are stripped from the tree; a missing/remote pack is a warning, an external
+       reference inside a pack file warns but is still inlined, and the same pack imported twice inlines once
+- [~] 27. Document-type CSS variants via `<document type>` (`@layer delta.theme`): `article`
+       (default) and `book` shipped; `presentation` to follow
+
+## M6 — Polish
+
+- [~] 28. `lang` attribute + i18n strings: `strings.ts` table (en + pt), `#delta-i18n` data-island,
+       runtime `t()`; environment labels localized. Figure/video/audio/table/contents keys seeded,
+       applied when those elements land
+- [ ] 29. Diagnostics polish: warnings for unresolved refs/cites, unclosed math regions
+- [ ] 30. Author documentation (`docs/authoring.md`) and richer examples
+- [x] 31. Code component with highlight syntax

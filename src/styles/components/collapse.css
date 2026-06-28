@@ -1,0 +1,70 @@
+/* collapse.css — collapsible sections & environments (`collapsible`/`collapsed`).
+   The runtime (applyCollapsible in runtime/elements/shared.ts) turns the label — a
+   section heading, a `.box-tag`, or a proof `.proof-lead` — into a `.collapse-toggle`
+   and moves the body into a `.collapse-body`; folding sets `.is-collapsed` on the
+   host. Here: the caret, the affordance, and the hide. Tokens via var(--delta-*). */
+
+@layer delta.components {
+
+.collapse-toggle {
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+/* Headings & proof leads anchor the gutter sign (the .box-tag is already
+   position:absolute and parks its sign inline instead). */
+.collapse-toggle:not(.box-tag) {
+  position: relative;
+}
+.collapse-toggle:focus-visible {
+  outline: 2px solid var(--delta-accent-ink);
+  outline-offset: 3px;
+  border-radius: var(--delta-radius-sm);
+}
+
+/* Disclosure sign: "−" when open, "+" when folded. */
+.collapse-toggle::before {
+  content: "\2212"; /* − (minus) */
+  color: var(--delta-mute);
+  font-family: var(--delta-sans);
+  font-weight: 600;
+  transition: color var(--delta-dur-fast) var(--delta-ease);
+}
+.is-collapsed > .collapse-toggle::before {
+  content: "+";
+}
+.collapse-toggle:hover::before {
+  color: var(--delta-accent-ink);
+}
+
+/* Headings & proof leads: park the sign in the left gutter, out of the text
+   flow — so it adds no inline space and can't open a flex gap (h2.section is a
+   flex row). `right:100%` sits it just left of the text; centring on the label
+   keeps it level with the text (a flex container resolves an abspos child's
+   static position to the top, so `top:auto` would float it above the number). */
+.collapse-toggle:not(.box-tag)::before {
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-right: 0.3em;
+  font-size: 0.8em;
+  line-height: 1;
+}
+
+/* Box tag: a compact inline sign inside the floating pill. */
+.box-tag.collapse-toggle::before {
+  margin-right: 0.45em;
+}
+
+.is-collapsed > .collapse-body {
+  display: none;
+}
+
+/* A folded box collapses to a compact bar that still carries its floating tag. */
+.box.is-collapsed {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+}

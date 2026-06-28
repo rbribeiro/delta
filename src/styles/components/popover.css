@@ -1,0 +1,56 @@
+/* popover.css — the shared anchored-bubble shell, driven by Delta.popover
+   (src/runtime/utils.ts). The controller sets top/left/--arrow-x and toggles
+   .is-above (caret side) and, in the no-Popover-API fallback, .is-open.
+   Components (.xref-pop, .cite-pop, hint bubbles, …) add their own content
+   classes on top for padding/layout. Tokens via var(--delta-*). */
+
+@layer delta.components {
+
+.delta-pop {
+  position: fixed;          /* Delta.popover sets top/left */
+  margin: 0;
+  inset: auto;
+  z-index: 60;
+  max-width: min(34ch, 92vw);
+  padding: 12px 15px;
+  font-family: var(--delta-serif);
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--delta-ink);
+  background: var(--delta-surface-1);
+  border: var(--delta-hairline) solid var(--delta-rule);
+  border-radius: var(--delta-radius-lg);
+  box-shadow: var(--delta-shadow-lift);
+}
+.delta-pop > :first-child { margin-top: 0; }
+.delta-pop > :last-child  { margin-bottom: 0; }
+
+/* Caret pointing back at the trigger (--arrow-x set by Delta.popover). */
+.delta-pop::after {
+  content: "";
+  position: absolute;
+  left: var(--arrow-x, 16px);
+  width: 10px;
+  height: 10px;
+  background: var(--delta-surface-1);
+  border: var(--delta-hairline) solid var(--delta-rule);
+  transform: translateX(-50%) rotate(45deg);
+}
+.delta-pop::after          { top: -6px; border-right: 0; border-bottom: 0; }     /* below trigger */
+.delta-pop.is-above::after { top: auto; bottom: -6px; border-left: 0; border-top: 0; }
+
+/* Entrance (Popover-API path and the .is-open fallback both replay it). */
+.delta-pop:popover-open,
+.delta-pop.is-open { animation: delta-pop-in var(--delta-dur) var(--delta-ease); }
+@keyframes delta-pop-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Fallback when the Popover API is unavailable: shown only via .is-open. */
+.delta-pop:not([popover]) { display: none; }
+.delta-pop.is-open:not([popover]) { display: block; }
+
+@media print { .delta-pop { display: none; } }
+
+}

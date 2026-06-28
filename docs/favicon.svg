@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="-12 -12 129.64773 143.01094"
+   version="1.1"
+   id="favicon"
+   xmlns="http://www.w3.org/2000/svg">
+  <rect
+     x="-12" y="-12"
+     width="129.64773" height="143.01094"
+     rx="18" ry="18"
+     fill="#F4F1E8" />
+  <g
+     id="layer1"
+     transform="translate(-81.756245,-169.06871)">
+    <g
+       id="g7-64"
+       transform="matrix(9.8641218,0,0,9.8641218,-193.93581,-1118.8588)">
+      <path
+         d="m 35.056728,130.56687 h -1.523997 l -5.583759,12.02265 h 1.523997 z"
+         style="fill:#1a1a1a;stroke-width:0.264583"
+         aria-label="/" />
+      <path
+         d="m 30.473,142.5431 8.000454,0.0888 0.185821,-0.28313 -3.772654,-7.94577 -0.808268,1.84038 2.288392,5.37047 -5.500332,-0.0192 z"
+         style="fill:#4d4d4d;stroke-width:0.264583"
+         aria-label="&gt;" />
+    </g>
+  </g>
+</svg>

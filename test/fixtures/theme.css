@@ -1,0 +1,4 @@
+/* Test fixture: a clean author theme — token override only, no external refs. */
+:root {
+  --delta-accent: #c0392b;
+}

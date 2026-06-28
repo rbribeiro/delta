@@ -1,0 +1,6 @@
+# A Delta project: several .dlt files compiled together into one numbered work.
+# Each file becomes its own standalone HTML in `out`, but they share numbering and
+# one registry, so a <ref>/<cite> in one file resolves into another and ships a
+# copy of its target along (so the pop-overs work offline, with no fetch).
+inputs = ["ch1-geometry.dlt", "ch2-algebra.dlt"]
+out = "out"

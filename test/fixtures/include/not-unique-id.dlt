@@ -1,0 +1,9 @@
+<document>
+  <section id="inc-sec">
+    <title>Included Section</title>
+    <theorem id="inc-thm"><title>Included</title>body</theorem>
+  </section>
+  <section>
+    <lemma id="inc-thm">Body</lemma>
+    </section>
+</document>

@@ -1,0 +1,46 @@
+<document type="book">
+  <title>Chapter One — Geometry</title>
+
+  <!-- A book-wide table of contents: lists every chapter/section/subsection across
+       the whole project. Entries in other files link to their own output and the
+       landing page flashes the target on arrival. A plain <toc/> would list only
+       this file's headings. -->
+  <toc />
+
+  <!-- A floating navigation button (pinned bottom-right): clicking it opens a panel
+       holding a project-wide toc, so the reader can jump around from anywhere on the
+       page without scrolling back to the inline contents above. The <title> child
+       labels the button and the panel header. -->
+  <floating>
+    <title>Navigate</title>
+    <toc scope="project" />
+  </floating>
+
+  <chapter id="ch:geometry">
+    <title>Geometry</title>
+
+    <section id="sec:triangles">
+      <title>Right triangles</title>
+
+      Geometry begins with the triangle. The most famous result about right
+      triangles is due to antiquity <cite paper="pythagoras"/>.
+
+      <theorem id="thm:pyth">
+        <title>Pythagorean Theorem</title>
+        For a right triangle with legs $a$ and $b$ and hypotenuse $c$,
+        $$a^2 + b^2 = c^2.$$
+      </theorem>
+
+      The same idea underlies much of classical geometry <cite paper="euclid"/>.
+
+      <subsection id="sub:converse">
+        <title>The converse</title>
+        The converse holds too: if $a^2 + b^2 = c^2$ then the triangle is right.
+      </subsection>
+    </section>
+  </chapter>
+
+  <!-- The project's single references list lives here; it lists every paper cited
+       from any file, in citation order. -->
+  <bibliography src="refs.ref"/>
+</document>

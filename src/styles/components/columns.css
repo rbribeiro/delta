@@ -1,0 +1,35 @@
+/* columns.css — side-by-side layout: <delta-row> is a flex container, <delta-col>
+   a cell (its flex weight set inline by columns.js). STAGED — the columns runtime
+   is not built yet. Tokens via var(--delta-*). */
+
+@layer delta.components {
+
+delta-row {
+  display: flex;
+  gap: var(--delta-block-gap);
+  align-items: start;
+  margin: var(--delta-block-gap) 0;
+}
+delta-col {
+  flex: 1 1 0;        /* equal share; columns.js overrides for width="…" */
+  min-width: 0;       /* let wide content (equations/code) shrink, not overflow */
+}
+delta-col > :first-child { margin-top: 0; }
+delta-col > :last-child  { margin-bottom: 0; }
+
+/* Vertical alignment of the columns (default: top). */
+delta-row[align="center"]  { align-items: center; }
+delta-row[align="bottom"]  { align-items: flex-end; }
+delta-row[align="stretch"] { align-items: stretch; }
+
+/* Full-width row: reclaim the reserved sidenote rail, like .bleed. */
+delta-row[wide] { margin-right: calc(-1 * (var(--delta-col-gap) + var(--delta-margin-w))); }
+
+@media (max-width: 980px) {
+  delta-row[wide] { margin-right: 0; }   /* rail already collapsed */
+}
+@media (max-width: 640px) {
+  delta-row { flex-direction: column; }  /* stack on narrow screens */
+}
+
+}

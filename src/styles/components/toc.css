@@ -1,0 +1,73 @@
+/* toc.css — <delta-toc>: a table of contents. LIVE — DeltaToc (runtime/elements/toc.ts)
+   reads the #delta-toc island and builds <nav class="toc"> with a quiet label and
+   nested <ol> of links; clicking smooth-scrolls + flashes the target (.is-xref-target,
+   reference.css). Depth is filtered at runtime. Tokens via var(--delta-*). */
+
+@layer delta.components {
+
+delta-toc { display: block; }
+
+.toc {
+  margin: var(--delta-block-gap) 0;
+  padding: 18px 22px;
+  border: var(--delta-hairline) solid var(--delta-rule-soft);
+  border-radius: var(--delta-radius-lg);
+  background: var(--delta-surface-1);
+}
+
+.toc-title {
+  font-family: var(--delta-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--delta-tracking-cap);
+  text-transform: uppercase;
+  color: var(--delta-mute);
+  margin-bottom: 12px;
+}
+
+/* Lists: reset bullets; nested levels indent under their parent. */
+.toc-list,
+.toc-sub {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.toc-sub {
+  margin: 2px 0 2px;
+  padding-left: 1.3em;
+}
+
+.toc-item { margin: 1px 0; }
+
+.toc-link {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5em;
+  padding: 2px 6px;
+  border-radius: var(--delta-radius-sm);
+  color: var(--delta-ink-soft);
+  text-decoration: none;
+  transition: color var(--delta-dur-fast) var(--delta-ease),
+              background var(--delta-dur-fast) var(--delta-ease);
+}
+.toc-link:hover {
+  color: var(--delta-accent-ink);
+  background: color-mix(in oklab, var(--delta-accent-soft) 55%, transparent);
+}
+
+.toc-num {
+  flex: none;
+  font-family: var(--delta-sans);
+  font-size: 0.82em;
+  color: var(--delta-mute);
+  font-variant-numeric: tabular-nums;
+}
+.toc-link:hover .toc-num { color: var(--delta-accent-ink); }
+
+.toc-text { font-family: var(--delta-serif); }
+
+@media print {
+  .toc-link { color: var(--delta-ink); }
+}
+
+}

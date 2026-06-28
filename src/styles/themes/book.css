@@ -1,0 +1,10 @@
+/* Theme: book — long-form, chaptered documents (`<document type="book">`).
+   Starts close to `article` and diverges as book-specific chrome lands
+   (chapter title pages, running heads, wider measure). */
+
+@layer delta.theme {
+  :root {
+    --delta-measure: 68ch;
+    --delta-section-gap: 96px;
+  }
+}

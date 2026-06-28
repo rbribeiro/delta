@@ -1,0 +1,43 @@
+{
+  "name": "delta",
+  "version": "0.1.0",
+  "description": "Delta — a LaTeX-inspired XML markup language for interactive papers, books and presentations, compiled to standalone offline HTML.",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "delta": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "assets": "tsx scripts/build.ts assets",
+    "build": "tsx scripts/build.ts",
+    "predev": "npm run assets",
+    "dev": "tsx src/cli.ts",
+    "pretest": "npm run assets",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "pretypecheck": "npm run assets",
+    "typecheck": "tsc --noEmit",
+    "preexample": "npm run assets",
+    "example": "tsx src/cli.ts build examples/hello.dlt -o out.html",
+    "preexample:project": "npm run assets",
+    "example:project": "tsx src/cli.ts build examples/project/project.toml"
+  },
+  "dependencies": {
+    "highlight.js": "^11.11.1",
+    "katex": "^0.17.0",
+    "saxes": "^6.0.0",
+    "smol-toml": "^1.7.0"
+  },
+  "devDependencies": {
+    "@fontsource-variable/newsreader": "^5.2.10",
+    "@types/katex": "^0.16.8",
+    "@types/node": "^25.9.3",
+    "esbuild": "^0.28.1",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.8"
+  }
+}

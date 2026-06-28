@@ -1,0 +1,2 @@
+inputs = ["intro.dlt", "chapter1.dlt", "chapter2.dlt"]
+out = "dist"

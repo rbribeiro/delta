@@ -1,0 +1,121 @@
+/* theorems.css — math-environment boxes (.box, .box-tag, .box-title, .box.example)
+   and the <proof>/<solution> formatting. LIVE: DeltaEnvironment adds .box plus a
+   floating .box-tag to box environments, and gives proof/solution the italic lead
+   (proof also gets a QED mark). Consumes tokens via var(--delta-*). */
+
+@layer delta.components {
+
+/* Every environment tag is block-level (custom elements default to inline).
+   index.css omitted conjecture/exercise/problem/solution — included here. */
+delta-theorem,
+delta-lemma,
+delta-corollary,
+delta-proposition,
+delta-definition,
+delta-conjecture,
+delta-remark,
+delta-example,
+delta-claim,
+delta-observation,
+delta-exercise,
+delta-problem,
+delta-solution,
+delta-proof {
+  display: block;
+}
+
+/* -- .box and label --------------------------------------------------- */
+.box {
+  border: var(--delta-hairline) solid var(--delta-rule);
+  background: var(--delta-surface-1);
+  border-radius: var(--delta-radius);
+  padding: 22px 24px 18px;
+  margin: var(--delta-block-gap) 0;
+  position: relative;
+  box-shadow: var(--delta-shadow);
+}
+.box-tag {
+  position: absolute;
+  top: -10px;
+  left: 18px;
+  font-family: var(--delta-sans);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--delta-accent-ink);
+  background: var(--delta-paper);
+  padding: 2px 9px;
+  border-radius: var(--delta-radius-sm);
+  border: var(--delta-hairline) solid var(--delta-rule);
+}
+/* The author's title rides in the label pill, parenthesised and slightly
+   subordinate so the environment kind + number still reads first. */
+.box-tag-title {
+  font-weight: 400;
+  opacity: 0.7;
+}
+.box-tag-title::before { content: "("; }
+.box-tag-title::after  { content: ")"; }
+
+.box-title {
+  font-weight: 600;
+  font-size: 17px;
+  margin: 0 0 6px;
+  letter-spacing: -0.003em;
+}
+.box.example {
+  background: color-mix(in oklab, var(--delta-accent-soft) 35%, var(--delta-paper));
+  border-color: color-mix(in oklab, var(--delta-accent) 30%, var(--delta-rule));
+}
+
+/* -- Box meta: a quiet provenance footer ------------------------------ */
+.box-meta {
+  margin-top: 16px;
+  padding-top: 10px;
+  border-top: var(--delta-hairline) solid var(--delta-rule-soft);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 20px;
+  font-family: var(--delta-sans);
+  font-size: 11px;
+  color: var(--delta-mute);
+}
+.box-meta .k {
+  text-transform: uppercase;
+  letter-spacing: var(--delta-tracking-cap);
+  font-size: 9.5px;
+  margin-right: 0.5em;
+}
+.box-meta .v {
+  color: var(--delta-ink-soft);
+}
+
+/* -- Proof / solution: italic lead + (proof) QED ---------------------- */
+delta-proof,
+delta-solution {
+  margin: var(--delta-block-gap) 0;
+}
+.proof-lead {
+  color: var(--delta-ink-soft);
+  font-style: italic;
+  margin-right: 0.4em;
+}
+.proof-qed {
+  display: inline-block;
+  margin-left: 0.5em;
+  color: var(--delta-ink-soft);
+  font-family: var(--delta-serif);
+  transform: translateY(-1px);
+}
+
+/* -- Narrow-viewport tweaks ------------------------------------------- */
+@media (max-width: 640px) {
+  .box { padding: 18px 16px 14px; }
+  .box-tag { left: 12px; }
+}
+
+@media print {
+  .box { break-inside: avoid; }
+}
+
+}

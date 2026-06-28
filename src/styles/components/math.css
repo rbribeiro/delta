@@ -1,0 +1,31 @@
+/* Math blocks. KaTeX HTML is rendered at compile time (src/compiler/math.ts);
+   `num` is compile-time data on the tag, so equation numbers are pure CSS. */
+
+@layer delta.components {
+
+  delta-equation,
+  delta-equations,
+  delta-math {
+    display: block;
+    position: relative;
+    margin: var(--delta-block-gap) 0;
+  }
+
+  delta-equation[num]::after,
+  delta-equations[num]::after {
+    content: "(" attr(num) ")";
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--delta-mute);
+    font-variant-numeric: tabular-nums;
+  }
+
+  delta-equation .katex-display,
+  delta-equations .katex-display,
+  delta-math .katex-display { margin: 0; }
+
+  delta-m { display: inline; }
+
+}

@@ -1,0 +1,6 @@
+<document>
+  <section id="outer-sec">
+    <title>Outer</title>
+    <include src="nested-inner.dlt"/>
+  </section>
+</document>

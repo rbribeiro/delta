@@ -1,0 +1,13 @@
+<bibliography>
+  <paper id="ARS10">
+    <author>A. R. Smith</author>
+    <title>On the Foo of Bar</title>
+    <journal>Journal of Foo</journal>
+    <year>2010</year>
+  </paper>
+  <paper id="KL98">
+    <author>K. Lee</author>
+    <title>Bar Revisited</title>
+    <year>1998</year>
+  </paper>
+</bibliography>

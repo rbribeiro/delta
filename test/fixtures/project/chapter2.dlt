@@ -1,0 +1,14 @@
+<document>
+  <title>Chapter Two</title>
+  <section id="ch2-sec">
+    <title>Second</title>
+    <theorem id="thm-b">
+      <title>B</title>
+      Recall <ref to="thm-a"/> and the result of <cite paper="ARS10"/>.
+    </theorem>
+    <subsection>
+      <title>Deeper</title>
+      A heading with no id, so the project ToC must slug it.
+    </subsection>
+  </section>
+</document>

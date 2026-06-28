@@ -1,0 +1,33 @@
+/* hint.css — inline click-to-reveal hint: a quiet .hint-trigger flows in the
+   prose; clicking reveals the hint in the shared .delta-pop bubble
+   (components/popover.css), driven by Delta.popover (runtime/utils.ts). Only the
+   trigger styling lives here. Tokens via var(--delta-*). */
+
+@layer delta.components {
+
+delta-hint { display: inline; }
+
+/* Trigger: a small, .ref-like inline affordance. */
+.hint-trigger {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: var(--delta-sans);
+  font-size: 0.82em;
+  line-height: 1;
+  color: var(--delta-accent-ink);
+  background: none;
+  border: 0;
+  padding: 0 1px;
+  cursor: pointer;
+  border-bottom: 1px dashed color-mix(in oklab, var(--delta-accent-ink) 50%, transparent);
+  transition: background var(--delta-dur-fast) var(--delta-ease),
+              border-color var(--delta-dur-fast) var(--delta-ease);
+}
+.hint-trigger:hover {
+  background: color-mix(in oklab, var(--delta-accent-soft) 60%, transparent);
+  border-color: var(--delta-accent-ink);
+}
+.hint-trigger .hint-marker { font-size: 0.9em; }
+
+}

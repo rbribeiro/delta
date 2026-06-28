@@ -1,0 +1,18 @@
+<bibliography>
+  <paper id="euclid">
+    <author>Euclid of Alexandria</author>
+    <title>Elements</title>
+    <year>300 B.C.</year>
+  </paper>
+  <paper id="pythagoras">
+    <author>Pythagoras of Samos</author>
+    <title>On Right Triangles</title>
+    <journal>Proceedings of the Crotonian Society</journal>
+    <year>530 B.C.</year>
+  </paper>
+  <paper id="uncited">
+    <author>Anonymous</author>
+    <title>A Reference Nobody Cites</title>
+    <year>2026</year>
+  </paper>
+</bibliography>

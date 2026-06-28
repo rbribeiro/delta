@@ -1,0 +1,70 @@
+/* bibliography.css — end-of-chapter references (.notes) and inline numeric
+   citations (<delta-cite>/.cite with a .cite-pop hovercard on the shared
+   .delta-pop shell). LIVE — DeltaBibliography (runtime/elements/bibliography.ts)
+   lifts cited <delta-paper> entries into the list; DeltaCite (cite.ts) builds the
+   inline "[1, 2]" and the hovercard. Tokens via var(--delta-*). */
+
+@layer delta.components {
+
+delta-bibliography { display: block; }
+delta-paper { display: none; } /* lifted into <ol><li> by parent */
+
+.notes {
+  margin-top: var(--delta-section-gap);
+  padding-top: 24px;
+  border-top: var(--delta-hairline) solid var(--delta-ink);
+  font-size: 13.5px;
+  color: var(--delta-ink-soft);
+  line-height: 1.6;
+}
+.notes h4 {
+  font-family: var(--delta-sans);
+  font-weight: 500;
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--delta-mute);
+  margin: 0 0 14px;
+}
+.notes ol { padding-left: 22px; margin: 0; }
+.notes li { margin-bottom: 8px; }
+.notes li::marker {
+  color: var(--delta-accent-ink);
+  font-family: var(--delta-sans);
+  font-size: 11px;
+}
+.notes .ext-link { overflow-wrap: anywhere; }  /* long DOIs/URLs don't overflow */
+
+/* Inline numeric citation (<delta-cite>) — "[1, 2]" with a hovercard. */
+delta-cite { display: inline; }
+.cite {
+  color: var(--delta-accent-ink);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+.cite a { color: inherit; text-decoration: none; }
+.cite a:hover { text-decoration: underline; }
+.cite-missing { color: var(--delta-mute); }
+
+/* Hovercard listing the cited reference(s) — built on the shared .delta-pop. */
+.cite-pop {
+  max-width: min(46ch, 92vw);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.cite-pop-item { display: flex; gap: 8px; }
+.cite-pop-item + .cite-pop-item {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: var(--delta-hairline) solid var(--delta-rule-soft);
+}
+.cite-pop-num {
+  flex: none;
+  color: var(--delta-accent-ink);
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
+}
+.cite-pop-num:hover { text-decoration: underline; }
+.cite-pop-text { color: var(--delta-ink-soft); }
+
+}

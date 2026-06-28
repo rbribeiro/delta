@@ -1,0 +1,9 @@
+/* Theme: article — Delta's default document type (`<document type="article">`
+   or no type). Single-flow long-form prose; inherits every base token as-is.
+   Override tokens here to restyle all articles without touching base.css. */
+
+@layer delta.theme {
+  :root {
+    /* inherits base defaults — diverge here as article-specific needs arise */
+  }
+}
