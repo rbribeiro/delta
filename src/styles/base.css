@@ -116,12 +116,21 @@
   --delta-dur-slow:     .45s;
 }
 
-/* accent palettes — override three vars only */
-[data-accent="sage"]       { --delta-accent: oklch(0.80 0.062 150); --delta-accent-ink: oklch(0.38 0.07  150); --delta-accent-soft: oklch(0.94 0.04 150); }
-[data-accent="rose"]       { --delta-accent: oklch(0.81 0.068 22);  --delta-accent-ink: oklch(0.42 0.10  22);  --delta-accent-soft: oklch(0.95 0.04 22);  }
-[data-accent="periwinkle"] { --delta-accent: oklch(0.78 0.072 270); --delta-accent-ink: oklch(0.42 0.10  270); --delta-accent-soft: oklch(0.94 0.04 270); }
-[data-accent="butter"]     { --delta-accent: oklch(0.86 0.082 92);  --delta-accent-ink: oklch(0.42 0.09  92);  --delta-accent-soft: oklch(0.96 0.05 92);  }
-[data-accent="ink"]        { --delta-accent: oklch(0.78 0.04  245); --delta-accent-ink: oklch(0.32 0.06  245); --delta-accent-soft: oklch(0.93 0.03 245); }
+/* accent palettes — soft pastel tones named by their hue, so a value is easy to
+   guess (red, orange, …, slate). Each overrides only the three accent vars; the
+   default (no data-accent) is "green", matching the :root values above. */
+[data-accent="red"]    { --delta-accent: oklch(0.79 0.072 25);  --delta-accent-ink: oklch(0.46 0.115 25);  --delta-accent-soft: oklch(0.95 0.045 25);  }
+[data-accent="orange"] { --delta-accent: oklch(0.82 0.080 55);  --delta-accent-ink: oklch(0.48 0.110 55);  --delta-accent-soft: oklch(0.95 0.050 55);  }
+[data-accent="yellow"] { --delta-accent: oklch(0.87 0.085 92);  --delta-accent-ink: oklch(0.47 0.095 92);  --delta-accent-soft: oklch(0.96 0.052 92);  }
+[data-accent="lime"]   { --delta-accent: oklch(0.84 0.080 128); --delta-accent-ink: oklch(0.44 0.090 128); --delta-accent-soft: oklch(0.95 0.045 128); }
+[data-accent="green"]  { --delta-accent: oklch(0.80 0.062 150); --delta-accent-ink: oklch(0.38 0.070 150); --delta-accent-soft: oklch(0.93 0.040 150); }
+[data-accent="teal"]   { --delta-accent: oklch(0.80 0.060 185); --delta-accent-ink: oklch(0.43 0.075 185); --delta-accent-soft: oklch(0.94 0.038 185); }
+[data-accent="sky"]    { --delta-accent: oklch(0.81 0.064 225); --delta-accent-ink: oklch(0.46 0.095 225); --delta-accent-soft: oklch(0.94 0.042 225); }
+[data-accent="blue"]   { --delta-accent: oklch(0.78 0.072 260); --delta-accent-ink: oklch(0.46 0.110 260); --delta-accent-soft: oklch(0.94 0.044 260); }
+[data-accent="indigo"] { --delta-accent: oklch(0.78 0.072 285); --delta-accent-ink: oklch(0.44 0.105 285); --delta-accent-soft: oklch(0.94 0.044 285); }
+[data-accent="purple"] { --delta-accent: oklch(0.80 0.070 310); --delta-accent-ink: oklch(0.45 0.105 310); --delta-accent-soft: oklch(0.95 0.044 310); }
+[data-accent="pink"]   { --delta-accent: oklch(0.83 0.072 350); --delta-accent-ink: oklch(0.47 0.110 350); --delta-accent-soft: oklch(0.95 0.046 350); }
+[data-accent="slate"]  { --delta-accent: oklch(0.78 0.030 245); --delta-accent-ink: oklch(0.36 0.040 245); --delta-accent-soft: oklch(0.93 0.022 245); }
 
 
 /* --- 2. RESET & BASE -------------------------------------------- */

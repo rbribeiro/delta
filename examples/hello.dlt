@@ -1,4 +1,4 @@
-<document lang="pt" type="article" theme="style/example.css" theme-accent="sage">
+<document lang="pt" type="article" theme="style/example.css" theme-accent="green">
   <title>Hello, <em>delta</em></title>
 
   <import src="imports/mod" />
