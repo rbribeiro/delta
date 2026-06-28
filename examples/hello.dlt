@@ -78,7 +78,9 @@
   </section>
   <section>
     <title>Referring to other elements</title>
-    We can refer to other elements by their ID, and the reference will be replaced by the target's title or caption, prefixed by the element type. For example, <ref to="thm:pyth"/> refers to the Pythagorean Theorem, and <ref to="eq:pyth"/> refers to the equation within it. The lemma is <ref to="lem:counting"/>, and the remark is <ref to="eq:aligned"/>.
+    We can refer to other elements by their ID, and the reference will be replaced by the target's title or caption, prefixed by the element type. 
+    
+    For example, <ref to="thm:pyth"/> refers to the Pythagorean Theorem, and <ref to="eq:pyth"/> refers to the equation within it. The lemma is <ref to="lem:counting"/>, and the remark is <ref to="eq:aligned"/>.
 
     We can also cite papers from a bibliography: the result is classical <cite paper="pythagoras"/>, and a full treatment appears in the standard sources <cite papers="euclid,pythagoras"/>.
 
