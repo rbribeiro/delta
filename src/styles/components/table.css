@@ -1,0 +1,56 @@
+/* table.css — data tables. DeltaTable (runtime/elements/table.ts) converts
+   <delta-table>/<delta-header>/<delta-row>/<delta-column> into a real
+   <table class="t"> inside <div class="table-wrap">, so the cell/border/typography
+   look comes entirely from base.css (TABLES & CODE). This file adds only the
+   net-new chrome: the title/caption head block and the sticky column header.
+   All values via --delta-* tokens. */
+
+@layer delta.components {
+
+delta-table { display: block; margin: var(--delta-block-gap) 0; }
+
+/* The runtime wrapper sits under the head block, so drop base .table-wrap's own
+   top/bottom margin to avoid doubling the gap. */
+.delta-table .table-wrap { margin: 0; }
+
+/* Head block — title + caption above the table, with an optional "Table N" eyebrow.
+   Mirrors the figure caption / widget-head label patterns. */
+.table-head { margin: 0 0 14px; }
+.table-lbl {
+  display: block;
+  font-family: var(--delta-sans);
+  font-size: 11.5px;
+  letter-spacing: var(--delta-tracking-cap);
+  text-transform: uppercase;
+  color: var(--delta-accent-ink);
+}
+.table-title {
+  display: block;
+  font-family: var(--delta-serif);
+  font-size: var(--delta-t-h4);
+  font-weight: 500;
+  line-height: var(--delta-leading-tight);
+  color: var(--delta-ink);
+  text-wrap: balance;
+}
+.table-cap {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--delta-serif);
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--delta-mute);
+  text-wrap: pretty;
+}
+
+/* Sticky column header — engages when .table-wrap has a max-height (vertical
+   scroll). Opaque paper keeps scrolled rows from showing through; base th's
+   border-bottom provides the separating rule. A no-op without a max-height. */
+.delta-table .table-wrap thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--delta-paper);
+}
+
+}

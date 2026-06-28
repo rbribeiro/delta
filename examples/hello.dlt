@@ -144,5 +144,30 @@
       <item>The fifth step</item>
     </list>
   </section>
+
+  <section>
+    <title>Tables</title>
+    Delta renders data tables with <c><table></c>. A <c><header></c> holds the column
+    names, each row is a <c><row></c>, and every cell is a <c><column></c>. Set <c>align="right"</c>
+    on a header column and the whole column right-aligns with tabular figures — ideal for numbers.
+    Give the table a <c>max-height</c> and the rows scroll while the column header stays fixed.
+    <table id="tbl:bench" max-height="250px">
+      <title>Throughput by configuration</title>
+      <header>
+        <column>Configuration</column>
+        <column align="right">Reqs/s</column>
+        <column align="right">p99 (ms)</column>
+      </header>
+      <row><column>Baseline</column><column align="right">1240</column><column align="right">4.2</column></row>
+      <row><column>+ cache</column><column align="right">1890</column><column align="right">3.1</column></row>
+      <row><column>+ pool</column><column align="right">2110</column><column align="right">2.8</column></row>
+      <row><column>+ batch</column><column align="right">2640</column><column align="right">2.3</column></row>
+      <row><column>+ compress</column><column align="right">2580</column><column align="right">2.5</column></row>
+      <row><column>+ pipeline</column><column align="right">3020</column><column align="right">2.0</column></row>
+      <row><column>+ shard</column><column align="right">3870</column><column align="right">1.6</column></row>
+      <row><column>All combined</column><column align="right">4310</column><column align="right">1.4</column></row>
+      <caption>Synthetic benchmark; higher requests/s is better.</caption>
+    </table>
+  </section>
   <bibliography src="refs.ref" />
 </document>

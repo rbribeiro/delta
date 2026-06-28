@@ -21,6 +21,7 @@ import { defineBibliography } from "./bibliography";
 import { defineCite } from "./cite";
 import { defineCode } from "./code";
 import {defineList} from "./list";
+import { defineTable } from "./table";
 
 export function defineComponents(): void {
   defineSections();
@@ -36,4 +37,5 @@ export function defineComponents(): void {
   defineCite();
   defineCode();
   defineList();
+  defineTable();
 }
