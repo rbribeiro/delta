@@ -35,17 +35,34 @@ export function setupDeck(): Deck | null {
 
   root.classList.add("deck-js");
 
+  // Opt-in progress bar: the author drops a <progress/> marker; it renders nothing
+  // itself (hidden by CSS) but turns on the per-slide title/body separator line,
+  // whose fill reads the --deck-progress variable we set below.
+  if (document.querySelector("delta-progress")) root.classList.add("deck-progress-on");
+
   let index = 0;
+  let prevProgress = 0;
   const listeners: ((index: number, total: number) => void)[] = [];
 
   const clamp = (i: number): number => Math.max(0, Math.min(slides.length - 1, i));
 
+  // Fraction of the deck reached (slide 1 of 4 → 0.25, last slide → 1), published
+  // alongside the previous fraction so the active slide's line can animate from
+  // where it was to where it is. One global pair on the root feeds whichever slide
+  // is visible. Set *before* activating the slide so its keyframe reads both ends.
+  const setProgress = (): void => {
+    const frac = (index + 1) / slides.length;
+    root.style.setProperty("--deck-progress-prev", String(prevProgress));
+    root.style.setProperty("--deck-progress", String(frac));
+    prevProgress = frac;
+  };
+
   const go = (i: number): void => {
     const next = clamp(i);
     if (next === index && slides[index].classList.contains("is-active")) return;
-    root.dataset.deckDir = next < index ? "back" : "fwd";
     slides[index]?.classList.remove("is-active");
     index = next;
+    setProgress();
     slides[index].classList.add("is-active");
     for (const cb of listeners) cb(index, slides.length);
   };
@@ -82,7 +99,8 @@ export function setupDeck(): Deck | null {
     }
   });
 
-  // Activate the first slide.
+  // Activate the first slide (progress set first so its line fills in from 0).
+  setProgress();
   slides[0].classList.add("is-active");
 
   return {

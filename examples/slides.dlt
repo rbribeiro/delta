@@ -4,8 +4,11 @@
   <!-- M7 items 33 + 36: `<slide>` is one deck slide (its `<title>` shows at the
        top); the runtime deck controller pages one slide at a time with the arrow
        keys (←/→ or ↑/↓), Space/PageDown, and Home/End. With JS off, every slide
-       stays visible and scrollable. Section→divider slides (item 34) and the
-       progress bar (item 35) are still to come. -->
+       stays visible and scrollable. Section→divider slides (item 34) are still to come. -->
+
+  <!-- M7 item 35: opt into the progress bar — it renders as the line under each
+       slide title, filling as you advance. Remove this and the line disappears. -->
+  <progress/>
 
   <slide>
     <title>Presentations in Delta</title>

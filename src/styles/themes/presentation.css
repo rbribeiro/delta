@@ -18,8 +18,13 @@
     --delta-slide-max:   min(1100px, 92vw);          /* content measure on a slide */
     --delta-deck-bg:     var(--delta-paper);         /* backdrop behind the slides */
 
-    /* slide transition (consumed once paging lands) */
-    --delta-slide-dur:   var(--delta-dur);
+    /* slide transition — a gentle fade between slides */
+    --delta-slide-dur:   var(--delta-dur-slow);   /* 0.45s — softer than the default */
     --delta-slide-ease:  var(--delta-ease);
+
+    /* progress bar — thickness of the title/body separator line, and how long its
+       fill takes to grow (a touch longer than the fade so the motion is legible) */
+    --delta-progress-h:    4px;
+    --delta-progress-dur:  0.6s;
   }
 }

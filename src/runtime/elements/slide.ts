@@ -26,6 +26,16 @@ class DeltaSlide extends HTMLElement {
       heading.className = "slide-title";
       heading.append(...title.childNodes);
       title.replaceWith(heading);
+
+      // Separator line between the title and the body. Shown (and turned into a
+      // progress bar) only when the deck opted in via <progress/> — gated by the
+      // .deck-progress-on class in components/slide.css, so it's inert otherwise.
+      const rule = document.createElement("div");
+      rule.className = "slide-rule";
+      const fill = document.createElement("span");
+      fill.className = "slide-rule-fill";
+      rule.append(fill);
+      heading.after(rule);
     }
     this.append(body);
   }

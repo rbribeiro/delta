@@ -141,13 +141,16 @@ reveal/animation system follows in M8.
        `<title>` as a centered full-slide divider that introduces the next part of the talk; its
        child `<slide>`s follow. Sections become groups that also emit a divider; section numbering
        already exists (`environments.ts`)
-- [ ] 35. Progress bar: injected by the deck controller, its width tracking current step / total
-       as the reader moves through the deck; styled in `components/slide.css`
+- [x] 35. Progress bar: **opt-in** via a `<progress/>` marker (a direct child of `<document>`,
+       like `<toc/>`; it renders nothing itself). It turns on the line that separates each slide's
+       title from its body, which doubles as the progress indicator: the controller sets one global
+       `--deck-progress` (= `(index+1)/total`) on the root and each slide's `.slide-rule-fill` reads
+       it via `width: calc(var(--deck-progress) * 100%)`. Styled in `components/slide.css`
 - [x] 36. Keyboard navigation + transitions: the deck controller (`setupDeck` in
        `src/runtime/deck.ts`, a singleton wired in `runtime/index.ts` beside `flashHash`) pages the
        slides — a global `keydown` listener (←/→, ↑/↓, plus PageUp/Down, Space, Home/End) shows one
        slide at a time (`.is-active`, hide-inactive gated on `.deck-js` so JS-off shows all), with a
-       direction-aware enter transition honoring `prefers-reduced-motion`. Exposes `window.Delta.deck`
+       fade-in enter transition honoring `prefers-reduced-motion`. Exposes `window.Delta.deck`
        (`index`/`total`/`go`/`next`/`prev`/`onChange`) for add-ons (item 35 hooks `onChange`)
 
 ## M8 — Slide animation

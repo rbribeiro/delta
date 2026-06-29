@@ -14,9 +14,8 @@
   }
 
   /* Escape the article measure + sidenote rail: the deck is full-bleed.
-     `overflow-x: clip` swallows the slide enter transition's horizontal translate
-     so it never spawns a transient scrollbar (clip, not hidden, leaves vertical
-     scrolling intact for a tall slide). */
+     `overflow-x: clip` keeps a deck from ever scrolling sideways (clip, not hidden,
+     leaves vertical scrolling intact for a tall slide). */
   :root[data-type="presentation"] delta-document {
     max-width: none;
     margin: 0;
@@ -54,28 +53,57 @@
     margin-inline: auto;
   }
 
+  /* Progress bar — opt-in via a <progress/> marker (which itself renders nothing).
+     The marker turns on `.deck-progress-on`; the separator line under each slide
+     title then doubles as the deck progress indicator. Its fill reads the global
+     `--deck-progress` the controller sets on the root (0–1). */
+  :root[data-type="presentation"] delta-progress { display: none; }
+
+  :root[data-type="presentation"] .slide-rule { display: none; }
+  :root[data-type="presentation"].deck-progress-on .slide-rule {
+    display: block;
+    height: var(--delta-progress-h);
+    margin: clamp(12px, 2.2vmin, 24px) 0;
+    background: var(--delta-rule);
+    border-radius: var(--delta-radius-pill);
+    overflow: hidden;
+  }
+  :root[data-type="presentation"].deck-progress-on .slide-rule-fill {
+    display: block;
+    height: 100%;
+    width: calc(var(--deck-progress, 0) * 100%);
+    background: var(--delta-accent-ink);
+  }
+  /* Grow the bar from the previous slide's fraction to the current one every time
+     a slide becomes active, so the fill is visibly seen moving (and receding on the
+     way back). A keyframe, not a transition: the incoming slide was display:none, so
+     a width transition wouldn't fire — but a keyframe restarts when it's shown. */
+  :root[data-type="presentation"].deck-progress-on delta-slide.is-active .slide-rule-fill {
+    animation: delta-deck-bar var(--delta-progress-dur) var(--delta-slide-ease);
+  }
+  @keyframes delta-deck-bar {
+    from { width: calc(var(--deck-progress-prev, 0) * 100%); }
+    to   { width: calc(var(--deck-progress, 0) * 100%); }
+  }
+
   /* Paging (JS on): show only the active slide. */
   :root[data-type="presentation"].deck-js delta-slide:not(.is-active) {
     display: none;
   }
 
-  /* Direction-aware enter transition for the incoming slide (enter-only — the
-     outgoing slide is display:none). */
-  :root[data-type="presentation"][data-deck-dir="fwd"] delta-slide.is-active {
-    animation: delta-deck-in-fwd var(--delta-slide-dur) var(--delta-slide-ease);
+  /* Enter transition: a gentle fade-in for the incoming slide (enter-only — the
+     outgoing slide is display:none). Opacity only, so it never shifts layout. */
+  :root[data-type="presentation"] delta-slide.is-active {
+    animation: delta-deck-fade var(--delta-slide-dur) var(--delta-slide-ease);
   }
-  :root[data-type="presentation"][data-deck-dir="back"] delta-slide.is-active {
-    animation: delta-deck-in-back var(--delta-slide-dur) var(--delta-slide-ease);
-  }
-  @keyframes delta-deck-in-fwd {
-    from { opacity: 0; transform: translateX(5%); }
-    to   { opacity: 1; transform: none; }
-  }
-  @keyframes delta-deck-in-back {
-    from { opacity: 0; transform: translateX(-5%); }
-    to   { opacity: 1; transform: none; }
+  @keyframes delta-deck-fade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
   }
   @media (prefers-reduced-motion: reduce) {
-    :root[data-type="presentation"] delta-slide.is-active { animation: none; }
+    :root[data-type="presentation"] delta-slide.is-active,
+    :root[data-type="presentation"] delta-slide.is-active .slide-rule-fill {
+      animation: none;
+    }
   }
 }

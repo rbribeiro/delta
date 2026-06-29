@@ -91,6 +91,17 @@ describe("emit", () => {
     expect(html).not.toContain("<title>First</title>");
   });
 
+  it("passes the opt-in <progress> marker through to the runtime", () => {
+    // No compiler pass: the marker rides through as <delta-progress>; the runtime
+    // detects it and turns on the per-slide progress line.
+    const { html } = compile(
+      `<document type="presentation"><title>D</title><progress/>
+        <slide><title>S</title>x</slide>
+      </document>`,
+    );
+    expect(html).toContain("<delta-progress>");
+  });
+
   it("inlines localized strings for the document `lang` as the #delta-i18n island", () => {
     const body = `<title>T</title><section id="s"><title>S</title>text</section>`;
     const pt = compile(`<document lang="pt-BR">${body}</document>`).html;
