@@ -177,6 +177,38 @@ export function setupDeck(): Deck | null {
     { passive: true },
   );
 
+  // Running header — a subtle "AUTHOR · AFFILIATION" eyebrow at the top edge, built
+  // from the <cover> metadata already in the DOM (no compiler work). The talk title
+  // is left out on purpose: it can be long and clutter the header. Styled by
+  // components/slide.css; faded out on the cover (redundant) and on the inverted
+  // dividers via the .topbar-hidden class the listener below toggles.
+  const coverText = (tag: string): string =>
+    document.querySelector(`delta-slide[cover="true"] ${tag}`)?.textContent?.trim() ?? "";
+  const span = (cls: string, txt: string): HTMLElement => {
+    const el = document.createElement("span");
+    el.className = cls;
+    el.textContent = txt;
+    return el;
+  };
+  const author = coverText("delta-author");
+  const affiliation = coverText("delta-affiliation");
+  const parts = [
+    ...(author ? [span("tb-author", author)] : []),
+    ...(affiliation ? [span("tb-affiliation", affiliation)] : []),
+  ];
+  if (parts.length) {
+    const topbar = document.createElement("div");
+    topbar.className = "deck-topbar eyebrow";
+    parts.forEach((el, i) => {
+      if (i > 0) topbar.append(" · ");
+      topbar.append(el);
+    });
+    document.body.append(topbar);
+    listeners.push((i) =>
+      topbar.classList.toggle("topbar-hidden", slides[i].matches('[cover="true"], [divider="true"]')),
+    );
+  }
+
   // Activate the first slide (fragments hidden, progress filled in from 0).
   enter(0, false);
 

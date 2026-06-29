@@ -43,6 +43,23 @@
     line-height: var(--delta-leading-tight);
     color: var(--delta-accent-ink);
   }
+  /* Content slides (not the cover / divider, which have their own treatments) get a
+     short accent kicker rule under the title. Suppressed when <progress/> is on — the
+     progress separator line below the title already serves as the rule there. */
+  :root[data-type="presentation"]
+    delta-slide:not([cover="true"]):not([divider="true"]) .slide-title::after {
+    content: "";
+    display: block;
+    width: var(--delta-kicker-w);
+    height: var(--delta-kicker-h);
+    margin-top: clamp(10px, 1.6vmin, 18px);
+    border-radius: var(--delta-radius-pill);
+    background: var(--delta-kicker-color);
+  }
+  :root[data-type="presentation"].deck-progress-on
+    delta-slide:not([cover="true"]):not([divider="true"]) .slide-title::after {
+    display: none;
+  }
   /* Normal block flow (NOT a flex container — flex would blockify inline children
      like inline math or <c>, forcing each onto its own full-width line). `margin:
      auto` centers it both ways: horizontally within the measure, and vertically in
@@ -61,13 +78,18 @@
     display: contents;
   }
 
-  /* The divider itself: a slide whose only content is its title, centered. */
+  /* The divider itself: a slide whose only content is its title, centered. It's
+     inverted — a dark accent-ink full-bleed slide with paper text — so a section
+     break reads like a chapter page, distinct from the content slides around it. */
   :root[data-type="presentation"] delta-slide[divider="true"] {
     justify-content: center;
     text-align: center;
+    background: var(--delta-divider-bg);
+    color: var(--delta-divider-ink);
   }
   :root[data-type="presentation"] delta-slide[divider="true"] .slide-title {
     font-size: var(--delta-t-divider);
+    color: var(--delta-divider-ink);
   }
   :root[data-type="presentation"] delta-slide[divider="true"] :is(.slide-rule, .slide-body) {
     display: none;
@@ -79,10 +101,22 @@
   :root[data-type="presentation"] delta-slide[cover="true"] {
     justify-content: center;
     text-align: center;
+    background: var(--delta-cover-bg);
   }
   :root[data-type="presentation"] delta-slide[cover="true"] .slide-rule { display: none; }
   :root[data-type="presentation"] delta-slide[cover="true"] .slide-title {
     font-size: var(--delta-t-cover-title);
+    color: var(--delta-accent-ink);
+  }
+  /* A short accent rule under the cover title, centered. */
+  :root[data-type="presentation"] delta-slide[cover="true"] .slide-title::after {
+    content: "";
+    display: block;
+    width: var(--delta-kicker-w);
+    height: var(--delta-kicker-h);
+    margin: clamp(14px, 2vmin, 22px) auto 0;
+    border-radius: var(--delta-radius-pill);
+    background: var(--delta-kicker-color);
   }
   :root[data-type="presentation"] delta-slide[cover="true"] .slide-body {
     margin: 0.5em auto 0; /* sit just under the title rather than centering on its own */
@@ -127,7 +161,7 @@
     display: block;
     height: var(--delta-progress-h);
     margin: clamp(12px, 2.2vmin, 24px) 0;
-    background: var(--delta-rule);
+    background: var(--delta-progress-track);
     border-radius: var(--delta-radius-pill);
     overflow: hidden;
   }
@@ -135,7 +169,7 @@
     display: block;
     height: 100%;
     width: calc(var(--deck-progress, 0) * 100%);
-    background: var(--delta-accent-ink);
+    background: var(--delta-progress-fill);
   }
   /* Grow the bar from the previous slide's fraction to the current one every time
      a slide becomes active, so the fill is visibly seen moving (and receding on the
@@ -246,7 +280,29 @@
     user-select: none;
   }
 
+  /* Running header (JS on) — a faint "AUTHOR · AFFILIATION" eyebrow pinned to the top
+     edge so a deck always carries whose talk it is. Built by deck.ts and tagged
+     `eyebrow` so it inherits that primitive's look (sans, uppercase, tracked, mute);
+     this only positions it. `pointer-events: none` so it never blocks a slide or the
+     controls; deck.ts fades it out on the cover and on dividers (.topbar-hidden). */
+  :root[data-type="presentation"].deck-js .deck-topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 40;
+    padding: clamp(8px, 1.6vmin, 14px) clamp(16px, 4vmin, 44px);
+    pointer-events: none;
+    opacity: 0.7;
+    transition: opacity var(--delta-dur) var(--delta-ease);
+  }
+  :root[data-type="presentation"].deck-js .deck-topbar.topbar-hidden { opacity: 0; }
+  :root[data-type="presentation"].deck-js .deck-topbar .tb-author {
+    color: var(--delta-accent-ink);
+  }
+
   @media print {
-    :root[data-type="presentation"] .deck-controls { display: none !important; }
+    :root[data-type="presentation"] .deck-controls,
+    :root[data-type="presentation"] .deck-topbar { display: none !important; }
   }
 }

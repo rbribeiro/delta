@@ -21,6 +21,18 @@
     --delta-slide-max:   min(1100px, 92vw);          /* content measure on a slide */
     --delta-deck-bg:     var(--delta-paper);         /* backdrop behind the slides */
 
+    /* deck color — the three accent tones give each slide type its own identity
+       (see components/slide.css). All derive from the accent vars, so a document's
+       theme-accent recolors the whole deck. */
+    --delta-cover-bg:    linear-gradient(165deg, var(--delta-accent-soft) 0%, var(--delta-paper) 62%);
+    --delta-divider-bg:  var(--delta-accent-ink);   /* section divider: inverted */
+    --delta-divider-ink: var(--delta-paper);
+    --delta-kicker-w:    2.4em;                      /* the accent rule under a title */
+    --delta-kicker-h:    3px;
+    --delta-kicker-color: var(--delta-accent-ink);
+    --delta-progress-track: var(--delta-accent-soft); /* progress bar — accent-toned */
+    --delta-progress-fill:  var(--delta-accent-ink);
+
     /* slide transition — a gentle fade between slides */
     --delta-slide-dur:   var(--delta-dur-slow);   /* 0.45s — softer than the default */
     --delta-slide-ease:  var(--delta-ease);

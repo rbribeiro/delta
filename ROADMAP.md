@@ -166,6 +166,15 @@ reveal/animation system follows in M8.
        via the `onChange` listener. Plus left/right swipe (passive touch listeners, horizontal-
        dominant). Runtime + CSS only; aria-labels localized (`prevSlide`/`nextSlide`). Jump-to-slide
        stays the existing `<floating><toc/></floating>` (its links page via `goToId`)
+- [x] 42. Theme polish + running header: `themes/presentation.css` adds **deck color tokens** (all
+       derived from the accent vars, so `theme-accent` recolors the whole deck) and `components/slide.css`
+       gives each slide type a distinct tone — a pale accent **wash** on the cover (+ an accent rule under
+       its title), an **inverted** (dark accent-ink / paper text) section divider that reads like a chapter
+       page, and a short accent **kicker** rule under content-slide titles. `setupDeck` also builds a subtle
+       **running header** ("AUTHOR · AFFILIATION", reusing the `.eyebrow` primitive) from the `<cover>`
+       metadata already in the DOM (the talk title is left out — it can be long and clutter the header),
+       pinned to the top edge and faded out on the cover and dividers. CSS + runtime only; emitted HTML
+       unchanged
 
 ## M8 — Slide animation
 
