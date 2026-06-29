@@ -48,4 +48,11 @@
       </list>
     </slide>
   </section>
+  <section>
+    <title>Part three - Testing references</title>
+    <slide>
+      <title>Ref element</title>
+      The references work in presentation mode as well. For example, the Pythagoras theorem is referenced in this slide: <ref to="thm:pyth">Pythagoras</ref> and the equation is referenced here: <ref to="eq:pyth">Pythagoras equation</ref>.
+    </slide>
+  </section>
 </document>

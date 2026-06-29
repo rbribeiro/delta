@@ -158,3 +158,16 @@ describe("emit with a bibliography", () => {
     }
   });
 });
+
+describe("emit with a bibliography with custom title", () => {
+  const doc = (body: string) => `<document><title>T</title><section id="s"><title>S</title>${body}</section>
+  <bibliography src="fixtures/refs.ref"><title>My Custom Title</title></bibliography></document>`;
+
+  it("preserves the custom <title> ahead of the cited papers", () => {
+    const html = compile(doc(`Claim <cite paper="ARS10" /> and <cite papers="ARS10,KL98" />.`));
+    // The title survives the database-consume step and ships as the first child;
+    // the runtime (DeltaBibliography) turns it into the <h4> heading in the browser.
+    expect(html).toMatch(/<delta-bibliography[^>]*><delta-title>My Custom Title<\/delta-title>/);
+    expect(html).toContain('<delta-paper id="ARS10"'); // papers still ship after it
+  });
+})

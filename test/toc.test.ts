@@ -108,4 +108,12 @@ describe("emit with a table of contents", () => {
       expect(m[1]).toMatch(/^["']?data:/);
     }
   });
+
+  it("preserves custom title content inside <toc> when emitting", () => {
+    const html = compile(
+      `<document><toc><title>Table of Contents</title></toc>` +
+        `<section id="a"><title>Intro</title>x</section></document>`,
+    );
+    expect(html).toContain("<delta-title>Table of Contents</delta-title>");
+  });
 });

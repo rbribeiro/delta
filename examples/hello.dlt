@@ -172,5 +172,7 @@
       <caption>Synthetic benchmark; higher requests/s is better.</caption>
     </table>
   </section>
-  <bibliography src="refs.ref" />
+  <bibliography src="refs.ref">
+    <title>My Custom Title</title>
+  </bibliography>
 </document>

@@ -18,7 +18,10 @@ export function loadBibliography(doc: ElementNode, ctx: CompileContext): void {
       if (child.type === "element" && child.tag === "paper") addPaper(child, ctx);
     }
     if (bib.attrs.src) loadRefFile(bib.attrs.src, ctx, bib);
-    bib.children = []; // database consumed; cited entries are re-added by resolveCitations
+    // Database consumed (papers are registered); keep only an optional <title> so the
+    // author's custom heading survives. resolveCitations re-adds the cited papers after it.
+    const title = bib.children.find((c) => c.type === "element" && c.tag === "title");
+    bib.children = title ? [title] : [];
   }
 }
 
@@ -76,12 +79,13 @@ export function fillBibliography(doc: ElementNode, ctx: CompileContext): void {
     warn(ctx, "citations present but no <bibliography> element to render them");
     return;
   }
-  bib.children = ctx.citedPapers.map((id, i) => {
-    const paper = ctx.papers.get(id)!;
-    paper.attrs.id = id;
-    paper.attrs["data-cite-num"] = String(i + 1);
-    return paper;
-  });
+    bib.children.push(...ctx.citedPapers.map((id, i) => {
+      const paper = ctx.papers.get(id)!;
+      paper.attrs.id = id;
+      paper.attrs["data-cite-num"] = String(i + 1);
+      return paper;
+      })
+    );
 }
 
 /** Register one `<paper>` in `ctx.papers`; warn on a missing or duplicate id. */
