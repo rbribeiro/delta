@@ -23,6 +23,9 @@ export interface Deck {
   go(i: number): void;
   next(): void;
   prev(): void;
+  /** Page to the slide that holds `#id` (or, for a section, its divider slide).
+   *  Returns false if the id isn't found in any slide. */
+  goToId(id: string): boolean;
   /** Subscribe to slide changes; fires immediately with the current position. */
   onChange(cb: (index: number, total: number) => void): void;
 }
@@ -143,6 +146,18 @@ export function setupDeck(): Deck | null {
     go,
     next,
     prev,
+    goToId(id) {
+      const el = document.getElementById(id);
+      if (!el) return false;
+      // An element inside a slide → that slide. A section is display:contents and
+      // holds the divider + its child slides, so it has no enclosing slide — use its
+      // first slide descendant (the divider).
+      const slide = el.closest("delta-slide") ?? el.querySelector("delta-slide");
+      const i = slide ? slides.indexOf(slide as HTMLElement) : -1;
+      if (i < 0) return false;
+      go(i);
+      return true;
+    },
     onChange(cb) {
       listeners.push(cb);
       cb(index, slides.length);

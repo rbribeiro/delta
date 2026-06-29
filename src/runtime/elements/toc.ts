@@ -100,6 +100,12 @@ class DeltaToc extends HTMLElement {
       a.append(text);
       a.addEventListener("click", (ev) => {
         if (e.file) return; // cross-file: let the browser navigate (arrival flash handles it)
+        // In a deck, scrolling can't reach a hidden slide / display:contents section —
+        // page the deck to the target's slide instead.
+        if (window.Delta?.deck?.goToId(e.id)) {
+          ev.preventDefault();
+          return;
+        }
         const target = document.getElementById(e.id);
         if (!target) return;
         ev.preventDefault();
