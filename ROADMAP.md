@@ -160,6 +160,12 @@ reveal/animation system follows in M8.
        compiler pass (`cover.ts`) desugars it to `<slide cover="true">` so the deck pages it as the
        front slide and the existing `DeltaSlide` chrome applies; `components/slide.css` lays the
        fields out centered (styled by tag). No runtime element. Multiple authors/affiliations stack
+- [x] 41. Overlay touch controls: a deck is navigable without a keyboard. `setupDeck` injects a
+       subtle, always-present prev / counter / next cluster (bottom-centre, brighter on hover/touch;
+       `components/slide.css`) wired to the fragment-aware `next`/`prev`; the counter tracks position
+       via the `onChange` listener. Plus left/right swipe (passive touch listeners, horizontal-
+       dominant). Runtime + CSS only; aria-labels localized (`prevSlide`/`nextSlide`). Jump-to-slide
+       stays the existing `<floating><toc/></floating>` (its links page via `goToId`)
 
 ## M8 — Slide animation
 
