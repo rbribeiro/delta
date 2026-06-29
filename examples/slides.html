@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-accent="blue" data-type="presentation">
+<html lang="en" data-accent="blue">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -1529,30 +1529,6 @@ delta-sidenote { display: block; }
 
 }
 
-/* Presentation deck — container-level chrome for `<document type="presentation">`.
-   Every rule is gated on `:root[data-type="presentation"]` (the hook emit.ts
-   writes on <html>), so this ships in CORE_CSS like every component but only
-   takes effect for decks — the same "ships always, applies on match" pattern as
-   floating.css / collapse.css.
-
-   Scope here is container-level only. Per-slide element chrome arrives with the
-   <slide> element (M7.33); viewport paging + hide-inactive land with the deck
-   controller (M7.36). Deck tokens (--delta-slide-*, --delta-deck-bg) come from
-   themes/presentation.css. */
-
-@layer delta.components {
-  :root[data-type="presentation"] body {
-    background: var(--delta-deck-bg);
-  }
-
-  /* Escape the article measure + sidenote rail: the deck is full-bleed. */
-  :root[data-type="presentation"] delta-document {
-    max-width: none;
-    margin: 0;
-    padding: 0;
-  }
-}
-
 /* structure.css — runhead, chapter front-matter, section/subsection headings,
    and block display for the layout wrappers. Section headings are LIVE:
    DeltaSection emits <h2 class="section"> / <h3 class="sub"> / <h4 class="subsub">
@@ -2264,28 +2240,13 @@ delta-tweaks .twk-toggle.is-on::after {
 
 </style>
 <style>
-/* Theme: presentation — slide decks (`<document type="presentation">`).
-   Token overrides only (the file ships solely for presentation docs, so plain
-   `:root` is enough). Projector-scale type plus the deck geometry/transition
-   tokens consumed by components/slide.css now and by the <slide> element +
-   deck controller as they land (M7.33 / M7.36). Structural deck chrome lives in
-   components/slide.css, per the base.css convention (themes = tokens). */
+/* Theme: article — Delta's default document type (`<document type="article">`
+   or no type). Single-flow long-form prose; inherits every base token as-is.
+   Override tokens here to restyle all articles without touching base.css. */
 
 @layer delta.theme {
   :root {
-    /* projector-scale prose — larger base, tighter leading than long-form */
-    --delta-t-base:    clamp(20px, 1.4vw + 12px, 30px);
-    --delta-leading:   1.4;
-
-    /* deck geometry */
-    --delta-slide-ratio: 16 / 9;
-    --delta-slide-pad:   clamp(32px, 6vmin, 88px);  /* inner padding of a slide */
-    --delta-slide-max:   min(1100px, 92vw);          /* content measure on a slide */
-    --delta-deck-bg:     var(--delta-paper);         /* backdrop behind the slides */
-
-    /* slide transition (consumed once paging lands) */
-    --delta-slide-dur:   var(--delta-dur);
-    --delta-slide-ease:  var(--delta-ease);
+    /* inherits base defaults — diverge here as article-specific needs arise */
   }
 }
 
