@@ -75,6 +75,24 @@ describe("emit", () => {
     expect(dflt).not.toContain(THEMES.presentation);
   });
 
+  it("opts into dark mode via theme-mode → data-mode on <html>", () => {
+    const body = `<title>T</title><section id="s"><title>S</title>text</section>`;
+    const dark = compile(`<document theme-mode="dark">${body}</document>`).html;
+    expect(dark).toMatch(/<html lang="en"[^>]*\bdata-mode="dark"/);
+
+    const auto = compile(`<document theme-mode="auto">${body}</document>`).html;
+    expect(auto).toMatch(/<html lang="en"[^>]*\bdata-mode="auto"/);
+
+    // Default (and explicit light) docs carry no data-mode on the tag. Assert on the
+    // <html> tag, not a bare `data-mode=` substring — it appears in the inlined
+    // [data-mode="dark"] CSS either way.
+    const dflt = compile(`<document>${body}</document>`).html;
+    expect(dflt).toContain('<html lang="en">');
+    const light = compile(`<document theme-mode="light">${body}</document>`).html;
+    expect(light).toContain('<html lang="en">');
+    expect(light.match(/<html[^>]*>/)?.[0]).not.toContain("data-mode");
+  });
+
   it("renders <slide> as a paged deck element without taking its title as the doc title", () => {
     const { html } = compile(
       `<document type="presentation">

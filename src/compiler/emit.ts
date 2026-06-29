@@ -70,12 +70,15 @@ export function emit(
     : "";
 
   const dataAccent = ctx.themeAccent ? ` data-accent="${escapeAttr(ctx.themeAccent)}"` : "";
+  // `data-mode` selects the dark (or OS-auto) token override in base.css; emitted only
+  // when the author opts in, so a light document keeps the bare `<html lang="…">` tag.
+  const dataMode = ctx.themeMode ? ` data-mode="${escapeAttr(ctx.themeMode)}"` : "";
   // `data-type` is the runtime/CSS hook for per-type chrome (e.g. the presentation
   // deck). Emitted only for non-default types so default (article) docs stay byte-
   // identical (the emit tests assert the bare `<html lang="…">` tag).
   const dataType = type !== DEFAULT_TYPE ? ` data-type="${escapeAttr(type)}"` : "";
   return `<!DOCTYPE html>
-<html lang="${escapeAttr(ctx.lang)}"${dataAccent}${dataType}>
+<html lang="${escapeAttr(ctx.lang)}"${dataAccent}${dataMode}${dataType}>
 <head>
 ${head}
 </head>

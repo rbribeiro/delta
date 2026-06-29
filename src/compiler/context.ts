@@ -76,6 +76,9 @@ export interface CompileContext {
   citedPapers: string[];
 
   themeAccent?: string;
+  /** Color mode from `<document theme-mode>` (`dark` | `auto`); drives `data-mode` on
+   *  `<html>` and the matching token override in base.css. Unset = the light default. */
+  themeMode?: string;
 
   /** Absolute paths of every user file this compile read (entry, includes, theme,
    *  imports, bibliography, figures); the CLI's `--watch` watches exactly this set. */

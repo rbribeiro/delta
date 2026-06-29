@@ -134,6 +134,73 @@
 [data-accent="slate"]  { --delta-accent: oklch(0.78 0.030 245); --delta-accent-ink: oklch(0.36 0.040 245); --delta-accent-soft: oklch(0.93 0.022 245); }
 
 
+/* dark mode — a token override (the same model as the accent palettes above), opted
+   into with `<document theme-mode="dark">` → `data-mode="dark"`, or `="auto"` to follow
+   the viewer's OS. It inverts the neutral ramp (warm hue kept, so the dark stays on-brand)
+   and re-derives only the two accent tones that assume a light page: `-ink` becomes the
+   vivid pastel `--delta-accent` (bright on dark — links, titles, kicker, inverted-divider
+   bg, progress fill), `-soft` a dark accent tint. The per-hue `--delta-accent` blocks above
+   are unchanged, so every accent keeps working. Components read tokens only, so flipping
+   these flips the whole system, deck chrome included.
+
+   The declaration list is intentionally repeated for the `[data-mode="auto"]` + media case
+   (no build-time preprocessing) — keep the two blocks in sync. */
+[data-mode="dark"] {
+  color-scheme: dark;
+
+  --delta-paper:        oklch(0.205 0.008 75);
+  --delta-paper-edge:   oklch(0.17  0.008 75);
+  --delta-surface-1:    oklch(0.245 0.009 75);
+  --delta-surface-2:    oklch(0.29  0.010 75);
+  --delta-ink:          oklch(0.92  0.006 75);
+  --delta-ink-soft:     oklch(0.78  0.006 75);
+  --delta-mute:         oklch(0.62  0.008 75);
+  --delta-rule:         oklch(0.36  0.010 75);
+  --delta-rule-soft:    oklch(0.29  0.010 75);
+
+  --delta-accent-ink:   var(--delta-accent);
+  --delta-accent-soft:  color-mix(in oklab, var(--delta-accent) 20%, var(--delta-paper));
+
+  --delta-ok:           oklch(0.72 0.12 150);
+  --delta-warn:         oklch(0.70 0.15 22);
+
+  --delta-code-bg:      oklch(0.26 0.010 75);
+
+  --delta-shadow-sm:    0 1px 2px rgba(0, 0, 0, .40);
+  --delta-shadow:       0 1px 1px rgba(0, 0, 0, .35), 0 6px 18px rgba(0, 0, 0, .50);
+  --delta-shadow-lift:  0 1px 2px rgba(0, 0, 0, .35), 0 14px 36px rgba(0, 0, 0, .55);
+  --delta-shadow-code:  0 1px 1px rgba(0, 0, 0, .40), 0 10px 28px rgba(0, 0, 0, .55);
+}
+@media (prefers-color-scheme: dark) {
+  [data-mode="auto"] {
+    color-scheme: dark;
+
+    --delta-paper:        oklch(0.205 0.008 75);
+    --delta-paper-edge:   oklch(0.17  0.008 75);
+    --delta-surface-1:    oklch(0.245 0.009 75);
+    --delta-surface-2:    oklch(0.29  0.010 75);
+    --delta-ink:          oklch(0.92  0.006 75);
+    --delta-ink-soft:     oklch(0.78  0.006 75);
+    --delta-mute:         oklch(0.62  0.008 75);
+    --delta-rule:         oklch(0.36  0.010 75);
+    --delta-rule-soft:    oklch(0.29  0.010 75);
+
+    --delta-accent-ink:   var(--delta-accent);
+    --delta-accent-soft:  color-mix(in oklab, var(--delta-accent) 20%, var(--delta-paper));
+
+    --delta-ok:           oklch(0.72 0.12 150);
+    --delta-warn:         oklch(0.70 0.15 22);
+
+    --delta-code-bg:      oklch(0.26 0.010 75);
+
+    --delta-shadow-sm:    0 1px 2px rgba(0, 0, 0, .40);
+    --delta-shadow:       0 1px 1px rgba(0, 0, 0, .35), 0 6px 18px rgba(0, 0, 0, .50);
+    --delta-shadow-lift:  0 1px 2px rgba(0, 0, 0, .35), 0 14px 36px rgba(0, 0, 0, .55);
+    --delta-shadow-code:  0 1px 1px rgba(0, 0, 0, .40), 0 10px 28px rgba(0, 0, 0, .55);
+  }
+}
+
+
 /* --- 2. RESET & BASE -------------------------------------------- */
 
 *,

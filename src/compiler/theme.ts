@@ -30,6 +30,16 @@ export function resolveTheme(doc: ElementNode, ctx: CompileContext): void {
   const themeAttr = doc.attrs.theme;
   const accentAttr = doc.attrs["theme-accent"];
   if (accentAttr) ctx.themeAccent = accentAttr;
+
+  // Color mode: `light` (the default) | `dark` | `auto` (follows the OS via
+  // prefers-color-scheme). `light` is the baseline look, so it needs no data-mode;
+  // an unknown value warns and is dropped (mirrors the URL guard below).
+  const modeAttr = doc.attrs["theme-mode"];
+  if (modeAttr && modeAttr !== "light") {
+    if (modeAttr === "dark" || modeAttr === "auto") ctx.themeMode = modeAttr;
+    else warn(ctx, `unknown theme-mode '${modeAttr}' (expected light, dark, or auto)`, doc.pos);
+  }
+
   if (!themeAttr) return;
 
   if (/^[a-z]+:\/\//i.test(themeAttr)) {
