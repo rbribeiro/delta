@@ -1,0 +1,40 @@
+<document lang="en" type="presentation" theme-accent="blue">
+  <title>Delta decks</title>
+
+  <!-- M7 item 32 only: `type="presentation"` activates the deck theme (full-bleed,
+       projector-scale type) and the `data-type` hook on <html>. The <slide> element
+       and per-slide chrome arrive in item 33; viewport paging + keyboard navigation
+       in item 36. Until then a deck is a tall, full-bleed scroll of its sections. -->
+
+  <section id="intro">
+    <eyebrow>A test deck</eyebrow>
+    <title>Presentations in Delta</title>
+    <intro>
+      The same strict-XML source, compiled to a single offline HTML file — now at
+      projector scale. Inline math like $e^{i\pi} + 1 = 0$ renders as usual.
+    </intro>
+  </section>
+
+  <section id="math">
+    <title>Math still works</title>
+    Display math is centered and large:
+    <equation id="eq:euler">\int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}</equation>
+
+    <theorem id="thm:pyth">
+      <title>Pythagoras</title>
+      For a right triangle with legs $a$, $b$ and hypotenuse $c$,
+      <equation id="eq:pyth">a^2 + b^2 = c^2</equation>
+    </theorem>
+  </section>
+
+  <section id="content">
+    <title>Ordinary chrome at deck scale</title>
+    Lists, emphasis, and references all carry over. We can point back at
+    <ref to="thm:pyth"/> from anywhere.
+    <list marker="number">
+      <item>One idea per point.</item>
+      <item>Built from the same tags you already know.</item>
+      <item>Still a single, fully offline file.</item>
+    </list>
+  </section>
+</document>

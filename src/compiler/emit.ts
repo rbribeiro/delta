@@ -70,8 +70,12 @@ export function emit(
     : "";
 
   const dataAccent = ctx.themeAccent ? ` data-accent="${escapeAttr(ctx.themeAccent)}"` : "";
+  // `data-type` is the runtime/CSS hook for per-type chrome (e.g. the presentation
+  // deck). Emitted only for non-default types so default (article) docs stay byte-
+  // identical (the emit tests assert the bare `<html lang="…">` tag).
+  const dataType = type !== DEFAULT_TYPE ? ` data-type="${escapeAttr(type)}"` : "";
   return `<!DOCTYPE html>
-<html lang="${escapeAttr(ctx.lang)}"${dataAccent}>
+<html lang="${escapeAttr(ctx.lang)}"${dataAccent}${dataType}>
 <head>
 ${head}
 </head>

@@ -103,7 +103,7 @@ usable on its own. Checked items are implemented and tested.
        `<document>` and are stripped from the tree; a missing/remote pack is a warning, an external
        reference inside a pack file warns but is still inlined, and the same pack imported twice inlines once
 - [~] 27. Document-type CSS variants via `<document type>` (`@layer delta.theme`): `article`
-       (default) and `book` shipped; `presentation` to follow
+       (default) and `book` shipped; the `presentation` type is specified in M7–M8
 
 ## M6 — Polish
 
@@ -113,3 +113,57 @@ usable on its own. Checked items are implemented and tested.
 - [ ] 29. Diagnostics polish: warnings for unresolved refs/cites, unclosed math regions
 - [ ] 30. Author documentation (`docs/authoring.md`) and richer examples
 - [x] 31. Code component with highlight syntax
+
+## M7 — Presentations (core deck)
+
+The `presentation` document type (`<document type="presentation">`) turns a `.dlt` into a
+self-contained, offline slide deck. Like `collapsible`/`<floating>`, nearly all deck behavior
+is **runtime-only** — the compiler stays generic. Activation: `emit` writes `data-type` on
+`<html>` (beside the existing `data-accent`) so both the CSS (`:root[data-type="presentation"]`)
+and the runtime deck controller gate on it cleanly. This milestone is usable on its own; the
+reveal/animation system follows in M8.
+
+- [ ] 32. `presentation` theme + deck activation: `src/styles/themes/presentation.css`
+       (auto-discovered by `themeCss()` in `scripts/build.ts`, selected by `<document
+       type="presentation">`) sets the deck tokens (large type, slide aspect ratio, full-viewport
+       sizing, transition vars). The deck **chrome** — full-viewport slides, hide-inactive, escape
+       from the article page grid — lives in a class-styled `src/styles/components/slide.css` gated
+       by `:root[data-type="presentation"]` / the presence of `<delta-slide>`, the same way
+       `floating.css`/`collapse.css` only matter when their elements exist. `emit.ts` adds the
+       `data-type` attribute to `<html>`
+- [ ] 33. `<slide>` element + slide titles: runtime-only `DeltaSlide`
+       (`src/runtime/elements/slide.ts`, registered in `elements/index.ts`). A `<title>` child is
+       hoisted into a slide header shown at the top of the slide, **reusing the
+       `<delta-title>`→heading pattern** from `section.ts`. No compiler pass — slide position is
+       chrome, indexed at runtime
+- [ ] 34. Section → divider slide: in presentation mode `DeltaSection` (`section.ts`) renders its
+       `<title>` as a centered full-slide divider that introduces the next part of the talk; its
+       child `<slide>`s follow. Sections become groups that also emit a divider; section numbering
+       already exists (`environments.ts`)
+- [ ] 35. Progress bar: injected by the deck controller, its width tracking current step / total
+       as the reader moves through the deck; styled in `components/slide.css`
+- [ ] 36. Keyboard navigation + transitions: a deck controller (runtime singleton, registered like
+       `flashHash` in `runtime/index.ts`) owns the ordered step list, a global `keydown` listener
+       (←/→, ↑/↓, plus PageUp/Down, Space, Home/End), and the slide show/hide CSS
+       transitions, honoring `prefers-reduced-motion`. Any visible deck text adds keys to every
+       block in `strings.ts`
+
+## M8 — Slide animation
+
+Progressive reveal ("fragments") so a slide discloses its content step by step instead of
+showing everything at once — better presentation flow. Both items share one stepping mechanism in
+the deck controller: → advances to the next fragment within the current slide, and only once all
+fragments are shown does it move to the next slide (the reveal.js model).
+
+- [ ] 37. Progressive reveal (`reveal` attribute): authors mark any element with `reveal="true"`
+       plus optional `reveal-order="n"`. The compiler passes both through untouched (no pass — the
+       `collapsible="true"` model). Per slide, the deck controller collects `[reveal]` elements,
+       sorts by `reveal-order` (DOM order as tiebreak), hides them, and steps through them; the
+       hidden-state CSS lives in `components/slide.css`
+- [ ] 38. Equation-part reveal (KaTeX `\reveal` macro): reveal pieces of a single equation in any
+       order. `math.ts` enables KaTeX `trust` and passes a `macros` map — `\reveal{…}` →
+       `\htmlClass{delta-reveal}{…}`, `\revealAt{n}{…}` → adds `\htmlData{reveal-order=n}` — so
+       tagged sub-spans render inside the one equation. The deck reveals `.delta-reveal` spans with
+       the **same** stepping logic as item 37, unifying both animation features. (Trade-off:
+       `trust` + the `\html*` extension let LaTeX emit classes/attributes — acceptable since the
+       author owns their own source.)

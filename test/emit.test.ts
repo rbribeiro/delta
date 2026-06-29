@@ -63,6 +63,18 @@ describe("emit", () => {
     expect(dflt).not.toContain(THEMES.book);
   });
 
+  it("activates the presentation deck: data-type hook + presentation theme", () => {
+    const body = `<title>T</title><section id="s"><title>S</title>text</section>`;
+    const deck = compile(`<document type="presentation">${body}</document>`).html;
+    expect(deck).toContain('<html lang="en" data-type="presentation">');
+    expect(deck).toContain(THEMES.presentation);
+
+    // Default (article) docs keep the bare <html> tag and omit the presentation theme.
+    const dflt = compile(`<document>${body}</document>`).html;
+    expect(dflt).toContain('<html lang="en">');
+    expect(dflt).not.toContain(THEMES.presentation);
+  });
+
   it("inlines localized strings for the document `lang` as the #delta-i18n island", () => {
     const body = `<title>T</title><section id="s"><title>S</title>text</section>`;
     const pt = compile(`<document lang="pt-BR">${body}</document>`).html;

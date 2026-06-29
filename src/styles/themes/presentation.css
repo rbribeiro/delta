@@ -1,0 +1,24 @@
+/* Theme: presentation — slide decks (`<document type="presentation">`).
+   Token overrides only (the file ships solely for presentation docs, so plain
+   `:root` is enough). Projector-scale type plus the deck geometry/transition
+   tokens consumed by components/slide.css now and by the <slide> element +
+   deck controller as they land (M7.33 / M7.36). Structural deck chrome lives in
+   components/slide.css, per the base.css convention (themes = tokens). */
+
+@layer delta.theme {
+  :root {
+    /* projector-scale prose — larger base, tighter leading than long-form */
+    --delta-t-base:    clamp(20px, 1.4vw + 12px, 30px);
+    --delta-leading:   1.4;
+
+    /* deck geometry */
+    --delta-slide-ratio: 16 / 9;
+    --delta-slide-pad:   clamp(32px, 6vmin, 88px);  /* inner padding of a slide */
+    --delta-slide-max:   min(1100px, 92vw);          /* content measure on a slide */
+    --delta-deck-bg:     var(--delta-paper);         /* backdrop behind the slides */
+
+    /* slide transition (consumed once paging lands) */
+    --delta-slide-dur:   var(--delta-dur);
+    --delta-slide-ease:  var(--delta-ease);
+  }
+}

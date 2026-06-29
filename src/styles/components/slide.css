@@ -1,0 +1,23 @@
+/* Presentation deck — container-level chrome for `<document type="presentation">`.
+   Every rule is gated on `:root[data-type="presentation"]` (the hook emit.ts
+   writes on <html>), so this ships in CORE_CSS like every component but only
+   takes effect for decks — the same "ships always, applies on match" pattern as
+   floating.css / collapse.css.
+
+   Scope here is container-level only. Per-slide element chrome arrives with the
+   <slide> element (M7.33); viewport paging + hide-inactive land with the deck
+   controller (M7.36). Deck tokens (--delta-slide-*, --delta-deck-bg) come from
+   themes/presentation.css. */
+
+@layer delta.components {
+  :root[data-type="presentation"] body {
+    background: var(--delta-deck-bg);
+  }
+
+  /* Escape the article measure + sidenote rail: the deck is full-bleed. */
+  :root[data-type="presentation"] delta-document {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+}
