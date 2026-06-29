@@ -160,11 +160,14 @@ showing everything at once — better presentation flow. Both items share one st
 the deck controller: → advances to the next fragment within the current slide, and only once all
 fragments are shown does it move to the next slide (the reveal.js model).
 
-- [ ] 37. Progressive reveal (`reveal` attribute): authors mark any element with `reveal="true"`
+- [x] 37. Progressive reveal (`reveal` attribute): authors mark any element with `reveal="true"`
        plus optional `reveal-order="n"`. The compiler passes both through untouched (no pass — the
-       `collapsible="true"` model). Per slide, the deck controller collects `[reveal]` elements,
-       sorts by `reveal-order` (DOM order as tiebreak), hides them, and steps through them; the
-       hidden-state CSS lives in `components/slide.css`
+       `collapsible="true"` model). The deck controller (`deck.ts`) builds a per-slide ordered list
+       of `[reveal="true"]` elements (sorted by `reveal-order`, DOM order as tiebreak), and steps
+       through them with `.is-revealed` before advancing the slide; `←` peels them back, then enters
+       the prior slide fully revealed (reveal.js model). Hidden-state CSS (`opacity`/`visibility`,
+       gated on `.deck-js`) lives in `components/slide.css`; `<list>` forwards `reveal`/`reveal-order`
+       onto its `<li>` so bullets can be fragments
 - [ ] 38. Equation-part reveal (KaTeX `\reveal` macro): reveal pieces of a single equation in any
        order. `math.ts` enables KaTeX `trust` and passes a `macros` map — `\reveal{…}` →
        `\htmlClass{delta-reveal}{…}`, `\revealAt{n}{…}` → adds `\htmlData{reveal-order=n}` — so

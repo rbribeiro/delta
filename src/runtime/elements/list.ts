@@ -89,6 +89,12 @@ class DeltaList extends HTMLElement {
     this.querySelectorAll(":scope > delta-item").forEach((item) => {
       const li = document.createElement("li");
       li.className = "delta-list-item";
+      // Carry reveal fragment attributes onto the real <li> so a list item can be a
+      // deck fragment (the controller queries the rendered element, not <delta-item>).
+      for (const attr of ["reveal", "reveal-order"]) {
+        const v = item.getAttribute(attr);
+        if (v !== null) li.setAttribute(attr, v);
+      }
       li.append(...item.childNodes);
       listEl.append(li);
     });

@@ -91,6 +91,18 @@
     display: none;
   }
 
+  /* Fragments (JS on): an element marked reveal="true" stays hidden until the
+     controller adds .is-revealed, then fades in. opacity+visibility reserves its
+     layout box, so revealing doesn't reflow the rest of the slide. Gated on
+     .deck-js, so with JS off the reveal attribute is inert and all show. */
+  :root[data-type="presentation"].deck-js delta-slide [reveal="true"] {
+    transition: opacity var(--delta-reveal-dur) var(--delta-slide-ease);
+  }
+  :root[data-type="presentation"].deck-js delta-slide [reveal="true"]:not(.is-revealed) {
+    opacity: 0;
+    visibility: hidden;
+  }
+
   /* Enter transition: a gentle fade-in for the incoming slide (enter-only — the
      outgoing slide is display:none). Opacity only, so it never shifts layout. */
   :root[data-type="presentation"] delta-slide.is-active {
@@ -104,6 +116,9 @@
     :root[data-type="presentation"] delta-slide.is-active,
     :root[data-type="presentation"] delta-slide.is-active .slide-rule-fill {
       animation: none;
+    }
+    :root[data-type="presentation"].deck-js delta-slide [reveal="true"] {
+      transition: none;
     }
   }
 }

@@ -102,6 +102,18 @@ describe("emit", () => {
     expect(html).toContain("<delta-progress>");
   });
 
+  it("passes reveal/reveal-order fragment attributes through to the runtime", () => {
+    // No compiler pass (the collapsible model): the deck controller reads them.
+    const { html } = compile(
+      `<document type="presentation"><title>D</title>
+        <slide><title>S</title>
+          <equation reveal="true" reveal-order="2">x</equation>
+        </slide>
+      </document>`,
+    );
+    expect(html).toContain('<delta-equation reveal="true" reveal-order="2"');
+  });
+
   it("inlines localized strings for the document `lang` as the #delta-i18n island", () => {
     const body = `<title>T</title><section id="s"><title>S</title>text</section>`;
     const pt = compile(`<document lang="pt-BR">${body}</document>`).html;

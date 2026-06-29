@@ -1,13 +1,6 @@
-<document lang="en" type="presentation" theme-accent="blue">
+<document lang="en" type="presentation" theme-accent="purple">
   <title>Delta decks</title>
 
-  <!-- M7 items 33 + 36: `<slide>` is one deck slide (its `<title>` shows at the
-       top); the runtime deck controller pages one slide at a time with the arrow
-       keys (←/→ or ↑/↓), Space/PageDown, and Home/End. With JS off, every slide
-       stays visible and scrollable. Section→divider slides (item 34) are still to come. -->
-
-  <!-- M7 item 35: opt into the progress bar — it renders as the line under each
-       slide title, filling as you advance. Remove this and the line disappears. -->
   <progress/>
 
   <slide>
@@ -19,8 +12,8 @@
   <slide>
     <title>Math still works</title>
     Inline math like $e^{i\pi} + 1 = 0$ renders as usual, and display math is
-    centered and large:
-    <equation id="eq:gauss">\int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}</equation>
+    centered and large — press → to reveal it:
+    <equation id="eq:gauss" reveal="true">\int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}</equation>
   </slide>
 
   <slide>
@@ -34,11 +27,11 @@
 
   <slide>
     <title>Ordinary chrome, deck scale</title>
-    Lists and emphasis all carry over — one idea per point:
+    Lists and emphasis all carry over — revealed one point at a time:
     <list marker="number">
-      <item>Built from the same tags you already know.</item>
-      <item>Each &lt;slide&gt; fills the screen, its title at the top.</item>
-      <item>Still a single, fully offline file.</item>
+      <item reveal="true">Built from the same tags you already know.</item>
+      <item reveal="true">Each &lt;slide&gt; fills the screen, its title at the top.</item>
+      <item reveal="true">Still a single, fully offline file.</item>
     </list>
   </slide>
 </document>

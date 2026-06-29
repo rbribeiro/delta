@@ -26,5 +26,8 @@
        fill takes to grow (a touch longer than the fade so the motion is legible) */
     --delta-progress-h:    4px;
     --delta-progress-dur:  0.6s;
+
+    /* fragments — how long a revealed element takes to fade in */
+    --delta-reveal-dur:    0.4s;
   }
 }
