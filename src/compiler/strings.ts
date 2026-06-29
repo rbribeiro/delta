@@ -40,6 +40,8 @@ export const STRINGS: Record<string, Record<string, string>> = {
     code: "Code",
     copy: "Copy",
     copied: "Copied",
+    prevSlide: "Previous slide",
+    nextSlide: "Next slide",
   },
   pt: {
     theorem: "Teorema",
@@ -72,6 +74,8 @@ export const STRINGS: Record<string, Record<string, string>> = {
     code: "Código",
     copy: "Copiar",
     copied: "Copiado",
+    prevSlide: "Slide anterior",
+    nextSlide: "Próximo slide",
   },
 };
 
