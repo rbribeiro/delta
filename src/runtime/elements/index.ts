@@ -24,6 +24,7 @@ import { defineCode } from "./code";
 import {defineList} from "./list";
 import { defineTable } from "./table";
 import { defineColumns } from "./columns";
+import { defineFrontMatter } from "./frontmatter";
 
 export function defineComponents(): void {
   defineSections();
@@ -42,4 +43,5 @@ export function defineComponents(): void {
   defineList();
   defineTable();
   defineColumns();
+  defineFrontMatter();
 }

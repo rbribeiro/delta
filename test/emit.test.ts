@@ -220,6 +220,26 @@ describe("emit", () => {
     expect(html).toContain("delta-columns > delta-column");
   });
 
+  it("passes paper front matter through for the runtime (not numbered)", () => {
+    const { html } = compile(
+      `<document type="article"><title>T</title>
+        <abstract>We prove a thing.</abstract>
+        <keywords>spectral theory</keywords>
+        <msc>35P15, 47A10</msc>
+        <received>2026-01-12</received>
+        <section id="s"><title>S</title>text</section>
+      </document>`,
+    );
+    // Generic rename: front-matter tags ride through (no compiler pass) for the runtime
+    // to label, and carry no `num` — they aren't environments, so numbering skips them.
+    expect(html).toContain("<delta-abstract>");
+    expect(html).toContain("<delta-keywords>");
+    expect(html).toContain("<delta-msc>");
+    expect(html).not.toMatch(/<delta-(abstract|keywords|msc|received)[^>]*\bnum=/);
+    expect(html).toContain('customElements.define("delta-abstract"');
+    expect(html).toContain("delta-abstract {"); // component CSS shipped in CORE_CSS
+  });
+
   it("references no external resources (the offline invariant)", () => {
     const { html } = compile(DOC);
     expect(html).not.toMatch(/(src|href)\s*=\s*["']https?:/i);

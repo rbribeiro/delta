@@ -1,0 +1,70 @@
+/* frontmatter.css — math-paper front matter: <abstract> plus the labeled metadata
+   (<keywords>, <msc>, the publication dates, <acknowledgements>, <funding>). The
+   labels are composed at runtime (frontmatter.ts) via t(); this styles the result.
+   The metadata rules key off the `.fm-line` / `.fm-block` classes the runtime adds
+   (never bare `delta-date` etc.), so a presentation cover's <date> is never caught.
+   Tokens via var(--delta-*). */
+
+@layer delta.components {
+
+/* -- Abstract: a centered, narrower, justified block under a small heading -------- */
+delta-abstract {
+  display: block;
+  max-width: 34em;
+  margin: var(--delta-section-gap) auto var(--delta-block-gap);
+}
+.abstract-label {
+  text-align: center;
+  font-family: var(--delta-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--delta-tracking-cap);
+  text-transform: uppercase;
+  color: var(--delta-mute);
+  margin-bottom: 10px;
+}
+.abstract-body {
+  text-align: justify;
+  hyphens: auto;
+  font-size: 0.94em;
+  line-height: var(--delta-leading);
+  color: var(--delta-ink-soft);
+}
+.abstract-body > :first-child { margin-top: 0; }
+.abstract-body > :last-child  { margin-bottom: 0; }
+
+/* -- Compact labeled lines: keywords / MSC / dates, centered under the abstract --- */
+.fm-line {
+  display: block;
+  max-width: 38em;
+  margin: 6px auto 0;
+  text-align: center;
+  font-size: 0.82em;
+  line-height: 1.5;
+  color: var(--delta-mute);
+  text-wrap: pretty;
+}
+.fm-line:first-of-type { margin-top: 14px; }
+.fm-label {
+  font-family: var(--delta-sans);
+  font-weight: 600;
+  color: var(--delta-ink-soft);
+}
+
+/* -- Small blocks: acknowledgements / funding, with an italic run-in label -------- */
+.fm-block {
+  display: block;
+  margin: var(--delta-block-gap) 0 0;
+  font-size: 0.9em;
+  line-height: var(--delta-leading);
+  color: var(--delta-ink-soft);
+}
+.fm-block .fm-label {
+  font-family: var(--delta-serif);
+  font-style: italic;
+  font-weight: 600;
+  color: var(--delta-ink);
+  margin-right: 0.3em;
+}
+
+}

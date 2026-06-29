@@ -1,6 +1,16 @@
 <document lang="pt" type="article" theme="style/example.css" theme-accent="green">
   <title>Hello, <em>delta</em></title>
 
+  <abstract>
+    Este documento demonstra a folha de rosto no estilo de um artigo de matemática:
+    um resumo centralizado e justificado, seguido das palavras-chave, da classificação
+    MSC e das datas editoriais. Tudo é renderizado pelo runtime, com rótulos localizados.
+  </abstract>
+  <keywords>compilador, XML, KaTeX, HTML offline</keywords>
+  <msc>68N20, 68U15</msc>
+  <received>12 de janeiro de 2026</received>
+  <accepted>3 de maio de 2026</accepted>
+
   <import src="imports/mod" />
 
   <floating>
@@ -199,6 +209,9 @@
       <caption>Synthetic benchmark; higher requests/s is better.</caption>
     </table>
   </section>
+  <acknowledgements>O autor agradece à comunidade pelos comentários e revisões.</acknowledgements>
+  <funding>Trabalho apoiado pela bolsa Delta nº 2026/01.</funding>
+
   <bibliography src="refs.ref">
     <title>My Custom Title</title>
   </bibliography>

@@ -2283,7 +2283,15 @@ delta-document > delta-title {
 </head>
 <body>
 <delta-document lang="pt" type="article" theme="style/example.css" theme-accent="green">
-  <delta-title>Hello, <delta-em>delta</delta-em></delta-title><delta-floating>
+  <delta-title>Hello, <delta-em>delta</delta-em></delta-title><delta-abstract>
+    Este documento demonstra a folha de rosto no estilo de um artigo de matemática:
+    um resumo centralizado e justificado, seguido das palavras-chave, da classificação
+    MSC e das datas editoriais. Tudo é renderizado pelo runtime, com rótulos localizados.
+  </delta-abstract>
+  <delta-keywords>compilador, XML, KaTeX, HTML offline</delta-keywords>
+  <delta-msc>68N20, 68U15</delta-msc>
+  <delta-received>12 de janeiro de 2026</delta-received>
+  <delta-accepted>3 de maio de 2026</delta-accepted><delta-floating>
     <delta-toc></delta-toc>
   </delta-floating><delta-section id="sec:intro" num="1">
     <delta-eyebrow>
@@ -2450,7 +2458,8 @@ delta-document > delta-title {
       <delta-caption>Synthetic benchmark; higher requests/s is better.</delta-caption>
     </delta-table>
   </delta-section>
-  <delta-bibliography src="refs.ref"><delta-paper id="pythagoras" data-cite-num="1">
+  <delta-acknowledgements>O autor agradece à comunidade pelos comentários e revisões.</delta-acknowledgements>
+  <delta-funding>Trabalho apoiado pela bolsa Delta nº 2026/01.</delta-funding><delta-bibliography src="refs.ref"><delta-paper id="pythagoras" data-cite-num="1">
     <delta-author>Pythagoras of Samos</delta-author>
     <delta-title>On Right Triangles</delta-title>
     <delta-journal>Proceedings of the Crotonian Society</delta-journal>

@@ -42,6 +42,17 @@ export const STRINGS: Record<string, Record<string, string>> = {
     copied: "Copied",
     prevSlide: "Previous slide",
     nextSlide: "Next slide",
+    // front matter (abstract + labeled metadata)
+    abstract: "Abstract",
+    keywords: "Keywords",
+    msc: "Mathematics Subject Classification",
+    received: "Received",
+    revised: "Revised",
+    accepted: "Accepted",
+    submitted: "Submitted",
+    date: "Date",
+    acknowledgements: "Acknowledgements",
+    funding: "Funding",
   },
   pt: {
     theorem: "Teorema",
@@ -76,6 +87,17 @@ export const STRINGS: Record<string, Record<string, string>> = {
     copied: "Copiado",
     prevSlide: "Slide anterior",
     nextSlide: "Próximo slide",
+    // front matter (abstract + labeled metadata)
+    abstract: "Resumo",
+    keywords: "Palavras-chave",
+    msc: "Classificação por Assunto (MSC)",
+    received: "Recebido",
+    revised: "Revisado",
+    accepted: "Aceito",
+    submitted: "Submetido",
+    date: "Data",
+    acknowledgements: "Agradecimentos",
+    funding: "Financiamento",
   },
 };
 

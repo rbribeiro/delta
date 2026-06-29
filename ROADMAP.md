@@ -59,6 +59,14 @@ usable on its own. Checked items are implemented and tested.
        (so the ≤640px stacking rule overrides it cleanly); `components/columns.css` is scoped to
        `delta-columns > delta-column`, so the shared `<column>` tag never clashes with the table's
        `<column>` cells (which live under `<row>`/`<header>`). No compiler pass — pure layout chrome
+- [x] 45. Paper front matter (runtime-only): `<abstract>` (a centered, narrower, **justified** block
+       under a centered "Abstract" heading) plus the labeled metadata `<keywords>`, `<msc>` (Mathematics
+       Subject Classification), the publication dates `<date>`/`<submitted>`/`<received>`/`<revised>`/
+       `<accepted>`, and `<acknowledgements>`/`<funding>`. `frontmatter.ts` composes each localized label
+       via `t()` (keys in `strings.ts`, en+pt) like the environment headers; `components/frontmatter.css`
+       styles the result. No compiler pass / numbering (not environments). `<date>` is shared with the
+       presentation cover's date field — kept apart by skipping when `closest("delta-slide")` and keying
+       the CSS off the runtime-added `.fm-line`/`.fm-block` classes, never the bare tag
 
 ## M3 — Bibliography
 
@@ -123,11 +131,10 @@ usable on its own. Checked items are implemented and tested.
 
 ## M6 — Polish
 
-- [~] 28. `lang` attribute + i18n strings: `strings.ts` table (en + pt), `#delta-i18n` data-island,
-       runtime `t()`; environment labels localized. Figure/video/audio/table/contents keys seeded,
-       applied when those elements land
+- [x] 28. `lang` attribute + i18n strings: `strings.ts` table (en + pt), `#delta-i18n` data-island,
+       runtime `t()`; environment labels localized. 
 - [ ] 29. Diagnostics polish: warnings for unresolved refs/cites, unclosed math regions
-- [ ] 30. Author documentation (`docs/authoring.md`) and richer examples
+- [x] 30. Author documentation (docs/get-started) and richer examples
 - [x] 31. Code component with highlight syntax
 
 ## M7 — Presentations (core deck)
