@@ -4,35 +4,48 @@
   <progress/>
 
   <slide>
-    <title>Presentations in Delta</title>
-    The same strict-XML source, compiled to a single offline HTML file — now paged
-    at projector scale. Use the arrow keys to move between slides.
+    <toc label="Plan">
+      <title>Plan</title>
+    </toc>
   </slide>
+  <section>
+    <title>Part One — The Basics</title>
+    <slide>
+      <title>Presentations in Delta</title>
+      The same strict-XML source, compiled to a single offline HTML file — now paged
+      at projector scale. Use the arrow keys to move between slides.
+    </slide>
 
-  <slide>
-    <title>Math still works</title>
-    Inline math like $e^{i\pi} + 1 = 0$ renders as usual, and display math is
-    centered and large — press → to reveal it:
-    <equation id="eq:gauss" reveal="true">\int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}</equation>
-  </slide>
+    <slide>
+      <title>Math still works</title>
+      Inline math like $e^{i\pi} + 1 = 0$ renders as usual, and display math is
+      centered and large — press → to reveal it:
+      <equation id="eq:gauss" reveal="true">\int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}</equation>
+    </slide>
 
-  <slide>
-    <title>Theorems on a slide</title>
-    <theorem id="thm:pyth">
-      <title>Pythagoras</title>
-      For a right triangle with legs $a$, $b$ and hypotenuse $c$,
-      <equation id="eq:pyth">a^2 + b^2 = c^2</equation>
-    </theorem>
-  </slide>
+  </section>
+  
+  <section>
+    <title>Part Two — Going Deeper</title>
 
-  <slide>
-    <title>Ordinary chrome, deck scale</title>
-    Lists and emphasis all carry over — revealed one point at a time with a single
-    <c>animated="true"</c> on the list:
-    <list marker="number" animated="true">
-      <item>Built from the same tags you already know.</item>
-      <item>Each &lt;slide&gt; fills the screen, its title at the top.</item>
-      <item>Still a single, fully offline file.</item>
-    </list>
-  </slide>
+    <slide>
+      <title>Theorems on a slide</title>
+      <theorem id="thm:pyth">
+        <title>Pythagoras</title>
+        For a right triangle with legs $a$, $b$ and hypotenuse $c$,
+        <equation id="eq:pyth">a^2 + b^2 = c^2</equation>
+      </theorem>
+    </slide>
+
+    <slide>
+      <title>Ordinary chrome, deck scale</title>
+      Lists and emphasis all carry over — revealed one point at a time with a single
+      <c>animated="true"</c> on the list:
+      <list marker="number" animated="true">
+        <item>Built from the same tags you already know.</item>
+        <item>Each &lt;slide&gt; fills the screen, its title at the top.</item>
+        <item>Still a single, fully offline file.</item>
+      </list>
+    </slide>
+  </section>
 </document>

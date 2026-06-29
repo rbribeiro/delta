@@ -11,6 +11,7 @@
     --delta-t-base:        clamp(20px, 1.4vw + 12px, 30px);
     --delta-leading:       1.4;
     --delta-t-slide-title: clamp(30px, 4vw, 56px);  /* the per-slide heading */
+    --delta-t-divider:     clamp(40px, 6vw, 84px);  /* a section-divider slide title */
 
     /* deck geometry */
     --delta-slide-ratio: 16 / 9;

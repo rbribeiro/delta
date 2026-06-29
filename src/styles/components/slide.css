@@ -53,6 +53,26 @@
     margin: auto;
   }
 
+  /* Section → divider slide. In a deck a section is a transparent group: its box
+     disappears (`display: contents`) so the divider slide DeltaSection prepends and
+     the section's own child slides flow as ordinary deck slides. */
+  :root[data-type="presentation"]
+    :is(delta-chapter, delta-section, delta-subsection, delta-subsubsection) {
+    display: contents;
+  }
+
+  /* The divider itself: a slide whose only content is its title, centered. */
+  :root[data-type="presentation"] delta-slide[divider="true"] {
+    justify-content: center;
+    text-align: center;
+  }
+  :root[data-type="presentation"] delta-slide[divider="true"] .slide-title {
+    font-size: var(--delta-t-divider);
+  }
+  :root[data-type="presentation"] delta-slide[divider="true"] :is(.slide-rule, .slide-body) {
+    display: none;
+  }
+
   /* Progress bar — opt-in via a <progress/> marker (which itself renders nothing).
      The marker turns on `.deck-progress-on`; the separator line under each slide
      title then doubles as the deck progress indicator. Its fill reads the global

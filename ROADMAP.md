@@ -137,10 +137,12 @@ reveal/animation system follows in M8.
        `<delta-title>`→heading pattern** from `section.ts`) and the rest is wrapped in a centered
        `.slide-body`. No compiler pass — slide position is chrome, indexed at runtime. _Shipped
        together with item 36 (a slide element is only testable with paging)._
-- [ ] 34. Section → divider slide: in presentation mode `DeltaSection` (`section.ts`) renders its
-       `<title>` as a centered full-slide divider that introduces the next part of the talk; its
-       child `<slide>`s follow. Sections become groups that also emit a divider; section numbering
-       already exists (`environments.ts`)
+- [x] 34. Section → divider slide: in presentation mode `DeltaSection` (`section.ts`) moves its
+       `<title>` into a centered divider `<delta-slide divider="true">` it prepends to the section
+       (no inline heading); the section box becomes `display: contents` so that divider and the
+       section's own child `<slide>`s flow as ordinary deck slides. Runtime + CSS only — sections
+       still compile/number/ToC unchanged; the deck collects the divider in document order (no
+       controller change). Applies to all sectioning tags
 - [x] 35. Progress bar: **opt-in** via a `<progress/>` marker (a direct child of `<document>`,
        like `<toc/>`; it renders nothing itself). It turns on the line that separates each slide's
        title from its body, which doubles as the progress indicator: the controller sets one global

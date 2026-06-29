@@ -21,6 +21,20 @@ class DeltaSection extends HTMLElement {
     this.dataset.deltaReady = "1";
     const title = this.querySelector(":scope > delta-title");
     if (!title) return;
+
+    // Presentation deck: a section is a group divider, not an inline heading. Move
+    // its title into a centered divider slide (the deck pages it like any slide);
+    // the section's child <slide>s follow. `display: contents` (slide.css) drops the
+    // section's own box. defineSlide() runs right after defineSections(), so this new
+    // <delta-slide> upgrades before the deck controller collects slides.
+    if (document.documentElement.dataset.type === "presentation") {
+      const slide = document.createElement("delta-slide");
+      slide.setAttribute("divider", "true");
+      slide.appendChild(title);
+      this.prepend(slide);
+      return;
+    }
+
     const spec = SECTION_HEADINGS[this.tagName.toLowerCase()] ?? { level: 2, cls: "section" };
     const heading = document.createElement(`h${spec.level}`);
     heading.className = spec.cls;
