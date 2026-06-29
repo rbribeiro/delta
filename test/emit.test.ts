@@ -201,6 +201,25 @@ describe("emit", () => {
     expect(html).toContain('<delta-proof collapsed="true">');
   });
 
+  it("passes <columns>/<column> layout through for the runtime (width preserved)", () => {
+    const { html } = compile(
+      `<document><title>T</title><section id="s"><title>S</title>
+        <columns>
+          <column width="2">left</column>
+          <column>right</column>
+        </columns>
+      </section></document>`,
+    );
+    // Generic rename: the layout rides through as delta-columns/delta-column (no compiler
+    // pass), the runtime upgrades it, and the author's width is preserved as an attribute.
+    expect(html).toContain("<delta-columns>");
+    expect(html).toContain('<delta-column width="2">');
+    expect(html).toContain('customElements.define("delta-columns"');
+    // The component CSS ships in CORE_CSS, scoped to direct children so it never touches
+    // the table's <column> cells (there is no bare `delta-column {` rule).
+    expect(html).toContain("delta-columns > delta-column");
+  });
+
   it("references no external resources (the offline invariant)", () => {
     const { html } = compile(DOC);
     expect(html).not.toMatch(/(src|href)\s*=\s*["']https?:/i);

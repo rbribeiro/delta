@@ -23,6 +23,7 @@ import { defineCite } from "./cite";
 import { defineCode } from "./code";
 import {defineList} from "./list";
 import { defineTable } from "./table";
+import { defineColumns } from "./columns";
 
 export function defineComponents(): void {
   defineSections();
@@ -40,4 +41,5 @@ export function defineComponents(): void {
   defineCode();
   defineList();
   defineTable();
+  defineColumns();
 }

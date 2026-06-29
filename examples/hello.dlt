@@ -149,6 +149,33 @@
   </section>
 
   <section>
+    <title>Columns</title>
+    Put content side by side with <c><columns></c>; each <c><column></c> picks its share
+    with a <c>width</c>. A unitless number is a proportion — this row is 2:1 — and the
+    columns stack on a narrow screen.
+    <columns>
+      <column width="2">
+        <strong>Wider column (width 2).</strong> Prose and inline math like $a^2 + b^2 = c^2$
+        flow normally inside a column; this one takes two-thirds of the row.
+      </column>
+      <column width="1">
+        <strong>Narrower (width 1).</strong> One-third of the row.
+      </column>
+    </columns>
+    A <c>width</c> with a unit is an explicit size instead — here a fixed aside beside a
+    flexible body:
+    <columns align="center">
+      <column width="220px">
+        <strong>Fixed 220px.</strong> Handy for a caption or sidebar.
+      </column>
+      <column>
+        The rest of the row goes here. Note <c><column></c> means a layout column inside
+        <c><columns></c>, but a table cell inside <c><row></c> — the table just below uses it
+        that way and is unaffected.
+      </column>
+    </columns>
+  </section>
+  <section>
     <title>Tables</title>
     Delta renders data tables with <c><table></c>. A <c><header></c> holds the column
     names, each row is a <c><row></c>, and every cell is a <c><column></c>. Set <c>align="right"</c>

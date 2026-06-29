@@ -51,6 +51,14 @@ usable on its own. Checked items are implemented and tested.
        localized "Contents"). No compiler changes — `buildToc` already finds the nested `<toc>` via the
        recursive `elements()` walk. `DeltaFloating` (`runtime/elements/floating.ts`), styled by
        `components/floating.css`
+- [x] 44. `<columns>` / `<column>` side-by-side layout (LaTeX/beamer-style, runtime-only): a
+       `<columns>` flex row whose direct `<column>` children pick their share with `width` — a unitless
+       number is a flex weight (`width="2"` + `width="1"` ⇒ 2:1; fractions summing to 1 ⇒ that split),
+       a unit (`240px`/`40%`) is a fixed basis, omitted is equal. `DeltaColumns`
+       (`runtime/elements/columns.ts`) publishes each child's share as a `--col-flex` custom property
+       (so the ≤640px stacking rule overrides it cleanly); `components/columns.css` is scoped to
+       `delta-columns > delta-column`, so the shared `<column>` tag never clashes with the table's
+       `<column>` cells (which live under `<row>`/`<header>`). No compiler pass — pure layout chrome
 
 ## M3 — Bibliography
 
