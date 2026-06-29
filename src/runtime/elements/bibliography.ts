@@ -18,9 +18,11 @@ class DeltaBibliography extends HTMLElement {
 
     const section = document.createElement("section");
     section.className = "notes";
+    const title = this.querySelector(":scope > delta-title");
     const heading = document.createElement("h4");
-    heading.textContent = t("references", "References");
+    heading.innerHTML = title ? title.innerHTML : t("references", "References");
     section.append(heading);
+    
 
     const list = document.createElement("ol");
     for (const paper of papers) {

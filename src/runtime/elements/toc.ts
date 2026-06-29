@@ -51,11 +51,12 @@ class DeltaToc extends HTMLElement {
 
     const nav = document.createElement("nav");
     nav.className = "toc";
-    const heading = t("contents", "Contents");
+    const title = this.querySelector(":scope > delta-title");
+    const heading = title ? title.innerHTML :t("contents", "Contents");
     nav.setAttribute("aria-label", heading);
     const titleEl = document.createElement("div");
     titleEl.className = "toc-title";
-    titleEl.textContent = heading;
+    titleEl.innerHTML = heading;
     nav.append(titleEl);
 
     const root = document.createElement("ol");
