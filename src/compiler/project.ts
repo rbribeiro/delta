@@ -18,6 +18,7 @@ import { inlineFigures } from "./figures";
 import { resolveImports } from "./imports";
 import { resolveIncludes } from "./include";
 import { expandAnimated } from "./animated";
+import { expandCover } from "./cover";
 import { renderMath } from "./math";
 import { resolveLineBreaks } from "./linebreaks";
 import { freshNumbering, numberDocument } from "./numbering";
@@ -100,6 +101,7 @@ export function compileProject(config: ProjectConfig): ProjectResult {
     if (!doc) continue;
     resolveIncludes(doc, ctx);
     expandAnimated(doc); // presentation only: animated="true" → reveal="true" on children
+    expandCover(doc); // presentation only: <cover> → <slide cover="true">
     ctx.lang = doc.attrs.lang ?? "en";
     files.push({ ctx, doc, outName: ctx.outName });
   }

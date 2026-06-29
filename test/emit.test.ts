@@ -140,6 +140,27 @@ describe("emit", () => {
     expect(html).not.toMatch(/<delta-equation[^>]*\breveal=/);
   });
 
+  it("desugars <cover> to a cover slide in a presentation", () => {
+    const { html } = compile(
+      `<document type="presentation"><title>D</title>
+        <cover><title>Talk</title><subtitle>Sub</subtitle><author>Me</author></cover>
+      </document>`,
+    );
+    expect(html).toContain('<delta-slide cover="true">');
+    expect(html).toContain("<delta-subtitle>Sub</delta-subtitle>");
+    expect(html).not.toContain("<delta-cover>");
+    // the cover's own <title> is nested, so the page <title> stays the doc title.
+    expect(html).toContain("<title>D</title>");
+  });
+
+  it("leaves <cover> untouched outside a presentation", () => {
+    const { html } = compile(`<document><title>D</title><cover><title>X</title></cover></document>`);
+    expect(html).toContain("<delta-cover>");
+    // It wasn't renamed to a cover slide. (`cover="true"` still appears in the inlined
+    // deck CSS, so assert on the element, not the bare substring.)
+    expect(html).not.toContain('<delta-slide cover="true">');
+  });
+
   it("inlines localized strings for the document `lang` as the #delta-i18n island", () => {
     const body = `<title>T</title><section id="s"><title>S</title>text</section>`;
     const pt = compile(`<document lang="pt-BR">${body}</document>`).html;

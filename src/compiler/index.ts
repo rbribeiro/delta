@@ -4,6 +4,7 @@ import { emit } from "./emit";
 import { inlineFigures } from "./figures";
 import { resolveIncludes } from "./include";
 import { expandAnimated } from "./animated";
+import { expandCover } from "./cover";
 import { renderMath } from "./math";
 import { highlightCode } from "./code";
 import { numberDocument } from "./numbering";
@@ -41,6 +42,7 @@ export function compileSource(source: string, ctx: CompileContext): string | und
   // Parse and processes successfully, but may have non-fatal diagnostics. Continue to emit, but report
   ctx.lang = doc.attrs.lang ?? "en"; // drives i18n + <html lang>; read by emit and later passes
   expandAnimated(doc); // presentation only: animated="true" → reveal="true" on children
+  expandCover(doc); // presentation only: <cover> → <slide cover="true">
   // Bibliography runs before numbering so the cited papers it splices flow through the
   // normal passes (numbering skips them; math then renders any math in their fields).
   loadBibliography(doc, ctx); // build the paper registry; empty the <bibliography>

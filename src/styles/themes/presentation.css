@@ -12,6 +12,8 @@
     --delta-leading:       1.4;
     --delta-t-slide-title: clamp(30px, 4vw, 56px);  /* the per-slide heading */
     --delta-t-divider:     clamp(40px, 6vw, 84px);  /* a section-divider slide title */
+    --delta-t-cover-title: clamp(44px, 7vw, 96px);  /* the cover/title slide */
+    --delta-t-cover-subtitle: clamp(22px, 3vw, 36px);
 
     /* deck geometry */
     --delta-slide-ratio: 16 / 9;

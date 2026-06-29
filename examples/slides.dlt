@@ -3,6 +3,15 @@
 
   <progress/>
 
+  <cover>
+    <title>Delta decks</title>
+    <subtitle>Presentations, compiled to one offline file</subtitle>
+    <author>Rodrigo Ribeiro</author>
+    <affiliation>Federal University of Ouro Preto</affiliation>
+    <event>DeltaConf 2026</event>
+    <date>June 29, 2026</date>
+  </cover>
+
   <slide>
     <toc>
       <title>Talk <em>plan</em></title>

@@ -73,6 +73,49 @@
     display: none;
   }
 
+  /* Cover / title slide (`<cover>` → `<slide cover="true">`). The deck's front page:
+     the title sits big and centered with the subtitle/author/affiliation/event/date
+     fields stacked under it. The fields are plain tags styled here by name. */
+  :root[data-type="presentation"] delta-slide[cover="true"] {
+    justify-content: center;
+    text-align: center;
+  }
+  :root[data-type="presentation"] delta-slide[cover="true"] .slide-rule { display: none; }
+  :root[data-type="presentation"] delta-slide[cover="true"] .slide-title {
+    font-size: var(--delta-t-cover-title);
+  }
+  :root[data-type="presentation"] delta-slide[cover="true"] .slide-body {
+    margin: 0.5em auto 0; /* sit just under the title rather than centering on its own */
+  }
+  :root[data-type="presentation"] delta-slide[cover="true"] delta-subtitle {
+    display: block;
+    font-size: var(--delta-t-cover-subtitle);
+    color: var(--delta-ink-soft);
+  }
+  :root[data-type="presentation"] delta-slide[cover="true"] delta-author {
+    display: block;
+    margin-top: 1.4em;
+    font-size: 1.15em;
+    font-weight: 500;
+  }
+  :root[data-type="presentation"] delta-slide[cover="true"] delta-affiliation {
+    display: block;
+    margin-top: 0.15em;
+    font-size: 0.8em;
+    color: var(--delta-mute);
+  }
+  :root[data-type="presentation"] delta-slide[cover="true"] delta-event {
+    display: block;
+    margin-top: 1.4em;
+    color: var(--delta-ink-soft);
+  }
+  :root[data-type="presentation"] delta-slide[cover="true"] delta-date {
+    display: block;
+    margin-top: 0.15em;
+    font-size: 0.8em;
+    color: var(--delta-mute);
+  }
+
   /* Progress bar — opt-in via a <progress/> marker (which itself renders nothing).
      The marker turns on `.deck-progress-on`; the separator line under each slide
      title then doubles as the deck progress indicator. Its fill reads the global

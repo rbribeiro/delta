@@ -153,7 +153,13 @@ reveal/animation system follows in M8.
        slides — a global `keydown` listener (←/→, ↑/↓, plus PageUp/Down, Space, Home/End) shows one
        slide at a time (`.is-active`, hide-inactive gated on `.deck-js` so JS-off shows all), with a
        fade-in enter transition honoring `prefers-reduced-motion`. Exposes `window.Delta.deck`
-       (`index`/`total`/`go`/`next`/`prev`/`onChange`) for add-ons (item 35 hooks `onChange`)
+       (`index`/`total`/`go`/`next`/`prev`/`onChange`/`goToId`) for add-ons (item 35 hooks `onChange`;
+       a `<toc>` link in a deck pages via `goToId`)
+- [x] 40. Cover / title slide: a `<cover>` element (direct child of `<document>`) with `<title>`,
+       `<subtitle>`, `<author>`, `<affiliation>`, `<event>`, `<date>` fields. A presentation-only
+       compiler pass (`cover.ts`) desugars it to `<slide cover="true">` so the deck pages it as the
+       front slide and the existing `DeltaSlide` chrome applies; `components/slide.css` lays the
+       fields out centered (styled by tag). No runtime element. Multiple authors/affiliations stack
 
 ## M8 — Slide animation
 
