@@ -53,6 +53,49 @@ delta-caption { display: block; }
 iframe.video-media {
   aspect-ratio: 16 / 9;
 }
+
+/* file:// fallback (media.ts): a 16:9 thumbnail that opens the video on youtube.com,
+   since a referrer-less file:// page can't embed the player (error 153). A play badge
+   over the thumbnail signals it's a video. */
+a.yt-facade {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: oklch(0.18 0.006 75);
+  text-decoration: none;
+}
+.yt-facade img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.yt-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 68px;
+  height: 48px;
+  transform: translate(-50%, -50%);
+  border-radius: 14px;
+  background: rgba(18, 18, 18, 0.78);
+  transition: background var(--delta-dur-fast) var(--delta-ease);
+}
+.yt-play::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-40%, -50%);
+  border: solid transparent;
+  border-width: 9px 0 9px 15px;
+  border-left-color: #fff;
+}
+.yt-facade:hover .yt-play,
+.yt-facade:focus-visible .yt-play { background: #f00; }
+.yt-facade:focus-visible { outline: 2px solid var(--delta-accent-ink); outline-offset: 2px; }
+
 /* Audio reuses the framed box; the native control bar fills the width. */
 .audio-media {
   display: block;

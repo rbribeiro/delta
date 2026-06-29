@@ -26,6 +26,16 @@ function mediaCaption(
   caption.prepend(lbl, " ");
 }
 
+/** Wrap a media element in the shared framed box and prepend it to `host`, so the
+ *  caption (a sibling of the frame, not a child) renders *outside* the box — the same
+ *  layout <figure> uses, keeping video/audio captions consistent with figures. */
+function frameMedia(host: HTMLElement, media: HTMLElement): void {
+  const frame = document.createElement("div");
+  frame.className = "video-frame";
+  frame.append(media);
+  host.prepend(frame);
+}
+
 // Pull the 11-char id out of any common YouTube URL shape, or accept a
 // bare id. Returns "" when nothing usable is found.
 function youtubeId(input:string | null):string | null {
@@ -51,19 +61,46 @@ class DeltaYouTube extends HTMLElement {
   connectedCallback(): void {
     if (this.dataset.deltaReady) return;
     this.dataset.deltaReady = "1";
-    this.classList.add("video-frame");
+    this.classList.add("video");
     const id = youtubeId(this.getAttribute("src"));
     if (!id) {
       console.warn("delta-youtube: no valid video ID found in src", this.getAttribute("src"));
       return;
     }
-    const iframe = document.createElement("iframe");
-    iframe.src = `https://www.youtube.com/embed/${id}`;
-    iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
-    iframe.allowFullscreen = true;
-    iframe.className = "video-media";
-    iframe.loading = "lazy";
-    this.prepend(iframe);
+
+    if (location.protocol === "file:") {
+      // A file:// page sends no Referer (browsers never leak file:// paths), and YouTube
+      // rejects a referrer-less embed — "Video unavailable", error 153. Nothing on the
+      // iframe can supply a Referer, so an inline embed simply can't work from file://.
+      // Degrade to a thumbnail that opens the video on youtube.com (works on any machine
+      // with internet). Serve the file over http(s) instead — the VS Code extension
+      // preview, or `npx serve` — and the branch below embeds it inline.
+      const link = document.createElement("a");
+      link.className = "yt-facade video-media";
+      link.href = `https://www.youtube.com/watch?v=${id}`;
+      link.target = "_blank";
+      link.rel = "noopener";
+      link.setAttribute("aria-label", "Watch on YouTube");
+      const thumb = document.createElement("img");
+      thumb.src = `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+      thumb.alt = "";
+      thumb.loading = "lazy";
+      const play = document.createElement("span");
+      play.className = "yt-play";
+      play.setAttribute("aria-hidden", "true");
+      link.append(thumb, play);
+      frameMedia(this, link);
+    } else {
+      // Served over http(s): the embed has a valid origin/referrer, so it plays inline.
+      const iframe = document.createElement("iframe");
+      iframe.src = `https://www.youtube.com/embed/${id}`;
+      iframe.allow =
+        "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+      iframe.allowFullscreen = true;
+      iframe.className = "video-media";
+      iframe.loading = "lazy";
+      frameMedia(this, iframe);
+    }
     mediaCaption(this, "video", this.getAttribute("num"));
   }
 }
@@ -73,7 +110,7 @@ class DeltaVideo extends HTMLElement {
   connectedCallback(): void {
     if (this.dataset.deltaReady) return;
     this.dataset.deltaReady = "1";
-    this.classList.add("video-frame");
+    this.classList.add("video");
     const src = this.getAttribute("src");
     if (!src) {
       const missing = document.createElement("div");
@@ -89,7 +126,7 @@ class DeltaVideo extends HTMLElement {
     for (const attr of ["poster", "loop", "muted", "autoplay", "playsinline"]) {
       if (this.hasAttribute(attr)) video.setAttribute(attr, this.getAttribute(attr) ?? "");
     }
-    this.prepend(video);
+    frameMedia(this, video);
     mediaCaption(this, "video", this.getAttribute("num"));
   }
 }
@@ -99,7 +136,7 @@ class DeltaAudio extends HTMLElement {
   connectedCallback(): void {
     if (this.dataset.deltaReady) return;
     this.dataset.deltaReady = "1";
-    this.classList.add("video-frame");
+    this.classList.add("video");
     const src = this.getAttribute("src");
     if (!src) {
       const missing = document.createElement("div");
@@ -113,7 +150,7 @@ class DeltaAudio extends HTMLElement {
     audio.controls = true;
     audio.className = "audio-media";
     if (this.hasAttribute("loop")) audio.loop = true;
-    this.prepend(audio);
+    frameMedia(this, audio);
     mediaCaption(this, "audio", this.getAttribute("num"));
   }
 }
