@@ -32,7 +32,7 @@ export interface Deck {
 
 export function setupDeck(): Deck | null {
   const root = document.documentElement;
-  if (root.dataset.type !== "presentation") return null;
+  if (root.dataset.type !== "presentation") return null; // exposes the deck only for presentation docs
 
   const slides = [...document.querySelectorAll<HTMLElement>("delta-slide")];
   if (slides.length === 0) return null;
