@@ -1,0 +1,194 @@
+/* ==================================================================
+   Delta — "Get started" guide styles
+   A thin layer on top of styles.css (loaded first, which owns the tokens
+   and the shared chrome: .nav, .btn, .eyebrow, .code cards + OS tabs,
+   .snippet-grid, .box, .footer). This only adds the guide layout: the
+   compact hero, numbered steps, the note callout, and the next-step cards.
+   ================================================================== */
+
+.guide-hero,
+.guide { max-width: 768px; margin: 0 auto; padding-left: 32px; padding-right: 32px; }
+
+/* compact page hero */
+.guide-hero { padding-top: clamp(52px, 8vw, 96px); padding-bottom: 4px; }
+.guide-hero .eyebrow { display: inline-block; margin-bottom: 14px; }
+.guide-hero h1 {
+  font-family: var(--delta-serif);
+  font-size: clamp(38px, 5.4vw, 64px);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.04;
+  margin: 0 0 16px;
+}
+.guide-hero .lede {
+  font-size: clamp(18px, 2vw, 21px);
+  line-height: 1.5;
+  color: var(--delta-ink-soft);
+  margin: 0;
+  text-wrap: pretty;
+}
+.guide-hero .micro {
+  margin-top: 20px;
+  font-family: var(--delta-mono);
+  font-size: 12.5px;
+  color: var(--delta-mute);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.guide-hero .micro .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--delta-accent); }
+
+/* --- numbered steps ---------------------------------------------- */
+.guide { padding-top: 30px; padding-bottom: 120px; }
+.guide-step {
+  padding: 40px 0;
+  border-top: var(--delta-hairline) solid var(--delta-rule-soft);
+}
+.guide-step:first-of-type { border-top: 0; padding-top: 24px; }
+.gs-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 0 0 18px;
+}
+.gs-num {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: var(--delta-serif);
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--delta-paper);
+  background: var(--delta-accent-ink);
+  box-shadow: var(--delta-shadow);
+}
+.gs-head h2 {
+  font-family: var(--delta-serif);
+  font-size: clamp(23px, 3vw, 30px);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+  margin: 0;
+}
+.guide-step p {
+  color: var(--delta-ink-soft);
+  line-height: var(--delta-leading);
+  margin: 0 0 1em;
+  max-width: 64ch;
+}
+.guide-step p:last-child { margin-bottom: 0; }
+.guide-step .step-label {
+  display: block;
+  font-family: var(--delta-sans);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--delta-accent-ink);
+  margin: 22px 0 12px;
+}
+.guide-step .code { margin: 18px 0; }
+
+/* inline code chips in guide prose / notes / cards */
+.guide-step p code,
+.note code,
+.next-card code,
+.gs-head h2 code {
+  font-family: var(--delta-mono);
+  font-size: 0.86em;
+  background: var(--delta-surface-2);
+  border: var(--delta-hairline) solid var(--delta-rule-soft);
+  border-radius: var(--delta-radius-sm);
+  padding: 1px 6px;
+}
+
+/* keyboard key */
+.kbd {
+  font-family: var(--delta-mono);
+  font-size: 11.5px;
+  padding: 2px 7px;
+  border-radius: var(--delta-radius-sm);
+  background: var(--delta-surface-2);
+  border: var(--delta-hairline) solid var(--delta-rule);
+  box-shadow: 0 1px 0 var(--delta-rule);
+  color: var(--delta-ink);
+}
+
+/* the source -> rendered snippet stacks in the narrow guide column */
+.guide .snippet-grid { grid-template-columns: 1fr; gap: 16px; margin: 20px 0; }
+.guide .snippet-grid .render-to { flex-direction: row; gap: 8px; }
+.guide .snippet-grid .render-to .a { transform: rotate(90deg); }
+
+/* --- note callout ------------------------------------------------- */
+.note {
+  margin: 22px 0;
+  padding: 15px 18px;
+  background: color-mix(in oklab, var(--delta-accent-soft) 55%, var(--delta-paper));
+  border: var(--delta-hairline) solid color-mix(in oklab, var(--delta-accent) 32%, var(--delta-rule));
+  border-radius: var(--delta-radius-lg);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--delta-ink-soft);
+}
+.note .note-label {
+  display: block;
+  font-family: var(--delta-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--delta-tracking-cap);
+  text-transform: uppercase;
+  color: var(--delta-accent-ink);
+  margin-bottom: 4px;
+}
+.note p { margin: 0; color: var(--delta-ink-soft); }
+.note a { color: var(--delta-accent-ink); border-bottom: 1px solid color-mix(in oklab, var(--delta-accent-ink) 40%, transparent); }
+
+/* --- next-step cards --------------------------------------------- */
+.next-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+.next-card {
+  display: block;
+  border: var(--delta-hairline) solid var(--delta-rule);
+  border-radius: var(--delta-radius-lg);
+  background: var(--delta-surface-1);
+  padding: 20px 20px 18px;
+  box-shadow: var(--delta-shadow);
+  color: var(--delta-ink);
+  transition: transform var(--delta-dur-fast) var(--delta-ease),
+              box-shadow var(--delta-dur-fast) var(--delta-ease),
+              border-color var(--delta-dur-fast) var(--delta-ease);
+}
+.next-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--delta-shadow-lift);
+  border-color: color-mix(in oklab, var(--delta-accent) 50%, var(--delta-rule));
+}
+.next-card h3 {
+  font-family: var(--delta-serif);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.next-card h3 .arrow { color: var(--delta-accent-ink); transition: transform var(--delta-dur-fast) var(--delta-ease); }
+.next-card:hover h3 .arrow { transform: translateX(3px); }
+.next-card p { margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--delta-ink-soft); }
+
+@media (max-width: 640px) {
+  .guide-hero, .guide { padding-left: 20px; padding-right: 20px; }
+  .gs-num { width: 34px; height: 34px; font-size: 17px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .next-card { transition: none; }
+}

@@ -68,6 +68,10 @@ html {
 
 body {
   margin: 0;
+  /* Clip any stray horizontal overflow (e.g. the slightly rotated hero window)
+     so the page never shows a horizontal scrollbar. `clip` (not `hidden`) keeps
+     the sticky nav working — `hidden` would turn body into a scroll container. */
+  overflow-x: clip;
   color: var(--delta-ink);
   background:
     radial-gradient(1100px 620px at 78% -8%, var(--delta-accent-soft), transparent 60%),
@@ -164,12 +168,32 @@ a { color: var(--delta-accent-ink); text-decoration: none; }
 .nav-links a:hover { background: var(--delta-surface-2); color: var(--delta-ink); }
 
 /* --- hero -------------------------------------------------------- */
-.hero { padding: clamp(64px, 9vw, 132px) 0 clamp(56px, 7vw, 104px); }
+.hero {
+  padding: clamp(64px, 9vw, 132px) 0 clamp(56px, 7vw, 104px);
+  position: relative;
+}
 .hero .wrap {
   display: grid;
   grid-template-columns: 1.05fr 0.95fr;
   gap: clamp(36px, 5vw, 76px);
   align-items: center;
+  position: relative; /* lift the content above the watermark */
+  z-index: 1;
+}
+
+/* backdrop brand mark — oversized and faint, bleeding off the top-left so the
+   logo anchors the composition without competing with the headline. Decorative
+   (aria-hidden); body's overflow-x: clip keeps the bleed from adding a scrollbar. */
+.hero-watermark {
+  position: absolute;
+  z-index: 0;
+  top: clamp(-80px, -6vw, -40px);
+  left: clamp(-120px, -7vw, -56px);
+  width: min(680px, 58vw);
+  height: auto;
+  opacity: 0.07;
+  pointer-events: none;
+  user-select: none;
 }
 .hero-copy .eyebrow { display: inline-block; margin-bottom: 22px; }
 .hero h1 {

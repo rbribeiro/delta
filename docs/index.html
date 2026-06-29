@@ -25,7 +25,7 @@
       </a>
       <nav class="nav-links">
         <a href="#why">Why</a>
-        <a href="#install">Install</a>
+        <a href="get-started.html">Get started</a>
         <a href="#example">Example</a>
         <a href="reference/index.html">Docs</a>
         <a class="btn ghost" href="https://github.com/rbribeiro/delta-parser">GitHub ↗</a>
@@ -36,6 +36,7 @@
   <!-- ============================ HERO =========================== -->
   <main id="top">
     <section class="hero">
+      <img class="hero-watermark" src="logo.svg" alt="" aria-hidden="true">
       <div class="wrap">
         <div class="hero-copy">
           <span class="eyebrow">By mathematicians and students — for scientists and students</span>
@@ -47,7 +48,7 @@
             never touch the web part.
           </p>
           <div class="cta">
-            <a class="btn primary" href="#install">Get started <span class="arrow">→</span></a>
+            <a class="btn primary" href="get-started.html">Get started <span class="arrow">→</span></a>
             <a class="btn ghost" href="reference/index.html">Read the docs</a>
           </div>
           <p class="micro"><span class="dot"></span> A LaTeX-like markup · math built in · no web development required</p>
@@ -191,10 +192,10 @@
             <div class="code">
               <div class="code-head">
                 <span class="label"><span class="dot"></span>terminal</span>
-                <button class="copy" data-clip="npm install -g delta&#10;delta build paper.dlt -o paper.html&#10;delta build project.toml">Copy</button>
+                <button class="copy" data-clip="npm install -g delta-lang&#10;delta build paper.dlt -o paper.html&#10;delta build project.toml">Copy</button>
               </div>
               <pre><code><span class="cm"># install the Delta CLI from npm</span>
-<span class="pr">$</span> npm install -g delta
+<span class="pr">$</span> npm install -g delta-lang
 
 <span class="cm"># build a document</span>
 <span class="pr">$</span> delta build paper.dlt -o paper.html
