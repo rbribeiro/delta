@@ -91,14 +91,6 @@ ${packScripts}
 `;
 }
 
-/**
- * Builds an inert `<template data-delta-pop="id">…</template>` for every target a
- * `<ref>`/`<cite>`/`<solution of>`/`<proof of>` resolved to (recorded in `ctx.referencedIds`). The id→node map
- * is built in a single walk of this document; the runtime clones a template into
- * the pop-over preview, so no fetch is needed. On the project path the caller
- * passes a `globalById` spanning every file, so a cross-file target's copy still
- * ships here. Returns "" when nothing is referenced.
- */
 
 /**
  * 
