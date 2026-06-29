@@ -175,3 +175,10 @@ fragments are shown does it move to the next slide (the reveal.js model).
        the **same** stepping logic as item 37, unifying both animation features. (Trade-off:
        `trust` + the `\html*` extension let LaTeX emit classes/attributes — acceptable since the
        author owns their own source.)
+- [x] 39. `animated="true"` shorthand: a tiny compiler pass (`animated.ts`, run after
+       `resolveIncludes` in both entry points) adds `reveal="true"` to every child **element** of an
+       `animated` carrier — so `<slide animated="true">` reveals its blocks for free, `<list
+       animated="true">` reveals its items (via the `<li>` forwarding from item 37), and nesting just
+       repeats it. Skips `<title>`/`<slide>` and respects an explicit `reveal` (so `reveal="false"`
+       opts a child out). Presentation-only (no-op otherwise); emits the same `reveal` data item 37
+       consumes, so **no runtime/CSS change**

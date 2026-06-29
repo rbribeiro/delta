@@ -17,6 +17,7 @@ import { emit } from "./emit";
 import { inlineFigures } from "./figures";
 import { resolveImports } from "./imports";
 import { resolveIncludes } from "./include";
+import { expandAnimated } from "./animated";
 import { renderMath } from "./math";
 import { resolveLineBreaks } from "./linebreaks";
 import { freshNumbering, numberDocument } from "./numbering";
@@ -98,6 +99,7 @@ export function compileProject(config: ProjectConfig): ProjectResult {
     const doc = parse(preprocess(source), ctx);
     if (!doc) continue;
     resolveIncludes(doc, ctx);
+    expandAnimated(doc); // presentation only: animated="true" → reveal="true" on children
     ctx.lang = doc.attrs.lang ?? "en";
     files.push({ ctx, doc, outName: ctx.outName });
   }

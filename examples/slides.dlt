@@ -27,11 +27,12 @@
 
   <slide>
     <title>Ordinary chrome, deck scale</title>
-    Lists and emphasis all carry over — revealed one point at a time:
-    <list marker="number">
-      <item reveal="true">Built from the same tags you already know.</item>
-      <item reveal="true">Each &lt;slide&gt; fills the screen, its title at the top.</item>
-      <item reveal="true">Still a single, fully offline file.</item>
+    Lists and emphasis all carry over — revealed one point at a time with a single
+    <c>animated="true"</c> on the list:
+    <list marker="number" animated="true">
+      <item>Built from the same tags you already know.</item>
+      <item>Each &lt;slide&gt; fills the screen, its title at the top.</item>
+      <item>Still a single, fully offline file.</item>
     </list>
   </slide>
 </document>

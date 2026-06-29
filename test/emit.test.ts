@@ -114,6 +114,32 @@ describe("emit", () => {
     expect(html).toContain('<delta-equation reveal="true" reveal-order="2"');
   });
 
+  it('animated="true" adds reveal to child elements but not the title', () => {
+    const { html } = compile(
+      `<document type="presentation"><title>D</title>
+        <slide animated="true"><title>S</title>
+          <equation>x</equation>
+          <equation>y</equation>
+        </slide>
+      </document>`,
+    );
+    // each content child becomes a fragment…
+    expect([...html.matchAll(/<delta-equation[^>]*\breveal="true"/g)]).toHaveLength(2);
+    // …but a <title> is never revealed (it stays visible).
+    expect(html).not.toMatch(/<delta-title[^>]*\breveal=/);
+  });
+
+  it('does not expand animated="true" outside a presentation', () => {
+    const { html } = compile(
+      `<document><title>D</title>
+        <section animated="true"><title>S</title><equation>x</equation></section>
+      </document>`,
+    );
+    // The pass is a no-op off-deck, so the equation element gets no reveal attribute.
+    // (`reveal="true"` still appears in the inlined deck CSS, so check the element.)
+    expect(html).not.toMatch(/<delta-equation[^>]*\breveal=/);
+  });
+
   it("inlines localized strings for the document `lang` as the #delta-i18n island", () => {
     const body = `<title>T</title><section id="s"><title>S</title>text</section>`;
     const pt = compile(`<document lang="pt-BR">${body}</document>`).html;
