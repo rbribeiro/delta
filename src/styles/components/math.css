@@ -22,6 +22,15 @@
     font-variant-numeric: tabular-nums;
   }
 
+  /* Inside a popover preview (.delta-pop, e.g. a <ref> card) the number already
+     shows in the bubble's header label, and the narrow bubble makes the absolute
+     number overlap the equation — so drop the inline number there. Same specificity
+     as the rule above, so it must stay after it to win. */
+  .delta-pop delta-equation[num]::after,
+  .delta-pop delta-equations[num]::after {
+    content: none;
+  }
+
   delta-equation .katex-display,
   delta-equations .katex-display,
   delta-math .katex-display { margin: 0; }
