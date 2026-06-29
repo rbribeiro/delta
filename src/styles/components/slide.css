@@ -1,23 +1,81 @@
-/* Presentation deck — container-level chrome for `<document type="presentation">`.
-   Every rule is gated on `:root[data-type="presentation"]` (the hook emit.ts
-   writes on <html>), so this ships in CORE_CSS like every component but only
-   takes effect for decks — the same "ships always, applies on match" pattern as
-   floating.css / collapse.css.
+/* Presentation deck — chrome for `<document type="presentation">`. Every rule is
+   gated on `:root[data-type="presentation"]` (the hook emit.ts writes on <html>),
+   so this ships in CORE_CSS like every component but only takes effect for decks —
+   the same "ships always, applies on match" pattern as floating.css / collapse.css.
 
-   Scope here is container-level only. Per-slide element chrome arrives with the
-   <slide> element (M7.33); viewport paging + hide-inactive land with the deck
-   controller (M7.36). Deck tokens (--delta-slide-*, --delta-deck-bg) come from
-   themes/presentation.css. */
+   Deck tokens (--delta-slide-*, --delta-t-slide-title, --delta-deck-bg) come from
+   themes/presentation.css. Paging is progressive: the controller (runtime/deck.ts)
+   marks the root `.deck-js` and the active slide `.is-active`. The hide-inactive
+   rule is gated on `.deck-js`, so with JS off every slide stays visible (fallback). */
 
 @layer delta.components {
   :root[data-type="presentation"] body {
     background: var(--delta-deck-bg);
   }
 
-  /* Escape the article measure + sidenote rail: the deck is full-bleed. */
+  /* Escape the article measure + sidenote rail: the deck is full-bleed.
+     `overflow-x: clip` swallows the slide enter transition's horizontal translate
+     so it never spawns a transient scrollbar (clip, not hidden, leaves vertical
+     scrolling intact for a tall slide). */
   :root[data-type="presentation"] delta-document {
     max-width: none;
     margin: 0;
     padding: 0;
+    overflow-x: clip;
+  }
+
+  /* The in-body copy of the document title would float above every slide; the
+     page <title> already covers the browser tab, so drop it in deck mode. */
+  :root[data-type="presentation"] delta-document > delta-title {
+    display: none;
+  }
+
+  /* Each slide fills the viewport: title at the top, body centered. */
+  :root[data-type="presentation"] delta-slide {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+    box-sizing: border-box;
+    padding: var(--delta-slide-pad);
+  }
+  :root[data-type="presentation"] .slide-title {
+    margin: 0;
+    font-size: var(--delta-t-slide-title);
+    line-height: var(--delta-leading-tight);
+    color: var(--delta-accent-ink);
+  }
+  :root[data-type="presentation"] .slide-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+    max-width: var(--delta-slide-max);
+    margin-inline: auto;
+  }
+
+  /* Paging (JS on): show only the active slide. */
+  :root[data-type="presentation"].deck-js delta-slide:not(.is-active) {
+    display: none;
+  }
+
+  /* Direction-aware enter transition for the incoming slide (enter-only — the
+     outgoing slide is display:none). */
+  :root[data-type="presentation"][data-deck-dir="fwd"] delta-slide.is-active {
+    animation: delta-deck-in-fwd var(--delta-slide-dur) var(--delta-slide-ease);
+  }
+  :root[data-type="presentation"][data-deck-dir="back"] delta-slide.is-active {
+    animation: delta-deck-in-back var(--delta-slide-dur) var(--delta-slide-ease);
+  }
+  @keyframes delta-deck-in-fwd {
+    from { opacity: 0; transform: translateX(5%); }
+    to   { opacity: 1; transform: none; }
+  }
+  @keyframes delta-deck-in-back {
+    from { opacity: 0; transform: translateX(-5%); }
+    to   { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :root[data-type="presentation"] delta-slide.is-active { animation: none; }
   }
 }

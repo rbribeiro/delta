@@ -75,6 +75,22 @@ describe("emit", () => {
     expect(dflt).not.toContain(THEMES.presentation);
   });
 
+  it("renders <slide> as a paged deck element without taking its title as the doc title", () => {
+    const { html } = compile(
+      `<document type="presentation">
+        <title>Deck</title>
+        <slide><title>First</title>hello</slide>
+        <slide><title>Second</title>world</slide>
+      </document>`,
+    );
+    // Generic rename: the slide is a delta-slide the runtime upgrades + pages.
+    expect(html).toContain("<delta-slide>");
+    expect(html).toContain("customElements.define(\"delta-slide\"");
+    // The document title comes from the doc-level <title>, not a slide's <title>.
+    expect(html).toContain("<title>Deck</title>");
+    expect(html).not.toContain("<title>First</title>");
+  });
+
   it("inlines localized strings for the document `lang` as the #delta-i18n island", () => {
     const body = `<title>T</title><section id="s"><title>S</title>text</section>`;
     const pt = compile(`<document lang="pt-BR">${body}</document>`).html;

@@ -9,6 +9,7 @@
  */
 
 import { defineSections } from "./section";
+import { defineSlide } from "./slide";
 import { defineEnvironments } from "./environment";
 import { defineSidenote } from "./sidenote";
 import { defineMedia } from "./media";
@@ -25,6 +26,7 @@ import { defineTable } from "./table";
 
 export function defineComponents(): void {
   defineSections();
+  defineSlide();
   defineEnvironments();
   defineSidenote();
   defineMedia();

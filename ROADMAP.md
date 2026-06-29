@@ -123,7 +123,7 @@ is **runtime-only** — the compiler stays generic. Activation: `emit` writes `d
 and the runtime deck controller gate on it cleanly. This milestone is usable on its own; the
 reveal/animation system follows in M8.
 
-- [ ] 32. `presentation` theme + deck activation: `src/styles/themes/presentation.css`
+- [x] 32. `presentation` theme + deck activation: `src/styles/themes/presentation.css`
        (auto-discovered by `themeCss()` in `scripts/build.ts`, selected by `<document
        type="presentation">`) sets the deck tokens (large type, slide aspect ratio, full-viewport
        sizing, transition vars). The deck **chrome** — full-viewport slides, hide-inactive, escape
@@ -131,22 +131,24 @@ reveal/animation system follows in M8.
        by `:root[data-type="presentation"]` / the presence of `<delta-slide>`, the same way
        `floating.css`/`collapse.css` only matter when their elements exist. `emit.ts` adds the
        `data-type` attribute to `<html>`
-- [ ] 33. `<slide>` element + slide titles: runtime-only `DeltaSlide`
+- [x] 33. `<slide>` element + slide titles: runtime-only `DeltaSlide`
        (`src/runtime/elements/slide.ts`, registered in `elements/index.ts`). A `<title>` child is
-       hoisted into a slide header shown at the top of the slide, **reusing the
-       `<delta-title>`→heading pattern** from `section.ts`. No compiler pass — slide position is
-       chrome, indexed at runtime
+       hoisted into an `<h2 class="slide-title">` at the top of the slide (**reusing the
+       `<delta-title>`→heading pattern** from `section.ts`) and the rest is wrapped in a centered
+       `.slide-body`. No compiler pass — slide position is chrome, indexed at runtime. _Shipped
+       together with item 36 (a slide element is only testable with paging)._
 - [ ] 34. Section → divider slide: in presentation mode `DeltaSection` (`section.ts`) renders its
        `<title>` as a centered full-slide divider that introduces the next part of the talk; its
        child `<slide>`s follow. Sections become groups that also emit a divider; section numbering
        already exists (`environments.ts`)
 - [ ] 35. Progress bar: injected by the deck controller, its width tracking current step / total
        as the reader moves through the deck; styled in `components/slide.css`
-- [ ] 36. Keyboard navigation + transitions: a deck controller (runtime singleton, registered like
-       `flashHash` in `runtime/index.ts`) owns the ordered step list, a global `keydown` listener
-       (←/→, ↑/↓, plus PageUp/Down, Space, Home/End), and the slide show/hide CSS
-       transitions, honoring `prefers-reduced-motion`. Any visible deck text adds keys to every
-       block in `strings.ts`
+- [x] 36. Keyboard navigation + transitions: the deck controller (`setupDeck` in
+       `src/runtime/deck.ts`, a singleton wired in `runtime/index.ts` beside `flashHash`) pages the
+       slides — a global `keydown` listener (←/→, ↑/↓, plus PageUp/Down, Space, Home/End) shows one
+       slide at a time (`.is-active`, hide-inactive gated on `.deck-js` so JS-off shows all), with a
+       direction-aware enter transition honoring `prefers-reduced-motion`. Exposes `window.Delta.deck`
+       (`index`/`total`/`go`/`next`/`prev`/`onChange`) for add-ons (item 35 hooks `onChange`)
 
 ## M8 — Slide animation
 

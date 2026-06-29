@@ -1,20 +1,27 @@
 import { defineComponents } from "./elements";
 import { flashTarget } from "./elements/shared";
+import { setupDeck, type Deck } from "./deck";
 import { popover } from "./utils";
 import {t} from "./i18n"
 
 declare global {
   interface Window {
     Delta: { popover: typeof popover,
-      t: typeof t
+      t: typeof t,
+      deck: Deck | null
      };
   }
 }
 
 defineComponents();
 
-// Expose the shared popover controller so components (and authors) can reuse it.
-window.Delta = { popover: popover, t: t };
+// Page a presentation deck (no-op for non-presentation docs / decks without slides).
+// Runs after defineComponents() so the slides have already upgraded.
+const deck = setupDeck();
+
+// Expose the shared popover controller and the deck handle so components (and
+// authors) can reuse them.
+window.Delta = { popover: popover, t: t, deck: deck };
 
 // A cross-file <ref>/<cite> jump lands on `other.html#id`; flash the target on
 // arrival so it reads like an in-page jump (and reaches runtime-built anchors,

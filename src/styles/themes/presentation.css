@@ -8,8 +8,9 @@
 @layer delta.theme {
   :root {
     /* projector-scale prose — larger base, tighter leading than long-form */
-    --delta-t-base:    clamp(20px, 1.4vw + 12px, 30px);
-    --delta-leading:   1.4;
+    --delta-t-base:        clamp(20px, 1.4vw + 12px, 30px);
+    --delta-leading:       1.4;
+    --delta-t-slide-title: clamp(30px, 4vw, 56px);  /* the per-slide heading */
 
     /* deck geometry */
     --delta-slide-ratio: 16 / 9;
