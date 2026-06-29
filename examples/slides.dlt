@@ -3,6 +3,12 @@
 
   <progress/>
 
+  <floating>
+    <toc>
+      <title> Menu</title>
+    </toc>
+  </floating>
+
   <cover>
     <title>Delta decks</title>
     <subtitle>Presentations, compiled to one offline file</subtitle>
