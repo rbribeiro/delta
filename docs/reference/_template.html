@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  TEMPLATE — copy this file to <category>.html to start a new reference page.
+
+  To add a page:
+    1. Copy this file to e.g. docs/reference/media.html
+    2. Set <title>, the .doc-hero heading + lede, and fill in the .tag-entry
+       sections (one per tag — duplicate the block below).
+    3. In reference.js, add the category (and its tags) to the TAGS map so the
+       sidebar + index home pick it up.
+
+  The shared chrome (sidebar, copy buttons, scrollspy, mobile toggle) is all
+  injected by reference.js — every page is just this skeleton + tag sections.
+  Styling comes from ../styles.css (tokens + code/box/snippet chrome) and
+  reference.css (the docs layout + .tag-entry template). Nothing to wire up.
+  ============================================================================
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Delta — &lt;Category&gt;</title>
+
+  <link rel="icon" href="../favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="reference.css">
+</head>
+<body>
+
+  <!-- shared top nav (same on every reference page) -->
+  <header class="nav">
+    <div class="wrap">
+      <a class="brand" href="../index.html" aria-label="Delta home">
+        <img class="mark" src="../logo.svg" alt="" width="22" height="25">
+        <span class="word">Delta</span>
+      </a>
+      <nav class="nav-links">
+        <a href="../index.html">Home</a>
+        <a href="../index.html#install">Install</a>
+        <a href="index.html">Reference</a>
+        <a class="btn ghost" href="https://github.com/rbribeiro/delta-parser">GitHub ↗</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="doc-shell">
+    <!-- filled by reference.js from the TAGS map -->
+    <nav id="doc-sidebar" aria-label="Reference navigation"></nav>
+
+    <main class="doc-content">
+      <p class="doc-crumb"><a href="index.html">Reference</a><span class="sep">/</span>Category</p>
+      <div class="doc-hero">
+        <span class="eyebrow">Reference</span>
+        <h1>Category name</h1>
+        <p class="doc-lede">One or two sentences on what this group of tags is for.</p>
+      </div>
+
+      <!-- ===================== ONE TAG = ONE SECTION ===================== -->
+      <!-- Duplicate this block per tag. The id must match the TAGS entry. -->
+      <section class="tag-entry" id="mytag">
+        <h2><code class="tagname">&lt;mytag&gt;</code> Display name</h2>
+        <p class="summary">
+          What the tag does, in one or two sentences. Inline code like
+          <code>attr="value"</code> uses the same chip style.
+        </p>
+
+        <table class="attr-table">
+          <caption>Attributes</caption>
+          <thead>
+            <tr><th>Attribute</th><th>Type</th><th>Required</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>id</code></td>
+              <td>string</td>
+              <td class="opt">optional</td>
+              <td>Anchor for <code>&lt;ref&gt;</code>.</td>
+            </tr>
+            <tr>
+              <td><code>example</code></td>
+              <td>string</td>
+              <td class="req">required</td>
+              <td>Describe it here.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- source -> rendered (reuses the landing's .snippet-grid component) -->
+        <div class="snippet-grid">
+          <div class="code">
+            <div class="code-head">
+              <span class="label"><span class="dot"></span>example.dlt</span>
+              <button class="copy" data-clip="&lt;mytag&gt;…&lt;/mytag&gt;">Copy</button>
+            </div>
+            <pre><code><span class="pn">&lt;</span><span class="tag">mytag</span> <span class="at">id</span>=<span class="va">"x"</span><span class="pn">&gt;</span>content<span class="pn">&lt;/</span><span class="tag">mytag</span><span class="pn">&gt;</span></code></pre>
+          </div>
+          <div class="render-to" aria-hidden="true">
+            <span class="a">→</span><span>renders to</span>
+          </div>
+          <div class="preview-frame">
+            <!-- A faux-rendered preview. Reuse .box / .math / .eq from styles.css. -->
+            <p>The rendered result goes here.</p>
+          </div>
+        </div>
+
+        <p class="see-also">See also <a href="#othertag"><code>&lt;othertag&gt;</code></a>.</p>
+      </section>
+      <!-- ================================================================ -->
+
+    </main>
+  </div>
+
+  <footer class="footer">
+    <div class="wrap">
+      <a class="brand" href="../index.html">
+        <img class="mark" src="../logo.svg" alt="" width="22" height="25">
+        <span class="word">Delta</span>
+      </a>
+      <div class="foot-links">
+        <a href="../index.html">Home</a>
+        <a href="https://github.com/rbribeiro/delta-parser">GitHub</a>
+        <span>MIT licensed</span>
+      </div>
+      <span>© 2026 Rodrigo Ribeiro</span>
+    </div>
+  </footer>
+
+  <script src="reference.js"></script>
+</body>
+</html>

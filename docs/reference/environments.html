@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Delta — Environments</title>
+  <meta name="description" content="Delta environments: theorem (and the lemma/proposition family), definition, proof, and meta — numbered boxes that share a counter.">
+
+  <link rel="icon" href="../favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="reference.css">
+</head>
+<body>
+
+  <header class="nav">
+    <div class="wrap">
+      <a class="brand" href="../index.html" aria-label="Delta home">
+        <img class="mark" src="../logo.svg" alt="" width="22" height="25">
+        <span class="word">Delta</span>
+      </a>
+      <nav class="nav-links">
+        <a href="../index.html">Home</a>
+        <a href="../index.html#install">Install</a>
+        <a href="index.html">Reference</a>
+        <a class="btn ghost" href="https://github.com/rbribeiro/delta-parser">GitHub ↗</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="doc-shell">
+    <nav id="doc-sidebar" aria-label="Reference navigation"></nav>
+
+    <main class="doc-content">
+      <p class="doc-crumb"><a href="index.html">Reference</a><span class="sep">/</span>Environments</p>
+      <div class="doc-hero">
+        <span class="eyebrow">Reference</span>
+        <h1>Environments</h1>
+        <p class="doc-lede">
+          Numbered, boxed blocks for the parts of an argument — theorems, definitions, proofs. The
+          whole theorem family shares one counter, just like <code>\newtheorem{lemma}[theorem]</code>
+          in LaTeX, so numbering stays consistent across kinds.
+        </p>
+      </div>
+
+      <!-- ===================== theorem ===================== -->
+      <section class="tag-entry" id="theorem">
+        <h2><code class="tagname">&lt;theorem&gt;</code> Theorem family</h2>
+        <p class="summary">
+          A numbered theorem box. The same shape gives you <code>&lt;lemma&gt;</code>,
+          <code>&lt;proposition&gt;</code>, <code>&lt;corollary&gt;</code>,
+          <code>&lt;conjecture&gt;</code>, <code>&lt;claim&gt;</code>, and
+          <code>&lt;observation&gt;</code> — all sharing the theorem counter. Give it an
+          <code>id</code> so a <code>&lt;ref&gt;</code> can point at it; add a <code>&lt;title&gt;</code>
+          and optional <code>&lt;meta&gt;</code> for the header.
+        </p>
+
+        <table class="attr-table">
+          <caption>Attributes</caption>
+          <thead><tr><th>Attribute</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>id</code></td><td>string</td><td class="opt">optional</td><td>Anchor for <code>&lt;ref&gt;</code> / the hover preview.</td></tr>
+            <tr><td><code>collapsible</code></td><td><code>true</code></td><td class="opt">optional</td><td>Let readers fold the box.</td></tr>
+            <tr><td><code>&lt;title&gt;</code></td><td>child</td><td class="opt">optional</td><td>The named title shown in parentheses.</td></tr>
+            <tr><td><code>&lt;meta&gt;</code></td><td>child</td><td class="opt">optional</td><td>Author/source lines under the statement.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="snippet-grid">
+          <div class="code">
+            <div class="code-head">
+              <span class="label"><span class="dot"></span>theorem.dlt</span>
+              <button class="copy" data-clip="&lt;theorem id=&quot;thm:pyth&quot;&gt;&#10;  &lt;title&gt;Pythagorean Theorem&lt;/title&gt;&#10;  &lt;meta&gt;&#10;    &lt;meta-item key=&quot;Author&quot;&gt;Pythagoras&lt;/meta-item&gt;&#10;  &lt;/meta&gt;&#10;  For a right triangle with legs $a$, $b$&#10;  and hypotenuse $c$,&#10;  &lt;equation id=&quot;eq:pyth&quot;&gt;a^2 + b^2 = c^2&lt;/equation&gt;&#10;&lt;/theorem&gt;">Copy</button>
+            </div>
+            <pre><code><span class="pn">&lt;</span><span class="tag">theorem</span> <span class="at">id</span>=<span class="va">"thm:pyth"</span><span class="pn">&gt;</span>
+  <span class="pn">&lt;</span><span class="tag">title</span><span class="pn">&gt;</span>Pythagorean Theorem<span class="pn">&lt;/</span><span class="tag">title</span><span class="pn">&gt;</span>
+  <span class="pn">&lt;</span><span class="tag">meta</span><span class="pn">&gt;</span>
+    <span class="pn">&lt;</span><span class="tag">meta-item</span> <span class="at">key</span>=<span class="va">"Author"</span><span class="pn">&gt;</span>Pythagoras<span class="pn">&lt;/</span><span class="tag">meta-item</span><span class="pn">&gt;</span>
+  <span class="pn">&lt;/</span><span class="tag">meta</span><span class="pn">&gt;</span>
+  For a right triangle with legs <span class="mt">$a$</span>, <span class="mt">$b$</span>
+  and hypotenuse <span class="mt">$c$</span>,
+  <span class="pn">&lt;</span><span class="tag">equation</span> <span class="at">id</span>=<span class="va">"eq:pyth"</span><span class="pn">&gt;</span><span class="mt">a^2 + b^2 = c^2</span><span class="pn">&lt;/</span><span class="tag">equation</span><span class="pn">&gt;</span>
+<span class="pn">&lt;/</span><span class="tag">theorem</span><span class="pn">&gt;</span></code></pre>
+          </div>
+          <div class="render-to" aria-hidden="true"><span class="a">→</span><span>renders to</span></div>
+          <div class="preview-frame">
+            <div class="box">
+              <span class="box-tag">Theorem 1.1 <span class="t">Pythagorean Theorem</span></span>
+              <p>For a right triangle with legs <span class="math">a</span>, <span class="math">b</span> and hypotenuse <span class="math">c</span>,</p>
+              <span class="eq">a<sup>2</sup> + b<sup>2</sup> = c<sup>2</sup><span class="num">(1.1)</span></span>
+              <div class="box-meta"><span><span class="k">Author</span><span class="v">Pythagoras</span></span></div>
+            </div>
+          </div>
+        </div>
+
+        <p class="see-also">See also <a href="#proof"><code>&lt;proof&gt;</code></a>, <a href="#meta"><code>&lt;meta&gt;</code></a>, <a href="references.html#ref"><code>&lt;ref&gt;</code></a>.</p>
+      </section>
+
+      <!-- ===================== definition ===================== -->
+      <section class="tag-entry" id="definition">
+        <h2><code class="tagname">&lt;definition&gt;</code> Definition, example, remark</h2>
+        <p class="summary">
+          Same box, different counters: <code>&lt;definition&gt;</code>, <code>&lt;example&gt;</code>,
+          <code>&lt;remark&gt;</code>, <code>&lt;exercise&gt;</code>, and <code>&lt;problem&gt;</code>
+          each number independently of the theorem family. Use them to mark out the supporting pieces
+          of an argument.
+        </p>
+
+        <table class="attr-table">
+          <caption>Attributes</caption>
+          <thead><tr><th>Attribute</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>id</code></td><td>string</td><td class="opt">optional</td><td>Anchor for <code>&lt;ref&gt;</code>.</td></tr>
+            <tr><td><code>&lt;title&gt;</code></td><td>child</td><td class="opt">optional</td><td>Optional named title.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="snippet-grid">
+          <div class="code">
+            <div class="code-head">
+              <span class="label"><span class="dot"></span>definition.dlt</span>
+              <button class="copy" data-clip="&lt;definition id=&quot;def:open&quot;&gt;&#10;  &lt;title&gt;Open set&lt;/title&gt;&#10;  A set $U$ is open if every point has a&#10;  neighbourhood contained in $U$.&#10;&lt;/definition&gt;">Copy</button>
+            </div>
+            <pre><code><span class="pn">&lt;</span><span class="tag">definition</span> <span class="at">id</span>=<span class="va">"def:open"</span><span class="pn">&gt;</span>
+  <span class="pn">&lt;</span><span class="tag">title</span><span class="pn">&gt;</span>Open set<span class="pn">&lt;/</span><span class="tag">title</span><span class="pn">&gt;</span>
+  A set <span class="mt">$U$</span> is open if every point has a
+  neighbourhood contained in <span class="mt">$U$</span>.
+<span class="pn">&lt;/</span><span class="tag">definition</span><span class="pn">&gt;</span></code></pre>
+          </div>
+          <div class="render-to" aria-hidden="true"><span class="a">→</span><span>renders to</span></div>
+          <div class="preview-frame">
+            <div class="box">
+              <span class="box-tag">Definition 1.2 <span class="t">Open set</span></span>
+              <p>A set <span class="math">U</span> is open if every point has a neighbourhood contained in <span class="math">U</span>.</p>
+            </div>
+          </div>
+        </div>
+
+        <p class="see-also">See also <a href="#theorem"><code>&lt;theorem&gt;</code></a>.</p>
+      </section>
+
+      <!-- ===================== proof ===================== -->
+      <section class="tag-entry" id="proof">
+        <h2><code class="tagname">&lt;proof&gt;</code> Proof</h2>
+        <p class="summary">
+          An unnumbered block led by an italic <em>Proof.</em> and closed with a tombstone
+          (<span style="font-family:var(--delta-mono)">∎</span>). With <code>of="id"</code> it links
+          back to the result it proves; <code>&lt;solution&gt;</code> works the same way for exercises.
+          Add <code>collapsed="true"</code> to fold it until the reader wants it.
+        </p>
+
+        <table class="attr-table">
+          <caption>Attributes</caption>
+          <thead><tr><th>Attribute</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>of</code></td><td>id</td><td class="opt">optional</td><td>The theorem/exercise this proves; adds a back-link.</td></tr>
+            <tr><td><code>collapsible</code> · <code>collapsed</code></td><td><code>true</code></td><td class="opt">optional</td><td>Fold the proof away.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="snippet-grid">
+          <div class="code">
+            <div class="code-head">
+              <span class="label"><span class="dot"></span>proof.dlt</span>
+              <button class="copy" data-clip="&lt;proof of=&quot;thm:pyth&quot;&gt;&#10;  Drop the altitude and compare the two&#10;  similar triangles it creates.&#10;&lt;/proof&gt;">Copy</button>
+            </div>
+            <pre><code><span class="pn">&lt;</span><span class="tag">proof</span> <span class="at">of</span>=<span class="va">"thm:pyth"</span><span class="pn">&gt;</span>
+  Drop the altitude and compare the two
+  similar triangles it creates.
+<span class="pn">&lt;/</span><span class="tag">proof</span><span class="pn">&gt;</span></code></pre>
+          </div>
+          <div class="render-to" aria-hidden="true"><span class="a">→</span><span>renders to</span></div>
+          <div class="preview-frame">
+            <p class="r-proof"><span class="lead">Proof.</span> Drop the altitude and compare the two similar triangles it creates. <span class="qed">∎</span></p>
+          </div>
+        </div>
+
+        <p class="see-also">See also <a href="#theorem"><code>&lt;theorem&gt;</code></a>.</p>
+      </section>
+
+      <!-- ===================== meta ===================== -->
+      <section class="tag-entry" id="meta">
+        <h2><code class="tagname">&lt;meta&gt;</code> Metadata</h2>
+        <p class="summary">
+          A small key/value block that renders under an environment's statement — for an author, a
+          source, a year. Each row is a <code>&lt;meta-item key="…"&gt;</code>; <code>&lt;author&gt;</code>
+          is a shorthand for the common case.
+        </p>
+
+        <table class="attr-table">
+          <caption>Attributes (on <code>&lt;meta-item&gt;</code>)</caption>
+          <thead><tr><th>Attribute</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>key</code></td><td>string</td><td class="req">required</td><td>The label shown for the row.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="snippet-grid">
+          <div class="code">
+            <div class="code-head">
+              <span class="label"><span class="dot"></span>meta.dlt</span>
+              <button class="copy" data-clip="&lt;meta&gt;&#10;  &lt;meta-item key=&quot;Author&quot;&gt;Euclid&lt;/meta-item&gt;&#10;  &lt;meta-item key=&quot;Source&quot;&gt;Elements, I.47&lt;/meta-item&gt;&#10;&lt;/meta&gt;">Copy</button>
+            </div>
+            <pre><code><span class="pn">&lt;</span><span class="tag">meta</span><span class="pn">&gt;</span>
+  <span class="pn">&lt;</span><span class="tag">meta-item</span> <span class="at">key</span>=<span class="va">"Author"</span><span class="pn">&gt;</span>Euclid<span class="pn">&lt;/</span><span class="tag">meta-item</span><span class="pn">&gt;</span>
+  <span class="pn">&lt;</span><span class="tag">meta-item</span> <span class="at">key</span>=<span class="va">"Source"</span><span class="pn">&gt;</span>Elements, I.47<span class="pn">&lt;/</span><span class="tag">meta-item</span><span class="pn">&gt;</span>
+<span class="pn">&lt;/</span><span class="tag">meta</span><span class="pn">&gt;</span></code></pre>
+          </div>
+          <div class="render-to" aria-hidden="true"><span class="a">→</span><span>renders to</span></div>
+          <div class="preview-frame">
+            <div class="box-meta" style="margin-top:0; padding-top:0; border-top:0;">
+              <span><span class="k">Author</span><span class="v">Euclid</span></span>
+              <span><span class="k">Source</span><span class="v">Elements, I.47</span></span>
+            </div>
+          </div>
+        </div>
+
+        <p class="see-also">See also <a href="#theorem"><code>&lt;theorem&gt;</code></a>.</p>
+      </section>
+
+    </main>
+  </div>
+
+  <footer class="footer">
+    <div class="wrap">
+      <a class="brand" href="../index.html">
+        <img class="mark" src="../logo.svg" alt="" width="22" height="25">
+        <span class="word">Delta</span>
+      </a>
+      <div class="foot-links">
+        <a href="../index.html">Home</a>
+        <a href="https://github.com/rbribeiro/delta-parser">GitHub</a>
+        <span>MIT licensed</span>
+      </div>
+      <span>© 2026 Rodrigo Ribeiro</span>
+    </div>
+  </footer>
+
+  <script src="reference.js"></script>
+</body>
+</html>

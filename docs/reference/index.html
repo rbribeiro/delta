@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Delta — Tag reference</title>
+  <meta name="description" content="The Delta tag reference: every .dlt element, its attributes, and a source → rendered example, grouped by category.">
+
+  <link rel="icon" href="../favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="reference.css">
+</head>
+<body>
+
+  <header class="nav">
+    <div class="wrap">
+      <a class="brand" href="../index.html" aria-label="Delta home">
+        <img class="mark" src="../logo.svg" alt="" width="22" height="25">
+        <span class="word">Delta</span>
+      </a>
+      <nav class="nav-links">
+        <a href="../index.html">Home</a>
+        <a href="../index.html#install">Install</a>
+        <a href="index.html">Reference</a>
+        <a class="btn ghost" href="https://github.com/rbribeiro/delta-parser">GitHub ↗</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section style="padding-bottom: 0;">
+      <div class="wrap">
+        <div class="doc-hero">
+          <span class="eyebrow">Reference</span>
+          <h1>Every tag, by category.</h1>
+          <p class="doc-lede">
+            Delta documents are plain, strict XML. Each tag below shows its attributes and a
+            <em>source&nbsp;&rarr;&nbsp;rendered</em> example. Pick a category to dive in — the
+            sidebar on every page lists all the tags it covers.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section style="padding-top: 40px;">
+      <div class="wrap">
+        <!-- Category cards are rendered from the TAGS map in reference.js -->
+        <div id="doc-index"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <a class="brand" href="../index.html">
+        <img class="mark" src="../logo.svg" alt="" width="22" height="25">
+        <span class="word">Delta</span>
+      </a>
+      <div class="foot-links">
+        <a href="../index.html">Home</a>
+        <a href="https://github.com/rbribeiro/delta-parser">GitHub</a>
+        <a href="https://github.com/rbribeiro/delta-parser/tree/main/docs">Internals</a>
+        <span>MIT licensed</span>
+      </div>
+      <span>© 2026 Rodrigo Ribeiro</span>
+    </div>
+  </footer>
+
+  <script src="reference.js"></script>
+</body>
+</html>
