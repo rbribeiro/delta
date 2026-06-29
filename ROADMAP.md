@@ -104,6 +104,14 @@ usable on its own. Checked items are implemented and tested.
        reference inside a pack file warns but is still inlined, and the same pack imported twice inlines once
 - [~] 27. Document-type CSS variants via `<document type>` (`@layer delta.theme`): `article`
        (default) and `book` shipped; the `presentation` type is specified in M7–M8
+- [x] 43. Dark mode via `<document theme-mode="dark|auto">`: a **token override** mirroring the accent
+       mechanism — `theme.ts` reads `theme-mode` → `ctx.themeMode`, `emit` writes `data-mode` on `<html>`,
+       and a `[data-mode="dark"]` block in `base.css` inverts the neutral ramp + re-derives the two
+       light-assuming accent tones (`-ink` → the vivid `--delta-accent`, `-soft` → a dark tint) so all 12
+       accents keep working. `auto` repeats it under `@media (prefers-color-scheme: dark)`. Applies to
+       every document type (decks benefit most); light stays the default. No component CSS changes — the
+       whole token-styled system, deck chrome included, flips. A live in-page toggle is deferred (its home
+       is the staged `tweaks.css` panel)
 
 ## M6 — Polish
 
