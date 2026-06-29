@@ -15,11 +15,15 @@ export function katexCss(): string {
   if (cached !== undefined) return cached;
   const cssPath = require.resolve("katex/dist/katex.min.css");
   const css = readFileSync(cssPath, "utf8");
-  cached = css.replace(/src:[^;}]*/g, (src) => {
+  const inlined = css.replace(/src:[^;}]*/g, (src) => {
     const woff2 = /url\((fonts\/[^)]+\.woff2)\)/.exec(src);
     if (!woff2) return src;
     const data = readFileSync(join(dirname(cssPath), woff2[1])).toString("base64");
     return `src:url(data:font/woff2;base64,${data}) format("woff2")`;
   });
+  // KaTeX renders math at 1.21em — noticeably larger than surrounding prose. Scale
+  // it toward body-text size (LaTeX-like) via --delta-math-scale. Appended last and
+  // unlayered, so it overrides KaTeX's own `.katex` rule above (same specificity).
+  cached = inlined + "\n.katex{font-size:var(--delta-math-scale,1.1em)}\n";
   return cached;
 }

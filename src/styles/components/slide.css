@@ -43,14 +43,14 @@
     line-height: var(--delta-leading-tight);
     color: var(--delta-accent-ink);
   }
+  /* Normal block flow (NOT a flex container — flex would blockify inline children
+     like inline math or <c>, forcing each onto its own full-width line). `margin:
+     auto` centers it both ways: horizontally within the measure, and vertically in
+     the space the flex-column slide leaves below the title/rule. */
   :root[data-type="presentation"] .slide-body {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
     width: 100%;
     max-width: var(--delta-slide-max);
-    margin-inline: auto;
+    margin: auto;
   }
 
   /* Progress bar — opt-in via a <progress/> marker (which itself renders nothing).

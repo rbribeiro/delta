@@ -78,6 +78,7 @@
   --delta-t-h4:         clamp(16px, 1.5vw, 18px);
   --delta-t-deck:       clamp(18px, 1.7vw, 22px);
   --delta-t-small:      0.78em;
+  --delta-math-scale:   1.05em;         /* inline/display math size — tames KaTeX's 1.21em default */
   --delta-leading:      1.65;
   --delta-leading-tight:1.15;
   --delta-tracking-cap: 0.12em;
