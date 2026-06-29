@@ -184,4 +184,69 @@
       transition: none;
     }
   }
+
+  /* Overlay touch controls (JS on): a subtle prev / counter / next cluster pinned
+     bottom-centre so a deck is navigable without a keyboard. Built by deck.ts; faint
+     by default, full opacity on hover/focus/tap, and a touch (no-hover) bump. Sits
+     clear of a bottom-right <floating> FAB. */
+  :root[data-type="presentation"].deck-js .deck-controls {
+    position: fixed;
+    left: 50%;
+    bottom: 14px;
+    transform: translateX(-50%);
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0.45;
+    transition: opacity var(--delta-dur) var(--delta-ease);
+  }
+  :root[data-type="presentation"].deck-js .deck-controls:hover,
+  :root[data-type="presentation"].deck-js .deck-controls:focus-within,
+  :root[data-type="presentation"].deck-js .deck-controls:active {
+    opacity: 1;
+  }
+  @media (hover: none) and (pointer: coarse) {
+    :root[data-type="presentation"].deck-js .deck-controls { opacity: 0.7; }
+  }
+
+  .deck-nav {
+    appearance: none;
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: var(--delta-hairline) solid var(--delta-rule);
+    border-radius: 50%;
+    background: var(--delta-surface-1);
+    color: var(--delta-ink);
+    font-family: var(--delta-sans);
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: var(--delta-shadow-lift);
+    transition: background var(--delta-dur-fast) var(--delta-ease),
+                color var(--delta-dur-fast) var(--delta-ease);
+  }
+  .deck-nav:hover {
+    background: var(--delta-surface-2);
+    color: var(--delta-accent-ink);
+  }
+  .deck-counter {
+    font-family: var(--delta-sans);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: var(--delta-ink-soft);
+    background: var(--delta-surface-1);
+    border: var(--delta-hairline) solid var(--delta-rule);
+    border-radius: var(--delta-radius-pill);
+    padding: 5px 11px;
+    box-shadow: var(--delta-shadow-sm);
+    user-select: none;
+  }
+
+  @media print {
+    :root[data-type="presentation"] .deck-controls { display: none !important; }
+  }
 }

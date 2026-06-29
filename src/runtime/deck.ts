@@ -12,6 +12,8 @@
  * not the compiler: slides carry no number.
  */
 
+import { t } from "./i18n";
+
 /** Public handle exposed as `window.Delta.deck` (null when not a deck). Lets
  *  add-ons (e.g. the upcoming progress bar) read position and drive navigation. */
 export interface Deck {
@@ -132,6 +134,48 @@ export function setupDeck(): Deck | null {
         break;
     }
   });
+
+  // Overlay touch controls — a deck must be navigable without a keyboard. A subtle
+  // prev / next cluster (CSS: bottom-center, brighter on hover/touch) plus
+  // swipe. Buttons reuse the fragment-aware next/prev, so taps behave like the keys.
+  const navBtn = (cls: string, glyph: string, label: string, fn: () => void): HTMLButtonElement => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = `deck-nav ${cls}`;
+    b.textContent = glyph;
+    b.setAttribute("aria-label", label);
+    b.addEventListener("click", fn);
+    return b;
+  };
+  const controls = document.createElement("div");
+  controls.className = "deck-controls";
+  controls.append(
+    navBtn("deck-prev", "‹", t("prevSlide", "Previous slide"), prev),
+    navBtn("deck-next", "›", t("nextSlide", "Next slide"), next),
+  );
+  document.body.append(controls);
+
+  // Swipe left/right to navigate. Passive (never blocks scroll); the horizontal-
+  // dominance check keeps a vertical scroll of a tall slide from paging.
+  let sx = 0;
+  let sy = 0;
+  document.addEventListener(
+    "touchstart",
+    (e) => {
+      sx = e.touches[0].clientX;
+      sy = e.touches[0].clientY;
+    },
+    { passive: true },
+  );
+  document.addEventListener(
+    "touchend",
+    (e) => {
+      const dx = e.changedTouches[0].clientX - sx;
+      const dy = e.changedTouches[0].clientY - sy;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) (dx < 0 ? next : prev)();
+    },
+    { passive: true },
+  );
 
   // Activate the first slide (fragments hidden, progress filled in from 0).
   enter(0, false);
