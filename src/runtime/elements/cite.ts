@@ -57,6 +57,7 @@ class DeltaCite extends HTMLElement {
           numEl.textContent = `[${nums[i]}]`;
           numEl.addEventListener("click", (e) => {
             pop.close(); // dismiss the card, then jump — like DeltaRef's go button
+            if(window.Delta?.deck?.goToId(id)) return; // in a deck, page to the target's slide
             if (citeFile) return; // cross-file: let the browser navigate to the other output
             e.preventDefault();
             flashTarget(id);

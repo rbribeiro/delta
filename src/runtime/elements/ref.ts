@@ -82,6 +82,7 @@ class DeltaRef extends HTMLElement {
     go.addEventListener("click", (e) => {
       e.preventDefault();
       pop.close();
+      if(window.Delta?.deck?.goToId(to)) return; // in a deck, page to the target's slide
       if (href) {
         location.href = href; // cross-file: navigate to the target's output (#id flashes on arrival)
         return;
