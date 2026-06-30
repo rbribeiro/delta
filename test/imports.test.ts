@@ -1,3 +1,6 @@
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import type { ElementNode } from "../src/compiler/ast";
 import { createContext, type CompileContext } from "../src/compiler/context";
@@ -74,6 +77,54 @@ describe("resolveImports", () => {
       `<document><import src="fixtures/pack" /><import src="fixtures/pack" /></document>`,
     );
     expect(ctx.imports).toHaveLength(1);
+  });
+
+  it("reads a delta manifest: uses the declared js/css, records tags and the npm name", () => {
+    const { ctx } = resolved(`<document><import src="fixtures/manifest-pack" /></document>`);
+    expect(ctx.imports).toHaveLength(1);
+    expect(ctx.imports[0].js).toContain("delta-widget"); // browser.js, not index.js
+    expect(ctx.imports[0].css).toContain("#123456"); // pack.css, not theme.css
+    expect(ctx.imports[0].tags).toEqual(["widget"]);
+    expect(ctx.imports[0].name).toBe("delta-manifest-pack");
+    expect(ctx.diagnostics).toHaveLength(0);
+  });
+
+  it("inlines a pack's `needs` dependency-first", () => {
+    const { ctx } = resolved(`<document><import src="fixtures/needs-pack" /></document>`);
+    expect(ctx.imports).toHaveLength(2);
+    // the dependency (manifest-pack) inlines before the dependent (needs-pack)
+    expect(ctx.imports[0].js).toContain("delta-widget");
+    expect(ctx.imports[1].js).toContain("delta-needy");
+    expect(ctx.diagnostics).toHaveLength(0);
+  });
+
+  it("resolves a bare specifier from node_modules", () => {
+    // Build a throwaway project dir with the package installed under node_modules.
+    const root = mkdtempSync(join(tmpdir(), "delta-pack-"));
+    const pkg = join(root, "node_modules", "delta-temp-pack");
+    mkdirSync(pkg, { recursive: true });
+    writeFileSync(
+      join(pkg, "package.json"),
+      JSON.stringify({ name: "delta-temp-pack", delta: { js: "index.js" } }),
+    );
+    writeFileSync(join(pkg, "index.js"), `customElements.define("delta-temp", class extends HTMLElement {});`);
+
+    const ctx = createContext(join(root, "doc.dlt"));
+    const doc = parse(preprocess(`<document><import src="delta-temp-pack" /></document>`), ctx);
+    if (!doc) throw new Error("parse failed");
+    resolveImports(doc, ctx);
+    expect(ctx.diagnostics).toHaveLength(0);
+    expect(ctx.imports).toHaveLength(1);
+    expect(ctx.imports[0].js).toContain("delta-temp");
+    expect(ctx.imports[0].name).toBe("delta-temp-pack");
+  });
+
+  it("errors a bare specifier that is not installed", () => {
+    const { ctx } = resolved(`<document><import src="delta-not-installed" /></document>`);
+    expect(ctx.imports).toHaveLength(0);
+    expect(
+      ctx.diagnostics.some((d) => d.severity === "error" && /not found/.test(d.message)),
+    ).toBe(true);
   });
 
   it("warns about external references inside a pack but still inlines it", () => {

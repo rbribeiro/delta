@@ -41,6 +41,26 @@ describe("loadProjectConfig", () => {
     expect(diagnostics.some((d) => /out/.test(d.message))).toBe(true);
   });
 
+  it("parses a packages list and sets root to the toml's directory", () => {
+    const path = writeToml(`inputs = ["a.dlt"]\npackages = ["delta-foo", "../packs/x"]`);
+    const { config, diagnostics } = loadProjectConfig(path);
+    expect(diagnostics).toHaveLength(0);
+    expect(config?.packages).toEqual(["delta-foo", "../packs/x"]);
+    expect(config?.root).toBe(join(path, ".."));
+  });
+
+  it("omits packages when absent", () => {
+    const { config } = loadProjectConfig(writeToml(`inputs = ["a.dlt"]`));
+    expect(config?.packages).toBeUndefined();
+  });
+
+  it("errors when packages is not a list of strings", () => {
+    expect(loadProjectConfig(writeToml(`inputs = ["a.dlt"]\npackages = "delta-foo"`)).config).toBeUndefined();
+    const bad = loadProjectConfig(writeToml(`inputs = ["a.dlt"]\npackages = [1, 2]`));
+    expect(bad.config).toBeUndefined();
+    expect(bad.diagnostics.some((d) => /packages/.test(d.message))).toBe(true);
+  });
+
   it("errors on invalid TOML", () => {
     const { config, diagnostics } = loadProjectConfig(writeToml(`inputs = [`));
     expect(config).toBeUndefined();

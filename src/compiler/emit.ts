@@ -65,7 +65,7 @@ export function emit(
   // use window.Delta; each registers its own delta-* custom elements.
   const packScripts = ctx.imports.length
     ? ctx.imports
-        .map((i) => `<script>\n/* pack: ${basename(dirname(i.source))} */\n${i.js}\n</script>`)
+        .map((i) => `<script>\n/* pack: ${i.name ?? basename(dirname(i.source))} */\n${i.js}\n</script>`)
         .join("\n") + "\n"
     : "";
 

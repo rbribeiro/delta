@@ -25,6 +25,11 @@
       Geometry begins with the triangle. The most famous result about right
       triangles is due to antiquity <cite paper="pythagoras"/>.
 
+      <callout label="From a package">
+        This box is a <c>&lt;callout&gt;</c> from the <c>../imports/mod</c> pack, pulled in
+        once via <c>packages</c> in <c>project.toml</c> — no per-file <c>&lt;import&gt;</c>.
+      </callout>
+
       <theorem id="thm:pyth">
         <title>Pythagorean Theorem</title>
         For a right triangle with legs $a$ and $b$ and hypotenuse $c$,

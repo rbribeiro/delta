@@ -13,6 +13,11 @@ export interface ProjectConfig {
   inputs: string[];
   /** Absolute path to the output directory (outputs are saved as `<basename>.html` each). */
   outDir: string;
+  /** Package specifiers applied to every file: a local path (relative to `root`) or a bare npm
+   *  name resolved from `node_modules`. Raw strings — `resolvePack` resolves them. */
+  packages?: string[];
+  /** Absolute base directory (the toml's own directory) packages resolve against. */
+  root?: string;
 }
 
 export interface ConfigResult {
@@ -23,8 +28,9 @@ export interface ConfigResult {
 /**
  * Reads and validates a `project.toml`. The schema is intentionally small:
  *
- *   inputs = ["intro.dlt", "ch1.dlt"]   # ordered, required, relative to the toml
- *   out    = "dist"                      # output directory, optional (default ".")
+ *   inputs   = ["intro.dlt", "ch1.dlt"]  # ordered, required, relative to the toml
+ *   out      = "dist"                     # output directory, optional (default ".")
+ *   packages = ["delta-callout", "../packs/x"]  # optional packages applied to every file
  *
  * Inputs and `out` are resolved relative to the toml's own directory. Each
  * document keeps declaring its own type/lang/theme — the project file only wires
@@ -63,6 +69,12 @@ export function loadProjectConfig(tomlPath: string): ConfigResult {
   if (table.out !== undefined && typeof table.out !== "string") {
     return fail("`out` must be a string (the output directory)");
   }
+  if (
+    table.packages !== undefined &&
+    (!Array.isArray(table.packages) || !table.packages.every((p) => typeof p === "string"))
+  ) {
+    return fail("`packages` must be a list of strings (package names or local paths)");
+  }
 
   const base = dirname(tomlPath);
   return {
@@ -70,6 +82,8 @@ export function loadProjectConfig(tomlPath: string): ConfigResult {
     config: {
       inputs: (inputs as string[]).map((i) => resolve(base, i)),
       outDir: resolve(base, (table.out as string | undefined) ?? "."),
+      packages: table.packages as string[] | undefined,
+      root: base,
     },
   };
 }

@@ -1,4 +1,6 @@
-import { resolve } from "node:path";
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { compileProject, type ProjectResult } from "../src/compiler/project";
 
@@ -103,6 +105,61 @@ describe("compileProject", () => {
       expect(o.html).not.toMatch(/(src|href)\s*=\s*["']https?:/i);
       expect(o.html).not.toMatch(/<link/i);
     }
+  });
+});
+
+describe("compileProject packages", () => {
+  /** A throwaway project: two .dlt inputs + an installed pack under node_modules.
+   *  File `b.dlt` also <import>s the pack, to prove the project channel dedups. */
+  function tempProject(): string {
+    const root = mkdtempSync(join(tmpdir(), "delta-proj-"));
+    const pkg = join(root, "node_modules", "delta-proj-pack");
+    mkdirSync(pkg, { recursive: true });
+    writeFileSync(
+      join(pkg, "package.json"),
+      JSON.stringify({ name: "delta-proj-pack", delta: { js: "index.js" } }),
+    );
+    writeFileSync(
+      join(pkg, "index.js"),
+      `customElements.define("delta-proj-widget", class extends HTMLElement {});`,
+    );
+    writeFileSync(join(root, "a.dlt"), `<document><title>A</title><section id="a"><title>A</title>x</section></document>`);
+    writeFileSync(
+      join(root, "b.dlt"),
+      `<document><title>B</title><import src="delta-proj-pack" /><section id="b"><title>B</title>y</section></document>`,
+    );
+    return root;
+  }
+
+  it("applies project.toml `packages` to every output, deduping a file's own import", () => {
+    const root = tempProject();
+    const r = compileProject({
+      inputs: [join(root, "a.dlt"), join(root, "b.dlt")],
+      outDir: join(root, "out"),
+      packages: ["delta-proj-pack"],
+      root,
+    });
+    expect(r.diagnostics.filter((d) => d.severity === "error")).toHaveLength(0);
+
+    // Inlined into BOTH outputs from the project channel.
+    expect(out(r, "a.html")).toContain("delta-proj-widget");
+    const b = out(r, "b.html");
+    expect(b).toContain("delta-proj-widget");
+    // b also <import>ed it, but the pack JS inlines exactly once.
+    expect(b.split('customElements.define("delta-proj-widget"').length - 1).toBe(1);
+  });
+
+  it("errors when a project package cannot be resolved", () => {
+    const root = mkdtempSync(join(tmpdir(), "delta-proj-"));
+    writeFileSync(join(root, "a.dlt"), `<document><title>A</title><section id="a"><title>A</title>x</section></document>`);
+    const r = compileProject({
+      inputs: [join(root, "a.dlt")],
+      outDir: join(root, "out"),
+      packages: ["delta-missing-pack"],
+      root,
+    });
+    expect(r.outputs).toHaveLength(0);
+    expect(r.diagnostics.some((d) => d.severity === "error" && /not found/.test(d.message))).toBe(true);
   });
 });
 

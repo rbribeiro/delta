@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { basename, join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { elements, type ElementNode } from "./ast";
 import { loadBibliography, numberCitations, fillBibliography } from "./bibliography";
 import type { ProjectConfig } from "./config";
@@ -15,7 +15,7 @@ import {
 } from "./context";
 import { emit } from "./emit";
 import { inlineFigures } from "./figures";
-import { resolveImports } from "./imports";
+import { resolveImports, resolvePack } from "./imports";
 import { resolveIncludes } from "./include";
 import { expandAnimated } from "./animated";
 import { expandCover } from "./cover";
@@ -77,6 +77,17 @@ export function compileProject(config: ProjectConfig): ProjectResult {
     seen.set(out, input);
   }
   if (projectDiags.some((d) => d.severity === "error")) return { outputs: [], diagnostics: gather(), deps: collectDeps() };
+
+  // Project-wide packages (project.toml `packages`): resolve once into one ctx, then inject the
+  // resolved entries into every file's ctx.imports below. pkgCtx joins `ctxs` so its diagnostics
+  // and --watch deps gather and a failed resolve trips the `ctxs.some(hasErrors)` bail after Phase 1.
+  const pkgCtx = createContext(config.root ?? config.outDir);
+  ctxs.push(pkgCtx);
+  if (config.packages?.length) {
+    const base = config.root ?? dirname(config.inputs[0] ?? config.outDir);
+    const seen = new Set<string>();
+    for (const spec of config.packages) resolvePack(spec, base, pkgCtx, seen);
+  }
 
   // Phase 1 — read, parse, splice includes. Each file gets its own ctx (with the
   // shared registries swapped in) so diagnostics stay attributed to it.
@@ -166,6 +177,8 @@ export function compileProject(config: ProjectConfig): ProjectResult {
     if (bibOut && bibOut !== f.outName) annotateCrossFileCites(f.doc, bibOut);
     inlineFigures(f.doc, f.ctx);
     resolveTheme(f.doc, f.ctx);
+    // Project packages first (so they inline before the file's own <import>s, which dedup against them).
+    f.ctx.imports.push(...pkgCtx.imports);
     resolveImports(f.doc, f.ctx);
     resolveLineBreaks(f.doc); // blank lines in prose become a single <br> (after every other pass)
   }

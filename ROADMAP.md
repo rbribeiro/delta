@@ -118,6 +118,12 @@ usable on its own. Checked items are implemented and tested.
        elements), the CSS in a `<style>` **before** the author theme. Imports are direct children of
        `<document>` and are stripped from the tree; a missing/remote pack is a warning, an external
        reference inside a pack file warns but is still inlined, and the same pack imported twice inlines once
+- [x] 46. Package system (npm + `project.toml` + `<import>`): the `<import>` pack generalized into a
+       distributable **package** — an npm dependency (`<import src="pkg-name">` resolved from `node_modules`,
+       or a project-wide `packages = [...]` in `project.toml`) or a local folder, with an optional `delta`
+       manifest (`tags`/`js`/`css`/`needs`, `needs` resolved dependency-first). Runtime-only (no compiler
+       passes from a package); the shared `resolvePack` (`imports.ts`) feeds all channels into `ctx.imports`,
+       so `emit` is unchanged. Core stays monolithic. Design + reference: [docs/PACKAGES.md](docs/PACKAGES.md)
 - [~] 27. Document-type CSS variants via `<document type>` (`@layer delta.theme`): `article`
        (default) and `book` shipped; the `presentation` type is specified in M7–M8
 - [x] 43. Dark mode via `<document theme-mode="dark|auto">`: a **token override** mirroring the accent

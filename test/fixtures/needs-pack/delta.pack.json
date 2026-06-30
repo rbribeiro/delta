@@ -1,0 +1,4 @@
+{
+  "js": "index.js",
+  "needs": ["../manifest-pack"]
+}

@@ -4,3 +4,9 @@
 # copy of its target along (so the pop-overs work offline, with no fetch).
 inputs = ["ch1-geometry.dlt", "ch2-algebra.dlt"]
 out = "out"
+
+# Packages applied to every file in the project: a local folder here (relative to this
+# toml), but a bare name like "delta-callout" would resolve from node_modules. The pack's
+# custom elements + CSS inline into each output, so any chapter can use <callout> without a
+# per-file <import>. The pack stays inlined (offline) — it isn't fetched at view time.
+packages = ["../imports/mod"]

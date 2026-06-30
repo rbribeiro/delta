@@ -37,14 +37,18 @@ export interface TocEntry {
   file?: string;
 }
 
-/** One resolved `<import>` custom-element pack; contents are inlined by emit. */
+/** One resolved package (a `<import>` pack or a `project.toml` package); inlined by emit. */
 export interface ImportEntry {
-  /** Absolute path to the pack's `index.js`. */
+  /** Absolute path to the pack's entry script (the dedup key across all channels). */
   source: string;
-  /** `index.js` contents, inlined verbatim into a `<script>` after the runtime. */
+  /** Entry-script contents, inlined verbatim into a `<script>` after the runtime. */
   js: string;
-  /** Optional `theme.css` contents, inlined into a `<style>` BEFORE the author theme. */
+  /** Optional stylesheet contents, inlined into a `<style>` BEFORE the author theme. */
   css?: string;
+  /** Display label for the emit "pack:" marker (pkg name or folder basename). */
+  name?: string;
+  /** Tags the pack declares it owns; reserved for future tag-gating, unused today. */
+  tags?: string[];
 }
 
 export interface CompileContext {

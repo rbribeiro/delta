@@ -223,6 +223,12 @@ Two mechanisms keep the output offline:
 The `test/emit.test.ts` "references no external resources" test guards this invariant.
 Keep it passing.
 
+The same inlining seam is how Delta is **extended**: `<import>` custom-element packs are
+read at compile time and inlined onto `ctx.imports` (JS after the runtime, CSS before the
+author theme), so the output stays self-contained. How packs generalize into distributable
+**packages** (npm + `project.toml`, runtime-only, core kept monolithic) is the subject of
+[PACKAGES.md](PACKAGES.md).
+
 ## File map
 
 ```
