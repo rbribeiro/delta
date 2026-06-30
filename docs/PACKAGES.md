@@ -124,6 +124,22 @@ whole document.
 Dedup is by absolute entry path (the `seen` set in `resolveImports` generalizes), so the
 same package reached through two channels inlines once.
 
+### Where to install a package
+
+A bare specifier resolves from the **document's** `node_modules`, walking up from the
+`.dlt` (or the `project.toml`) directory — **not** from wherever the `delta` binary lives.
+So install the package in the project you're compiling, even when `delta` itself is global:
+
+```bash
+npm install -g delta-lang        # the compiler, once, anywhere
+cd my-paper && npm install delta-callout   # the package, in the project being compiled
+delta build paper.dlt -o paper.html        # resolves delta-callout from ./node_modules
+```
+
+`npm install -g delta-callout` will **not** be found — global packages aren't on the
+document's resolution path. (A local-folder `<import src="./packs/x">` has no install step;
+it's read straight from disk.)
+
 ## On-demand granularity
 
 Today's guarantee is **package-level**: a package is inlined when it is **declared**
