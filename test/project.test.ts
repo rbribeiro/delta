@@ -163,6 +163,82 @@ describe("compileProject packages", () => {
   });
 });
 
+describe("compileProject document defaults", () => {
+  /** Write named `.dlt` files into a fresh temp dir; return the dir and absolute input paths. */
+  function docs(files: Record<string, string>): { root: string; inputs: string[] } {
+    const root = mkdtempSync(join(tmpdir(), "delta-docdef-"));
+    const inputs: string[] = [];
+    for (const [name, content] of Object.entries(files)) {
+      writeFileSync(join(root, name), content);
+      inputs.push(join(root, name));
+    }
+    return { root, inputs };
+  }
+
+  /** The `<html …>` open tag of an output. */
+  function htmlTag(html: string): string {
+    return html.match(/<html[^>]*>/)?.[0] ?? "";
+  }
+
+  it("applies theme-accent/theme-mode/lang to a file that declares none", () => {
+    const { root, inputs } = docs({
+      "a.dlt": `<document><title>A</title><section id="a"><title>A</title>x</section></document>`,
+    });
+    const r = compileProject({
+      inputs,
+      outDir: join(root, "out"),
+      document: { "theme-accent": "purple", "theme-mode": "dark", lang: "pt" },
+    });
+    expect(r.diagnostics.filter((d) => d.severity === "error")).toHaveLength(0);
+    const tag = htmlTag(out(r, "a.html"));
+    expect(tag).toContain('lang="pt"');
+    expect(tag).toContain('data-accent="purple"');
+    expect(tag).toContain('data-mode="dark"');
+  });
+
+  it("lets a per-document attribute override the project default", () => {
+    const { root, inputs } = docs({
+      "own.dlt": `<document lang="en"><title>O</title><section id="o"><title>O</title>x</section></document>`,
+      "def.dlt": `<document><title>D</title><section id="d"><title>D</title>y</section></document>`,
+    });
+    const r = compileProject({ inputs, outDir: join(root, "out"), document: { lang: "pt" } });
+    // The file that declared its own lang keeps it; the one that didn't gets the project default.
+    expect(htmlTag(out(r, "own.html"))).toContain('lang="en"');
+    expect(htmlTag(out(r, "def.html"))).toContain('lang="pt"');
+  });
+
+  it("applies a project type before the presentation sugar, expanding <cover>", () => {
+    const { root, inputs } = docs({
+      "deck.dlt": `<document><cover><title>Talk</title></cover><slide><title>S</title>hi</slide></document>`,
+    });
+    const r = compileProject({ inputs, outDir: join(root, "out"), document: { type: "presentation" } });
+    const html = out(r, "deck.html");
+    expect(htmlTag(html)).toContain('data-type="presentation"');
+    // Injected before expandCover, so the cover desugared to a slide.
+    expect(html).toMatch(/<delta-slide[^>]*cover="true"/);
+  });
+
+  it("lets a per-document type override the project type", () => {
+    const { root, inputs } = docs({
+      "art.dlt": `<document type="article"><cover><title>X</title></cover><section id="s"><title>S</title>z</section></document>`,
+    });
+    const r = compileProject({ inputs, outDir: join(root, "out"), document: { type: "presentation" } });
+    const html = out(r, "art.html");
+    expect(htmlTag(html)).not.toContain("data-type"); // article is the default → no attribute
+    expect(html).toContain("<delta-cover"); // sugar skipped: <cover> stayed un-desugared
+  });
+
+  it("inlines a project default theme into every output", () => {
+    const { root, inputs } = docs({
+      "a.dlt": `<document><title>A</title><section id="a"><title>A</title>x</section></document>`,
+    });
+    const themePath = join(root, "book.css");
+    writeFileSync(themePath, `.delta-book-marker { color: rebeccapurple; }`);
+    const r = compileProject({ inputs, outDir: join(root, "out"), document: { theme: themePath } });
+    expect(out(r, "a.html")).toContain(".delta-book-marker");
+  });
+});
+
 describe("project table of contents", () => {
   it("ships a book-wide ToC island, tagging other files' entries with their output", () => {
     const toc = tocIsland(out(build(FILES), "chapter1.html"));

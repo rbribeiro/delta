@@ -61,6 +61,45 @@ describe("loadProjectConfig", () => {
     expect(bad.diagnostics.some((d) => /packages/.test(d.message))).toBe(true);
   });
 
+  it("parses a [document] table, resolving theme to an absolute path and others raw", () => {
+    const path = writeToml(
+      `inputs = ["a.dlt"]\n[document]\ntype = "book"\ntheme = "my.css"\ntheme-accent = "purple"\ntheme-mode = "dark"\nlang = "pt"`,
+    );
+    const dir = join(path, "..");
+    const { config, diagnostics } = loadProjectConfig(path);
+    expect(diagnostics).toHaveLength(0);
+    expect(config?.document).toEqual({
+      type: "book",
+      theme: join(dir, "my.css"),
+      "theme-accent": "purple",
+      "theme-mode": "dark",
+      lang: "pt",
+    });
+  });
+
+  it("ignores unknown keys inside [document]", () => {
+    const path = writeToml(`inputs = ["a.dlt"]\n[document]\nlang = "en"\nfoo = "bar"`);
+    const { config } = loadProjectConfig(path);
+    expect(config?.document).toEqual({ lang: "en" });
+  });
+
+  it("omits document when absent", () => {
+    const { config } = loadProjectConfig(writeToml(`inputs = ["a.dlt"]`));
+    expect(config?.document).toBeUndefined();
+  });
+
+  it("errors when a [document] value is not a string", () => {
+    const bad = loadProjectConfig(writeToml(`inputs = ["a.dlt"]\n[document]\nlang = 5`));
+    expect(bad.config).toBeUndefined();
+    expect(bad.diagnostics.some((d) => /document\.lang/.test(d.message))).toBe(true);
+  });
+
+  it("errors when document is not a table", () => {
+    const bad = loadProjectConfig(writeToml(`inputs = ["a.dlt"]\ndocument = "x"`));
+    expect(bad.config).toBeUndefined();
+    expect(bad.diagnostics.some((d) => /document/.test(d.message))).toBe(true);
+  });
+
   it("errors on invalid TOML", () => {
     const { config, diagnostics } = loadProjectConfig(writeToml(`inputs = [`));
     expect(config).toBeUndefined();

@@ -104,6 +104,17 @@ usable on its own. Checked items are implemented and tested.
        resolved relative to the toml; parsed with `smol-toml`. The CLI takes a `.toml` (or `--project`),
        several `.dlt` inputs (a project with `-o` as the out dir), or one `.dlt` (single-file, unchanged).
        Outputs are flat `<basename>.html`; colliding basenames are an error
+- [x] 47. Project-wide document defaults in `project.toml` (`config.ts`): a `[document]` table
+       (`type` / `theme` / `theme-accent` / `theme-mode` / `lang`) sets defaults applied to **every** file in
+       the project, so a book/deck declares its type/theme/accent/mode/language once instead of repeating it
+       on each `<document>`. `theme` resolves to an absolute path relative to the toml (so the existing
+       per-doc `resolveTheme`, which resolves relative to the file, passes it through unchanged); the rest
+       ride as raw strings. `compileProject`'s `applyDocumentDefaults` injects each value onto a file's
+       `<document>` attrs (right after `resolveIncludes`, so the type-gated `expandAnimated`/`expandCover`
+       sugar sees a project `type="presentation"`) only when that attribute is **absent**, so a document that
+       declares its own value **overrides** the project default. Reuses `resolveTheme` (accent/mode
+       validation, dep tracking) + the phase-1 `lang` read + emit's `type`; no `emit`/runtime change.
+       Single-file builds have no project, so no defaults
 - [ ] 23. `--per-chapter` / `--per-section` output splitting (CLI flag or project.toml)
 
 ## M5 — Theming & extensibility
@@ -124,6 +135,14 @@ usable on its own. Checked items are implemented and tested.
        manifest (`tags`/`js`/`css`/`needs`, `needs` resolved dependency-first). Runtime-only (no compiler
        passes from a package); the shared `resolvePack` (`imports.ts`) feeds all channels into `ctx.imports`,
        so `emit` is unchanged. Core stays monolithic. Design + reference: [docs/PACKAGES.md](docs/PACKAGES.md)
+- [ ] 48. Package tag-gating (`imports.ts` + `emit.ts`, the `tags` hook reserved by item 46): inline a
+       declared package's JS **and** CSS only when one of its manifest `tags` actually appears in the
+       document — checked **per-file**, so one chapter can ship fewer/different packs than another and
+       outputs stay small. A pack that declares no `tags` is always inlined (full back-compat, every
+       existing pack). `emit` collects the document's used tags via the `elements()` walk and filters
+       `ctx.imports`; a kept pack still pulls in its `needs` (dependency closure) even when the
+       dependency's own tags are unused. No manifest format change — `tags` was reserved for exactly
+       this (see docs/PACKAGES.md "On-demand granularity")
 - [~] 27. Document-type CSS variants via `<document type>` (`@layer delta.theme`): `article`
        (default) and `book` shipped; the `presentation` type is specified in M7–M8
 - [x] 43. Dark mode via `<document theme-mode="dark|auto">`: a **token override** mirroring the accent

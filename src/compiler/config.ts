@@ -18,7 +18,15 @@ export interface ProjectConfig {
   packages?: string[];
   /** Absolute base directory (the toml's own directory) packages resolve against. */
   root?: string;
+  /** `<document>` defaults applied to every file (attribute name → value), each overridable by a
+   *  per-document attribute. `theme` is stored as an absolute path (resolved against the toml dir);
+   *  the rest ride as raw strings. Built from the `[document]` table. */
+  document?: Record<string, string>;
 }
+
+/** The `<document>` attributes a project may default via the `[document]` table. Only `theme`
+ *  needs path resolution; the rest ride raw onto `doc.attrs`. Any other key is ignored. */
+const DOCUMENT_DEFAULT_KEYS = ["type", "theme", "theme-accent", "theme-mode", "lang"] as const;
 
 export interface ConfigResult {
   config?: ProjectConfig;
@@ -26,15 +34,22 @@ export interface ConfigResult {
 }
 
 /**
- * Reads and validates a `project.toml`. The schema is intentionally small:
+ * Reads and validates a `project.toml`. 
  *
  *   inputs   = ["intro.dlt", "ch1.dlt"]  # ordered, required, relative to the toml
  *   out      = "dist"                     # output directory, optional (default ".")
  *   packages = ["delta-callout", "../packs/x"]  # optional packages applied to every file
+ *   [document]                             # optional <document> defaults, applied to every file
+ *   type         = "book"                  #   (each overridable by a per-document attribute)
+ *   theme        = "my.css"                #   resolved relative to the toml
+ *   theme-accent = "blue"
+ *   theme-mode   = "dark"
+ *   lang         = "en"
  *
- * Inputs and `out` are resolved relative to the toml's own directory. Each
- * document keeps declaring its own type/lang/theme — the project file only wires
- * the files together. Any problem is an `error` diagnostic on the toml.
+ * Inputs and `out` are resolved relative to the toml's own directory. The optional
+ * `[document]` table sets defaults (`type`/`theme`/`theme-accent`/`theme-mode`/`lang`)
+ * applied to every file, each overridable by a per-document attribute. Any problem is
+ * an `error` diagnostic on the toml.
  */
 export function loadProjectConfig(tomlPath: string): ConfigResult {
   const diagnostics: Diagnostic[] = [];
@@ -77,6 +92,27 @@ export function loadProjectConfig(tomlPath: string): ConfigResult {
   }
 
   const base = dirname(tomlPath);
+
+  // Optional `[document]` defaults: a table of `<document>` attribute overrides applied to every
+  // file. `theme` becomes an absolute path (so the per-doc `resolveTheme`, which resolves relative
+  // to each file, passes it through unchanged); the rest ride raw. Unknown keys are ignored.
+  let document: Record<string, string> | undefined;
+  if (table.document !== undefined) {
+    const dt = table.document;
+    if (typeof dt !== "object" || dt === null || Array.isArray(dt)) {
+      return fail("`[document]` must be a table of document defaults");
+    }
+    const entries = dt as Record<string, unknown>;
+    const built: Record<string, string> = {};
+    for (const key of DOCUMENT_DEFAULT_KEYS) {
+      const v = entries[key];
+      if (v === undefined) continue;
+      if (typeof v !== "string") return fail(`\`document.${key}\` must be a string`);
+      built[key] = key === "theme" ? resolve(base, v) : v;
+    }
+    if (Object.keys(built).length > 0) document = built;
+  }
+
   return {
     diagnostics,
     config: {
@@ -84,6 +120,7 @@ export function loadProjectConfig(tomlPath: string): ConfigResult {
       outDir: resolve(base, (table.out as string | undefined) ?? "."),
       packages: table.packages as string[] | undefined,
       root: base,
+      document,
     },
   };
 }

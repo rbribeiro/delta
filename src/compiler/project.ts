@@ -111,6 +111,9 @@ export function compileProject(config: ProjectConfig): ProjectResult {
     const doc = parse(preprocess(source), ctx);
     if (!doc) continue;
     resolveIncludes(doc, ctx);
+    // Project-wide `[document]` defaults, applied here (right after the merge) so every downstream
+    // pass — including the type-gated presentation sugar below and the lang read — sees them.
+    applyDocumentDefaults(doc, config.document);
     expandAnimated(doc); // presentation only: animated="true" → reveal="true" on children
     expandCover(doc); // presentation only: <cover> → <slide cover="true">
     ctx.lang = doc.attrs.lang ?? "en";
@@ -194,6 +197,20 @@ export function compileProject(config: ProjectConfig): ProjectResult {
 function hasBibliography(doc: ElementNode): boolean {
   for (const el of elements(doc)) if (el.tag === "bibliography") return true;
   return false;
+}
+
+/**
+ * Fills project-wide `<document>` defaults onto a file, but only where the file didn't set the
+ * attribute itself — so a per-document attribute overrides the project default. Keys are the exact
+ * `<document>` attribute names (`type`/`theme`/`theme-accent`/`theme-mode`/`lang`); `theme` is
+ * already an absolute path (`config.ts` resolved it against the toml), so the per-doc `resolveTheme`
+ * consumes it unchanged. A no-op when the project declares no `[document]` table.
+ */
+function applyDocumentDefaults(doc: ElementNode, defaults?: Record<string, string>): void {
+  if (!defaults) return;
+  for (const [attr, val] of Object.entries(defaults)) {
+    if (doc.attrs[attr] === undefined) doc.attrs[attr] = val;
+  }
 }
 
 /**
