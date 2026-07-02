@@ -3,6 +3,10 @@
 > **Status:** implemented (ROADMAP item 46). All three channels ship — local `<import>`,
 > bare-specifier `<import>` from `node_modules`, and `packages` in `project.toml`. This
 > document doubles as the design rationale (ADR) and the reference for the format.
+>
+> **Building one?** See [AUTHORING_PACKAGES.md](AUTHORING_PACKAGES.md) — the how-to and the
+> style contract (custom-element conventions, the `--delta-*` design tokens, size/minification,
+> the offline invariant). This document is the *system* design behind it.
 
 Delta will keep adding components. Two questions decide how that scales, and they are
 the most load-bearing choices in the project:
