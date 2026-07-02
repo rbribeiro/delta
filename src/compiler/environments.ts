@@ -45,6 +45,7 @@ export const ENVIRONMENTS: Record<string, EnvironmentSpec> = {
   youtube: { counter: "video", prefixWith: "section" },
   audio: { counter: "audio", prefixWith: "section" },
   table: { counter: "table", prefixWith: "section" },
+  interactive: { counter: "interactive", prefixWith: "section" },
 
 };
 
@@ -53,6 +54,6 @@ export const ENVIRONMENTS: Record<string, EnvironmentSpec> = {
  */
 export const COUNTER_RESETS: Record<string, string[]> = {
   chapter: ["section"],
-  section: ["subsection", "subsubsection", "theorem", "proposition", "lemma", "corollary", "conjecture", "definition", "example", "claim", "observation", "exercise", "problem", "equation", "equations", "figure", "video", "youtube", "audio", "remark", "table"],
+  section: ["subsection", "subsubsection", "theorem", "proposition", "lemma", "corollary", "conjecture", "definition", "example", "claim", "observation", "exercise", "problem", "equation", "equations", "figure", "video", "youtube", "audio", "remark", "table", "interactive"],
   subsection: ["subsubsection"],
 };
