@@ -11,6 +11,22 @@ dedup, the "why", tag-gating rationale) read [PACKAGES.md](PACKAGES.md); this do
 > other pack. So: keep it small, minify it, reference nothing external, reuse the design system
 > instead of restating it, and split unrelated features into separate packages.
 
+## Quick start
+
+Scaffold a publishable skeleton instead of assembling it by hand:
+
+```bash
+delta create package my-callout   # → ./my-callout/ (package.json + src/ + test/ + build wiring)
+cd my-callout && npm install       # dev dependency: esbuild
+# edit src/index.js (the element) and src/theme.css (its styles)
+npm run build                      # minify src → dist/pack.min.{js,css}
+npm test                           # smoke-check the built artifact
+npm publish                        # prepublishOnly runs build + test
+```
+
+The generated files carry a `TODO` where your code goes, not a worked example — the rest of this
+guide is what fills them in. The tag is derived from the package name (`delta-callout` → `<callout>`).
+
 ---
 
 ## 1. When to build a package (and how to scope it)

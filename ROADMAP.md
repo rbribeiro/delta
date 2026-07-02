@@ -143,6 +143,21 @@ usable on its own. Checked items are implemented and tested.
        `ctx.imports`; a kept pack still pulls in its `needs` (dependency closure) even when the
        dependency's own tags are unused. No manifest format change — `tags` was reserved for exactly
        this (see docs/PACKAGES.md "On-demand granularity")
+- [x] 49. `delta create project <name>` (`scaffold.ts` + `cli.ts`): scaffolds a **bare** project —
+       `project.toml` (`inputs`/`out`, an empty `packages = []` anchor, and a commented `[document]`
+       defaults block) + a minimal `main.dlt`. Pure `scaffoldFiles("project", …)` returns a path→content
+       map the CLI writes; refuses a non-empty target dir
+- [x] 50. `delta create package <name>` (`scaffold.ts` + `cli.ts`): scaffolds a **publishable**
+       custom-element package — `package.json` (the `delta` manifest pointing at minified `dist/`, plus
+       `build` = esbuild minify, `test` = a zero-dep node smoke check, `prepublishOnly` = build+test),
+       stub `src/index.js` (registers `delta-<tag>`, tag derived from the name) + `src/theme.css` (scoped,
+       token-using), `test/smoke.mjs`, README, `.gitignore`. Minimal stubs (a `TODO`, not example code);
+       author adds code → test → `npm run build` (minify) → `npm publish`
+- [x] 51. `delta install <pkg>… [--project <file>]` (`install.ts` + `cli.ts`): runs `npm install <pkg>…`
+       in the project dir, then appends each package to `project.toml`'s `packages` list. The TOML edit
+       (`addPackagesToToml`) is **comment-preserving** text surgery — replaces an existing `packages`
+       array or inserts one before the first `[table]` (never at EOF, which would fall inside `[document]`);
+       deduped/order-preserving. npm populates `node_modules` (all `resolvePack` needs)
 - [~] 27. Document-type CSS variants via `<document type>` (`@layer delta.theme`): `article`
        (default) and `book` shipped; the `presentation` type is specified in M7–M8
 - [x] 43. Dark mode via `<document theme-mode="dark|auto">`: a **token override** mirroring the accent

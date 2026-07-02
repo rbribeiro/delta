@@ -1,10 +1,12 @@
 #!/usr/bin/env node
-import { type FSWatcher, mkdirSync, watch, writeFileSync } from "node:fs";
-import { basename, dirname, resolve } from "node:path";
+import { type FSWatcher, existsSync, mkdirSync, readdirSync, watch, writeFileSync } from "node:fs";
+import { basename, dirname, join, resolve } from "node:path";
 import { compileFile } from "./compiler/index";
 import { loadProjectConfig } from "./compiler/config";
 import { compileProject, type ProjectResult } from "./compiler/project";
 import type { Diagnostic } from "./compiler/context";
+import { scaffoldFiles } from "./scaffold";
+import { installPackages } from "./install";
 
 /** The CLI source entry point.
  * It parses command-line arguments, loads a project config if requested, and calls the compiler. It reports diagnostics and writes outputs to disk. It exits with a non-zero code if there were any errors, unless `--watch` is set (then it keeps running and rebuilds on change).
@@ -14,6 +16,8 @@ function usage(): never {
   console.error("usage: delta build <file.dlt> [-o out.html] [--watch]");
   console.error("       delta build <a.dlt> <b.dlt> ... [-o out-dir] [--watch]   # multi-file project");
   console.error("       delta build <project.toml> [-o out-dir] [--watch]        # project file");
+  console.error("       delta create <project|package> <name>                    # scaffold a project/package");
+  console.error("       delta install <pkg> [<pkg>...] [--project <file>]        # npm install + add to project.toml");
   process.exit(1);
 }
 
@@ -154,9 +158,9 @@ function runWatch(opts: BuildOptions): void {
   rebuild(); // initial build + watch
 }
 
-function main(): void {
-  const args = process.argv.slice(2);
-  if (args.shift() !== "build" || args.length === 0) usage();
+/** `delta build …` — the original compile path (single file / multi-file / project). */
+function buildMain(args: string[]): void {
+  if (args.length === 0) usage();
 
   let output: string | undefined;
   let projectFile: string | undefined;
@@ -181,6 +185,66 @@ function main(): void {
     return;
   }
   process.exit(buildOnce(opts).ok ? 0 : 1);
+}
+
+/** `delta create <project|package> <name>` — scaffold a starter directory (never clobbers). */
+function createMain(args: string[]): void {
+  const [kind, name] = args;
+  if ((kind !== "project" && kind !== "package") || !name || name.startsWith("-")) {
+    console.error("usage: delta create <project|package> <name>");
+    process.exit(1);
+  }
+
+  const target = resolve(name);
+  if (existsSync(target) && readdirSync(target).length > 0) {
+    console.error(`error: ${target} already exists and is not empty`);
+    process.exit(1);
+  }
+
+  const files = scaffoldFiles(kind, basename(target));
+  for (const [rel, content] of Object.entries(files)) {
+    const path = join(target, rel);
+    mkdirSync(dirname(path), { recursive: true });
+    writeFileSync(path, content);
+  }
+
+  console.error(`created ${kind} in ${target}`);
+  console.error(
+    kind === "project"
+      ? `next: cd ${name} && delta build project.toml`
+      : `next: cd ${name} && npm install && npm run build`,
+  );
+}
+
+/** `delta install <pkg>… [--project <file>]` — npm install + record in project.toml. */
+function installMain(args: string[]): void {
+  let projectFile: string | undefined;
+  const pkgs: string[] = [];
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (arg === "--project") projectFile = args[++i] ?? usage();
+    else if (arg.startsWith("-")) usage();
+    else pkgs.push(arg);
+  }
+  if (pkgs.length === 0) {
+    console.error("usage: delta install <pkg> [<pkg>...] [--project <file>]");
+    process.exit(1);
+  }
+  process.exit(installPackages(pkgs, { projectFile }) ? 0 : 1);
+}
+
+function main(): void {
+  const args = process.argv.slice(2);
+  switch (args.shift()) {
+    case "build":
+      return buildMain(args);
+    case "create":
+      return createMain(args);
+    case "install":
+      return installMain(args);
+    default:
+      usage();
+  }
 }
 
 main();
