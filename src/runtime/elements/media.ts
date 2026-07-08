@@ -38,7 +38,7 @@ function frameMedia(host: HTMLElement, media: HTMLElement): void {
 
 // Pull the 11-char id out of any common YouTube URL shape, or accept a
 // bare id. Returns "" when nothing usable is found.
-function youtubeId(input:string | null):string | null {
+function youtubeId(input: string | null): string | null {
   input = (input || "").trim();
   if (/^[\w-]{11}$/.test(input)) return input;
   try {
@@ -181,9 +181,30 @@ class DeltaFigure extends HTMLElement {
   }
 }
 
+
+
+class DeltaInteractive extends HTMLElement {
+  connectedCallback(): void {
+    if (this.dataset.deltaReady == "1") return;
+    this.dataset.deltaReady = "1";
+
+    this.classList.add("figure");
+    const caption = this.querySelector(":scope > delta-caption");
+    const wrapperFrame = document.createElement("div");
+    wrapperFrame.className = "figure-frame";
+    for (const child of [...this.childNodes]) {
+      if (child !== caption) wrapperFrame.append(child);
+    }
+    this.prepend(wrapperFrame);
+    mediaCaption(this, "interactive", this.getAttribute("num"), "figure-cap")
+
+  }
+}
+
 export function defineMedia(): void {
-  customElements.define("delta-youtube", class extends DeltaYouTube {});
-  customElements.define("delta-video", class extends DeltaVideo {});
-  customElements.define("delta-audio", class extends DeltaAudio {});
-  customElements.define("delta-figure", class extends DeltaFigure {});
+  customElements.define("delta-youtube", class extends DeltaYouTube { });
+  customElements.define("delta-video", class extends DeltaVideo { });
+  customElements.define("delta-audio", class extends DeltaAudio { });
+  customElements.define("delta-figure", class extends DeltaFigure { });
+  customElements.define("delta-interactive", class extends DeltaInteractive { });
 }
