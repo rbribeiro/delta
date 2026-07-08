@@ -6,7 +6,8 @@
 
 @layer delta.components {
 
-delta-figure { display: block; }
+delta-figure,
+delta-interactive { display: block; }
 delta-video,
 delta-youtube,
 delta-audio { display: block; }
@@ -15,7 +16,8 @@ delta-caption { display: block; }
 /* Figures and videos share the outer layout and caption — only how the media
    sits in the frame differs (a figure mats + centres; a video fills). */
 .figure,
-.video {
+.video,
+ .interactive {
   margin: 36px 0 var(--delta-block-gap);
   display: flex;
   flex-direction: column;
@@ -24,7 +26,8 @@ delta-caption { display: block; }
 
 /* Shared framed box: border, radius, shadow; clip media to the corners. */
 .figure-frame,
-.video-frame {
+.video-frame, 
+.interactive-frame {
   background: var(--delta-surface-1);
   border: var(--delta-hairline) solid var(--delta-rule);
   border-radius: var(--delta-radius);
@@ -113,7 +116,8 @@ a.yt-facade {
 /* Shared caption, centred under the media; the "Fig./Video N" label is an
    inline prefix before the centred text. */
 .figure-cap,
-.video-cap {
+.video-cap, 
+.interactive-cap {
   text-align: center;
   font-family: var(--delta-serif);
   font-size: 13.5px;
