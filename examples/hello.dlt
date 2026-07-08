@@ -93,6 +93,11 @@
     <figure src="img.png">
       <caption>Figura local, também com legenda.</caption>
     </figure>
+
+    <interactive>
+      this holds an intercative element
+      <caption>This is the cap</caption>
+    </interactive>
   </section>
   <section>
     <title>Referring to other elements</title>
