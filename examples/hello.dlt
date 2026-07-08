@@ -1,6 +1,10 @@
 <document lang="pt" type="article" theme="style/example.css" theme-accent="green">
   <title>Hello, <em>delta</em></title>
 
+    <meta>
+      <meta-item key="author">R. R.</meta-item>
+      <meta-item key="Another Meta Item">And this is its value</meta-item>
+    </meta>
   <abstract>
     Este documento demonstra a folha de rosto no estilo de um artigo de matemática:
     um resumo centralizado e justificado, seguido das palavras-chave, da classificação
@@ -33,6 +37,7 @@
       This box is rendered by a custom element from an imported pack
       (its JS and CSS are inlined into the standalone output).
     </callout>
+
 
     <theorem id="thm:pyth" collapsible="true">
       <title>Pythagorean Theorem</title>
