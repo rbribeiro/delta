@@ -188,15 +188,15 @@ class DeltaInteractive extends HTMLElement {
     if (this.dataset.deltaReady == "1") return;
     this.dataset.deltaReady = "1";
 
-    this.classList.add("figure");
+    this.classList.add("interactive");
     const caption = this.querySelector(":scope > delta-caption");
     const wrapperFrame = document.createElement("div");
-    wrapperFrame.className = "figure-frame";
+    wrapperFrame.className = "interactive-frame";
     for (const child of [...this.childNodes]) {
       if (child !== caption) wrapperFrame.append(child);
     }
     this.prepend(wrapperFrame);
-    mediaCaption(this, "interactive", this.getAttribute("num"), "figure-cap")
+    mediaCaption(this, "interactive", this.getAttribute("num"), "interactive-cap")
 
   }
 }
