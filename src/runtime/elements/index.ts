@@ -11,6 +11,7 @@
 import { defineSections } from "./section";
 import { defineSlide } from "./slide";
 import { defineEnvironments } from "./environment";
+import { defineDocument } from "./document";
 import { defineSidenote } from "./sidenote";
 import { defineMedia } from "./media";
 import { defineHint } from "./hint";
@@ -21,12 +22,13 @@ import { defineRef } from "./ref";
 import { defineBibliography } from "./bibliography";
 import { defineCite } from "./cite";
 import { defineCode } from "./code";
-import {defineList} from "./list";
+import { defineList } from "./list";
 import { defineTable } from "./table";
 import { defineColumns } from "./columns";
 import { defineFrontMatter } from "./frontmatter";
 
 export function defineComponents(): void {
+  defineDocument();
   defineSections();
   defineSlide();
   defineEnvironments();
