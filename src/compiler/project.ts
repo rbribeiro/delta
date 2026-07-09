@@ -20,6 +20,7 @@ import { resolveIncludes } from "./include";
 import { expandAnimated } from "./animated";
 import { expandCover } from "./cover";
 import { renderMath } from "./math";
+import { highlightCode } from "./code";
 import { resolveLineBreaks } from "./linebreaks";
 import { freshNumbering, numberDocument } from "./numbering";
 import { parse } from "./parse";
@@ -167,8 +168,13 @@ export function compileProject(config: ProjectConfig): ProjectResult {
 
   // Phase 4 — the rest of the per-file pipeline. Math runs for *every* file first,
   // before the ToC (which captures rendered heading titles) and before any emit below
-  // (so a cross-file snapshot carries rendered math).
-  for (const f of files) renderMath(f.doc, f.ctx);
+  // (so a cross-file snapshot carries rendered math). `idToFile` lets an in-math
+  // \ref bake its cross-file href (a rendered RawNode is out of reach for
+  // annotateCrossFileRefs below).
+  for (const f of files) renderMath(f.doc, f.ctx, idToFile);
+
+  // Highlights code blocks in every file, after math (which skips the code raw-tag) and before the ToC (which captures rendered heading titles).
+  for (const f of files) highlightCode(f.doc, f.ctx);
 
   // One book-wide ToC across the files (when a <toc scope="project"> asks for it),
   // else per-file tocs — replaces the single-file buildToc call.
