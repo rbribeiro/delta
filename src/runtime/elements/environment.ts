@@ -72,12 +72,12 @@ class DeltaEnvironment extends HTMLElement {
       }
       lead.append(".");
       this.prepend(lead, " ");
-      if (tagName === "proof") {
-        const qed = document.createElement("span");
-        qed.className = "proof-qed";
-        qed.textContent = "□";
-        this.append(qed);
-      }
+      //if (tagName === "proof") {
+      const qed = document.createElement("span");
+      qed.className = "proof-qed";
+      qed.textContent = "□";
+      this.append(qed);
+      //}
       applyCollapsible(this, lead);
       return;
     }
