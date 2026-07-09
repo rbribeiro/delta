@@ -29,10 +29,13 @@ class DeltaHint extends HTMLElement {
     const trigger = document.createElement("button");
     trigger.type = "button";
     trigger.className = "hint-trigger";
-    const marker = document.createElement("span");
-    marker.className = "hint-marker";
-    marker.textContent = showIcon ? "💡 " : "";
-    trigger.append(marker, label || t("hint", "Hint"));
+    if(showIcon) {
+      const marker = document.createElement("span");
+      marker.className = "hint-marker";
+      marker.textContent = "💡 ";
+      trigger.append(marker);
+    } 
+    trigger.append(label || t("hint", "Hint"));
     this.append(trigger);
 
     popover(trigger, bubble);
