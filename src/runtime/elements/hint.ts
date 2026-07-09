@@ -19,6 +19,7 @@ class DeltaHint extends HTMLElement {
     const titleEl = this.querySelector(":scope > delta-title");
     const label = (titleEl?.textContent ?? "").trim();
     titleEl?.remove();
+    const showIcon = this.getAttribute("show-icon") === "false" ? false : true;
 
     // The bubble holds the revealed content — everything left in the hint.
     const bubble = document.createElement("div");
@@ -30,8 +31,8 @@ class DeltaHint extends HTMLElement {
     trigger.className = "hint-trigger";
     const marker = document.createElement("span");
     marker.className = "hint-marker";
-    marker.textContent = "💡";
-    trigger.append(marker, " ", label || t("hint", "Hint"));
+    marker.textContent = showIcon ? "💡 " : "";
+    trigger.append(marker, label || t("hint", "Hint"));
     this.append(trigger);
 
     popover(trigger, bubble);
@@ -39,5 +40,5 @@ class DeltaHint extends HTMLElement {
 }
 
 export function defineHint(): void {
-  customElements.define("delta-hint", class extends DeltaHint {});
+  customElements.define("delta-hint", class extends DeltaHint { });
 }
