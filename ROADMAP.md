@@ -67,6 +67,14 @@ usable on its own. Checked items are implemented and tested.
        styles the result. No compiler pass / numbering (not environments). `<date>` is shared with the
        presentation cover's date field — kept apart by skipping when `closest("delta-slide")` and keying
        the CSS off the runtime-added `.fm-line`/`.fm-block` classes, never the bare tag
+- [x] 52. `<box>` generic callout / admonition (runtime-only): a tinted block with a strong colored
+       left border and an optional `<title>` (lifted to `.box-heading`, the rest wrapped in `.box-body`).
+       `DeltaBox` (`runtime/elements/box.ts`) seeds a single `--delta-accent` from `color` — a palette
+       name → `data-accent="…"` (reusing base.css's `[data-accent]` blocks), any other value (hex/`rgb()`/
+       keyword) → inline — or from a `type` preset (`warning`/`note`/`tip`/`danger`; `color` wins); with
+       neither it inherits the document accent. `components/box.css` re-derives `-ink`/`-soft` from that
+       seed via `color-mix` (mirroring the dark-mode derivation), so named + hex colors behave alike and
+       both track light/dark — no hardcoded colors. No compiler pass
 
 ## M3 — Bibliography
 
