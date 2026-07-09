@@ -3,9 +3,11 @@
  * component that needs a hovercard/menu (refs, hints, citations, …).
  *
  * Pass a `trigger` and a `content` element; the controller anchors the content
- * under the trigger — flipping above when near the viewport bottom, clamping
- * on-screen, pointing the caret (`--arrow-x`) at the trigger, re-anchoring on
- * scroll/resize, and dismissing on Esc or outside-click. Only one popover is
+ * under the trigger — flipping above when the room below runs out, capping the
+ * bubble's height to the roomier side (content with a scroll container scrolls
+ * internally), clamping on-screen on both axes, pointing the caret (`--arrow-x`)
+ * at the trigger, re-anchoring on scroll/resize, and dismissing on Esc or
+ * outside-click. Only one popover is
  * open at a time. It uses the Popover API (real top layer) where available and
  * falls back to a fixed-positioned `.is-open` toggle otherwise. Build or refresh
  * the bubble in the `onOpen` hook. The shared look lives in
@@ -61,21 +63,35 @@ export function popover(
 
   function position(): void {
     const tr = trigger.getBoundingClientRect();
-    const cr = content.getBoundingClientRect();
     const vw = document.documentElement.clientWidth;
     const vh = document.documentElement.clientHeight;
 
-    // Flip above only when it doesn't fit below but does fit above.
-    const fitsBelow = tr.bottom + gap + cr.height <= vh - EDGE;
-    const fitsAbove = tr.top - gap - cr.height >= EDGE;
-    const above = !fitsBelow && fitsAbove;
+    // Room on each side of the trigger.
+    const roomBelow = vh - EDGE - (tr.bottom + gap);
+    const roomAbove = tr.top - gap - EDGE;
+
+    content.style.maxHeight = ""; // measure the natural height (un-cap after a resize)
+    let cr = content.getBoundingClientRect();
+
+    // Flip above when it doesn't fit below and there is more room above —
+    // when neither side fits, this picks the roomier side.
+    const above = cr.height > roomBelow && roomAbove > roomBelow;
+    const room = above ? roomAbove : roomBelow;
+    if (cr.height > room) {
+      // Cap to the available room; content with a scroll container (.floating-body,
+      // .xref-pop-body) scrolls internally instead of leaving the viewport.
+      content.style.maxHeight = `${Math.max(0, Math.floor(room))}px`;
+      cr = content.getBoundingClientRect();
+    }
     content.classList.toggle("is-above", above);
     const top = above ? tr.top - gap - cr.height : tr.bottom + gap;
 
-    // Align to the trigger's left edge, then clamp within the viewport.
+    // Clamp both axes within the viewport (the top clamp is a safety net for
+    // content that can't shrink to the cap).
+    const clampedTop = Math.min(Math.max(EDGE, top), Math.max(EDGE, vh - cr.height - EDGE));
     const left = Math.min(Math.max(EDGE, tr.left), Math.max(EDGE, vw - cr.width - EDGE));
 
-    content.style.top = `${Math.round(top)}px`;
+    content.style.top = `${Math.round(clampedTop)}px`;
     content.style.left = `${Math.round(left)}px`;
 
     // Caret points at the trigger's centre, clamped within the bubble.
