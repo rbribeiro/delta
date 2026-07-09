@@ -6,19 +6,38 @@ import { RAW_TAGS } from "./preprocess";
 /** Tags whose content is LaTeX, rendered at compile time. */
 const MATH_TAGS = new Set(["m", "math", "equation", "equations"]);
 
+/** `\ref{id}` / `\eqref{id}` inside math — resolved against ctx.registry at render time. */
+const REF_RE = /\\(eqref|ref)\{([^}]*)\}/g;
+// \htmlData parses its first argument as comma-separated key=value pairs, so these
+// characters in an id would corrupt it.
+const HTML_DATA_UNSAFE = /[,={}]/;
+
 /**
  * Renders all math to HTML at compile time — KaTeX itself never ships to the
  * browser, only its CSS does. Covers MATH_TAGS plus `$…$` / `$$…$$` in prose,
  * and unescapes `\$`. Non-math RAW_TAGS (code) are left untouched. A LaTeX error
  * is an error: the source text is emitted as fallback. (see `render()` below)
+ *
+ * `\ref{id}` / `\eqref{id}` inside math work like `<ref to="id">`: numbering runs
+ * before this pass, so the target's number is substituted here (bare for \ref,
+ * parenthesized for \eqref) wrapped in a `\htmlData` span carrying the link
+ * metadata; the runtime (`wireMathRefs` in elements/ref.ts) makes it clickable
+ * with the same popover/jump as <ref>. KaTeX `trust` is enabled for `\htmlData`
+ * only. On the project path `idToFile` bakes the cross-file href (a RawNode is a
+ * finished HTML string, so annotateCrossFileRefs can't touch it later).
  */
 
 /**
  * Renders all math elements in the document to HTML using KaTeX.
  * @param doc - the root element of the document
  * @param ctx - the compilation context
+ * @param idToFile - project path only: id → home output name, for cross-file \ref hrefs
  */
-export function renderMath(doc: ElementNode, ctx: CompileContext): void {
+export function renderMath(
+  doc: ElementNode,
+  ctx: CompileContext,
+  idToFile?: Map<string, string>,
+): void {
   visit(doc);
 
   function visit(el: ElementNode): void {
@@ -90,11 +109,50 @@ export function renderMath(doc: ElementNode, ctx: CompileContext): void {
   function render(latex: string, displayMode: boolean, pos?: Position): Node {
     ctx.mathUsed = true;
     try {
-      return { type: "raw", html: katex.renderToString(latex, { displayMode }), kind: "math" };
+      const expanded = expandMathRefs(latex, pos);
+      return {
+        type: "raw",
+        html: katex.renderToString(expanded, {
+          displayMode,
+          // Scoped trust: only the \htmlData spans our \ref expansion emits (inert
+          // data attributes) — no \href/\includegraphics/etc. The matching strict
+          // handler silences KaTeX's "HTML extension" nag for that one feature.
+          trust: (c) => c.command === "\\htmlData",
+          strict: (code: string) => (code === "htmlExtension" ? "ignore" : "warn"),
+        }),
+        kind: "math",
+      };
     } catch (e) {
       error(ctx, `KaTeX: ${e instanceof Error ? e.message : String(e)}`, pos);
       return { type: "text", text: latex };
     }
+  }
+
+  /**
+   * Expands `\ref{id}` / `\eqref{id}` into the target's number wrapped in a
+   * `\htmlData` marker span the runtime wires up like a <ref>. An unresolved id
+   * warns and renders as `??` (the LaTeX convention).
+   */
+  function expandMathRefs(latex: string, pos?: Position): string {
+    return latex.replace(REF_RE, (_match, cmd: string, id: string) => {
+      const entry = ctx.registry.get(id);
+      if (!entry) {
+        warn(ctx, `Unresolved reference ${id}`, pos);
+        return "\\text{??}";
+      }
+      const label = cmd === "eqref" ? `(${entry.num})` : entry.num;
+      if (HTML_DATA_UNSAFE.test(id)) {
+        warn(ctx, `Reference id "${id}" cannot be linked inside math (contains , = { or })`, pos);
+        return `\\text{${label}}`;
+      }
+      ctx.referencedIds.add(id); // emit snapshots the target into a <template>
+      const home = idToFile?.get(id);
+      const href = home && home !== ctx.outName ? `,delta-ref-href=${home}#${id}` : "";
+      return (
+        `\\htmlData{delta-ref-to=${id},delta-ref-num=${entry.num},` +
+        `delta-ref-tag=${entry.tag}${href}}{\\text{${label}}}`
+      );
+    });
   }
 }
 /**

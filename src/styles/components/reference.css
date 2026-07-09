@@ -25,6 +25,21 @@ delta-ref { display: inline; }
   border-color: var(--delta-accent-ink);
 }
 
+/* An in-math \ref marker (wireMathRefs upgrades the \htmlData span the compiler
+   bakes into KaTeX output). Accent color only — no underline, which would collide
+   with math symbols (e.g. sitting on an equals sign via \stackrel); the hover wash
+   provides the click affordance. Sized by the surrounding math (a \stackrel script
+   keeps its scriptsize). */
+.katex .math-xref {
+  color: var(--delta-accent-ink);
+  cursor: pointer;
+  border-radius: var(--delta-radius-sm);
+  transition: background var(--delta-dur-fast) var(--delta-ease);
+}
+.katex .math-xref:hover {
+  background: color-mix(in oklab, var(--delta-accent-soft) 60%, transparent);
+}
+
 /* Card content chrome on top of the shared .delta-pop shell. */
 .xref-pop { width: max-content; max-width: min(40ch, 92vw); padding: 10px 13px; }
 

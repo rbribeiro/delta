@@ -280,6 +280,23 @@ describe("cross-file math ships KaTeX CSS", () => {
     expect(a).toContain("KaTeX_Main");
   });
 
+  it("bakes a cross-file href into an in-math \\ref and snapshots the target", () => {
+    const { root, inputs } = docs({
+      "a.dlt": `<document><title>A</title><section id="a"><title>A</title>By $x \\stackrel{\\ref{eq:b}}{=} y$.</section></document>`,
+      "b.dlt": `<document><title>B</title><section id="b"><title>B</title><equation id="eq:b">a = b</equation></section></document>`,
+    });
+    const r = compileProject({ inputs, outDir: join(root, "out") });
+    expect(r.diagnostics.filter((d) => d.severity === "error")).toHaveLength(0);
+
+    const a = out(r, "a.html");
+    expect(a).toContain('data-delta-ref-to="eq:b"');
+    expect(a).toContain('data-delta-ref-href="b.html#eq:b"');
+    // The sibling file's equation ships as a snapshot (offline popover).
+    expect(a).toContain('<template data-delta-pop="eq:b">');
+    // The target's own file links in-page — no href on its own math refs.
+    expect(out(r, "b.html")).not.toContain("data-delta-ref-href");
+  });
+
   it("still omits KaTeX CSS when neither the file nor its carried content has math", () => {
     const { root, inputs } = docs({
       "index.dlt": `<document><title>Index</title><toc scope="project"/></document>`,

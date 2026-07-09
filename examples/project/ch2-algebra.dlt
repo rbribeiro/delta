@@ -15,5 +15,10 @@
       Setting $b \to -b$ recovers the difference of squares, a cousin of the
       geometric result <ref to="thm:pyth"/> rests on. The historical thread runs
       back through the classics <cite paper="euclid"/>.
+
+      <code lang="python">
+        def binomial_square(a, b):
+            return a**2 + 2*a*b + b**2
+      </code>
     </section>
 </document>

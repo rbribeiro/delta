@@ -75,6 +75,15 @@ usable on its own. Checked items are implemented and tested.
        neither it inherits the document accent. `components/box.css` re-derives `-ink`/`-soft` from that
        seed via `color-mix` (mirroring the dark-mode derivation), so named + hex colors behave alike and
        both track light/dark — no hardcoded colors. No compiler pass
+- [x] 53. `\ref{id}` / `\eqref{id}` inside math: `math.ts` resolves the id against the registry
+       (numbering runs first, so this works in both pipelines) and expands to the target's number
+       (bare / parenthesized) wrapped in a KaTeX `\htmlData` marker span — `trust` enabled for
+       `\htmlData` only. The id joins `ctx.referencedIds` (emit snapshots the target for the offline
+       popover) and on the project path the cross-file href is baked at render time from `idToFile`
+       (a rendered RawNode is out of reach of `annotateCrossFileRefs`). The runtime's `wireMathRefs`
+       (`elements/ref.ts`) upgrades each marker with the same card/popover/jump wiring as `<ref>`
+       (extracted into the shared `wireRefPopover`); `.math-xref` in `reference.css` gives it the
+       dashed-underline affordance. Unresolved ids warn and render `??` (the LaTeX convention)
 
 ## M3 — Bibliography
 

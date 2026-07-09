@@ -1,4 +1,5 @@
 import { defineComponents } from "./elements";
+import { wireMathRefs } from "./elements/ref";
 import { flashTarget } from "./elements/shared";
 import { setupDeck, type Deck } from "./deck";
 import { popover } from "./utils";
@@ -14,6 +15,10 @@ declare global {
 }
 
 defineComponents();
+
+// In-math \ref markers (baked into the KaTeX HTML by the compiler) get the same
+// popover/jump as <ref>. The runtime sits at the end of <body>, so all math is parsed.
+wireMathRefs();
 
 // Page a presentation deck (no-op for non-presentation docs / decks without slides).
 // Runs after defineComponents() so the slides have already upgraded.

@@ -78,6 +78,8 @@
       (a + b)^2 &= a^2 + 2ab + b^2 \\
                 &= c^2 + 2ab
     </equations>
+    References work inside math too: the second step above uses the Pythagorean identity,
+    $ (a+b)^2 \stackrel{\eqref{eq:pyth}}{=} c^2 + 2ab $ — click the number over the equals sign.
     <remark id="remark">
       <title>This is the remark's title</title>
         This is the remark's content.
