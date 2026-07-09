@@ -36,7 +36,7 @@ delta-caption { display: block; }
 }
 
 /* A figure mats its visual and centres it. */
-.figure-frame {
+.figure-frame, .interactive-frame {
   padding: 12px;
   text-align: center; /* centre inline / inline-block media */
 }
@@ -125,7 +125,8 @@ a.yt-facade {
   color: var(--delta-mute);
 }
 .figure-cap .lbl,
-.video-cap .lbl {
+.video-cap .lbl,
+.interactive-cap .lbl {
   font-family: var(--delta-sans);
   font-size: 11.5px;
   letter-spacing: var(--delta-tracking-cap);
