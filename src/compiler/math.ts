@@ -90,7 +90,7 @@ export function renderMath(doc: ElementNode, ctx: CompileContext): void {
   function render(latex: string, displayMode: boolean, pos?: Position): Node {
     ctx.mathUsed = true;
     try {
-      return { type: "raw", html: katex.renderToString(latex, { displayMode }) };
+      return { type: "raw", html: katex.renderToString(latex, { displayMode }), kind: "math" };
     } catch (e) {
       error(ctx, `KaTeX: ${e instanceof Error ? e.message : String(e)}`, pos);
       return { type: "text", text: latex };

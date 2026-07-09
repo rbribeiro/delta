@@ -11,7 +11,8 @@ const CONTAINER_TAGS = new Set(["chapter", "section", "subsection", "subsubsecti
 /**
  * Serializes the AST into a standalone HTML file. Every tag becomes `<delta-tag>`
  * — the compiler ships data (num attributes, ids, pre-rendered math) and the inlined runtime renders them. 
- * All CSS/JS/fonts are inlined; the output references no external resources. KaTeX CSS is included only when math was rendered.
+ * All CSS/JS/fonts are inlined; the output references no external resources. KaTeX CSS is included only when the
+ * output carries math — rendered in this file, or arriving via a cross-file ref/cite snapshot or a project-wide ToC title.
  * 
  * @param doc - the root AST node of the document to emit
  * @param ctx - the compilation context, which contains information about the document and its dependencies
@@ -33,6 +34,24 @@ export function emit(
   const type = doc.attrs.type ?? DEFAULT_TYPE;
   const themeCss = THEMES[type] ?? THEMES[DEFAULT_TYPE];
 
+  // Localized UI strings for the document's language, inlined as an inert data
+  // island the runtime reads via t(). `<` is escaped so a string can't break out
+  // of the </script>.
+  const i18n = JSON.stringify(stringsFor(resolveLang(ctx.lang))).replace(/</g, "\\u003c");
+
+  const body = serialize(doc);
+  // Snapshot every <ref> target into an inert <template> so the runtime can clone
+  // it into a pop-over preview without a fetch. Only referenced ids are emitted.
+  // On the project path `globalById` spans every file, so a cross-file target's
+  // copy ships into this output too.
+  const templates = renderTemplates(doc, ctx, globalById);
+  // Heading tree for <delta-toc>, shipped as an inert JSON island.
+  const toc = renderTocIsland(ctx);
+
+  // The head is assembled after the templates/ToC island, because on the project
+  // path those can carry math rendered in *another* file (a cross-file snapshot,
+  // a project-wide ToC title) — renderTemplates/renderTocIsland flip ctx.mathUsed
+  // so this file still ships the KaTeX CSS that hides `.katex-mathml`.
   const head = [
     `<meta charset="utf-8">`,
     `<meta name="viewport" content="width=device-width, initial-scale=1">`,
@@ -47,20 +66,6 @@ export function emit(
     // the design system, the per-type theme layer, and even the inlined KaTeX CSS.
     ...(ctx.userCss ? [`<style>\n${ctx.userCss}\n</style>`] : []),
   ].join("\n");
-
-  // Localized UI strings for the document's language, inlined as an inert data
-  // island the runtime reads via t(). `<` is escaped so a string can't break out
-  // of the </script>.
-  const i18n = JSON.stringify(stringsFor(resolveLang(ctx.lang))).replace(/</g, "\\u003c");
-
-  const body = serialize(doc);
-  // Snapshot every <ref> target into an inert <template> so the runtime can clone
-  // it into a pop-over preview without a fetch. Only referenced ids are emitted.
-  // On the project path `globalById` spans every file, so a cross-file target's
-  // copy ships into this output too.
-  const templates = renderTemplates(doc, ctx, globalById);
-  // Heading tree for <delta-toc>, shipped as an inert JSON island.
-  const toc = renderTocIsland(ctx);
   // Custom-element pack scripts (<import>): inlined after the runtime so they can
   // use window.Delta; each registers its own delta-* custom elements.
   const packScripts = ctx.imports.length
@@ -125,19 +130,17 @@ function renderTemplates(
   const out: string[] = [];
   for (const id of ctx.referencedIds) {
     const node = byId.get(id);
-    let templateString = "";
     if (node) {
       // For elements that contain a lot of other elements such as chapters, sections, and so on
       // the template holds only the title
+      let snapshot = node;
       if (CONTAINER_TAGS.has(node.tag)) {
         const titleEl = node.children.find( (c): c is ElementNode => c.type === "element" && c.tag === "title");
-        const reprNode: ElementNode = {type: "element", tag: node.tag, attrs: node.attrs, children: []};
-        reprNode.children = titleEl? [titleEl] : [];
-        out.push(`<template data-delta-pop="${escapeAttr(id)}">${serialize(reprNode)}</template>`);
-      
-      } else {
-        out.push(`<template data-delta-pop="${escapeAttr(id)}">${serialize(node)}</template>`);
+        snapshot = {type: "element", tag: node.tag, attrs: node.attrs, children: titleEl ? [titleEl] : []};
       }
+      // A cross-file target may carry math this file didn't render itself.
+      ctx.mathUsed ||= containsMath([snapshot]);
+      out.push(`<template data-delta-pop="${escapeAttr(id)}">${serialize(snapshot)}</template>`);
     }
   }
   return out.length ? out.join("\n") + "\n" : "";
@@ -151,6 +154,8 @@ function renderTemplates(
  */
 function renderTocIsland(ctx: CompileContext): string {
   if (ctx.toc.length === 0) return "";
+  // A project-wide ToC may carry heading math rendered in another file.
+  ctx.mathUsed ||= ctx.toc.some((e) => containsMath(e.title));
   const data = ctx.toc.map((e) => ({
     level: e.level,
     id: e.id,
@@ -161,6 +166,15 @@ function renderTocIsland(ctx: CompileContext): string {
   }));
   const json = JSON.stringify(data).replace(/</g, "\\u003c");
   return `<script type="application/json" id="delta-toc">${json}</script>\n`;
+}
+
+/** True when any node in the tree is pre-rendered math (a RawNode stamped by renderMath). */
+function containsMath(nodes: Node[]): boolean {
+  return nodes.some(
+    (n) =>
+      (n.type === "raw" && n.kind === "math") ||
+      (n.type === "element" && containsMath(n.children)),
+  );
 }
 
 function serialize(node: Node): string {

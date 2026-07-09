@@ -20,6 +20,8 @@ export interface TextNode {
 export interface RawNode {
   type: "raw";
   html: string;
+  /** What produced this pre-rendered HTML; `"math"` gates KaTeX CSS inclusion at emit. */
+  kind?: "math";
 }
 
 export interface ElementNode {

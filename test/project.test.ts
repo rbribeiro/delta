@@ -239,6 +239,57 @@ describe("compileProject document defaults", () => {
   });
 });
 
+describe("cross-file math ships KaTeX CSS", () => {
+  /** Write named `.dlt` files into a fresh temp dir; return the dir and absolute input paths. */
+  function docs(files: Record<string, string>): { root: string; inputs: string[] } {
+    const root = mkdtempSync(join(tmpdir(), "delta-xmath-"));
+    const inputs: string[] = [];
+    for (const [name, content] of Object.entries(files)) {
+      writeFileSync(join(root, name), content);
+      inputs.push(join(root, name));
+    }
+    return { root, inputs };
+  }
+
+  it("includes KaTeX CSS in a math-free file whose project ToC carries heading math", () => {
+    const { root, inputs } = docs({
+      "index.dlt": `<document><title>Index</title><toc scope="project"/></document>`,
+      "chapter.dlt": `<document><title>C</title><section id="how"><title>How to estimate $f$?</title>body</section></document>`,
+    });
+    const r = compileProject({ inputs, outDir: join(root, "out") });
+    expect(r.diagnostics.filter((d) => d.severity === "error")).toHaveLength(0);
+
+    const index = out(r, "index.html");
+    // The island carries the chapter's rendered heading math…
+    const entry = tocIsland(index).find((e) => e.id === "how");
+    expect(entry?.title).toContain('class="katex"');
+    // …so the KaTeX CSS (which hides .katex-mathml) must ship too.
+    expect(index).toContain("KaTeX_Main");
+  });
+
+  it("includes KaTeX CSS in a math-free file that snapshots a cross-file math target", () => {
+    const { root, inputs } = docs({
+      "a.dlt": `<document><title>A</title><section id="a"><title>A</title>See <ref to="thm"/>.</section></document>`,
+      "b.dlt": `<document><title>B</title><section id="b"><title>B</title><theorem id="thm">We have $x^2$.</theorem></section></document>`,
+    });
+    const r = compileProject({ inputs, outDir: join(root, "out") });
+    expect(r.diagnostics.filter((d) => d.severity === "error")).toHaveLength(0);
+
+    const a = out(r, "a.html");
+    expect(a).toMatch(/<template data-delta-pop="thm">[\s\S]*class="katex"/);
+    expect(a).toContain("KaTeX_Main");
+  });
+
+  it("still omits KaTeX CSS when neither the file nor its carried content has math", () => {
+    const { root, inputs } = docs({
+      "index.dlt": `<document><title>Index</title><toc scope="project"/></document>`,
+      "chapter.dlt": `<document><title>C</title><section id="plain"><title>Plain</title>body</section></document>`,
+    });
+    const r = compileProject({ inputs, outDir: join(root, "out") });
+    expect(out(r, "index.html")).not.toContain("KaTeX_Main");
+  });
+});
+
 describe("project table of contents", () => {
   it("ships a book-wide ToC island, tagging other files' entries with their output", () => {
     const toc = tocIsland(out(build(FILES), "chapter1.html"));
