@@ -1,0 +1,43 @@
+/* box.css — <box>, a generic callout / admonition block (DeltaBox,
+   runtime/elements/box.ts). The runtime seeds --delta-accent from the `color`/`type`
+   attribute (a named palette via [data-accent], or a hex/CSS color inline); with
+   neither, the box inherits the document accent. Everything below derives from that
+   single seed via color-mix — nothing is hardcoded, so it tracks light/dark and any
+   hue. Scoped to the `delta-box` tag / its own classes; distinct from the theorem
+   `.box` class and from the import-pack `.callout-*` chrome. */
+
+@layer delta.components {
+
+delta-box {
+  /* Re-derive ink/soft from the seed for this subtree, mirroring the dark-mode
+     derivation in base.css — so named + hex/custom colors behave identically and
+     both track light/dark (--delta-ink / --delta-paper flip with mode). This also
+     tints inner links/refs to match the box's hue. */
+  --delta-accent-ink:  color-mix(in oklab, var(--delta-accent) 64%, var(--delta-ink));
+  --delta-accent-soft: color-mix(in oklab, var(--delta-accent) 14%, var(--delta-paper));
+
+  display: block;
+  margin: var(--delta-block-gap) 0;
+  padding: 14px 18px;
+  border: var(--delta-hairline) solid color-mix(in oklab, var(--delta-accent) 30%, var(--delta-rule));
+  border-left: 4px solid var(--delta-accent-ink);       /* stronger than the fill */
+  border-radius: var(--delta-radius);
+  background: var(--delta-accent-soft);                 /* pale tinted wash */
+  color: color-mix(in oklab, var(--delta-ink) 88%, var(--delta-accent));
+}
+
+delta-box .box-heading {
+  font-family: var(--delta-sans);
+  font-weight: 650;
+  font-size: 0.92em;
+  letter-spacing: 0.01em;
+  color: var(--delta-accent-ink);
+  margin-bottom: 6px;
+}
+
+delta-box .box-body > :first-child { margin-top: 0; }
+delta-box .box-body > :last-child  { margin-bottom: 0; }
+
+@media print { delta-box { break-inside: avoid; } }
+
+}

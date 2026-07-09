@@ -136,6 +136,27 @@
   </section>
 
   <section>
+    <title>Callout boxes</title>
+    Use <c><box></c> for a highlighted note, tip or warning. The <c>color</c> attribute takes a
+    palette name or a hex value, and <c>type</c> gives a semantic preset — everything is tinted
+    from that one hue.
+    <box type="warning">
+      <title>Warning</title>
+      A <c>type</c> preset picks the color for you: this one is a warning.
+    </box>
+    <box color="blue">
+      <title>Note</title>
+      A named palette color (<c>blue</c>) tints the border, background, title and text.
+    </box>
+    <box color="#5b3fb0">
+      A custom hex color (<c>#5b3fb0</c>), and no title — just a highlighted block.
+    </box>
+    <box>
+      With no <c>color</c> at all, the box uses the document's accent.
+    </box>
+  </section>
+
+  <section>
     <title>Formatting text</title>
     You can format text using various tags. For example, you can make text <em>emphasis</em>, <i>italic</i>, <strong>bold</strong>, or <u>underlined</u>, or strikeout text with <s>strikethrough</s>. Highlight <mark>text (to be highlighted)</mark> to draw attention
   </section>

@@ -26,6 +26,7 @@ import { defineList } from "./list";
 import { defineTable } from "./table";
 import { defineColumns } from "./columns";
 import { defineFrontMatter } from "./frontmatter";
+import { defineBox } from "./box";
 
 export function defineComponents(): void {
   defineDocument();
@@ -46,4 +47,5 @@ export function defineComponents(): void {
   defineTable();
   defineColumns();
   defineFrontMatter();
+  defineBox();
 }
