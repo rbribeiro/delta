@@ -57,7 +57,24 @@ class DeltaCode extends HTMLElement {
     });
     head.append(label, copy);
 
+    
     this.append(head, body);
+    // Footer with code number
+    if(this.getAttribute("num")) {
+      const num = this.getAttribute("num")
+      const footer = document.createElement("div")
+      footer.classList.add("code-cap")
+      const lbl = document.createElement("span");
+      lbl.className = "lbl";
+      const word = t("code", "code".charAt(0).toUpperCase() + "code".slice(1));
+      lbl.textContent = word + (num ? ` ${num}` : "");
+      footer.prepend(lbl, " ");
+      
+      this.append(footer)
+      
+    }
+    
+
     applyCollapsible(this, head);
   }
 }

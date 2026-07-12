@@ -15,7 +15,7 @@ const doc = (body: string) =>
 describe("code", () => {
   it("highlights a <code> block with the given language", () => {
     const { html } = compile(doc(`<code lang="javascript">const x = 1;</code>`));
-    expect(html).toContain('<delta-code lang="javascript">');
+    expect(html).toContain('<delta-code lang="javascript" num="1.1">');
     expect(html).toContain('class="hljs-keyword"'); // `const`
     expect(html).toContain("const"); // source text survives
   });
@@ -39,7 +39,7 @@ describe("code", () => {
       doc(`<code>\n      a\n        b\n      c\n    </code>`),
     );
     // common indent (6 spaces) removed; inner relative indent kept
-    expect(html).toContain("<delta-code>a\n  b\nc</delta-code>");
+    expect(html).toContain(`<delta-code num="1.1">a\n  b\nc</delta-code>`);
   });
 
   it("leaves inline <c> literal and unhighlighted", () => {
