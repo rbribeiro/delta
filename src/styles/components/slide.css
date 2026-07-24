@@ -29,13 +29,33 @@
     display: none;
   }
 
-  /* Each slide fills the viewport: title at the top, body centered. */
+  /* Each slide fills the viewport: title at the top, body centered. The
+     `min-height` is the JS-off fallback — with no deck controller every slide
+     stays visible and stacks, so each must be at least a screen tall. When JS is
+     on the `.deck-js` rules below turn this floor into a fixed viewport canvas. */
   :root[data-type="presentation"] delta-slide {
     display: flex;
     flex-direction: column;
     min-height: 100dvh;
     box-sizing: border-box;
     padding: var(--delta-slide-pad);
+  }
+
+  /* JS on: the deck is a fixed viewport shell — a PowerPoint-style canvas that
+     never scrolls the page. Lock the root + body to the viewport and hide overflow
+     so the browser shows no page scrollbar; the fixed chrome (.deck-controls /
+     .deck-topbar) is positioned against the viewport, not clipped by this. Gated on
+     `.deck-js` so the JS-off fallback keeps stacking + scrolling slides. */
+  :root[data-type="presentation"].deck-js,
+  :root[data-type="presentation"].deck-js body {
+    height: 100dvh;
+    overflow: hidden;
+  }
+  /* Pin each slide to exactly one viewport and clip content past the edge — a slide
+     is authored to fit; anything taller is cut off rather than growing the page. */
+  :root[data-type="presentation"].deck-js delta-slide {
+    height: 100dvh;
+    overflow: hidden;
   }
   :root[data-type="presentation"] .slide-title {
     margin: 0;
