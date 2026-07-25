@@ -1,6 +1,6 @@
 {
   "name": "delta-lang",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "Delta — a LaTeX-inspired XML markup language for interactive papers, books and presentations, compiled to standalone offline HTML.",
   "type": "module",
   "license": "MIT",
