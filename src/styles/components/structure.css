@@ -41,12 +41,12 @@ delta-subsubsection { margin: 28px 0 0; }
 .chapter-title,
 delta-document > delta-title {
   font-family: var(--delta-serif);
-  font-weight: 500;
+  font-weight: var(--delta-weight-display);
   font-size: var(--delta-t-h1);
   line-height: 0.98;
   letter-spacing: -0.02em;
   margin: 14px 0 0;
-  font-variation-settings: "opsz" 72;
+  font-variation-settings: var(--delta-font-variation-display);
   text-wrap: balance;
 }
 .chapter-title em,
@@ -94,7 +94,7 @@ delta-document > delta-title em {
 /* -- Section / subsection headings ------------------------------------ */
 h2.section {
   font-family: var(--delta-serif);
-  font-weight: 500;
+  font-weight: var(--delta-weight-display);
   font-size: var(--delta-t-h2);
   line-height: var(--delta-leading-tight);
   letter-spacing: -0.012em;
@@ -104,7 +104,7 @@ h2.section {
 
 h3.sub {
   font-family: var(--delta-serif);
-  font-weight: 500;
+  font-weight: var(--delta-weight-display);
   font-size: var(--delta-t-h3);
   letter-spacing: -0.005em;
   margin: 0 0 8px;
@@ -114,11 +114,13 @@ h3.sub {
    every level shares one consistent treatment. */
 h2.section .num,
 h3.sub .num,
-h4.subsub .num { color: var(--delta-mute); margin-right: 0.4em; }
+h4.subsub .num { color: var(--delta-num); margin-right: 0.4em; }
 
 h4.subsub {
   font-family: var(--delta-serif);
-  font-weight: 600;
+  /* the one heading set at `strong` rather than `display`: at h4 the level reads
+     as emphasized body text, not as a display line */
+  font-weight: var(--delta-weight-strong);
   font-size: var(--delta-t-h4);
   letter-spacing: -0.003em;
   margin: 0 0 6px;
@@ -243,13 +245,13 @@ delta-i {
 delta-em {
   display: inline-block;
   font-style: italic;
-  font-weight:600;
+  font-weight: var(--delta-weight-strong);
   color: var(--delta-accent-ink);
 }
 
 delta-strong {
   display: inline-block;
-  font-weight: 600;
+  font-weight: var(--delta-weight-strong);
 }
 
 delta-u {

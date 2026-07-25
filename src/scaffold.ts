@@ -38,7 +38,8 @@ packages = []
 # Optional project-wide <document> defaults — each file can still override its own:
 # [document]
 # type = "article"      # article | book | presentation
-# theme = "theme.css"   # your custom CSS, resolved relative to this file
+# theme = "impatech"    # a built-in theme name, or a path to your own CSS
+#                       #   (a path is resolved relative to this file)
 # theme-accent = "blue"
 # theme-mode = "light"  # light | dark | auto
 # lang = "en"

@@ -53,7 +53,7 @@
   delta-equations[num]::after {
     content: "(" attr(num) ")";
     text-align: right;
-    color: var(--delta-mute);
+    color: var(--delta-num);
     font-variant-numeric: tabular-nums;
   }
 

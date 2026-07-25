@@ -29,9 +29,9 @@ Both use [esbuild](https://esbuild.github.io/).
 ## Step 1: the generated assets (`src/generated/assets.ts`)
 
 This file is **generated and git-ignored**, yet the compiler imports it
-([emit.ts](../src/compiler/emit.ts) reads `RUNTIME_JS`, `CORE_CSS` and `THEMES` from it).
-So it must exist before anything compiles, type-checks or tests. `buildAssets()` writes
-three constants:
+([emit.ts](../src/compiler/emit.ts) reads `RUNTIME_JS`, `CORE_CSS` and `THEMES` from it, and
+[theme.ts](../src/compiler/theme.ts) reads `BUILTIN_THEMES`). So it must exist before anything
+compiles, type-checks or tests. `buildAssets()` writes four constants:
 
 - **`RUNTIME_JS`** -- the browser runtime. esbuild bundles
   [src/runtime/index.ts](../src/runtime/index.ts) into a single **minified IIFE** string
@@ -44,6 +44,15 @@ three constants:
   up automatically.
 - **`THEMES`** -- a `{ [type]: css }` map built from `src/styles/themes/<type>.css`. The
   emitter selects one by the document's `<document type="...">` (default `article`).
+- **`BUILTIN_THEMES`** -- a `{ [name]: css }` map built from `src/styles/builtin/<name>.css`,
+  selected by the document's `<document theme="...">` when that value is a bare name.
+
+  The two maps are keyed on **different axes** -- `THEMES` by document *type*, `BUILTIN_THEMES`
+  by theme *name* -- and are deliberately kept separate: merging them would make
+  `type="impatech"` resolve a named theme, and a built-in named `article` collide with the type
+  theme. Both are built by the same `cssMap(dir)` helper, so adding either is just dropping a
+  file in the directory -- no build wiring. Only the selected theme is inlined into a document;
+  the rest cost a couple of KB in `dist/cli.js` and nothing in the output.
 
 Because it is generated, never edit `src/generated/assets.ts` by hand and never commit it.
 

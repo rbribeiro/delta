@@ -140,6 +140,27 @@ usable on its own. Checked items are implemented and tested.
        inlined **last and unlayered** by emit so it overrides core + the type theme; remote/missing =
        warning, an `@import`/remote `url()` warns but is still inlined
 - [x] 25. Documented theme variable naming convention (`--delta-*` tokens, `@layer` cascade)
+- [x] 54. **Built-in named themes**: `theme="impatech"` resolves a theme that ships with Delta,
+       alongside `theme="my.css"`. `theme.ts` picks the namespace by **shape** (`isBuiltinThemeName`:
+       a bare name — no dot or separator — is a built-in; anything else is a path) and never retries a
+       name as a path, so shipping a new built-in can't change an existing document and the built-in
+       branch touches no filesystem (no `addDep`). CSS lives in `src/styles/builtin/<name>.css` →
+       the `BUILTIN_THEMES` map, kept **separate** from the type-keyed `THEMES` (one map would make
+       `type="impatech"` resolve a theme). Emit inlines it in a new `@layer delta.builtin` via
+       `ctx.builtinCss`, distinct from `ctx.userCss` — so a built-in supplies the palette and the
+       author's own CSS still wins. Required a fifth layer, `delta.mode`: `[data-accent]`/`[data-mode]`
+       moved there so they still beat a named theme (otherwise dark mode + all 12 accents would
+       silently die under any built-in). Built-ins are **tokens only**, enforced structurally by a test.
+       Prereq for the palette work in item 55; no `data-theme` on `<html>` (nothing reads it)
+- [x] 55. **Swatch/role token tiers + `--delta-elevation`** (`base.css`): the ~20 color tokens are now
+       *roles* pointing at two named neutral *swatch* ramps (`--delta-sand-*` light, `--delta-char-*`
+       dark — the light-mode code card turns out to be the dark ramp), so dark mode is the roles
+       re-pointed rather than a second set of magic numbers. The 12 `[data-accent]` triples stay
+       hand-tuned: a readable link tone is *not* on the segment between accent and ink, because mixing
+       toward a neutral can only lower chroma. Adds `--delta-elevation` (a shadow-opacity multiplier the
+       `[data-mode]` blocks never re-set, so a flat theme stays flat in dark mode) plus
+       `--delta-weight-display/-strong` and `--delta-font-variation(-display)` so a theme can carry a
+       heavier, non-Newsreader family. All value-preserving: the default article renders byte-identically
 - [x] 26. `<import src="folder/">` custom-element packs (`imports.ts`): reads a pack folder's
        `index.js` + optional `theme.css` (relative to the doc) and inlines both — the JS in a `<script>`
        **after** the runtime (so `window.Delta` is available; the pack registers its own `delta-*`
@@ -176,7 +197,11 @@ usable on its own. Checked items are implemented and tested.
        array or inserts one before the first `[table]` (never at EOF, which would fall inside `[document]`);
        deduped/order-preserving. npm populates `node_modules` (all `resolvePack` needs)
 - [~] 27. Document-type CSS variants via `<document type>` (`@layer delta.theme`): `article`
-       (default) and `book` shipped; the `presentation` type is specified in M7–M8
+       (default) and `book` shipped; the `presentation` type is specified in M7–M8.
+       Orthogonal to the named themes of item 54: `type` is the *structural* variant (measure, section
+       gaps, deck geometry) and lives in `@layer delta.theme`; `theme` is the *look* and lives lower, in
+       `@layer delta.builtin` — so a named theme and any type compose (a deck keeps its projector scale
+       while taking the theme's palette), and the two maps stay keyed on separate axes
 - [x] 43. Dark mode via `<document theme-mode="dark|auto">`: a **token override** mirroring the accent
        mechanism — `theme.ts` reads `theme-mode` → `ctx.themeMode`, `emit` writes `data-mode` on `<html>`,
        and a `[data-mode="dark"]` block in `base.css` inverts the neutral ramp + re-derives the two

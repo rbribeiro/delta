@@ -1,0 +1,138 @@
+/* Delta built-in theme: impatech — a modern, high-contrast look modelled on the
+   IMPA Tech brand: signage lime with amber / pink / mint, a near-white page,
+   pure-black type, very large radii, flat (no shadows), sans throughout.
+
+   TOKENS ONLY. This file sets --delta-* custom properties under :root and nothing
+   else — no component selectors, no chrome. Chrome lives in components/*.css; a
+   theme only re-values the design system. (test/theme.test.ts enforces this.)
+
+   Cascade: @layer delta.builtin sits just above base.css but BELOW the
+   [data-accent] / [data-mode] overlays and below the components — so
+   `theme-accent="blue"` still recolors this theme, `theme-mode="dark"` still
+   darkens it, and a deck keeps the projector type scale from themes/presentation.css.
+
+   Do NOT set --delta-col-gap / --delta-page-pad-x / --delta-page-pad-y /
+   --delta-section-gap / --delta-block-gap to fixed values here: base.css's
+   responsive :root blocks own them, and this layer would beat the breakpoints.
+   --delta-t-base is a clamp() for exactly that reason (as in themes/presentation.css). */
+
+@layer delta.builtin {
+  :root {
+    /* -- brand swatches. Also an author-facing vocabulary: DeltaBox passes any
+       non-palette color straight through, so <box color="var(--delta-pink)"> works. */
+    /* The brand's signage colours. All are LIGHT — they are meant to be filled
+       blocks carrying black text, which is exactly how the label pills use them. */
+    --delta-lime:         oklch(0.945 0.150 112);
+    --delta-amber:        oklch(0.865 0.130  78);
+    --delta-mint:         oklch(0.925 0.125 140);
+    --delta-pink:         oklch(0.835 0.115 345);
+    --delta-dune:         oklch(0.855 0.030  92);  /* warm sand */
+    --delta-black:        oklch(0 0 0);
+
+    /* -- surfaces & ink. This is a document you may read for hours, so the reading
+       surface stays neutral: a white page, a light grey inside environments, black
+       text. The colour lives in small, high-contrast pieces — the label pills, the
+       numbers, the rules — never behind running prose. */
+    --delta-paper:        oklch(1 0 0);
+    --delta-paper-edge:   oklch(0.975 0 0);
+    /* Barely off-white: an environment should read as a distinct panel without
+       becoming a grey slab, since a long document is mostly environments. The
+       border does the defining; this only has to lift the panel off the page. */
+    --delta-surface-1:    oklch(0.984 0 0);
+    --delta-surface-2:    oklch(0.958 0 0);
+    --delta-ink:          var(--delta-black);
+    --delta-ink-soft:     oklch(0.30 0 0);
+    --delta-mute:         oklch(0.52 0 0);
+    --delta-rule:         oklch(0.885 0 0);
+    --delta-rule-soft:    oklch(0.935 0 0);
+
+    /* -- accent. `--delta-accent` is the brand lime, used as a *fill* (bullets,
+       kickers, rules, box borders). `-ink` is the text tone and is hand-picked,
+       not derived: lime at brand chroma is nowhere near readable on bone, and
+       mixing toward the ink can only lower chroma, never reach a saturated deep
+       green. `-soft` is a wash, mixed against --delta-paper rather than a literal
+       so it re-derives correctly under theme-mode="dark". */
+    --delta-accent:       var(--delta-lime);
+    --delta-accent-ink:   oklch(0.46 0.135 130);
+    /* `.box.example` mixes this 35% into the page, so the wash is pitched so that
+       an example box lands on the SAME off-white as every other environment
+       (L≈0.984) with only a faint lime cast — the interiors must stay uniform, the
+       pills do the distinguishing. Re-derive if --delta-surface-1 moves:
+       soft_L = (target - 0.65) / 0.35, then solve the mix below for the grey. */
+    --delta-accent-soft:  color-mix(in oklab, var(--delta-lime) 25%, oklch(0.957 0 0));
+
+    --delta-ok:           oklch(0.52 0.130 150);   /* mint, darkened to read as text */
+    --delta-warn:         oklch(0.55 0.185 15);    /* pink, likewise */
+
+    /* -- environments: a light grey block with a FILLED signage pill. Each family
+       gets its own colour, so a theorem, a definition and an example are told
+       apart at a glance while scanning — the brand's differently-coloured cards,
+       applied where a long document actually benefits from them. The pill carries
+       black text (every tone is light) and drops its border, since a filled shape
+       needs no outline. */
+    --delta-env-bg:          var(--delta-surface-1);
+    --delta-env-border:      var(--delta-rule);
+    --delta-tone-theorem:    var(--delta-lime);
+    --delta-tone-definition: var(--delta-amber);
+    --delta-tone-example:    var(--delta-mint);
+    --delta-tone-remark:     var(--delta-pink);
+    --delta-tone-exercise:   var(--delta-dune);
+    --delta-env-tag-ink:     var(--delta-black);
+    --delta-env-tag-border:  transparent;
+    /* Tint the box border toward its family tone, so the whole environment — pill
+       and edge — is colour-coded, while the interior stays neutral grey. */
+    --delta-env-tint:        0.6;
+
+    /* Numbers — section and equation alike — carry the accent instead of grey:
+       colour on a small, repeated element reads as deliberate, and stays legible
+       because the tone is the dark one, not the signage one. */
+    --delta-num:          var(--delta-accent-ink);
+
+    /* -- code card: pure black, matching the brand's black blocks. */
+    --delta-code-bg:      var(--delta-black);
+    --delta-code-fg:      oklch(0.96 0 0);
+    --delta-code-line:    oklch(0.28 0 0);
+    --delta-code-mute:    oklch(0.62 0 0);
+
+    /* -- type. Sans everywhere: --delta-serif is the *prose* family (body text and
+       every heading ask for it by name), so a sans-first document must re-point it
+       too. No webfont is embedded — this is a system stack by design, so the theme
+       adds no bytes to the output. */
+    --delta-sans:         ui-sans-serif, system-ui, -apple-system, "Segoe UI Variable Display",
+                          "Segoe UI", Roboto, Inter, "Helvetica Neue", Arial, sans-serif;
+    --delta-serif:        var(--delta-sans);
+    --delta-mono:         ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Menlo,
+                          Consolas, monospace;
+    /* No family here has an `opsz` axis; leaving Newsreader's setting on would pin
+       the ones that do (SF, Segoe UI Variable) to their small-text design. */
+    --delta-font-variation:         normal;
+    --delta-font-variation-display: normal;
+    --delta-weight-display:         800;
+    --delta-weight-strong:          700;
+
+    /* -- scale: larger and much tighter than the serif default — the brand sets
+       headlines solid, at heavy weight, with little tracking. */
+    --delta-t-base:        clamp(16.5px, 0.30vw + 15.6px, 19px);
+    --delta-t-h1:          clamp(46px, 7vw, 104px);
+    --delta-t-h2:          clamp(27px, 3.2vw, 38px);
+    --delta-t-h3:          clamp(20px, 2.1vw, 24px);
+    --delta-t-h4:          clamp(17px, 1.6vw, 19px);
+    --delta-t-deck:        clamp(19px, 1.9vw, 24px);
+    --delta-leading:       1.55;
+    --delta-leading-tight: 1.02;
+    --delta-tracking-cap:  0.07em;
+    --delta-math-scale:    1.08em;
+
+    /* -- shape: big radii and pills, on a heavier line. A flat design carries its
+       structure in the line weight, since it has no shadow to fall back on. */
+    --delta-radius-sm:    8px;
+    --delta-radius:       14px;
+    --delta-radius-lg:    24px;
+    --delta-radius-pill:  999px;
+    --delta-hairline:     1.5px;
+
+    /* -- flat. The [data-mode] blocks re-state the shadow definitions but never
+       touch this multiplier, so the theme stays flat in dark mode too. */
+    --delta-elevation:    0;
+  }
+}

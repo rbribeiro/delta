@@ -14,14 +14,27 @@ describe("dependency tracking (for --watch)", () => {
     expect(has("hello.dlt")).toBe(true); // the entry file
     expect(has("include.dlt")).toBe(true); // <include>
     expect(has("includeElement.dlt")).toBe(true); // <include target-id>
-    expect(has("style/example.css")).toBe(true); // <document theme>
     expect(has("imports/mod/index.js")).toBe(true); // <import> pack
     expect(has("refs.ref")).toBe(true); // <bibliography src>
     expect(has("img.png")).toBe(true); // <figure src>
+    // NB: `<document theme>` is covered by its own test below, against a fixture —
+    // hello.dlt is a demo file whose theme may be switched to a *built-in* (which
+    // is correctly not a dep, since it ships inside the compiler), and that must
+    // not break dependency tracking's test.
 
     // deps are absolute and unique.
     expect(deps.every((p) => p.startsWith("/"))).toBe(true);
     expect(new Set(deps).size).toBe(deps.length);
+  });
+
+  it("records an author theme file, but not a built-in theme", () => {
+    const withFile = compileFile(resolve("test/fixtures/theme-dep.dlt"));
+    expect(withFile.deps).toContain(resolve("test/fixtures/theme.css"));
+
+    // A built-in ships inside the compiler: there is no user file to watch, and a
+    // phantom dep would make --watch wait on a path that does not exist.
+    const withBuiltin = compileFile(resolve("test/fixtures/theme-builtin.dlt"));
+    expect(withBuiltin.deps).toEqual([resolve("test/fixtures/theme-builtin.dlt")]);
   });
 
   it("unions deps across every input on the project path", () => {

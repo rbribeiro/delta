@@ -72,6 +72,11 @@ export interface CompileContext {
   lang: string;
   /** Author CSS from `<document theme>`, resolved by the theme pass; emit inlines it last. */
   userCss?: string;
+  /** CSS of the *built-in* theme named by `<document theme="impatech">` (from
+   *  BUILTIN_THEMES), resolved by the same pass. Kept apart from `userCss` because
+   *  the two occupy different cascade slots: this one is layered (delta.builtin,
+   *  early), the author's own file stays unlayered and last so it still wins. */
+  builtinCss?: string;
   /** Custom imports from <import src='' /> */
   imports: ImportEntry[];
   /** id → `<paper>` node; filled by `loadBibliography` from inline + the `.ref` src. */

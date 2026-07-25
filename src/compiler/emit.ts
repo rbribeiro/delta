@@ -57,6 +57,12 @@ export function emit(
     `<meta name="viewport" content="width=device-width, initial-scale=1">`,
     `<title>${escapeText(title)}</title>`,
     `<style>\n${CORE_CSS}\n</style>`,
+    // Built-in named theme (<document theme="impatech">): tokens only, in its own
+    // @layer delta.builtin. That layer sits above the base tokens but below the
+    // [data-accent]/[data-mode] overlays, the components and the per-type theme —
+    // so `theme-accent`/`theme-mode` still recolor a named theme, and a deck keeps
+    // its projector type scale. Distinct from ctx.userCss below, which stays last.
+    ...(ctx.builtinCss ? [`<style>\n${ctx.builtinCss}\n</style>`] : []),
     ...(themeCss ? [`<style>\n${themeCss}\n</style>`] : []),
     ...(ctx.mathUsed ? [`<style>\n${katexCss()}\n</style>`] : []),
     // Custom-element pack themes (<import>): inlined before the author theme so a

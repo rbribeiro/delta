@@ -1,0 +1,5 @@
+/* Deliberately extension-less, and named like a typo of the built-in "impatech".
+   theme.test.ts uses it to prove a bare name is NEVER retried as a path: even
+   with this file sitting right next to the document, `theme="impatek"` must warn
+   about an unknown built-in rather than silently loading it. */
+:root { --delta-accent: #ff00ff; }

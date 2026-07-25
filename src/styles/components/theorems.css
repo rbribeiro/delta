@@ -24,10 +24,30 @@ delta-proof {
   display: block;
 }
 
+/* -- Environment tones -------------------------------------------------
+   Each family carries its own tone, assigned here on the element so it inherits
+   down to the label pill. base.css defaults every tone to the page colour, so
+   this is invisible until a theme remaps them. */
+delta-theorem, delta-proposition, delta-lemma, delta-corollary,
+delta-claim, delta-observation, delta-conjecture {
+  --delta-env-tone: var(--delta-tone-theorem);
+}
+delta-definition           { --delta-env-tone: var(--delta-tone-definition); }
+delta-example              { --delta-env-tone: var(--delta-tone-example); }
+delta-remark               { --delta-env-tone: var(--delta-tone-remark); }
+delta-exercise, delta-problem { --delta-env-tone: var(--delta-tone-exercise); }
+
 /* -- .box and label --------------------------------------------------- */
 .box {
-  border: var(--delta-hairline) solid var(--delta-rule);
-  background: var(--delta-surface-1);
+  /* The border is the neutral rule tinted toward the family tone by
+     --delta-env-tint (0 = neutral, the default, so this is a no-op until a theme
+     opts in; 1 = the tone itself). Expressed as a mix rather than a second set of
+     per-family tokens, so a theme dials the whole effect with one number. */
+  border: var(--delta-hairline) solid
+          color-mix(in oklab,
+                    var(--delta-env-tone, var(--delta-paper)) calc(var(--delta-env-tint, 0) * 100%),
+                    var(--delta-env-border));
+  background: var(--delta-env-bg);
   border-radius: var(--delta-radius);
   padding: 20px 24px 18px;
   margin: var(--delta-block-gap) 0;
@@ -49,11 +69,11 @@ delta-proof {
   line-height: 1.35;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--delta-accent-ink);
-  background: var(--delta-paper);
+  color: var(--delta-env-tag-ink);
+  background: var(--delta-env-tone, var(--delta-paper));
   padding: 2px 9px;
   border-radius: var(--delta-radius-sm);
-  border: var(--delta-hairline) solid var(--delta-rule);
+  border: var(--delta-hairline) solid var(--delta-env-tag-border);
 }
 /* The author's title rides in the label pill, parenthesised and slightly
    subordinate so the environment kind + number still reads first. */
@@ -65,7 +85,7 @@ delta-proof {
 .box-tag-title::after  { content: ")"; }
 
 .box-title {
-  font-weight: 600;
+  font-weight: var(--delta-weight-strong);
   font-size: 17px;
   margin: 0 0 6px;
   letter-spacing: -0.003em;

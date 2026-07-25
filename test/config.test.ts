@@ -77,6 +77,13 @@ describe("loadProjectConfig", () => {
     });
   });
 
+  it("leaves a built-in theme name unresolved (it is a name, not a path)", () => {
+    const path = writeToml(`inputs = ["a.dlt"]\n[document]\ntheme = "impatech"`);
+    const { config, diagnostics } = loadProjectConfig(path);
+    expect(diagnostics).toHaveLength(0);
+    expect(config?.document).toEqual({ theme: "impatech" });
+  });
+
   it("ignores unknown keys inside [document]", () => {
     const path = writeToml(`inputs = ["a.dlt"]\n[document]\nlang = "en"\nfoo = "bar"`);
     const { config } = loadProjectConfig(path);

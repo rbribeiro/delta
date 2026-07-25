@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { parse, TomlError } from "smol-toml";
 import type { Diagnostic } from "./context";
+import { isBuiltinThemeName } from "./theme";
 
 /**
  * A resolved project: the ordered list of input `.dlt` files and the directory
@@ -19,13 +20,15 @@ export interface ProjectConfig {
   /** Absolute base directory (the toml's own directory) packages resolve against. */
   root?: string;
   /** `<document>` defaults applied to every file (attribute name → value), each overridable by a
-   *  per-document attribute. `theme` is stored as an absolute path (resolved against the toml dir);
-   *  the rest ride as raw strings. Built from the `[document]` table. */
+   *  per-document attribute. A `theme` naming a *file* is stored as an absolute path (resolved
+   *  against the toml dir); one naming a *built-in* rides raw, like every other value. Built from
+   *  the `[document]` table. */
   document?: Record<string, string>;
 }
 
-/** The `<document>` attributes a project may default via the `[document]` table. Only `theme`
- *  needs path resolution; the rest ride raw onto `doc.attrs`. Any other key is ignored. */
+/** The `<document>` attributes a project may default via the `[document]` table. Only a
+ *  path-shaped `theme` needs resolution; the rest ride raw onto `doc.attrs`. Any other key
+ *  is ignored. */
 const DOCUMENT_DEFAULT_KEYS = ["type", "theme", "theme-accent", "theme-mode", "lang"] as const;
 
 export interface ConfigResult {
@@ -41,7 +44,8 @@ export interface ConfigResult {
  *   packages = ["delta-callout", "../packs/x"]  # optional packages applied to every file
  *   [document]                             # optional <document> defaults, applied to every file
  *   type         = "book"                  #   (each overridable by a per-document attribute)
- *   theme        = "my.css"                #   resolved relative to the toml
+ *   theme        = "impatech"              #   a built-in theme name, or a path to
+ *                                          #   your own CSS relative to the toml
  *   theme-accent = "blue"
  *   theme-mode   = "dark"
  *   lang         = "en"
@@ -94,8 +98,9 @@ export function loadProjectConfig(tomlPath: string): ConfigResult {
   const base = dirname(tomlPath);
 
   // Optional `[document]` defaults: a table of `<document>` attribute overrides applied to every
-  // file. `theme` becomes an absolute path (so the per-doc `resolveTheme`, which resolves relative
-  // to each file, passes it through unchanged); the rest ride raw. Unknown keys are ignored.
+  // file. A path-shaped `theme` becomes absolute (so the per-doc `resolveTheme`, which resolves
+  // relative to each file, passes it through unchanged); a built-in name and the rest ride raw.
+  // Unknown keys are ignored.
   let document: Record<string, string> | undefined;
   if (table.document !== undefined) {
     const dt = table.document;
@@ -108,7 +113,9 @@ export function loadProjectConfig(tomlPath: string): ConfigResult {
       const v = entries[key];
       if (v === undefined) continue;
       if (typeof v !== "string") return fail(`\`document.${key}\` must be a string`);
-      built[key] = key === "theme" ? resolve(base, v) : v;
+      // `theme` may name a built-in rather than point at a file; a bare name is
+      // not a path, so it rides through raw for resolveTheme to look up.
+      built[key] = key === "theme" && !isBuiltinThemeName(v) ? resolve(base, v) : v;
     }
     if (Object.keys(built).length > 0) document = built;
   }
