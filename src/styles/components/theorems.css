@@ -29,17 +29,24 @@ delta-proof {
   border: var(--delta-hairline) solid var(--delta-rule);
   background: var(--delta-surface-1);
   border-radius: var(--delta-radius);
-  padding: 22px 24px 18px;
+  padding: 20px 24px 18px;
   margin: var(--delta-block-gap) 0;
   position: relative;
   box-shadow: var(--delta-shadow);
 }
+/* The label pill straddles the top border like a fieldset legend, but stays in
+   NORMAL FLOW — a fit-content block lifted onto the border by a negative top
+   margin — so a title too long for one line wraps and PUSHES the content down
+   instead of being absolutely positioned on top of it. max-width keeps a long
+   pill inside the box (box-sizing is border-box globally). */
 .box-tag {
-  position: absolute;
-  top: -10px;
-  left: 18px;
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin: -30px 0 12px;
   font-family: var(--delta-sans);
   font-size: 10.5px;
+  line-height: 1.35;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--delta-accent-ink);
@@ -111,7 +118,6 @@ delta-solution {
 /* -- Narrow-viewport tweaks ------------------------------------------- */
 @media (max-width: 640px) {
   .box { padding: 18px 16px 14px; }
-  .box-tag { left: 12px; }
 }
 
 @media print {

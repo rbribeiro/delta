@@ -11,29 +11,67 @@
     margin: var(--delta-block-gap) 0;
   }
 
+  /* A display equation wider than the text column would push the whole page into
+     horizontal scroll on narrow screens; scroll it inside its own box instead.
+     The small top padding keeps tall glyphs (exponents, hats) from being shaved
+     by the clip edge; overflow-y is hidden so the horizontal scrollbar can't also
+     summon a vertical one. */
+  delta-equation .katex-display,
+  delta-equations .katex-display,
+  delta-math .katex-display {
+    margin: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-top: 0.3em;
+  }
+
+  /* Numbered equations lay out as a three-column grid: an empty gutter, the
+     (scrollable) equation, and the number. The two gutters are equal (1fr) so the
+     equation stays centered in the column while a genuinely wide one scrolls in the
+     middle cell and can never slide under the number. The middle track is
+     minmax(0, 1fr): it *fills* the available width — so an equation that fits never
+     shows a spurious scrollbar — yet may shrink to 0 so a wide one scrolls. */
+  delta-equation[num],
+  delta-equations[num] {
+    display: grid;
+    grid-template-columns: 3.5em minmax(0, 1fr) 3.5em;
+    align-items: center;
+    column-gap: 0.4em;
+  }
+
+  delta-equation[num]::before,
+  delta-equations[num]::before {
+    content: "";
+  }
+
+  delta-equation[num] .katex-display,
+  delta-equations[num] .katex-display {
+    min-width: 0;
+  }
+
   delta-equation[num]::after,
   delta-equations[num]::after {
     content: "(" attr(num) ")";
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
+    text-align: right;
     color: var(--delta-mute);
     font-variant-numeric: tabular-nums;
   }
 
   /* Inside a popover preview (.delta-pop, e.g. a <ref> card) the number already
-     shows in the bubble's header label, and the narrow bubble makes the absolute
-     number overlap the equation — so drop the inline number there. Same specificity
-     as the rule above, so it must stay after it to win. */
+     shows in the bubble's header label, and the narrow bubble makes the number
+     crowd the equation — so drop it (and its balancing gutter) there. Same
+     specificity as the rules above, so these must stay after them to win. */
+  .delta-pop delta-equation[num],
+  .delta-pop delta-equations[num] {
+    display: block;
+  }
+
+  .delta-pop delta-equation[num]::before,
+  .delta-pop delta-equations[num]::before,
   .delta-pop delta-equation[num]::after,
   .delta-pop delta-equations[num]::after {
     content: none;
   }
-
-  delta-equation .katex-display,
-  delta-equations .katex-display,
-  delta-math .katex-display { margin: 0; }
 
   delta-m { display: inline; }
 

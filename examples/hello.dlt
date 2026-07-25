@@ -47,6 +47,10 @@
       </meta>
       For a right triangle with legs $a$, $b$ and hypotenuse $c$,
       <equation id="eq:pyth">a^2 + b^2 = c^2</equation>
+      <equations>
+        \int_\Omega f(x) \, dx & = \int_{\partial \Omega} f(x) \, dS + \int_\Omega \nabla f(x) \, dx \\
+        & = E\left[ X(s) \right] = \sum_{n=0}^{\infty} \frac{f^{(n)}(a)}{n!} (x-a)^n
+      </equations>
     </theorem>
 
     <proof collapsible="true" of="thm:pyth">
@@ -76,7 +80,7 @@
     </sidenote>
     <equations id="eq:aligned">
       (a + b)^2 &= a^2 + 2ab + b^2 \\
-                &= c^2 + 2ab
+                &= c^2 + 2ab 
     </equations>
     References work inside math too: the second step above uses the Pythagorean identity,
     $ (a+b)^2 \stackrel{\eqref{eq:pyth}}{=} c^2 + 2ab $ — click the number over the equals sign.
