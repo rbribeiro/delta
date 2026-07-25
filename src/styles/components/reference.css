@@ -35,6 +35,17 @@ delta-ref { display: inline; }
   cursor: pointer;
   border-radius: var(--delta-radius-sm);
   transition: background var(--delta-dur-fast) var(--delta-ease);
+  /* Lift the marker into a higher paint layer, or it is not CLICKABLE. KaTeX
+     stacks an aligned environment out of `.vlist` table-cells that are
+     `position: relative; z-index: auto` and overlap each other freely (each row
+     is a zero-height box offset by `top`). A cell later in the DOM therefore
+     paints over an earlier row and swallows every pointer event aimed at it —
+     which is exactly where a `\stackrel{\eqref{…}}{=}` marker lives. Keyboard
+     activation still worked, since that path never hit-tests. z-index needs a
+     positioned element, and both sit in the same stacking context (nothing in
+     the math subtree creates one), so 1 is enough to clear the auto/0 layer. */
+  position: relative;
+  z-index: 1;
 }
 .katex .math-xref:hover {
   background: color-mix(in oklab, var(--delta-accent-soft) 60%, transparent);

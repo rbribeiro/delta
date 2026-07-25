@@ -25,28 +25,41 @@
     padding-top: 0.3em;
   }
 
-  /* Numbered equations lay out as a three-column grid: an empty gutter, the
-     (scrollable) equation, and the number. The two gutters are equal (1fr) so the
-     equation stays centered in the column while a genuinely wide one scrolls in the
-     middle cell and can never slide under the number. The middle track is
-     minmax(0, 1fr): it *fills* the available width — so an equation that fits never
-     shows a spurious scrollbar — yet may shrink to 0 so a wide one scrolls. */
+  /* Numbered equations lay out as two grid tracks: the (scrollable) equation and
+     the number. The number track is `auto` — it reserves EXACTLY the width of
+     "(1.2)" and not a pixel more, so the equation keeps essentially the whole
+     column. Reserving a fixed gutter instead (an earlier version used two 3.5em
+     ones, to keep the equation dead-centre) cost ~140px and made equations scroll
+     that had 100px to spare. Width beats perfect centring: the equation is centred
+     in what remains, which is off true centre by half the number's width.
+     minmax(0, 1fr) lets the track shrink below its content, so a genuinely
+     oversized equation scrolls inside itself rather than widening the page. */
   delta-equation[num],
   delta-equations[num] {
     display: grid;
-    grid-template-columns: 3.5em minmax(0, 1fr) 3.5em;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    column-gap: 0.4em;
-  }
-
-  delta-equation[num]::before,
-  delta-equations[num]::before {
-    content: "";
+    column-gap: 0.5em;
   }
 
   delta-equation[num] .katex-display,
   delta-equations[num] .katex-display {
     min-width: 0;
+  }
+
+  /* Where horizontal space is scarcest, stop reserving for the number at all:
+     it drops to its own row, right-aligned, and the equation gets the full
+     column. Below this width the number's ~3.5em is the difference between
+     fitting and scrolling for a typical display equation. */
+  @media (max-width: 640px) {
+    delta-equation[num],
+    delta-equations[num] {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    delta-equation[num]::after,
+    delta-equations[num]::after {
+      margin-top: 0.2em;
+    }
   }
 
   delta-equation[num]::after,
@@ -59,15 +72,13 @@
 
   /* Inside a popover preview (.delta-pop, e.g. a <ref> card) the number already
      shows in the bubble's header label, and the narrow bubble makes the number
-     crowd the equation — so drop it (and its balancing gutter) there. Same
-     specificity as the rules above, so these must stay after them to win. */
+     crowd the equation — so drop it there. Same specificity as the rules above,
+     so these must stay after them to win. */
   .delta-pop delta-equation[num],
   .delta-pop delta-equations[num] {
     display: block;
   }
 
-  .delta-pop delta-equation[num]::before,
-  .delta-pop delta-equations[num]::before,
   .delta-pop delta-equation[num]::after,
   .delta-pop delta-equations[num]::after {
     content: none;
