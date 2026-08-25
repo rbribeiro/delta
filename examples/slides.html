@@ -35,28 +35,76 @@
    ================================================================== */
 
 
-/* Cascade order — declared once, here, in the first stylesheet the page
-   loads. Components live in @layer delta.components, per-type themes in
-   @layer delta.theme, so themes always win regardless of <style> order.
-   (Unlayered rules — e.g. inlined KaTeX — still beat all of these.) */
-@layer delta.base, delta.components, delta.theme;
+/* Cascade order — declared once, here, in the first stylesheet the page loads.
+
+     base        this file's tokens, page grid, shared primitives
+     builtin     a built-in named theme (<document theme="impatech">) — tokens only.
+                 Sits this low on purpose: it may re-value the design system, but
+                 delta.components still beats it, so a theme can never quietly grow
+                 into restyling chrome.
+     mode        the two orthogonal overlays, [data-accent] and [data-mode]. They
+                 must beat a named theme (they exist to recolor whatever is under
+                 them) yet stay below components, so components/box.css keeps
+                 re-deriving per-box tones.
+     components  Delta's chrome, one file per feature
+     theme       per-document-type tokens (themes/<type>.css), selected by `type`
+
+   So themes always win regardless of <style> order. (Unlayered rules — inlined
+   KaTeX, import-pack CSS, the author's own theme= file — still beat all of these.) */
+@layer delta.base, delta.builtin, delta.mode, delta.components, delta.theme;
 
 @layer delta.base {
 
 /* --- 1. TOKENS --------------------------------------------------- */
 
 :root {
-  /* -- color */
-  --delta-paper:        oklch(0.965 0.012 78);
-  --delta-paper-edge:   oklch(0.945 0.014 78);
-  --delta-surface-1:    oklch(0.985 0.008 78);
-  --delta-surface-2:    oklch(0.935 0.012 78);
-  --delta-ink:          oklch(0.18 0.006 75);
-  --delta-ink-soft:     oklch(0.34 0.006 75);
-  --delta-mute:         oklch(0.56 0.008 75);
-  --delta-rule:         oklch(0.86 0.012 78);
-  --delta-rule-soft:    oklch(0.91 0.012 78);
+  /* -- SWATCHES — the raw colour vocabulary, two warm neutral ramps. `sand` is
+     the light page, `char` the dark one; both run lightest → darkest. The steps
+     are ORDINAL, not linear: a paper UI needs five near-white steps and then a
+     jump straight to text tones. Every neutral in the system is warm hue 75–78,
+     which is what makes two ramps enough.
 
+     Components never read a swatch — they read the ROLES below. Themes re-point
+     the roles (see src/styles/builtin/), which is why the roles carry the
+     meaningful names and these carry only positions. */
+  --delta-sand-50:      oklch(0.985 0.008 78);
+  --delta-sand-100:     oklch(0.965 0.012 78);
+  --delta-sand-200:     oklch(0.945 0.014 78);
+  --delta-sand-300:     oklch(0.935 0.012 78);
+  --delta-sand-400:     oklch(0.91  0.012 78);
+  --delta-sand-500:     oklch(0.86  0.012 78);
+  --delta-sand-600:     oklch(0.56  0.008 75);
+  --delta-sand-700:     oklch(0.34  0.006 75);
+  --delta-sand-800:     oklch(0.18  0.006 75);
+
+  --delta-char-50:      oklch(0.92  0.006 75);
+  --delta-char-100:     oklch(0.78  0.006 75);
+  --delta-char-200:     oklch(0.62  0.008 75);
+  --delta-char-300:     oklch(0.36  0.010 75);
+  --delta-char-400:     oklch(0.29  0.010 75);
+  --delta-char-500:     oklch(0.26  0.010 75);
+  --delta-char-600:     oklch(0.245 0.009 75);
+  --delta-char-700:     oklch(0.205 0.008 75);
+  --delta-char-800:     oklch(0.17  0.008 75);
+
+  /* -- ROLES: color. What components actually consume. Re-point a role and the
+     whole system follows; the [data-mode] block below re-points these same nine
+     onto the `char` ramp, which is all "dark mode" is. */
+  --delta-paper:        var(--delta-sand-100);
+  --delta-paper-edge:   var(--delta-sand-200);
+  --delta-surface-1:    var(--delta-sand-50);
+  --delta-surface-2:    var(--delta-sand-300);
+  --delta-ink:          var(--delta-sand-800);
+  --delta-ink-soft:     var(--delta-sand-700);
+  --delta-mute:         var(--delta-sand-600);
+  --delta-rule:         var(--delta-sand-500);
+  --delta-rule-soft:    var(--delta-sand-400);
+
+  /* The accent trio is a *slot*: the [data-accent] blocks below supply the hue
+     (12 of them), so these :root values are just the default, "green". The three
+     tones are hand-tuned, not derived — a link tone dark enough to read (L 0.38)
+     is not on the segment between the accent and the ink, because mixing toward
+     a neutral can only ever lower chroma. Don't try to collapse them. */
   --delta-accent:       oklch(0.80 0.062 150);
   --delta-accent-ink:   oklch(0.38 0.07  150);
   --delta-accent-soft:  oklch(0.93 0.04  150);
@@ -64,19 +112,58 @@
   --delta-ok:           oklch(0.46 0.10 150);
   --delta-warn:         oklch(0.50 0.13 22);
 
+  /* The code card is the `char` ramp used inside a light document — a dark card
+     in a light page is literally dark mode, scoped to one block. These four sit
+     a hair off the ramp steps (hand-tuned before the ramps existed), so they
+     stay literal rather than snapping and shifting the card. */
   --delta-code-bg:      oklch(0.21 0.008 75);
   --delta-code-fg:      oklch(0.94 0.005 75);
   --delta-code-line:    oklch(0.32 0.008 75);
   --delta-code-mute:    oklch(0.62 0.012 75);
 
-  /* -- chrome (consumed by components/*.css; override per theme) */
-  --delta-env-bg:       var(--delta-surface-2);
-  --delta-env-border:   var(--delta-accent-ink);
+  /* -- chrome: the environment box (components/theorems.css). Separate from the
+     generic surfaces so a theme can restyle theorem/definition/example boxes
+     without touching every other card in the document. */
+  --delta-env-bg:       var(--delta-surface-1);
+  --delta-env-border:   var(--delta-rule);
 
-  /* -- type families */
+  /* Environment TONES — one per environment family, used to fill the label pill.
+     They all default to the page colour, i.e. the quiet outlined pill this design
+     has always had; a theme remaps them to brand colours to get a set of
+     differently-coloured environments. `theorems.css` assigns the right tone to
+     each family *on the element*, because a var() inside a custom property is
+     substituted where it is DECLARED — putting the lookup at :root would freeze
+     every environment to one tone. */
+  --delta-tone-theorem:    var(--delta-paper);
+  --delta-tone-definition: var(--delta-paper);
+  --delta-tone-example:    var(--delta-paper);
+  --delta-tone-remark:     var(--delta-paper);
+  --delta-tone-exercise:   var(--delta-paper);
+  --delta-env-tag-ink:     var(--delta-accent-ink);
+  --delta-env-tag-border:  var(--delta-rule);
+
+  /* The quiet figures: heading numbers and equation numbers. One token, because
+     they are the same typographic gesture — a number set back from its content. */
+  --delta-num:          var(--delta-mute);
+
+  /* -- type families. --delta-serif is the *prose* family, not merely "the serif":
+     body text and every heading ask for it by name, so a sans-first theme
+     re-points it (the name then outlives its meaning — that is the trade for
+     keeping this a pure token system). */
   --delta-serif:        "Newsreader", "Source Serif 4", ui-serif, Georgia, serif;
   --delta-sans:         ui-sans-serif, -apple-system, "Helvetica Neue", system-ui, sans-serif;
   --delta-mono:         "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* -- type weight + variable-font axes. Headings and bold text read these
+     instead of hardcoding a number, so a theme built on a heavier family can
+     say so once. --delta-font-variation* drives Newsreader's optical-size axis;
+     a theme on a family without an `opsz` axis sets them to `normal` (leaving
+     "opsz" set would pin such a family to its small-text design on the systems
+     that do have the axis, and silently override font-optical-sizing: auto). */
+  --delta-weight-display:         500;
+  --delta-weight-strong:          600;
+  --delta-font-variation:         "opsz" 16;
+  --delta-font-variation-display: "opsz" 72;
 
   /* -- type scale (clamped where it matters) */
   --delta-t-base:       18px;
@@ -110,14 +197,20 @@
   --delta-hairline:     1px;
   --delta-random-rotation: 1deg;
 
-  /* -- shadow — warm-toned, very low contrast; only on lifted blocks */
-  --delta-shadow-sm:    0 1px 2px rgba(60, 50, 30, .045);
-  --delta-shadow:       0 1px 1px rgba(60, 50, 30, .035),
-                        0 6px 18px rgba(60, 50, 30, .055);
-  --delta-shadow-lift:  0 1px 2px rgba(60, 50, 30, .04),
-                        0 14px 36px rgba(60, 50, 30, .07);
-  --delta-shadow-code:  0 1px 1px rgba(0, 0, 0, .04),
-                        0 10px 28px rgba(0, 0, 0, .10);
+  /* -- shadow — warm-toned, very low contrast; only on lifted blocks.
+     --delta-elevation is the opacity multiplier and the ONE shadow knob a theme
+     owns: the [data-mode] block re-states the shadow *definitions* (dark mode
+     needs a different hue and much more strength), but it never touches this —
+     so `--delta-elevation: 0` keeps a flat theme flat in both modes. At 1 the
+     output is identical to the hand-written alphas it replaced. */
+  --delta-elevation:    1;
+  --delta-shadow-sm:    0 1px 2px rgb(60 50 30 / calc(.045 * var(--delta-elevation)));
+  --delta-shadow:       0 1px 1px rgb(60 50 30 / calc(.035 * var(--delta-elevation))),
+                        0 6px 18px rgb(60 50 30 / calc(.055 * var(--delta-elevation)));
+  --delta-shadow-lift:  0 1px 2px rgb(60 50 30 / calc(.04 * var(--delta-elevation))),
+                        0 14px 36px rgb(60 50 30 / calc(.07 * var(--delta-elevation)));
+  --delta-shadow-code:  0 1px 1px rgb(0 0 0 / calc(.04 * var(--delta-elevation))),
+                        0 10px 28px rgb(0 0 0 / calc(.10 * var(--delta-elevation)));
 
   /* -- motion */
   --delta-ease:         cubic-bezier(.2,.7,.2,1);
@@ -125,6 +218,11 @@
   --delta-dur:          .25s;
   --delta-dur-slow:     .45s;
 }
+
+} /* @layer delta.base — the two overlays below live in delta.mode, so they beat
+     a built-in named theme (delta.builtin) while staying under the components. */
+
+@layer delta.mode {
 
 /* accent palettes — soft pastel tones named by their hue, so a value is easy to
    guess (red, orange, …, slate). Each overrides only the three accent vars; the
@@ -141,6 +239,85 @@
 [data-accent="purple"] { --delta-accent: oklch(0.80 0.070 310); --delta-accent-ink: oklch(0.45 0.105 310); --delta-accent-soft: oklch(0.95 0.044 310); }
 [data-accent="pink"]   { --delta-accent: oklch(0.83 0.072 350); --delta-accent-ink: oklch(0.47 0.110 350); --delta-accent-soft: oklch(0.95 0.046 350); }
 [data-accent="slate"]  { --delta-accent: oklch(0.78 0.030 245); --delta-accent-ink: oklch(0.36 0.040 245); --delta-accent-soft: oklch(0.93 0.022 245); }
+
+
+/* dark mode — a token override (the same model as the accent palettes above), opted
+   into with `<document theme-mode="dark">` → `data-mode="dark"`, or `="auto"` to follow
+   the viewer's OS. It inverts the neutral ramp (warm hue kept, so the dark stays on-brand)
+   and re-derives only the two accent tones that assume a light page: `-ink` becomes the
+   vivid pastel `--delta-accent` (bright on dark — links, titles, kicker, inverted-divider
+   bg, progress fill), `-soft` a dark accent tint. The per-hue `--delta-accent` blocks above
+   are unchanged, so every accent keeps working. Components read tokens only, so flipping
+   these flips the whole system, deck chrome included.
+
+   The declaration list is intentionally repeated for the `[data-mode="auto"]` + media case
+   (no build-time preprocessing) — keep the two blocks in sync. */
+[data-mode="dark"] {
+  color-scheme: dark;
+
+  --delta-paper:        var(--delta-char-700);
+  --delta-paper-edge:   var(--delta-char-800);
+  --delta-surface-1:    var(--delta-char-600);
+  --delta-surface-2:    var(--delta-char-400);
+  --delta-ink:          var(--delta-char-50);
+  --delta-ink-soft:     var(--delta-char-100);
+  --delta-mute:         var(--delta-char-200);
+  --delta-rule:         var(--delta-char-300);
+  --delta-rule-soft:    var(--delta-char-400);
+
+  --delta-accent-ink:   var(--delta-accent);
+  --delta-accent-soft:  color-mix(in oklab, var(--delta-accent) 20%, var(--delta-paper));
+
+  --delta-ok:           oklch(0.72 0.12 150);
+  --delta-warn:         oklch(0.70 0.15 22);
+
+  --delta-code-bg:      var(--delta-char-500);
+
+  /* Neutral-black and far stronger than the light shadows, but still scaled by
+     the theme-owned --delta-elevation (never re-set here — see :root). */
+  --delta-shadow-sm:    0 1px 2px rgb(0 0 0 / calc(.40 * var(--delta-elevation)));
+  --delta-shadow:       0 1px 1px rgb(0 0 0 / calc(.35 * var(--delta-elevation))),
+                        0 6px 18px rgb(0 0 0 / calc(.50 * var(--delta-elevation)));
+  --delta-shadow-lift:  0 1px 2px rgb(0 0 0 / calc(.35 * var(--delta-elevation))),
+                        0 14px 36px rgb(0 0 0 / calc(.55 * var(--delta-elevation)));
+  --delta-shadow-code:  0 1px 1px rgb(0 0 0 / calc(.40 * var(--delta-elevation))),
+                        0 10px 28px rgb(0 0 0 / calc(.55 * var(--delta-elevation)));
+}
+@media (prefers-color-scheme: dark) {
+  [data-mode="auto"] {
+    color-scheme: dark;
+
+    --delta-paper:        var(--delta-char-700);
+    --delta-paper-edge:   var(--delta-char-800);
+    --delta-surface-1:    var(--delta-char-600);
+    --delta-surface-2:    var(--delta-char-400);
+    --delta-ink:          var(--delta-char-50);
+    --delta-ink-soft:     var(--delta-char-100);
+    --delta-mute:         var(--delta-char-200);
+    --delta-rule:         var(--delta-char-300);
+    --delta-rule-soft:    var(--delta-char-400);
+
+    --delta-accent-ink:   var(--delta-accent);
+    --delta-accent-soft:  color-mix(in oklab, var(--delta-accent) 20%, var(--delta-paper));
+
+    --delta-ok:           oklch(0.72 0.12 150);
+    --delta-warn:         oklch(0.70 0.15 22);
+
+    --delta-code-bg:      var(--delta-char-500);
+
+    --delta-shadow-sm:    0 1px 2px rgb(0 0 0 / calc(.40 * var(--delta-elevation)));
+    --delta-shadow:       0 1px 1px rgb(0 0 0 / calc(.35 * var(--delta-elevation))),
+                          0 6px 18px rgb(0 0 0 / calc(.50 * var(--delta-elevation)));
+    --delta-shadow-lift:  0 1px 2px rgb(0 0 0 / calc(.35 * var(--delta-elevation))),
+                          0 14px 36px rgb(0 0 0 / calc(.55 * var(--delta-elevation)));
+    --delta-shadow-code:  0 1px 1px rgb(0 0 0 / calc(.40 * var(--delta-elevation))),
+                          0 10px 28px rgb(0 0 0 / calc(.55 * var(--delta-elevation)));
+  }
+}
+
+} /* @layer delta.mode */
+
+@layer delta.base {
 
 
 /* --- 2. RESET & BASE -------------------------------------------- */
@@ -160,7 +337,7 @@ body {
   font-size: var(--delta-t-base);
   line-height: var(--delta-leading);
   font-optical-sizing: auto;
-  font-variation-settings: "opsz" 16;
+  font-variation-settings: var(--delta-font-variation);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -658,6 +835,50 @@ delta-cite { display: inline; }
 
 }
 
+/* box.css — <box>, a generic callout / admonition block (DeltaBox,
+   runtime/elements/box.ts). The runtime seeds --delta-accent from the `color`/`type`
+   attribute (a named palette via [data-accent], or a hex/CSS color inline); with
+   neither, the box inherits the document accent. Everything below derives from that
+   single seed via color-mix — nothing is hardcoded, so it tracks light/dark and any
+   hue. Scoped to the `delta-box` tag / its own classes; distinct from the theorem
+   `.box` class and from the import-pack `.callout-*` chrome. */
+
+@layer delta.components {
+
+delta-box {
+  /* Re-derive ink/soft from the seed for this subtree, mirroring the dark-mode
+     derivation in base.css — so named + hex/custom colors behave identically and
+     both track light/dark (--delta-ink / --delta-paper flip with mode). This also
+     tints inner links/refs to match the box's hue. */
+  --delta-accent-ink:  color-mix(in oklab, var(--delta-accent) 64%, var(--delta-ink));
+  --delta-accent-soft: color-mix(in oklab, var(--delta-accent) 14%, var(--delta-paper));
+
+  display: block;
+  margin: var(--delta-block-gap) 0;
+  padding: 14px 18px;
+  border: var(--delta-hairline) solid color-mix(in oklab, var(--delta-accent) 30%, var(--delta-rule));
+  border-left: 4px solid var(--delta-accent-ink);       /* stronger than the fill */
+  border-radius: var(--delta-radius);
+  background: var(--delta-accent-soft);                 /* pale tinted wash */
+  color: color-mix(in oklab, var(--delta-ink) 88%, var(--delta-accent));
+}
+
+delta-box .box-heading {
+  font-family: var(--delta-sans);
+  font-weight: 650;
+  font-size: 0.92em;
+  letter-spacing: 0.01em;
+  color: var(--delta-accent-ink);
+  margin-bottom: 6px;
+}
+
+delta-box .box-body > :first-child { margin-top: 0; }
+delta-box .box-body > :last-child  { margin-bottom: 0; }
+
+@media print { delta-box { break-inside: avoid; } }
+
+}
+
 /* code.css — `<code lang>` highlighted display block + inline `<c>`. highlight.js
    runs at compile time (src/compiler/code.ts) and ships only class-based spans;
    this maps them onto Delta's code palette and styles the chrome the runtime
@@ -752,6 +973,27 @@ delta-code {
   white-space: pre;
 }
 .code-src code { font-family: inherit; background: none; padding: 0; }
+
+.code-cap {
+  text-align: center;
+  font-family: var(--delta-serif);
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--delta-mute);
+  gap: 12px;
+  padding: 10px 16px;
+  border-top: var(--delta-hairline) solid var(--delta-code-line);
+}
+
+.code-cap .lbl {
+  font-family: var(--delta-sans);
+  font-size: 11.5px;
+  letter-spacing: var(--delta-tracking-cap);
+  text-transform: uppercase;
+  color: var(--delta-code-mute);
+  margin-right: 0.6em;
+  white-space: nowrap;
+}
 
 /* folded: the header bar stays; collapse.css hides the .collapse-body */
 delta-code.is-collapsed { padding-bottom: 0; }
@@ -869,38 +1111,44 @@ delta-code .hljs-addition { color: var(--delta-ok); }
 
 }
 
-/* columns.css — side-by-side layout: <delta-row> is a flex container, <delta-col>
-   a cell (its flex weight set inline by columns.js). STAGED — the columns runtime
-   is not built yet. Tokens via var(--delta-*). */
+/* columns.css — side-by-side layout. <delta-columns> is a flex row; each direct
+   <delta-column> child is a cell whose flex share comes from `--col-flex` (set by
+   columns.ts from the author's `width`, default equal). Everything is scoped to
+   `delta-columns > delta-column` so it never touches the table's `<column>` cells
+   (which live under <row>/<header>, never as a direct child of <columns>). Tokens
+   via var(--delta-*). */
 
 @layer delta.components {
 
-delta-row {
+delta-columns {
   display: flex;
   gap: var(--delta-block-gap);
   align-items: start;
   margin: var(--delta-block-gap) 0;
 }
-delta-col {
-  flex: 1 1 0;        /* equal share; columns.js overrides for width="…" */
-  min-width: 0;       /* let wide content (equations/code) shrink, not overflow */
+delta-columns > delta-column {
+  flex: var(--col-flex, 1 1 0); /* equal share unless columns.ts set a weight/basis */
+  min-width: 0;                 /* let wide content (equations/code) shrink, not overflow */
 }
-delta-col > :first-child { margin-top: 0; }
-delta-col > :last-child  { margin-bottom: 0; }
+delta-columns > delta-column > :first-child { margin-top: 0; }
+delta-columns > delta-column > :last-child  { margin-bottom: 0; }
 
 /* Vertical alignment of the columns (default: top). */
-delta-row[align="center"]  { align-items: center; }
-delta-row[align="bottom"]  { align-items: flex-end; }
-delta-row[align="stretch"] { align-items: stretch; }
+delta-columns[align="center"]  { align-items: center; }
+delta-columns[align="bottom"]  { align-items: flex-end; }
+delta-columns[align="stretch"] { align-items: stretch; }
 
-/* Full-width row: reclaim the reserved sidenote rail, like .bleed. */
-delta-row[wide] { margin-right: calc(-1 * (var(--delta-col-gap) + var(--delta-margin-w))); }
+/* Full-width: reclaim the reserved sidenote rail, like .bleed. */
+delta-columns[wide] { margin-right: calc(-1 * (var(--delta-col-gap) + var(--delta-margin-w))); }
 
 @media (max-width: 980px) {
-  delta-row[wide] { margin-right: 0; }   /* rail already collapsed */
+  delta-columns[wide] { margin-right: 0; }   /* rail already collapsed */
 }
 @media (max-width: 640px) {
-  delta-row { flex-direction: column; }  /* stack on narrow screens */
+  /* Stack on narrow screens. This resets the per-column share (the weight/basis is
+     published as --col-flex, not inline `flex`, so this rule wins cleanly). */
+  delta-columns { flex-direction: column; }
+  delta-columns > delta-column { flex: 0 0 auto; }
 }
 
 }
@@ -913,7 +1161,8 @@ delta-row[wide] { margin-right: calc(-1 * (var(--delta-col-gap) + var(--delta-ma
 
 @layer delta.components {
 
-delta-figure { display: block; }
+delta-figure,
+delta-interactive { display: block; }
 delta-video,
 delta-youtube,
 delta-audio { display: block; }
@@ -922,7 +1171,8 @@ delta-caption { display: block; }
 /* Figures and videos share the outer layout and caption — only how the media
    sits in the frame differs (a figure mats + centres; a video fills). */
 .figure,
-.video {
+.video,
+ .interactive {
   margin: 36px 0 var(--delta-block-gap);
   display: flex;
   flex-direction: column;
@@ -931,7 +1181,8 @@ delta-caption { display: block; }
 
 /* Shared framed box: border, radius, shadow; clip media to the corners. */
 .figure-frame,
-.video-frame {
+.video-frame, 
+.interactive-frame {
   background: var(--delta-surface-1);
   border: var(--delta-hairline) solid var(--delta-rule);
   border-radius: var(--delta-radius);
@@ -940,7 +1191,7 @@ delta-caption { display: block; }
 }
 
 /* A figure mats its visual and centres it. */
-.figure-frame {
+.figure-frame, .interactive-frame {
   padding: 12px;
   text-align: center; /* centre inline / inline-block media */
 }
@@ -960,6 +1211,49 @@ delta-caption { display: block; }
 iframe.video-media {
   aspect-ratio: 16 / 9;
 }
+
+/* file:// fallback (media.ts): a 16:9 thumbnail that opens the video on youtube.com,
+   since a referrer-less file:// page can't embed the player (error 153). A play badge
+   over the thumbnail signals it's a video. */
+a.yt-facade {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: oklch(0.18 0.006 75);
+  text-decoration: none;
+}
+.yt-facade img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.yt-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 68px;
+  height: 48px;
+  transform: translate(-50%, -50%);
+  border-radius: 14px;
+  background: rgba(18, 18, 18, 0.78);
+  transition: background var(--delta-dur-fast) var(--delta-ease);
+}
+.yt-play::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-40%, -50%);
+  border: solid transparent;
+  border-width: 9px 0 9px 15px;
+  border-left-color: #fff;
+}
+.yt-facade:hover .yt-play,
+.yt-facade:focus-visible .yt-play { background: #f00; }
+.yt-facade:focus-visible { outline: 2px solid var(--delta-accent-ink); outline-offset: 2px; }
+
 /* Audio reuses the framed box; the native control bar fills the width. */
 .audio-media {
   display: block;
@@ -977,7 +1271,8 @@ iframe.video-media {
 /* Shared caption, centred under the media; the "Fig./Video N" label is an
    inline prefix before the centred text. */
 .figure-cap,
-.video-cap {
+.video-cap, 
+.interactive-cap {
   text-align: center;
   font-family: var(--delta-serif);
   font-size: 13.5px;
@@ -985,7 +1280,8 @@ iframe.video-media {
   color: var(--delta-mute);
 }
 .figure-cap .lbl,
-.video-cap .lbl {
+.video-cap .lbl,
+.interactive-cap .lbl {
   font-family: var(--delta-sans);
   font-size: 11.5px;
   letter-spacing: var(--delta-tracking-cap);
@@ -1116,6 +1412,77 @@ delta-floating { display: contents; }
 @media print {
   .floating-fab,
   .floating-panel { display: none !important; }
+}
+
+}
+
+/* frontmatter.css — math-paper front matter: <abstract> plus the labeled metadata
+   (<keywords>, <msc>, the publication dates, <acknowledgements>, <funding>). The
+   labels are composed at runtime (frontmatter.ts) via t(); this styles the result.
+   The metadata rules key off the `.fm-line` / `.fm-block` classes the runtime adds
+   (never bare `delta-date` etc.), so a presentation cover's <date> is never caught.
+   Tokens via var(--delta-*). */
+
+@layer delta.components {
+
+/* -- Abstract: a centered, narrower, justified block under a small heading -------- */
+delta-abstract {
+  display: block;
+  max-width: 34em;
+  margin: var(--delta-section-gap) auto var(--delta-block-gap);
+}
+.abstract-label {
+  text-align: center;
+  font-family: var(--delta-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--delta-tracking-cap);
+  text-transform: uppercase;
+  color: var(--delta-mute);
+  margin-bottom: 10px;
+}
+.abstract-body {
+  text-align: justify;
+  hyphens: auto;
+  font-size: 0.94em;
+  line-height: var(--delta-leading);
+  color: var(--delta-ink-soft);
+}
+.abstract-body > :first-child { margin-top: 0; }
+.abstract-body > :last-child  { margin-bottom: 0; }
+
+/* -- Compact labeled lines: keywords / MSC / dates, centered under the abstract --- */
+.fm-line {
+  display: block;
+  max-width: 38em;
+  margin: 6px auto 0;
+  text-align: center;
+  font-size: 0.82em;
+  line-height: 1.5;
+  color: var(--delta-mute);
+  text-wrap: pretty;
+}
+.fm-line:first-of-type { margin-top: 14px; }
+.fm-label {
+  font-family: var(--delta-sans);
+  font-weight: 600;
+  color: var(--delta-ink-soft);
+}
+
+/* -- Small blocks: acknowledgements / funding, with an italic run-in label -------- */
+.fm-block {
+  display: block;
+  margin: var(--delta-block-gap) 0 0;
+  font-size: 0.9em;
+  line-height: var(--delta-leading);
+  color: var(--delta-ink-soft);
+}
+.fm-block .fm-label {
+  font-family: var(--delta-serif);
+  font-style: italic;
+  font-weight: 600;
+  color: var(--delta-ink);
+  margin-right: 0.3em;
 }
 
 }
@@ -1335,20 +1702,78 @@ delta-item { display: list-item; margin-left: 1.5em; }
     margin: var(--delta-block-gap) 0;
   }
 
+  /* A display equation wider than the text column would push the whole page into
+     horizontal scroll on narrow screens; scroll it inside its own box instead.
+     The small top padding keeps tall glyphs (exponents, hats) from being shaved
+     by the clip edge; overflow-y is hidden so the horizontal scrollbar can't also
+     summon a vertical one. */
+  delta-equation .katex-display,
+  delta-equations .katex-display,
+  delta-math .katex-display {
+    margin: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-top: 0.3em;
+  }
+
+  /* Numbered equations lay out as two grid tracks: the (scrollable) equation and
+     the number. The number track is `auto` — it reserves EXACTLY the width of
+     "(1.2)" and not a pixel more, so the equation keeps essentially the whole
+     column. Reserving a fixed gutter instead (an earlier version used two 3.5em
+     ones, to keep the equation dead-centre) cost ~140px and made equations scroll
+     that had 100px to spare. Width beats perfect centring: the equation is centred
+     in what remains, which is off true centre by half the number's width.
+     minmax(0, 1fr) lets the track shrink below its content, so a genuinely
+     oversized equation scrolls inside itself rather than widening the page. */
+  delta-equation[num],
+  delta-equations[num] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 0.5em;
+  }
+
+  delta-equation[num] .katex-display,
+  delta-equations[num] .katex-display {
+    min-width: 0;
+  }
+
+  /* Where horizontal space is scarcest, stop reserving for the number at all:
+     it drops to its own row, right-aligned, and the equation gets the full
+     column. Below this width the number's ~3.5em is the difference between
+     fitting and scrolling for a typical display equation. */
+  @media (max-width: 640px) {
+    delta-equation[num],
+    delta-equations[num] {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    delta-equation[num]::after,
+    delta-equations[num]::after {
+      margin-top: 0.2em;
+    }
+  }
+
   delta-equation[num]::after,
   delta-equations[num]::after {
     content: "(" attr(num) ")";
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--delta-mute);
+    text-align: right;
+    color: var(--delta-num);
     font-variant-numeric: tabular-nums;
   }
 
-  delta-equation .katex-display,
-  delta-equations .katex-display,
-  delta-math .katex-display { margin: 0; }
+  /* Inside a popover preview (.delta-pop, e.g. a <ref> card) the number already
+     shows in the bubble's header label, and the narrow bubble makes the number
+     crowd the equation — so drop it there. Same specificity as the rules above,
+     so these must stay after them to win. */
+  .delta-pop delta-equation[num],
+  .delta-pop delta-equations[num] {
+    display: block;
+  }
+
+  .delta-pop delta-equation[num]::after,
+  .delta-pop delta-equations[num]::after {
+    content: none;
+  }
 
   delta-m { display: inline; }
 
@@ -1436,6 +1861,32 @@ delta-ref { display: inline; }
 .xref:hover {
   background: color-mix(in oklab, var(--delta-accent-soft) 60%, transparent);
   border-color: var(--delta-accent-ink);
+}
+
+/* An in-math \ref marker (wireMathRefs upgrades the \htmlData span the compiler
+   bakes into KaTeX output). Accent color only — no underline, which would collide
+   with math symbols (e.g. sitting on an equals sign via \stackrel); the hover wash
+   provides the click affordance. Sized by the surrounding math (a \stackrel script
+   keeps its scriptsize). */
+.katex .math-xref {
+  color: var(--delta-accent-ink);
+  cursor: pointer;
+  border-radius: var(--delta-radius-sm);
+  transition: background var(--delta-dur-fast) var(--delta-ease);
+  /* Lift the marker into a higher paint layer, or it is not CLICKABLE. KaTeX
+     stacks an aligned environment out of `.vlist` table-cells that are
+     `position: relative; z-index: auto` and overlap each other freely (each row
+     is a zero-height box offset by `top`). A cell later in the DOM therefore
+     paints over an earlier row and swallows every pointer event aimed at it —
+     which is exactly where a `\stackrel{\eqref{…}}{=}` marker lives. Keyboard
+     activation still worked, since that path never hit-tests. z-index needs a
+     positioned element, and both sit in the same stacking context (nothing in
+     the math subtree creates one), so 1 is enough to clear the auto/0 layer. */
+  position: relative;
+  z-index: 1;
+}
+.katex .math-xref:hover {
+  background: color-mix(in oklab, var(--delta-accent-soft) 60%, transparent);
 }
 
 /* Card content chrome on top of the shared .delta-pop shell. */
@@ -1561,13 +2012,33 @@ delta-sidenote { display: block; }
     display: none;
   }
 
-  /* Each slide fills the viewport: title at the top, body centered. */
+  /* Each slide fills the viewport: title at the top, body centered. The
+     `min-height` is the JS-off fallback — with no deck controller every slide
+     stays visible and stacks, so each must be at least a screen tall. When JS is
+     on the `.deck-js` rules below turn this floor into a fixed viewport canvas. */
   :root[data-type="presentation"] delta-slide {
     display: flex;
     flex-direction: column;
     min-height: 100dvh;
     box-sizing: border-box;
     padding: var(--delta-slide-pad);
+  }
+
+  /* JS on: the deck is a fixed viewport shell — a PowerPoint-style canvas that
+     never scrolls the page. Lock the root + body to the viewport and hide overflow
+     so the browser shows no page scrollbar; the fixed chrome (.deck-controls /
+     .deck-topbar) is positioned against the viewport, not clipped by this. Gated on
+     `.deck-js` so the JS-off fallback keeps stacking + scrolling slides. */
+  :root[data-type="presentation"].deck-js,
+  :root[data-type="presentation"].deck-js body {
+    height: 100dvh;
+    overflow: hidden;
+  }
+  /* Pin each slide to exactly one viewport and clip content past the edge — a slide
+     is authored to fit; anything taller is cut off rather than growing the page. */
+  :root[data-type="presentation"].deck-js delta-slide {
+    height: 100dvh;
+    overflow: hidden;
   }
   :root[data-type="presentation"] .slide-title {
     margin: 0;
@@ -1882,12 +2353,12 @@ delta-subsubsection { margin: 28px 0 0; }
 .chapter-title,
 delta-document > delta-title {
   font-family: var(--delta-serif);
-  font-weight: 500;
+  font-weight: var(--delta-weight-display);
   font-size: var(--delta-t-h1);
   line-height: 0.98;
   letter-spacing: -0.02em;
   margin: 14px 0 0;
-  font-variation-settings: "opsz" 72;
+  font-variation-settings: var(--delta-font-variation-display);
   text-wrap: balance;
 }
 .chapter-title em,
@@ -1935,7 +2406,7 @@ delta-document > delta-title em {
 /* -- Section / subsection headings ------------------------------------ */
 h2.section {
   font-family: var(--delta-serif);
-  font-weight: 500;
+  font-weight: var(--delta-weight-display);
   font-size: var(--delta-t-h2);
   line-height: var(--delta-leading-tight);
   letter-spacing: -0.012em;
@@ -1945,7 +2416,7 @@ h2.section {
 
 h3.sub {
   font-family: var(--delta-serif);
-  font-weight: 500;
+  font-weight: var(--delta-weight-display);
   font-size: var(--delta-t-h3);
   letter-spacing: -0.005em;
   margin: 0 0 8px;
@@ -1955,11 +2426,13 @@ h3.sub {
    every level shares one consistent treatment. */
 h2.section .num,
 h3.sub .num,
-h4.subsub .num { color: var(--delta-mute); margin-right: 0.4em; }
+h4.subsub .num { color: var(--delta-num); margin-right: 0.4em; }
 
 h4.subsub {
   font-family: var(--delta-serif);
-  font-weight: 600;
+  /* the one heading set at `strong` rather than `display`: at h4 the level reads
+     as emphasized body text, not as a display line */
+  font-weight: var(--delta-weight-strong);
   font-size: var(--delta-t-h4);
   letter-spacing: -0.003em;
   margin: 0 0 6px;
@@ -2084,13 +2557,13 @@ delta-i {
 delta-em {
   display: inline-block;
   font-style: italic;
-  font-weight:600;
+  font-weight: var(--delta-weight-strong);
   color: var(--delta-accent-ink);
 }
 
 delta-strong {
   display: inline-block;
-  font-weight: 600;
+  font-weight: var(--delta-weight-strong);
 }
 
 delta-u {
@@ -2227,29 +2700,56 @@ delta-proof {
   display: block;
 }
 
+/* -- Environment tones -------------------------------------------------
+   Each family carries its own tone, assigned here on the element so it inherits
+   down to the label pill. base.css defaults every tone to the page colour, so
+   this is invisible until a theme remaps them. */
+delta-theorem, delta-proposition, delta-lemma, delta-corollary,
+delta-claim, delta-observation, delta-conjecture {
+  --delta-env-tone: var(--delta-tone-theorem);
+}
+delta-definition           { --delta-env-tone: var(--delta-tone-definition); }
+delta-example              { --delta-env-tone: var(--delta-tone-example); }
+delta-remark               { --delta-env-tone: var(--delta-tone-remark); }
+delta-exercise, delta-problem { --delta-env-tone: var(--delta-tone-exercise); }
+
 /* -- .box and label --------------------------------------------------- */
 .box {
-  border: var(--delta-hairline) solid var(--delta-rule);
-  background: var(--delta-surface-1);
+  /* The border is the neutral rule tinted toward the family tone by
+     --delta-env-tint (0 = neutral, the default, so this is a no-op until a theme
+     opts in; 1 = the tone itself). Expressed as a mix rather than a second set of
+     per-family tokens, so a theme dials the whole effect with one number. */
+  border: var(--delta-hairline) solid
+          color-mix(in oklab,
+                    var(--delta-env-tone, var(--delta-paper)) calc(var(--delta-env-tint, 0) * 100%),
+                    var(--delta-env-border));
+  background: var(--delta-env-bg);
   border-radius: var(--delta-radius);
-  padding: 22px 24px 18px;
+  padding: 20px 24px 18px;
   margin: var(--delta-block-gap) 0;
   position: relative;
   box-shadow: var(--delta-shadow);
 }
+/* The label pill straddles the top border like a fieldset legend, but stays in
+   NORMAL FLOW — a fit-content block lifted onto the border by a negative top
+   margin — so a title too long for one line wraps and PUSHES the content down
+   instead of being absolutely positioned on top of it. max-width keeps a long
+   pill inside the box (box-sizing is border-box globally). */
 .box-tag {
-  position: absolute;
-  top: -10px;
-  left: 18px;
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin: -30px 0 12px;
   font-family: var(--delta-sans);
   font-size: 10.5px;
+  line-height: 1.35;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--delta-accent-ink);
-  background: var(--delta-paper);
+  color: var(--delta-env-tag-ink);
+  background: var(--delta-env-tone, var(--delta-paper));
   padding: 2px 9px;
   border-radius: var(--delta-radius-sm);
-  border: var(--delta-hairline) solid var(--delta-rule);
+  border: var(--delta-hairline) solid var(--delta-env-tag-border);
 }
 /* The author's title rides in the label pill, parenthesised and slightly
    subordinate so the environment kind + number still reads first. */
@@ -2261,7 +2761,7 @@ delta-proof {
 .box-tag-title::after  { content: ")"; }
 
 .box-title {
-  font-weight: 600;
+  font-weight: var(--delta-weight-strong);
   font-size: 17px;
   margin: 0 0 6px;
   letter-spacing: -0.003em;
@@ -2314,7 +2814,6 @@ delta-solution {
 /* -- Narrow-viewport tweaks ------------------------------------------- */
 @media (max-width: 640px) {
   .box { padding: 18px 16px 14px; }
-  .box-tag { left: 12px; }
 }
 
 @media print {
@@ -2681,11 +3180,11 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">�
       </delta-theorem></template>
 <template data-delta-pop="eq:pyth"><delta-equation id="eq:pyth" num="2.1"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mi>b</mi><mn>2</mn></msup><mo>=</mo><msup><mi>c</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">a^2 + b^2 = c^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9474em;vertical-align:-0.0833em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8641em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8641em;"></span><span class="mord"><span class="mord mathnormal">b</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8641em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8641em;"></span><span class="mord"><span class="mord mathnormal">c</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8641em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span></span></delta-equation></template>
 <script type="application/json" id="delta-toc">[{"level":2,"id":"part-one-the-basics","num":"1","title":"Part One — The Basics"},{"level":2,"id":"part-two-going-deeper","num":"2","title":"Part Two — Going Deeper"},{"level":2,"id":"part-three-testing-references","num":"3","title":"Part three - Testing references"}]</script>
-<script type="application/json" id="delta-i18n">{"theorem":"Theorem","proposition":"Proposition","lemma":"Lemma","corollary":"Corollary","conjecture":"Conjecture","definition":"Definition","example":"Example","claim":"Claim","observation":"Observation","exercise":"Exercise","problem":"Problem","proof":"Proof","solution":"Solution","remark":"Remark","section":"Section","equation":"Equation","figure":"Figure","table":"Table","video":"Video","audio":"Audio","contents":"Contents","hint":"Hint","references":"References","close":"Close","code":"Code","copy":"Copy","copied":"Copied","prevSlide":"Previous slide","nextSlide":"Next slide"}</script>
+<script type="application/json" id="delta-i18n">{"theorem":"Theorem","proposition":"Proposition","lemma":"Lemma","corollary":"Corollary","conjecture":"Conjecture","definition":"Definition","example":"Example","claim":"Claim","observation":"Observation","exercise":"Exercise","problem":"Problem","proof":"Proof","solution":"Solution","remark":"Remark","section":"Section","subsection":"Subsection","subsubsection":"Subsubsection","equations":"Equations","equation":"Equation","figure":"Figure","interactive":"Interactive","table":"Table","video":"Video","audio":"Audio","contents":"Contents","hint":"Hint","references":"References","close":"Close","code":"Code","copy":"Copy","copied":"Copied","prevSlide":"Previous slide","nextSlide":"Next slide","abstract":"Abstract","keywords":"Keywords","msc":"Mathematics Subject Classification","received":"Received","revised":"Revised","accepted":"Accepted","submitted":"Submitted","date":"Date","acknowledgements":"Acknowledgements","funding":"Funding"}</script>
 <script>
-"use strict";(()=>{function P(s){let e=document.getElementById(s);e&&(e.scrollIntoView({block:"center",behavior:"smooth"}),e.classList.add("is-xref-target"),e.addEventListener("animationend",()=>e.classList.remove("is-xref-target"),{once:!0}))}function B(s){let e=document.createDocumentFragment(),t=o=>s.querySelector(`:scope > delta-${o}`),n=["author","title","journal","year"].map(t).filter(o=>o!==null);n.forEach((o,m)=>{m>0&&e.append(". ");let i=document.createElement("span");i.className=`paper-${o.tagName.toLowerCase().replace("delta-","")}`;for(let d of o.childNodes)i.append(d.cloneNode(!0));e.append(i)}),n.length&&e.append(".");let a=t("link")??t("url");return a&&(e.append(" "),e.append(a.cloneNode(!0))),e}function N(s,e){let t=s.getAttribute("collapsed")==="true";if(!t&&s.getAttribute("collapsible")!=="true")return;let n=document.createElement("div");for(n.className="collapse-body";e.nextSibling;)n.append(e.nextSibling);s.append(n),e.classList.add("collapse-toggle"),e.setAttribute("role","button"),e.tabIndex=0;let a=m=>{s.classList.toggle("is-collapsed",m),e.setAttribute("aria-expanded",String(!m))};a(t);let o=()=>a(!s.classList.contains("is-collapsed"));e.addEventListener("click",o),e.addEventListener("keydown",m=>{(m.key==="Enter"||m.key===" ")&&(m.preventDefault(),o())})}var ie={"delta-chapter":{level:1,cls:"chapter-title"},"delta-section":{level:2,cls:"section"},"delta-subsection":{level:3,cls:"sub"},"delta-subsubsection":{level:4,cls:"subsub"}},j=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelector(":scope > delta-title");if(!e)return;if(document.documentElement.dataset.type==="presentation"){let o=document.createElement("delta-slide");o.setAttribute("divider","true"),o.appendChild(e),this.prepend(o);return}let t=ie[this.tagName.toLowerCase()]??{level:2,cls:"section"},n=document.createElement(`h${t.level}`);n.className=t.cls;let a=this.getAttribute("num");if(a){let o=document.createElement("span");o.className="num",o.textContent=a,n.append(o," ")}n.append(...e.childNodes),e.replaceWith(n),N(this,n)}};function le(){for(let s of Object.keys(ie))customElements.define(s,class extends j{})}var F=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelector(":scope > delta-title"),t=document.createElement("div");t.className="slide-body";for(let n of[...this.childNodes])n!==e&&t.append(n);if(e){let n=document.createElement("h2");n.className="slide-title",n.append(...e.childNodes),e.replaceWith(n);let a=document.createElement("div");a.className="slide-rule";let o=document.createElement("span");o.className="slide-rule-fill",a.append(o),n.after(a)}this.append(t)}};function de(){customElements.define("delta-slide",F)}var M=null;function Te(){if(M)return M;let s=document.getElementById("delta-i18n");try{M=s?JSON.parse(s.textContent||"{}"):{}}catch{M={}}return M}function b(s,e){return Te()[s]??e??s}var Me=["theorem","proposition","lemma","corollary","conjecture","definition","example","claim","observation","exercise","problem","proof","solution","remark"],we=new Set(["theorem","proposition","lemma","corollary","conjecture","definition","example","claim","observation","exercise","problem","remark"]),He=new Set(["proof","solution"]),U=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.tagName.toLowerCase().replace(/^delta-/,""),t=this.getAttribute("num"),n=b(e,e.charAt(0).toUpperCase()+e.slice(1)),a=this.querySelector(":scope > delta-title");if(He.has(e)){let i=document.createElement("span"),d=this.getAttribute("of"),p=this.getAttribute("data-target-tag"),l=this.getAttribute("data-target-num");if(p&&d&&l){let r=document.createElement("delta-ref");r.setAttribute("to",d),r.setAttribute("data-target-num",l),r.setAttribute("data-target-tag",p),i.append(" "),i.append(r)}if(i.className="proof-lead",i.prepend(n),a&&(i.append(" (",...a.childNodes,")"),a.remove()),i.append("."),this.prepend(i," "),e==="proof"){let r=document.createElement("span");r.className="proof-qed",r.textContent="\u25A1",this.append(r)}N(this,i);return}if(!we.has(e))return;this.classList.add("box"),e==="example"&&this.classList.add("example");let o=document.createElement("span");if(o.className="box-tag",o.textContent=n+(t?` ${t}`:""),a){let i=document.createElement("span");i.className="box-tag-title",i.append(...a.childNodes),a.remove(),o.append(" ",i)}this.prepend(o);let m=this.querySelector(":scope > delta-meta");if(m){let i=m.querySelectorAll(":scope > delta-meta-item");if(i.length){let d=document.createElement("div");d.className="box-meta";for(let p of i){let l=p.getAttribute("key"),r=p.innerHTML.trim();if(l&&r){let f=document.createElement("span");f.className="box-meta-item",f.innerHTML=`<span class="k">${l}</span><span class='v'> ${r}</span>`,d.appendChild(f)}}m.remove(),this.append(d)}}N(this,o)}};function ce(){for(let s of Me)customElements.define(`delta-${s}`,class extends U{})}var V=class extends HTMLElement{connectedCallback(){this.dataset.deltaReady||(this.dataset.deltaReady="1",this.classList.add("sidenote"))}};function me(){customElements.define("delta-sidenote",class extends V{})}function D(s,e,t,n="video-cap"){let a=s.querySelector(":scope > delta-caption");if(!a)return;a.classList.add(n);let o=document.createElement("span");o.className="lbl";let m=b(e,e.charAt(0).toUpperCase()+e.slice(1));o.textContent=m+(t?` ${t}`:""),a.prepend(o," ")}function Se(s){if(s=(s||"").trim(),/^[\w-]{11}$/.test(s))return s;try{let e=new URL(s);if(e.hostname==="youtu.be")return e.pathname.slice(1,12);if(e.searchParams.has("v"))return e.searchParams.get("v");let t=e.pathname.match(/\/(?:embed|shorts)\/([\w-]{11})/);if(t)return t[1]}catch{}return""}var K=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("video-frame");let e=Se(this.getAttribute("src"));if(!e){console.warn("delta-youtube: no valid video ID found in src",this.getAttribute("src"));return}let t=document.createElement("iframe");t.src=`https://www.youtube.com/embed/${e}`,t.allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",t.allowFullscreen=!0,t.className="video-media",t.loading="lazy",this.prepend(t),D(this,"video",this.getAttribute("num"))}},X=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("video-frame");let e=this.getAttribute("src");if(!e){let n=document.createElement("div");n.className="video-missing",n.textContent="No video source.",this.prepend(n);return}let t=document.createElement("video");t.src=e,t.controls=!0,t.className="video-media";for(let n of["poster","loop","muted","autoplay","playsinline"])this.hasAttribute(n)&&t.setAttribute(n,this.getAttribute(n)??"");this.prepend(t),D(this,"video",this.getAttribute("num"))}},z=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("video-frame");let e=this.getAttribute("src");if(!e){let n=document.createElement("div");n.className="video-missing",n.textContent="No audio source.",this.prepend(n);return}let t=document.createElement("audio");t.src=e,t.controls=!0,t.className="audio-media",this.hasAttribute("loop")&&(t.loop=!0),this.prepend(t),D(this,"audio",this.getAttribute("num"))}},G=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("figure");let e=this.getAttribute("src");if(e){let t=document.createElement("div");t.className="figure-frame";let n=document.createElement("img");n.src=e;let a=this.getAttribute("alt");a&&(n.alt=a),t.append(n),this.prepend(t)}else{let t=document.createElement("div");t.className="video-missing",t.textContent="Image not found.",this.prepend(t)}D(this,"figure",this.getAttribute("num"),"figure-cap")}};function pe(){customElements.define("delta-youtube",class extends K{}),customElements.define("delta-video",class extends X{}),customElements.define("delta-audio",class extends z{}),customElements.define("delta-figure",class extends G{})}var _=typeof HTMLElement<"u"&&"popover"in HTMLElement.prototype,w=8,W=12,A=null;function L(s,e,t={}){let{onOpen:n,onClose:a,gap:o=10,triggerClick:m=!0}=t;e.classList.add("delta-pop"),_&&e.setAttribute("popover","manual"),e.parentElement!==document.body&&document.body.appendChild(e),s.setAttribute("aria-haspopup","dialog");let i=!1;function d(){let u=s.getBoundingClientRect(),x=e.getBoundingClientRect(),R=document.documentElement.clientWidth,I=document.documentElement.clientHeight,q=u.bottom+o+x.height<=I-w,O=u.top-o-x.height>=w,T=!q&&O;e.classList.toggle("is-above",T);let $=T?u.top-o-x.height:u.bottom+o,c=Math.min(Math.max(w,u.left),Math.max(w,R-x.width-w));e.style.top=`${Math.round($)}px`,e.style.left=`${Math.round(c)}px`;let v=Math.max(W,x.width-W),E=Math.min(Math.max(W,u.left+u.width/2-c),v);e.style.setProperty("--arrow-x",`${Math.round(E)}px`)}let p=()=>d(),l=u=>{u.key==="Escape"&&h()},r=u=>{let x=u.target;!e.contains(x)&&!s.contains(x)&&h()};function f(){i||(A&&A!==h&&A(),n?.(e,s),_?e.showPopover():e.classList.add("is-open"),d(),window.addEventListener("scroll",p,{capture:!0,passive:!0}),window.addEventListener("resize",p),document.addEventListener("keydown",l),setTimeout(()=>document.addEventListener("pointerdown",r),0),i=!0,A=h,s.setAttribute("aria-expanded","true"))}function h(){i&&(_?e.matches(":popover-open")&&e.hidePopover():e.classList.remove("is-open"),e.classList.remove("is-above"),window.removeEventListener("scroll",p,{capture:!0}),window.removeEventListener("resize",p),document.removeEventListener("keydown",l),document.removeEventListener("pointerdown",r),i=!1,A===h&&(A=null),s.setAttribute("aria-expanded","false"),a?.(e,s))}function y(){i?h():f()}_&&e.addEventListener("toggle",u=>{u.newState==="closed"&&i&&h()});let g=u=>{u.preventDefault(),y()};return m&&(s.addEventListener("click",g),s.setAttribute("aria-expanded","false")),{open:f,close:h,toggle:y,reposition:d,get isOpen(){return i},destroy(){h(),m&&s.removeEventListener("click",g),e.remove()}}}var J=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelector(":scope > delta-title"),t=(e?.textContent??"").trim();e?.remove();let n=document.createElement("div");n.append(...this.childNodes);let a=document.createElement("button");a.type="button",a.className="hint-trigger";let o=document.createElement("span");o.className="hint-marker",o.textContent="\u{1F4A1}",a.append(o," ",t||b("hint","Hint")),this.append(a),L(a,n)}};function ue(){customElements.define("delta-hint",class extends J{})}var H=null;function Re(){if(H)return H;let s=document.getElementById("delta-toc");try{H=s?JSON.parse(s.textContent||"[]"):[]}catch{H=[]}return H}var Y=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=parseInt(this.getAttribute("depth")??"2",10),t=this.getAttribute("scope")==="project",n=Re().filter(l=>l.level-1<=e&&(t||!l.file));if(n.length===0)return;let a=document.createElement("nav");a.className="toc";let o=this.querySelector(":scope > delta-title"),m=o?o.innerHTML:b("contents","Contents");a.setAttribute("aria-label",m);let i=document.createElement("div");i.className="toc-title",i.innerHTML=m,a.append(i);let d=document.createElement("ol");d.className="toc-list";let p=[{level:n[0].level,ol:d}];for(let l of n){for(;p.length>1&&l.level<p[p.length-1].level;)p.pop();let r=p[p.length-1];if(l.level>r.level){let g=r.ol.lastElementChild,u=document.createElement("ol");u.className="toc-sub",(g??r.ol).append(u),p.push({level:l.level,ol:u}),r=p[p.length-1]}let f=document.createElement("li");f.className="toc-item";let h=document.createElement("a");if(h.className="toc-link",h.href=l.file?`${l.file}#${l.id}`:`#${l.id}`,l.num){let g=document.createElement("span");g.className="toc-num",g.textContent=l.num,h.append(g," ")}let y=document.createElement("span");y.className="toc-text",y.innerHTML=l.title,h.append(y),h.addEventListener("click",g=>{if(l.file)return;if(window.Delta?.deck?.goToId(l.id)){g.preventDefault();return}let u=document.getElementById(l.id);u&&(g.preventDefault(),u.scrollIntoView({block:"start",behavior:"smooth"}),u.classList.add("is-xref-target"),u.addEventListener("animationend",()=>u.classList.remove("is-xref-target"),{once:!0}))}),f.append(h),r.ol.append(f)}a.append(d),this.replaceChildren(a)}};function fe(){customElements.define("delta-toc",class extends Y{})}var Q=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelector(":scope > delta-title"),t=(e?.textContent??"").trim()||b("contents","Contents"),n=e?[...e.childNodes]:null;e?.remove();let a=()=>n?Ie(document.createElement("span"),n):t,o=document.createElement("button");o.type="button",o.className="floating-fab",o.setAttribute("aria-label",t);let m=document.createElement("span");m.className="floating-icon",m.setAttribute("aria-hidden","true"),m.textContent="\u2630",o.append(m,a());let i=document.createElement("div");i.className="floating-panel";let d=document.createElement("div");d.className="floating-hd";let p=document.createElement("span");p.className="floating-title",p.append(a());let l=document.createElement("button");l.type="button",l.className="floating-x",l.setAttribute("aria-label",b("close","Close")),l.textContent="\xD7",d.append(p,l);let r=document.createElement("div");r.className="floating-body",r.append(...this.childNodes),i.append(d,r),this.append(o);let f=L(o,i,{gap:12});l.addEventListener("click",()=>f.close()),r.addEventListener("click",h=>{h.target.closest("a")&&f.close()})}};function Ie(s,e){for(let t of e)s.append(t.cloneNode(!0));return s}function he(){customElements.define("delta-floating",class extends Q{})}var qe='<svg class="ext-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"/></svg>',Z=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("to");if(!e)return;let t=document.createElement("a");for(t.className="ext-link",t.href=e,t.target="_blank",t.rel="noopener noreferrer";this.firstChild;)t.appendChild(this.firstChild);this.appendChild(t),t.insertAdjacentHTML("beforeend",qe)}};function ve(){customElements.define("delta-link",class extends Z{})}var Oe='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>',ee=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("to")??"",t=this.getAttribute("data-target-num"),n=this.getAttribute("data-target-tag"),a=this.getAttribute("data-target-href");if(!n||!t)return;let o=`${b(n,n.charAt(0).toUpperCase()+n.slice(1))} ${t}`,m=(this.textContent??"").trim().length>0,i=document.createElement("button");i.type="button",i.className="xref",m?i.append(...this.childNodes):i.textContent=o,this.replaceChildren(i);let d=document.createElement("div");d.className="xref-pop";let p=document.createElement("div");p.className="xref-pop-head";let l=document.createElement("span");l.className="xref-pop-label",l.textContent=o;let r=document.createElement("button");r.type="button",r.className="xref-go",r.title=o,r.setAttribute("aria-label",o),r.innerHTML=Oe,p.append(l,r);let f=document.createElement("div");f.className="xref-pop-body",d.append(p,f);let h=!1,y=L(i,d,{onOpen:()=>{if(h)return;h=!0;let g=[...document.querySelectorAll("template[data-delta-pop]")].find(x=>x.dataset.deltaPop===e);if(!g)return;let u=g.content.cloneNode(!0);for(let x of u.querySelectorAll("[id]"))x.removeAttribute("id");for(let x of u.querySelectorAll("[collapsed], [collapsible]"))x.removeAttribute("collapsed"),x.removeAttribute("collapsible");f.append(u)}});r.addEventListener("click",g=>{if(g.preventDefault(),y.close(),window.Delta?.deck?.goToId(e))return;if(a){location.href=a;return}let u=document.getElementById(e);u&&(u.scrollIntoView({block:"center",behavior:"smooth"}),u.classList.add("is-xref-target"),u.addEventListener("animationend",()=>u.classList.remove("is-xref-target"),{once:!0}))})}};function ge(){customElements.define("delta-ref",class extends ee{})}var te=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelectorAll(":scope > delta-paper");if(e.length===0)return;let t=document.createElement("section");t.className="notes";let n=this.querySelector(":scope > delta-title"),a=document.createElement("h4");a.innerHTML=n?n.innerHTML:b("references","References"),t.append(a);let o=document.createElement("ol");for(let m of e){let i=document.createElement("li");m.id&&(i.id=m.id),i.append(B(m)),o.append(i)}t.append(o),this.replaceChildren(t)}};function be(){customElements.define("delta-bibliography",class extends te{})}var ne=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=(this.getAttribute("data-cite-nums")??"").split(",").filter(Boolean),t=(this.getAttribute("data-cite-ids")??"").split(",").filter(Boolean),n=this.getAttribute("data-cite-file");if(e.length===0){this.classList.add("cite-missing");return}let a=document.createElement("span");a.className="cite",a.append("["),e.forEach((d,p)=>{p>0&&a.append(", ");let l=document.createElement("a");l.textContent=d,a.append(l)}),a.append("]"),this.replaceChildren(a);let o=document.createElement("div");o.className="cite-pop";let m=!1,i=L(a,o,{onOpen:()=>{m||(m=!0,t.forEach((d,p)=>{let l=document.createElement("div");l.className="cite-pop-item";let r=document.createElement("a");r.className="cite-pop-num",r.href=n?`${n}#${d}`:`#${d}`,r.textContent=`[${e[p]}]`,r.addEventListener("click",g=>{i.close(),!window.Delta?.deck?.goToId(d)&&(n||(g.preventDefault(),P(d)))});let f=document.createElement("span");f.className="cite-pop-text";let y=[...document.querySelectorAll("template[data-delta-pop]")].find(g=>g.dataset.deltaPop===d)?.content.querySelector("delta-paper");y&&f.append(B(y)),l.append(r,f),o.append(l)}))}})}};function Ee(){customElements.define("delta-cite",class extends ne{})}var oe=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.textContent??"",t=document.createElement("pre");t.className="code-src";let n=document.createElement("code");for(;this.firstChild;)n.append(this.firstChild);t.append(n);let a=document.createElement("div");if(a.className="code-body",this.getAttribute("lines")!=="false"){let p=e.replace(/\n$/,"").split(`
-`).length,l=document.createElement("span");l.className="code-gutter",l.setAttribute("aria-hidden","true"),l.textContent=Array.from({length:p},(r,f)=>String(f+1)).join(`
-`),a.append(l)}a.append(t);let o=document.createElement("div");o.className="code-head";let m=this.getAttribute("lang"),i=document.createElement("span");i.className="code-lang",i.textContent=(m||b("code","Code")).toUpperCase();let d=document.createElement("button");d.type="button",d.className="code-copy",d.textContent=b("copy","Copy"),d.addEventListener("click",()=>{navigator.clipboard?.writeText(e).then(()=>{d.textContent=b("copied","Copied"),d.classList.add("is-copied"),setTimeout(()=>{d.textContent=b("copy","Copy"),d.classList.remove("is-copied")},1400)})}),o.append(i,d),this.append(o,a),N(this,o)}};function ye(){customElements.define("delta-code",oe)}var S={ordered:!1,marker:"bullet"},ae={1:{ordered:!0,marker:"decimal"},number:{ordered:!0,marker:"decimal"},numbers:{ordered:!0,marker:"decimal"},numbered:{ordered:!0,marker:"decimal"},decimal:{ordered:!0,marker:"decimal"},a:{ordered:!0,marker:"alpha"},alpha:{ordered:!0,marker:"alpha"},alphabetical:{ordered:!0,marker:"alpha"},A:{ordered:!0,marker:"alpha-upper"},"alpha-upper":{ordered:!0,marker:"alpha-upper"},i:{ordered:!0,marker:"roman"},roman:{ordered:!0,marker:"roman"},I:{ordered:!0,marker:"roman-upper"},"roman-upper":{ordered:!0,marker:"roman-upper"},bullet:S,disc:S,dot:S,dash:{ordered:!1,marker:"dash"},none:{ordered:!1,marker:"none"}};function $e(s){if(s.getAttribute("numbered")==="true")return ae.number;let e=(s.getAttribute("marker")??"").trim();return e?ae[e]??ae[e.toLowerCase()]??S:S}var se=class extends HTMLElement{connectedCallback(){this.dataset.deltaReady||(this.dataset.deltaReady="1",this._render())}_render(){let e=$e(this),t=document.createElement(e.ordered?"ol":"ul");if(t.className="delta-list",t.dataset.marker=e.marker,e.ordered){let n=parseInt(this.getAttribute("start")??"",10);Number.isFinite(n)&&(t.style.counterReset=`delta-item ${n-1}`,t.setAttribute("start",String(n)))}this.querySelectorAll(":scope > delta-item").forEach(n=>{let a=document.createElement("li");a.className="delta-list-item";for(let o of["reveal","reveal-order"]){let m=n.getAttribute(o);m!==null&&a.setAttribute(o,m)}a.append(...n.childNodes),t.append(a)}),this.replaceChildren(t)}};function xe(){customElements.define("delta-list",se)}function Le(s,e,t,n,a){let o=e.getAttribute("align");a&&o&&(n[t]=o),o||(o=n[t]),o==="right"?s.classList.add("num"):o==="center"&&(s.style.textAlign="center"),e.getAttribute("mono")==="true"&&s.classList.add("mono")}var re=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("delta-table");let e=this.querySelector(":scope > delta-title"),t=this.querySelector(":scope > delta-caption"),n=this.getAttribute("num"),a=null;if(e||t||n){if(a=document.createElement("div"),a.className="table-head",e||n){let r=document.createElement("span");r.className="table-lbl",r.textContent=b("table","Table")+(n?` ${n}`:""),a.append(r)}if(e){let r=document.createElement("span");r.className="table-title",r.append(...e.childNodes),a.append(r)}if(t){let r=document.createElement("span");r.className="table-cap",r.append(...t.childNodes),a.append(r)}}let o=document.createElement("table");o.className="t";let m=[],i=this.querySelector(":scope > delta-header");if(i){let r=document.createElement("thead"),f=document.createElement("tr");i.querySelectorAll(":scope > delta-column").forEach((h,y)=>{let g=document.createElement("th");Le(g,h,y,m,!0),g.append(...h.childNodes),f.append(g)}),r.append(f),o.append(r)}let d=document.createElement("tbody");this.querySelectorAll(":scope > delta-row").forEach(r=>{let f=document.createElement("tr");r.querySelectorAll(":scope > delta-column").forEach((h,y)=>{let g=document.createElement("td");Le(g,h,y,m,!1),g.append(...h.childNodes),f.append(g)}),d.append(f)}),o.append(d);let p=document.createElement("div");p.className="table-wrap";let l=this.getAttribute("max-height");l&&(p.style.maxHeight=l,p.style.overflowY="auto"),p.append(o),this.replaceChildren(...a?[a]:[],p)}};function Ne(){customElements.define("delta-table",re)}function ke(){le(),de(),ce(),me(),pe(),ue(),fe(),he(),ve(),ge(),be(),Ee(),ye(),xe(),Ne()}function Ce(){let s=document.documentElement;if(s.dataset.type!=="presentation")return null;let e=[...document.querySelectorAll("delta-slide")];if(e.length===0)return null;s.classList.add("deck-js"),document.querySelector("delta-progress")&&s.classList.add("deck-progress-on");let t=0,n=0,a=0,o=[],m=c=>Math.max(0,Math.min(e.length-1,c)),i=c=>[...c.querySelectorAll('[reveal="true"]')].map((v,E)=>({el:v,order:v.hasAttribute("reveal-order")?Number(v.getAttribute("reveal-order")):E})).sort((v,E)=>v.order-E.order).map(v=>v.el),d=e.map(i),p=(c,v)=>d[c].forEach((E,k)=>E.classList.toggle("is-revealed",k<v)),l=()=>{let c=(t+1)/e.length;s.style.setProperty("--deck-progress-prev",String(a)),s.style.setProperty("--deck-progress",String(c)),a=c},r=(c,v)=>{e[t]?.classList.remove("is-active"),t=m(c),n=v?d[t].length:0,p(t,n),l(),e[t].classList.add("is-active");for(let E of o)E(t,e.length)},f=()=>{n<d[t].length?p(t,++n):t<e.length-1&&r(t+1,!1)},h=()=>{n>0?p(t,--n):t>0&&r(t-1,!0)},y=c=>r(c,!1);document.addEventListener("keydown",c=>{let v=c.target;if(!(v&&(v.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(v.tagName)))&&!(c.metaKey||c.ctrlKey||c.altKey))switch(c.key){case"ArrowRight":case"ArrowDown":case"PageDown":case" ":c.preventDefault(),f();break;case"ArrowLeft":case"ArrowUp":case"PageUp":c.preventDefault(),h();break;case"Home":c.preventDefault(),y(0);break;case"End":c.preventDefault(),y(e.length-1);break}});let g=(c,v,E,k)=>{let C=document.createElement("button");return C.type="button",C.className=`deck-nav ${c}`,C.textContent=v,C.setAttribute("aria-label",E),C.addEventListener("click",k),C},u=document.createElement("div");u.className="deck-controls",u.append(g("deck-prev","\u2039",b("prevSlide","Previous slide"),h),g("deck-next","\u203A",b("nextSlide","Next slide"),f)),document.body.append(u);let x=0,R=0;document.addEventListener("touchstart",c=>{x=c.touches[0].clientX,R=c.touches[0].clientY},{passive:!0}),document.addEventListener("touchend",c=>{let v=c.changedTouches[0].clientX-x,E=c.changedTouches[0].clientY-R;Math.abs(v)>50&&Math.abs(v)>Math.abs(E)*1.5&&(v<0?f:h)()},{passive:!0});let I=c=>document.querySelector(`delta-slide[cover="true"] ${c}`)?.textContent?.trim()??"",q=(c,v)=>{let E=document.createElement("span");return E.className=c,E.textContent=v,E},O=I("delta-author"),T=I("delta-affiliation"),$=[...O?[q("tb-author",O)]:[],...T?[q("tb-affiliation",T)]:[]];if($.length){let c=document.createElement("div");c.className="deck-topbar eyebrow",$.forEach((v,E)=>{E>0&&c.append(" \xB7 "),c.append(v)}),document.body.append(c),o.push(v=>c.classList.toggle("topbar-hidden",e[v].matches('[cover="true"], [divider="true"]')))}return r(0,!1),{get index(){return t},get total(){return e.length},go:y,next:f,prev:h,goToId(c){let v=document.getElementById(c);if(!v)return!1;let E=v.closest("delta-slide")??v.querySelector("delta-slide"),k=E?e.indexOf(E):-1;return k<0?!1:(y(k),!0)},onChange(c){o.push(c),c(t,e.length)}}}ke();var Pe=Ce();window.Delta={popover:L,t:b,deck:Pe};var Ae=()=>{location.hash.length>1&&P(decodeURIComponent(location.hash.slice(1)))};Ae();window.addEventListener("hashchange",Ae);})();
+"use strict";(()=>{function B(a){let e=document.getElementById(a);e&&(e.scrollIntoView({block:"center",behavior:"smooth"}),e.classList.add("is-xref-target"),e.addEventListener("animationend",()=>e.classList.remove("is-xref-target"),{once:!0}))}function F(a){let e=document.createDocumentFragment(),t=s=>a.querySelector(`:scope > delta-${s}`),n=["author","title","journal","year"].map(t).filter(s=>s!==null);n.forEach((s,r)=>{r>0&&e.append(". ");let i=document.createElement("span");i.className=`paper-${s.tagName.toLowerCase().replace("delta-","")}`;for(let m of s.childNodes)i.append(m.cloneNode(!0));e.append(i)}),n.length&&e.append(".");let o=t("link")??t("url");return o&&(e.append(" "),e.append(o.cloneNode(!0))),e}function T(a,e){let t=a.getAttribute("collapsed")==="true";if(!t&&a.getAttribute("collapsible")!=="true")return;let n=document.createElement("div");for(n.className="collapse-body";e.nextSibling;)n.append(e.nextSibling);a.append(n),e.classList.add("collapse-toggle"),e.setAttribute("role","button"),e.tabIndex=0;let o=r=>{a.classList.toggle("is-collapsed",r),e.setAttribute("aria-expanded",String(!r))};o(t);let s=()=>o(!a.classList.contains("is-collapsed"));e.addEventListener("click",s),e.addEventListener("keydown",r=>{(r.key==="Enter"||r.key===" ")&&(r.preventDefault(),s())})}var fe={"delta-chapter":{level:1,cls:"chapter-title"},"delta-section":{level:2,cls:"section"},"delta-subsection":{level:3,cls:"sub"},"delta-subsubsection":{level:4,cls:"subsub"}},D=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelector(":scope > delta-title");if(!e)return;if(document.documentElement.dataset.type==="presentation"){let r=document.createElement("delta-slide");r.setAttribute("divider","true"),r.appendChild(e),this.prepend(r);return}let t=fe[this.tagName.toLowerCase()]??{level:2,cls:"section"},n=document.createElement(`h${t.level}`);n.className=t.cls;let o=this.getAttribute("num");if(o){let r=document.createElement("span");r.className="num",r.textContent=o,n.append(r," ")}n.append(...e.childNodes),e.replaceWith(n);let s=this.querySelector(":scope > delta-meta");if(s){let r=s.querySelectorAll(":scope > delta-meta-item");if(r.length){let i=document.createElement("div");i.classList.add("box-meta"),Array.from(r).forEach(m=>{let d=document.createElement("span");d.className="box-meta-item";let l=document.createElement("span");l.className="k",l.textContent=m.getAttribute("key")??"";let c=document.createElement("span");c.innerHTML=m.innerHTML,c.className="v",d.append(l),d.append(c),i.append(d),s.replaceWith(i)})}}T(this,n)}};function he(){for(let a of Object.keys(fe))customElements.define(a,class extends D{})}var U=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelector(":scope > delta-title"),t=document.createElement("div");t.className="slide-body";for(let n of[...this.childNodes])n!==e&&t.append(n);if(e){let n=document.createElement("h2");n.className="slide-title",n.append(...e.childNodes),e.replaceWith(n);let o=document.createElement("div");o.className="slide-rule";let s=document.createElement("span");s.className="slide-rule-fill",o.append(s),n.after(o)}this.append(t)}};function ge(){customElements.define("delta-slide",U)}var q=null;function je(){if(q)return q;let a=document.getElementById("delta-i18n");try{q=a?JSON.parse(a.textContent||"{}"):{}}catch{q={}}return q}function v(a,e){return je()[a]??e??a}var De=["theorem","proposition","lemma","corollary","conjecture","definition","example","claim","observation","exercise","problem","proof","solution","remark"],Ue=new Set(["theorem","proposition","lemma","corollary","conjecture","definition","example","claim","observation","exercise","problem","remark"]),Ke=new Set(["proof","solution"]),K=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.tagName.toLowerCase().replace(/^delta-/,""),t=this.getAttribute("num"),n=v(e,e.charAt(0).toUpperCase()+e.slice(1)),o=this.querySelector(":scope > delta-title");if(Ke.has(e)){let i=document.createElement("span"),m=this.getAttribute("of"),d=this.getAttribute("data-target-tag"),l=this.getAttribute("data-target-num");if(d&&m&&l){let u=document.createElement("delta-ref");u.setAttribute("to",m),u.setAttribute("data-target-num",l),u.setAttribute("data-target-tag",d),i.append(" "),i.append(u)}i.className="proof-lead",i.prepend(n),o&&(i.append(" (",...o.childNodes,")"),o.remove()),i.append("."),this.prepend(i," ");let c=document.createElement("span");c.className="proof-qed",c.textContent="\u25A1",this.append(c),T(this,i);return}if(!Ue.has(e))return;this.classList.add("box"),e==="example"&&this.classList.add("example");let s=document.createElement("span");if(s.className="box-tag",s.textContent=n+(t?` ${t}`:""),o){let i=document.createElement("span");i.className="box-tag-title",i.append(...o.childNodes),o.remove(),s.append(" ",i)}this.prepend(s);let r=this.querySelector(":scope > delta-meta");if(r){let i=r.querySelectorAll(":scope > delta-meta-item");if(i.length){let m=document.createElement("div");m.className="box-meta";for(let d of i){let l=d.getAttribute("key"),c=d.innerHTML.trim();if(l&&c){let u=document.createElement("span");u.className="box-meta-item",u.innerHTML=`<span class="k">${l}</span><span class='v'> ${c}</span>`,m.appendChild(u)}}r.remove(),this.append(m)}}T(this,s)}};function ve(){for(let a of De)customElements.define(`delta-${a}`,class extends K{})}var V=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady=="1")return;this.dataset.deltaReady="1";let e=this.querySelector(":scope > delta-meta");if(e){let t=e.querySelectorAll(":scope > delta-meta-item");if(t.length){let n=document.createElement("div");n.classList.add("box-meta"),Array.from(t).forEach(o=>{let s=document.createElement("span");s.className="box-meta-item";let r=document.createElement("span");r.className="k",r.textContent=o.getAttribute("key")??"";let i=document.createElement("span");i.innerHTML=o.innerHTML,i.className="v",s.append(r),s.append(i),n.append(s)}),e.replaceWith(n)}}}};function be(){customElements.define("delta-document",class extends V{})}var W=class extends HTMLElement{connectedCallback(){this.dataset.deltaReady||(this.dataset.deltaReady="1",this.classList.add("sidenote"))}};function Ee(){customElements.define("delta-sidenote",class extends W{})}function $(a,e,t,n="video-cap"){let o=a.querySelector(":scope > delta-caption");if(!o)return;o.classList.add(n);let s=document.createElement("span");s.className="lbl";let r=v(e,e.charAt(0).toUpperCase()+e.slice(1));s.textContent=r+(t?` ${t}`:""),o.prepend(s," ")}function _(a,e){let t=document.createElement("div");t.className="video-frame",t.append(e),a.prepend(t)}function Ve(a){if(a=(a||"").trim(),/^[\w-]{11}$/.test(a))return a;try{let e=new URL(a);if(e.hostname==="youtu.be")return e.pathname.slice(1,12);if(e.searchParams.has("v"))return e.searchParams.get("v");let t=e.pathname.match(/\/(?:embed|shorts)\/([\w-]{11})/);if(t)return t[1]}catch{}return""}var z=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("video");let e=Ve(this.getAttribute("src"));if(!e){console.warn("delta-youtube: no valid video ID found in src",this.getAttribute("src"));return}if(location.protocol==="file:"){let t=document.createElement("a");t.className="yt-facade video-media",t.href=`https://www.youtube.com/watch?v=${e}`,t.target="_blank",t.rel="noopener",t.setAttribute("aria-label","Watch on YouTube");let n=document.createElement("img");n.src=`https://i.ytimg.com/vi/${e}/hqdefault.jpg`,n.alt="",n.loading="lazy";let o=document.createElement("span");o.className="yt-play",o.setAttribute("aria-hidden","true"),t.append(n,o),_(this,t)}else{let t=document.createElement("iframe");t.src=`https://www.youtube.com/embed/${e}`,t.allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",t.allowFullscreen=!0,t.className="video-media",t.loading="lazy",_(this,t)}$(this,"video",this.getAttribute("num"))}},X=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("video");let e=this.getAttribute("src");if(!e){let n=document.createElement("div");n.className="video-missing",n.textContent="No video source.",this.prepend(n);return}let t=document.createElement("video");t.src=e,t.controls=!0,t.className="video-media";for(let n of["poster","loop","muted","autoplay","playsinline"])this.hasAttribute(n)&&t.setAttribute(n,this.getAttribute(n)??"");_(this,t),$(this,"video",this.getAttribute("num"))}},G=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("video");let e=this.getAttribute("src");if(!e){let n=document.createElement("div");n.className="video-missing",n.textContent="No audio source.",this.prepend(n);return}let t=document.createElement("audio");t.src=e,t.controls=!0,t.className="audio-media",this.hasAttribute("loop")&&(t.loop=!0),_(this,t),$(this,"audio",this.getAttribute("num"))}},Y=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("figure");let e=this.getAttribute("src");if(e){let t=document.createElement("div");t.className="figure-frame";let n=document.createElement("img");n.src=e;let o=this.getAttribute("alt");o&&(n.alt=o),t.append(n),this.prepend(t)}else{let t=document.createElement("div");t.className="video-missing",t.textContent="Image not found.",this.prepend(t)}$(this,"figure",this.getAttribute("num"),"figure-cap")}},J=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady=="1")return;this.dataset.deltaReady="1",this.classList.add("interactive");let e=this.querySelector(":scope > delta-caption"),t=document.createElement("div");t.className="interactive-frame";for(let n of[...this.childNodes])n!==e&&t.append(n);this.prepend(t),$(this,"interactive",this.getAttribute("num"),"interactive-cap")}};function ye(){customElements.define("delta-youtube",class extends z{}),customElements.define("delta-video",class extends X{}),customElements.define("delta-audio",class extends G{}),customElements.define("delta-figure",class extends Y{}),customElements.define("delta-interactive",class extends J{})}var j=typeof HTMLElement<"u"&&"popover"in HTMLElement.prototype,A=8,Q=12,R=null;function L(a,e,t={}){let{onOpen:n,onClose:o,gap:s=10,triggerClick:r=!0}=t;e.classList.add("delta-pop"),j&&e.setAttribute("popover","manual"),e.parentElement!==document.body&&document.body.appendChild(e),a.setAttribute("aria-haspopup","dialog");let i=!1;function m(){let b=a.getBoundingClientRect(),k=document.documentElement.clientWidth,H=document.documentElement.clientHeight,M=H-A-(b.bottom+s),S=b.top-s-A;e.style.maxHeight="";let x=e.getBoundingClientRect(),w=x.height>M&&S>M,I=w?S:M;x.height>I&&(e.style.maxHeight=`${Math.max(0,Math.floor(I))}px`,x=e.getBoundingClientRect()),e.classList.toggle("is-above",w);let p=w?b.top-s-x.height:b.bottom+s,g=Math.min(Math.max(A,p),Math.max(A,H-x.height-A)),y=Math.min(Math.max(A,b.left),Math.max(A,k-x.width-A));e.style.top=`${Math.round(g)}px`,e.style.left=`${Math.round(y)}px`;let N=Math.max(Q,x.width-Q),C=Math.min(Math.max(Q,b.left+b.width/2-y),N);e.style.setProperty("--arrow-x",`${Math.round(C)}px`)}let d=()=>m(),l=b=>{b.key==="Escape"&&f()},c=b=>{let k=b.target;!e.contains(k)&&!a.contains(k)&&f()};function u(){i||(R&&R!==f&&R(),n?.(e,a),j?e.showPopover():e.classList.add("is-open"),m(),window.addEventListener("scroll",d,{capture:!0,passive:!0}),window.addEventListener("resize",d),document.addEventListener("keydown",l),setTimeout(()=>document.addEventListener("pointerdown",c),0),i=!0,R=f,a.setAttribute("aria-expanded","true"))}function f(){i&&(j?e.matches(":popover-open")&&e.hidePopover():e.classList.remove("is-open"),e.classList.remove("is-above"),window.removeEventListener("scroll",d,{capture:!0}),window.removeEventListener("resize",d),document.removeEventListener("keydown",l),document.removeEventListener("pointerdown",c),i=!1,R===f&&(R=null),a.setAttribute("aria-expanded","false"),o?.(e,a))}function E(){i?f():u()}j&&e.addEventListener("toggle",b=>{b.newState==="closed"&&i&&f()});let h=b=>{b.preventDefault(),E()};return r&&(a.addEventListener("click",h),a.setAttribute("aria-expanded","false")),{open:u,close:f,toggle:E,reposition:m,get isOpen(){return i},destroy(){f(),r&&a.removeEventListener("click",h),e.remove()}}}var Z=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelector(":scope > delta-title"),t=(e?.textContent??"").trim();e?.remove();let n=this.getAttribute("show-icon")!=="false",o=document.createElement("div");o.append(...this.childNodes);let s=document.createElement("button");if(s.type="button",s.className="hint-trigger",n){let r=document.createElement("span");r.className="hint-marker",r.textContent="\u{1F4A1} ",s.append(r)}s.append(t||v("hint","Hint")),this.append(s),L(s,o)}};function xe(){customElements.define("delta-hint",class extends Z{})}var O=null;function We(){if(O)return O;let a=document.getElementById("delta-toc");try{O=a?JSON.parse(a.textContent||"[]"):[]}catch{O=[]}return O}var ee=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=parseInt(this.getAttribute("depth")??"2",10),t=this.getAttribute("scope")==="project",n=We().filter(l=>l.level-1<=e&&(t||!l.file));if(n.length===0)return;let o=document.createElement("nav");o.className="toc";let s=this.querySelector(":scope > delta-title"),r=s?s.innerHTML:v("contents","Contents");o.setAttribute("aria-label",r);let i=document.createElement("div");i.className="toc-title",i.innerHTML=r,o.append(i);let m=document.createElement("ol");m.className="toc-list";let d=[{level:n[0].level,ol:m}];for(let l of n){for(;d.length>1&&l.level<d[d.length-1].level;)d.pop();let c=d[d.length-1];if(l.level>c.level){let h=c.ol.lastElementChild,b=document.createElement("ol");b.className="toc-sub",(h??c.ol).append(b),d.push({level:l.level,ol:b}),c=d[d.length-1]}let u=document.createElement("li");u.className="toc-item";let f=document.createElement("a");if(f.className="toc-link",f.href=l.file?`${l.file}#${l.id}`:`#${l.id}`,l.num){let h=document.createElement("span");h.className="toc-num",h.textContent=l.num,f.append(h," ")}let E=document.createElement("span");E.className="toc-text",E.innerHTML=l.title,f.append(E),f.addEventListener("click",h=>{if(l.file)return;if(window.Delta?.deck?.goToId(l.id)){h.preventDefault();return}let b=document.getElementById(l.id);b&&(h.preventDefault(),b.scrollIntoView({block:"start",behavior:"smooth"}),b.classList.add("is-xref-target"),b.addEventListener("animationend",()=>b.classList.remove("is-xref-target"),{once:!0}))}),u.append(f),c.ol.append(u)}o.append(m),this.replaceChildren(o)}};function Le(){customElements.define("delta-toc",class extends ee{})}var te=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelector(":scope > delta-title"),t=(e?.textContent??"").trim()||v("contents","Contents"),n=e?[...e.childNodes]:null;e?.remove();let o=()=>n?ze(document.createElement("span"),n):t,s=document.createElement("button");s.type="button",s.className="floating-fab",s.setAttribute("aria-label",t);let r=document.createElement("span");r.className="floating-icon",r.setAttribute("aria-hidden","true"),r.textContent="\u2630",s.append(r,o());let i=document.createElement("div");i.className="floating-panel";let m=document.createElement("div");m.className="floating-hd";let d=document.createElement("span");d.className="floating-title",d.append(o());let l=document.createElement("button");l.type="button",l.className="floating-x",l.setAttribute("aria-label",v("close","Close")),l.textContent="\xD7",m.append(d,l);let c=document.createElement("div");c.className="floating-body",c.append(...this.childNodes),i.append(m,c),this.append(s);let u=L(s,i,{gap:12});l.addEventListener("click",()=>u.close()),c.addEventListener("click",f=>{f.target.closest("a")&&u.close()})}};function ze(a,e){for(let t of e)a.append(t.cloneNode(!0));return a}function ke(){customElements.define("delta-floating",class extends te{})}var Xe='<svg class="ext-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"/></svg>',ne=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("to");if(!e)return;let t=document.createElement("a");for(t.className="ext-link",t.href=e,t.target="_blank",t.rel="noopener noreferrer";this.firstChild;)t.appendChild(this.firstChild);this.appendChild(t),t.insertAdjacentHTML("beforeend",Xe)}};function Ne(){customElements.define("delta-link",class extends ne{})}var Ge='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>';function Ce(a,{to:e,num:t,kind:n,href:o}){let s=`${v(n,n.charAt(0).toUpperCase()+n.slice(1))} ${t}`,r=document.createElement("div");r.className="xref-pop";let i=document.createElement("div");i.className="xref-pop-head";let m=document.createElement("span");m.className="xref-pop-label",m.textContent=s;let d=document.createElement("button");d.type="button",d.className="xref-go",d.title=s,d.setAttribute("aria-label",s),d.innerHTML=Ge,i.append(m,d);let l=document.createElement("div");l.className="xref-pop-body",r.append(i,l);let c=!1,u=L(a,r,{onOpen:()=>{if(c)return;c=!0;let f=[...document.querySelectorAll("template[data-delta-pop]")].find(h=>h.dataset.deltaPop===e);if(!f)return;let E=f.content.cloneNode(!0);for(let h of E.querySelectorAll("[id]"))h.removeAttribute("id");for(let h of E.querySelectorAll("[collapsed], [collapsible]"))h.removeAttribute("collapsed"),h.removeAttribute("collapsible");l.append(E)}});d.addEventListener("click",f=>{if(f.preventDefault(),u.close(),window.Delta?.deck?.goToId(e))return;if(o){location.href=o;return}let E=document.getElementById(e);E&&(E.scrollIntoView({block:"center",behavior:"smooth"}),E.classList.add("is-xref-target"),E.addEventListener("animationend",()=>E.classList.remove("is-xref-target"),{once:!0}))})}var ae=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("to")??"",t=this.getAttribute("data-target-num"),n=this.getAttribute("data-target-tag"),o=this.getAttribute("data-target-href");if(!n||!t)return;let s=(this.textContent??"").trim().length>0,r=document.createElement("button");r.type="button",r.className="xref",s?r.append(...this.childNodes):r.textContent=`${v(n,n.charAt(0).toUpperCase()+n.slice(1))} ${t}`,this.replaceChildren(r),Ce(r,{to:e,num:t,kind:n,href:o})}};function Ae(){for(let a of document.querySelectorAll(".katex [data-delta-ref-to]")){let{deltaRefTo:e,deltaRefNum:t,deltaRefTag:n,deltaRefHref:o}=a.dataset;!e||!t||!n||(a.classList.add("math-xref"),a.setAttribute("role","link"),a.tabIndex=0,a.addEventListener("keydown",s=>{(s.key==="Enter"||s.key===" ")&&(s.preventDefault(),a.click())}),Ce(a,{to:e,num:t,kind:n,href:o}))}}function Te(){customElements.define("delta-ref",class extends ae{})}var oe=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelectorAll(":scope > delta-paper");if(e.length===0)return;let t=document.createElement("section");t.className="notes";let n=this.querySelector(":scope > delta-title"),o=document.createElement("h4");o.innerHTML=n?n.innerHTML:v("references","References"),t.append(o);let s=document.createElement("ol");for(let r of e){let i=document.createElement("li");r.id&&(i.id=r.id),i.append(F(r)),s.append(i)}t.append(s),this.replaceChildren(t)}};function Me(){customElements.define("delta-bibliography",class extends oe{})}var se=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=(this.getAttribute("data-cite-nums")??"").split(",").filter(Boolean),t=(this.getAttribute("data-cite-ids")??"").split(",").filter(Boolean),n=this.getAttribute("data-cite-file");if(e.length===0){this.classList.add("cite-missing");return}let o=document.createElement("span");o.className="cite",o.append("["),e.forEach((m,d)=>{d>0&&o.append(", ");let l=document.createElement("a");l.textContent=m,o.append(l)}),o.append("]"),this.replaceChildren(o);let s=document.createElement("div");s.className="cite-pop";let r=!1,i=L(o,s,{onOpen:()=>{r||(r=!0,t.forEach((m,d)=>{let l=document.createElement("div");l.className="cite-pop-item";let c=document.createElement("a");c.className="cite-pop-num",c.href=n?`${n}#${m}`:`#${m}`,c.textContent=`[${e[d]}]`,c.addEventListener("click",h=>{i.close(),!window.Delta?.deck?.goToId(m)&&(n||(h.preventDefault(),B(m)))});let u=document.createElement("span");u.className="cite-pop-text";let E=[...document.querySelectorAll("template[data-delta-pop]")].find(h=>h.dataset.deltaPop===m)?.content.querySelector("delta-paper");E&&u.append(F(E)),l.append(c,u),s.append(l)}))}})}};function we(){customElements.define("delta-cite",class extends se{})}var re=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.textContent??"",t=document.createElement("pre");t.className="code-src";let n=document.createElement("code");for(;this.firstChild;)n.append(this.firstChild);t.append(n);let o=document.createElement("div");if(o.className="code-body",this.getAttribute("lines")!=="false"){let d=e.replace(/\n$/,"").split(`
+`).length,l=document.createElement("span");l.className="code-gutter",l.setAttribute("aria-hidden","true"),l.textContent=Array.from({length:d},(c,u)=>String(u+1)).join(`
+`),o.append(l)}o.append(t);let s=document.createElement("div");s.className="code-head";let r=this.getAttribute("lang"),i=document.createElement("span");i.className="code-lang",i.textContent=(r||v("code","Code")).toUpperCase();let m=document.createElement("button");if(m.type="button",m.className="code-copy",m.textContent=v("copy","Copy"),m.addEventListener("click",()=>{navigator.clipboard?.writeText(e).then(()=>{m.textContent=v("copied","Copied"),m.classList.add("is-copied"),setTimeout(()=>{m.textContent=v("copy","Copy"),m.classList.remove("is-copied")},1400)})}),s.append(i,m),this.append(s,o),this.getAttribute("num")){let d=this.getAttribute("num"),l=document.createElement("div");l.classList.add("code-cap");let c=document.createElement("span");c.className="lbl";let u=v("code","code".charAt(0).toUpperCase()+"code".slice(1));c.textContent=u+(d?` ${d}`:""),l.prepend(c," "),this.append(l)}T(this,s)}};function Re(){customElements.define("delta-code",re)}var P={ordered:!1,marker:"bullet"},ie={1:{ordered:!0,marker:"decimal"},number:{ordered:!0,marker:"decimal"},numbers:{ordered:!0,marker:"decimal"},numbered:{ordered:!0,marker:"decimal"},decimal:{ordered:!0,marker:"decimal"},a:{ordered:!0,marker:"alpha"},alpha:{ordered:!0,marker:"alpha"},alphabetical:{ordered:!0,marker:"alpha"},A:{ordered:!0,marker:"alpha-upper"},"alpha-upper":{ordered:!0,marker:"alpha-upper"},i:{ordered:!0,marker:"roman"},roman:{ordered:!0,marker:"roman"},I:{ordered:!0,marker:"roman-upper"},"roman-upper":{ordered:!0,marker:"roman-upper"},bullet:P,disc:P,dot:P,dash:{ordered:!1,marker:"dash"},none:{ordered:!1,marker:"none"}};function Ye(a){if(a.getAttribute("numbered")==="true")return ie.number;let e=(a.getAttribute("marker")??"").trim();return e?ie[e]??ie[e.toLowerCase()]??P:P}var le=class extends HTMLElement{connectedCallback(){this.dataset.deltaReady||(this.dataset.deltaReady="1",this._render())}_render(){let e=Ye(this),t=document.createElement(e.ordered?"ol":"ul");if(t.className="delta-list",t.dataset.marker=e.marker,e.ordered){let n=parseInt(this.getAttribute("start")??"",10);Number.isFinite(n)&&(t.style.counterReset=`delta-item ${n-1}`,t.setAttribute("start",String(n)))}this.querySelectorAll(":scope > delta-item").forEach(n=>{let o=document.createElement("li");o.className="delta-list-item";for(let s of["reveal","reveal-order"]){let r=n.getAttribute(s);r!==null&&o.setAttribute(s,r)}o.append(...n.childNodes),t.append(o)}),this.replaceChildren(t)}};function He(){customElements.define("delta-list",le)}function Se(a,e,t,n,o){let s=e.getAttribute("align");o&&s&&(n[t]=s),s||(s=n[t]),s==="right"?a.classList.add("num"):s==="center"&&(a.style.textAlign="center"),e.getAttribute("mono")==="true"&&a.classList.add("mono")}var ce=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("delta-table");let e=this.querySelector(":scope > delta-title"),t=this.querySelector(":scope > delta-caption"),n=this.getAttribute("num"),o=null;if(e||t||n){if(o=document.createElement("div"),o.className="table-head",e||n){let c=document.createElement("span");c.className="table-lbl",c.textContent=v("table","Table")+(n?` ${n}`:""),o.append(c)}if(e){let c=document.createElement("span");c.className="table-title",c.append(...e.childNodes),o.append(c)}if(t){let c=document.createElement("span");c.className="table-cap",c.append(...t.childNodes),o.append(c)}}let s=document.createElement("table");s.className="t";let r=[],i=this.querySelector(":scope > delta-header");if(i){let c=document.createElement("thead"),u=document.createElement("tr");i.querySelectorAll(":scope > delta-column").forEach((f,E)=>{let h=document.createElement("th");Se(h,f,E,r,!0),h.append(...f.childNodes),u.append(h)}),c.append(u),s.append(c)}let m=document.createElement("tbody");this.querySelectorAll(":scope > delta-row").forEach(c=>{let u=document.createElement("tr");c.querySelectorAll(":scope > delta-column").forEach((f,E)=>{let h=document.createElement("td");Se(h,f,E,r,!1),h.append(...f.childNodes),u.append(h)}),m.append(u)}),s.append(m);let d=document.createElement("div");d.className="table-wrap";let l=this.getAttribute("max-height");l&&(d.style.maxHeight=l,d.style.overflowY="auto"),d.append(s),this.replaceChildren(...o?[o]:[],d)}};function Ie(){customElements.define("delta-table",ce)}var Je=/^\d*\.?\d+(fr)?$/,de=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("gap");e&&(this.style.gap=e);for(let t of this.querySelectorAll(":scope > delta-column")){let n=t.getAttribute("width");if(!n)continue;let o=Je.test(n.trim())?`${parseFloat(n)} 1 0`:`0 1 ${n}`;t.style.setProperty("--col-flex",o)}}};function qe(){customElements.define("delta-columns",de)}var $e={keywords:"Keywords",msc:"Mathematics Subject Classification",received:"Received",revised:"Revised",accepted:"Accepted",submitted:"Submitted",date:"Date",acknowledgements:"Acknowledgements",funding:"Funding"},Qe=new Set(["acknowledgements","funding"]),me=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=document.createElement("div");e.className="abstract-label",e.textContent=v("abstract","Abstract");let t=document.createElement("div");t.className="abstract-body",t.append(...this.childNodes),this.append(e,t)}},pe=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady||(this.dataset.deltaReady="1",this.closest("delta-slide")))return;let e=this.tagName.slice(6).toLowerCase(),t=Qe.has(e);this.classList.add(t?"fm-block":"fm-line");let n=document.createElement("span");n.className="fm-label",n.textContent=v(e,$e[e]??e),this.prepend(n,t?" ":": ")}};function Oe(){customElements.define("delta-abstract",class extends me{});for(let a of Object.keys($e))customElements.define(`delta-${a}`,class extends pe{})}var Ze=new Set(["red","orange","yellow","lime","green","teal","sky","blue","indigo","purple","pink","slate"]),et={danger:"red",warning:"orange",tip:"green",note:"blue"},ue=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("color")?.trim()||et[this.getAttribute("type")?.trim().toLowerCase()??""];e&&(Ze.has(e.toLowerCase())?this.setAttribute("data-accent",e.toLowerCase()):this.style.setProperty("--delta-accent",e));let t=this.querySelector(":scope > delta-title"),n=null;t&&(n=document.createElement("div"),n.className="box-heading",n.append(...t.childNodes),t.remove());let o=document.createElement("div");o.className="box-body",o.append(...this.childNodes),n&&this.append(n),this.append(o)}};function Pe(){customElements.define("delta-box",ue)}function Be(){be(),he(),ge(),ve(),Ee(),ye(),xe(),Le(),ke(),Ne(),Te(),Me(),we(),Re(),He(),Ie(),qe(),Oe(),Pe()}function Fe(){let a=document.documentElement;if(a.dataset.type!=="presentation")return null;let e=[...document.querySelectorAll("delta-slide")];if(e.length===0)return null;a.classList.add("deck-js"),document.querySelector("delta-progress")&&a.classList.add("deck-progress-on");let t=0,n=0,o=0,s=[],r=p=>Math.max(0,Math.min(e.length-1,p)),i=p=>[...p.querySelectorAll('[reveal="true"]')].map((g,y)=>({el:g,order:g.hasAttribute("reveal-order")?Number(g.getAttribute("reveal-order")):y})).sort((g,y)=>g.order-y.order).map(g=>g.el),m=e.map(i),d=(p,g)=>m[p].forEach((y,N)=>y.classList.toggle("is-revealed",N<g)),l=()=>{let p=(t+1)/e.length;a.style.setProperty("--deck-progress-prev",String(o)),a.style.setProperty("--deck-progress",String(p)),o=p},c=(p,g)=>{e[t]?.classList.remove("is-active"),t=r(p),n=g?m[t].length:0,d(t,n),l(),e[t].classList.add("is-active");for(let y of s)y(t,e.length)},u=()=>{n<m[t].length?d(t,++n):t<e.length-1&&c(t+1,!1)},f=()=>{n>0?d(t,--n):t>0&&c(t-1,!0)},E=p=>c(p,!1);document.addEventListener("keydown",p=>{let g=p.target;if(!(g&&(g.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(g.tagName)))&&!(p.metaKey||p.ctrlKey||p.altKey))switch(p.key){case"ArrowRight":case"ArrowDown":case"PageDown":case" ":p.preventDefault(),u();break;case"ArrowLeft":case"ArrowUp":case"PageUp":p.preventDefault(),f();break;case"Home":p.preventDefault(),E(0);break;case"End":p.preventDefault(),E(e.length-1);break}});let h=(p,g,y,N)=>{let C=document.createElement("button");return C.type="button",C.className=`deck-nav ${p}`,C.textContent=g,C.setAttribute("aria-label",y),C.addEventListener("click",N),C},b=document.createElement("div");b.className="deck-controls",b.append(h("deck-prev","\u2039",v("prevSlide","Previous slide"),f),h("deck-next","\u203A",v("nextSlide","Next slide"),u)),document.body.append(b);let k=0,H=0;document.addEventListener("touchstart",p=>{k=p.touches[0].clientX,H=p.touches[0].clientY},{passive:!0}),document.addEventListener("touchend",p=>{let g=p.changedTouches[0].clientX-k,y=p.changedTouches[0].clientY-H;Math.abs(g)>50&&Math.abs(g)>Math.abs(y)*1.5&&(g<0?u:f)()},{passive:!0});let M=p=>document.querySelector(`delta-slide[cover="true"] ${p}`)?.textContent?.trim()??"",S=(p,g)=>{let y=document.createElement("span");return y.className=p,y.textContent=g,y},x=M("delta-author"),w=M("delta-affiliation"),I=[...x?[S("tb-author",x)]:[],...w?[S("tb-affiliation",w)]:[]];if(I.length){let p=document.createElement("div");p.className="deck-topbar eyebrow",I.forEach((g,y)=>{y>0&&p.append(" \xB7 "),p.append(g)}),document.body.append(p),s.push(g=>p.classList.toggle("topbar-hidden",e[g].matches('[cover="true"], [divider="true"]')))}return c(0,!1),{get index(){return t},get total(){return e.length},go:E,next:u,prev:f,goToId(p){let g=document.getElementById(p);if(!g)return!1;let y=g.closest("delta-slide")??g.querySelector("delta-slide"),N=y?e.indexOf(y):-1;return N<0?!1:(E(N),!0)},onChange(p){s.push(p),p(t,e.length)}}}Be();Ae();var tt=Fe();window.Delta={popover:L,t:v,deck:tt};var _e=()=>{location.hash.length>1&&B(decodeURIComponent(location.hash.slice(1)))};_e();window.addEventListener("hashchange",_e);})();
 </script>
 
 </body>

@@ -35,28 +35,76 @@
    ================================================================== */
 
 
-/* Cascade order — declared once, here, in the first stylesheet the page
-   loads. Components live in @layer delta.components, per-type themes in
-   @layer delta.theme, so themes always win regardless of <style> order.
-   (Unlayered rules — e.g. inlined KaTeX — still beat all of these.) */
-@layer delta.base, delta.components, delta.theme;
+/* Cascade order — declared once, here, in the first stylesheet the page loads.
+
+     base        this file's tokens, page grid, shared primitives
+     builtin     a built-in named theme (<document theme="impatech">) — tokens only.
+                 Sits this low on purpose: it may re-value the design system, but
+                 delta.components still beats it, so a theme can never quietly grow
+                 into restyling chrome.
+     mode        the two orthogonal overlays, [data-accent] and [data-mode]. They
+                 must beat a named theme (they exist to recolor whatever is under
+                 them) yet stay below components, so components/box.css keeps
+                 re-deriving per-box tones.
+     components  Delta's chrome, one file per feature
+     theme       per-document-type tokens (themes/<type>.css), selected by `type`
+
+   So themes always win regardless of <style> order. (Unlayered rules — inlined
+   KaTeX, import-pack CSS, the author's own theme= file — still beat all of these.) */
+@layer delta.base, delta.builtin, delta.mode, delta.components, delta.theme;
 
 @layer delta.base {
 
 /* --- 1. TOKENS --------------------------------------------------- */
 
 :root {
-  /* -- color */
-  --delta-paper:        oklch(0.965 0.012 78);
-  --delta-paper-edge:   oklch(0.945 0.014 78);
-  --delta-surface-1:    oklch(0.985 0.008 78);
-  --delta-surface-2:    oklch(0.935 0.012 78);
-  --delta-ink:          oklch(0.18 0.006 75);
-  --delta-ink-soft:     oklch(0.34 0.006 75);
-  --delta-mute:         oklch(0.56 0.008 75);
-  --delta-rule:         oklch(0.86 0.012 78);
-  --delta-rule-soft:    oklch(0.91 0.012 78);
+  /* -- SWATCHES — the raw colour vocabulary, two warm neutral ramps. `sand` is
+     the light page, `char` the dark one; both run lightest → darkest. The steps
+     are ORDINAL, not linear: a paper UI needs five near-white steps and then a
+     jump straight to text tones. Every neutral in the system is warm hue 75–78,
+     which is what makes two ramps enough.
 
+     Components never read a swatch — they read the ROLES below. Themes re-point
+     the roles (see src/styles/builtin/), which is why the roles carry the
+     meaningful names and these carry only positions. */
+  --delta-sand-50:      oklch(0.985 0.008 78);
+  --delta-sand-100:     oklch(0.965 0.012 78);
+  --delta-sand-200:     oklch(0.945 0.014 78);
+  --delta-sand-300:     oklch(0.935 0.012 78);
+  --delta-sand-400:     oklch(0.91  0.012 78);
+  --delta-sand-500:     oklch(0.86  0.012 78);
+  --delta-sand-600:     oklch(0.56  0.008 75);
+  --delta-sand-700:     oklch(0.34  0.006 75);
+  --delta-sand-800:     oklch(0.18  0.006 75);
+
+  --delta-char-50:      oklch(0.92  0.006 75);
+  --delta-char-100:     oklch(0.78  0.006 75);
+  --delta-char-200:     oklch(0.62  0.008 75);
+  --delta-char-300:     oklch(0.36  0.010 75);
+  --delta-char-400:     oklch(0.29  0.010 75);
+  --delta-char-500:     oklch(0.26  0.010 75);
+  --delta-char-600:     oklch(0.245 0.009 75);
+  --delta-char-700:     oklch(0.205 0.008 75);
+  --delta-char-800:     oklch(0.17  0.008 75);
+
+  /* -- ROLES: color. What components actually consume. Re-point a role and the
+     whole system follows; the [data-mode] block below re-points these same nine
+     onto the `char` ramp, which is all "dark mode" is. */
+  --delta-paper:        var(--delta-sand-100);
+  --delta-paper-edge:   var(--delta-sand-200);
+  --delta-surface-1:    var(--delta-sand-50);
+  --delta-surface-2:    var(--delta-sand-300);
+  --delta-ink:          var(--delta-sand-800);
+  --delta-ink-soft:     var(--delta-sand-700);
+  --delta-mute:         var(--delta-sand-600);
+  --delta-rule:         var(--delta-sand-500);
+  --delta-rule-soft:    var(--delta-sand-400);
+
+  /* The accent trio is a *slot*: the [data-accent] blocks below supply the hue
+     (12 of them), so these :root values are just the default, "green". The three
+     tones are hand-tuned, not derived — a link tone dark enough to read (L 0.38)
+     is not on the segment between the accent and the ink, because mixing toward
+     a neutral can only ever lower chroma. Don't try to collapse them. */
   --delta-accent:       oklch(0.80 0.062 150);
   --delta-accent-ink:   oklch(0.38 0.07  150);
   --delta-accent-soft:  oklch(0.93 0.04  150);
@@ -64,19 +112,58 @@
   --delta-ok:           oklch(0.46 0.10 150);
   --delta-warn:         oklch(0.50 0.13 22);
 
+  /* The code card is the `char` ramp used inside a light document — a dark card
+     in a light page is literally dark mode, scoped to one block. These four sit
+     a hair off the ramp steps (hand-tuned before the ramps existed), so they
+     stay literal rather than snapping and shifting the card. */
   --delta-code-bg:      oklch(0.21 0.008 75);
   --delta-code-fg:      oklch(0.94 0.005 75);
   --delta-code-line:    oklch(0.32 0.008 75);
   --delta-code-mute:    oklch(0.62 0.012 75);
 
-  /* -- chrome (consumed by components/*.css; override per theme) */
-  --delta-env-bg:       var(--delta-surface-2);
-  --delta-env-border:   var(--delta-accent-ink);
+  /* -- chrome: the environment box (components/theorems.css). Separate from the
+     generic surfaces so a theme can restyle theorem/definition/example boxes
+     without touching every other card in the document. */
+  --delta-env-bg:       var(--delta-surface-1);
+  --delta-env-border:   var(--delta-rule);
 
-  /* -- type families */
+  /* Environment TONES — one per environment family, used to fill the label pill.
+     They all default to the page colour, i.e. the quiet outlined pill this design
+     has always had; a theme remaps them to brand colours to get a set of
+     differently-coloured environments. `theorems.css` assigns the right tone to
+     each family *on the element*, because a var() inside a custom property is
+     substituted where it is DECLARED — putting the lookup at :root would freeze
+     every environment to one tone. */
+  --delta-tone-theorem:    var(--delta-paper);
+  --delta-tone-definition: var(--delta-paper);
+  --delta-tone-example:    var(--delta-paper);
+  --delta-tone-remark:     var(--delta-paper);
+  --delta-tone-exercise:   var(--delta-paper);
+  --delta-env-tag-ink:     var(--delta-accent-ink);
+  --delta-env-tag-border:  var(--delta-rule);
+
+  /* The quiet figures: heading numbers and equation numbers. One token, because
+     they are the same typographic gesture — a number set back from its content. */
+  --delta-num:          var(--delta-mute);
+
+  /* -- type families. --delta-serif is the *prose* family, not merely "the serif":
+     body text and every heading ask for it by name, so a sans-first theme
+     re-points it (the name then outlives its meaning — that is the trade for
+     keeping this a pure token system). */
   --delta-serif:        "Newsreader", "Source Serif 4", ui-serif, Georgia, serif;
   --delta-sans:         ui-sans-serif, -apple-system, "Helvetica Neue", system-ui, sans-serif;
   --delta-mono:         "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* -- type weight + variable-font axes. Headings and bold text read these
+     instead of hardcoding a number, so a theme built on a heavier family can
+     say so once. --delta-font-variation* drives Newsreader's optical-size axis;
+     a theme on a family without an `opsz` axis sets them to `normal` (leaving
+     "opsz" set would pin such a family to its small-text design on the systems
+     that do have the axis, and silently override font-optical-sizing: auto). */
+  --delta-weight-display:         500;
+  --delta-weight-strong:          600;
+  --delta-font-variation:         "opsz" 16;
+  --delta-font-variation-display: "opsz" 72;
 
   /* -- type scale (clamped where it matters) */
   --delta-t-base:       18px;
@@ -110,14 +197,20 @@
   --delta-hairline:     1px;
   --delta-random-rotation: 1deg;
 
-  /* -- shadow — warm-toned, very low contrast; only on lifted blocks */
-  --delta-shadow-sm:    0 1px 2px rgba(60, 50, 30, .045);
-  --delta-shadow:       0 1px 1px rgba(60, 50, 30, .035),
-                        0 6px 18px rgba(60, 50, 30, .055);
-  --delta-shadow-lift:  0 1px 2px rgba(60, 50, 30, .04),
-                        0 14px 36px rgba(60, 50, 30, .07);
-  --delta-shadow-code:  0 1px 1px rgba(0, 0, 0, .04),
-                        0 10px 28px rgba(0, 0, 0, .10);
+  /* -- shadow — warm-toned, very low contrast; only on lifted blocks.
+     --delta-elevation is the opacity multiplier and the ONE shadow knob a theme
+     owns: the [data-mode] block re-states the shadow *definitions* (dark mode
+     needs a different hue and much more strength), but it never touches this —
+     so `--delta-elevation: 0` keeps a flat theme flat in both modes. At 1 the
+     output is identical to the hand-written alphas it replaced. */
+  --delta-elevation:    1;
+  --delta-shadow-sm:    0 1px 2px rgb(60 50 30 / calc(.045 * var(--delta-elevation)));
+  --delta-shadow:       0 1px 1px rgb(60 50 30 / calc(.035 * var(--delta-elevation))),
+                        0 6px 18px rgb(60 50 30 / calc(.055 * var(--delta-elevation)));
+  --delta-shadow-lift:  0 1px 2px rgb(60 50 30 / calc(.04 * var(--delta-elevation))),
+                        0 14px 36px rgb(60 50 30 / calc(.07 * var(--delta-elevation)));
+  --delta-shadow-code:  0 1px 1px rgb(0 0 0 / calc(.04 * var(--delta-elevation))),
+                        0 10px 28px rgb(0 0 0 / calc(.10 * var(--delta-elevation)));
 
   /* -- motion */
   --delta-ease:         cubic-bezier(.2,.7,.2,1);
@@ -125,6 +218,11 @@
   --delta-dur:          .25s;
   --delta-dur-slow:     .45s;
 }
+
+} /* @layer delta.base — the two overlays below live in delta.mode, so they beat
+     a built-in named theme (delta.builtin) while staying under the components. */
+
+@layer delta.mode {
 
 /* accent palettes — soft pastel tones named by their hue, so a value is easy to
    guess (red, orange, …, slate). Each overrides only the three accent vars; the
@@ -157,15 +255,15 @@
 [data-mode="dark"] {
   color-scheme: dark;
 
-  --delta-paper:        oklch(0.205 0.008 75);
-  --delta-paper-edge:   oklch(0.17  0.008 75);
-  --delta-surface-1:    oklch(0.245 0.009 75);
-  --delta-surface-2:    oklch(0.29  0.010 75);
-  --delta-ink:          oklch(0.92  0.006 75);
-  --delta-ink-soft:     oklch(0.78  0.006 75);
-  --delta-mute:         oklch(0.62  0.008 75);
-  --delta-rule:         oklch(0.36  0.010 75);
-  --delta-rule-soft:    oklch(0.29  0.010 75);
+  --delta-paper:        var(--delta-char-700);
+  --delta-paper-edge:   var(--delta-char-800);
+  --delta-surface-1:    var(--delta-char-600);
+  --delta-surface-2:    var(--delta-char-400);
+  --delta-ink:          var(--delta-char-50);
+  --delta-ink-soft:     var(--delta-char-100);
+  --delta-mute:         var(--delta-char-200);
+  --delta-rule:         var(--delta-char-300);
+  --delta-rule-soft:    var(--delta-char-400);
 
   --delta-accent-ink:   var(--delta-accent);
   --delta-accent-soft:  color-mix(in oklab, var(--delta-accent) 20%, var(--delta-paper));
@@ -173,26 +271,31 @@
   --delta-ok:           oklch(0.72 0.12 150);
   --delta-warn:         oklch(0.70 0.15 22);
 
-  --delta-code-bg:      oklch(0.26 0.010 75);
+  --delta-code-bg:      var(--delta-char-500);
 
-  --delta-shadow-sm:    0 1px 2px rgba(0, 0, 0, .40);
-  --delta-shadow:       0 1px 1px rgba(0, 0, 0, .35), 0 6px 18px rgba(0, 0, 0, .50);
-  --delta-shadow-lift:  0 1px 2px rgba(0, 0, 0, .35), 0 14px 36px rgba(0, 0, 0, .55);
-  --delta-shadow-code:  0 1px 1px rgba(0, 0, 0, .40), 0 10px 28px rgba(0, 0, 0, .55);
+  /* Neutral-black and far stronger than the light shadows, but still scaled by
+     the theme-owned --delta-elevation (never re-set here — see :root). */
+  --delta-shadow-sm:    0 1px 2px rgb(0 0 0 / calc(.40 * var(--delta-elevation)));
+  --delta-shadow:       0 1px 1px rgb(0 0 0 / calc(.35 * var(--delta-elevation))),
+                        0 6px 18px rgb(0 0 0 / calc(.50 * var(--delta-elevation)));
+  --delta-shadow-lift:  0 1px 2px rgb(0 0 0 / calc(.35 * var(--delta-elevation))),
+                        0 14px 36px rgb(0 0 0 / calc(.55 * var(--delta-elevation)));
+  --delta-shadow-code:  0 1px 1px rgb(0 0 0 / calc(.40 * var(--delta-elevation))),
+                        0 10px 28px rgb(0 0 0 / calc(.55 * var(--delta-elevation)));
 }
 @media (prefers-color-scheme: dark) {
   [data-mode="auto"] {
     color-scheme: dark;
 
-    --delta-paper:        oklch(0.205 0.008 75);
-    --delta-paper-edge:   oklch(0.17  0.008 75);
-    --delta-surface-1:    oklch(0.245 0.009 75);
-    --delta-surface-2:    oklch(0.29  0.010 75);
-    --delta-ink:          oklch(0.92  0.006 75);
-    --delta-ink-soft:     oklch(0.78  0.006 75);
-    --delta-mute:         oklch(0.62  0.008 75);
-    --delta-rule:         oklch(0.36  0.010 75);
-    --delta-rule-soft:    oklch(0.29  0.010 75);
+    --delta-paper:        var(--delta-char-700);
+    --delta-paper-edge:   var(--delta-char-800);
+    --delta-surface-1:    var(--delta-char-600);
+    --delta-surface-2:    var(--delta-char-400);
+    --delta-ink:          var(--delta-char-50);
+    --delta-ink-soft:     var(--delta-char-100);
+    --delta-mute:         var(--delta-char-200);
+    --delta-rule:         var(--delta-char-300);
+    --delta-rule-soft:    var(--delta-char-400);
 
     --delta-accent-ink:   var(--delta-accent);
     --delta-accent-soft:  color-mix(in oklab, var(--delta-accent) 20%, var(--delta-paper));
@@ -200,14 +303,21 @@
     --delta-ok:           oklch(0.72 0.12 150);
     --delta-warn:         oklch(0.70 0.15 22);
 
-    --delta-code-bg:      oklch(0.26 0.010 75);
+    --delta-code-bg:      var(--delta-char-500);
 
-    --delta-shadow-sm:    0 1px 2px rgba(0, 0, 0, .40);
-    --delta-shadow:       0 1px 1px rgba(0, 0, 0, .35), 0 6px 18px rgba(0, 0, 0, .50);
-    --delta-shadow-lift:  0 1px 2px rgba(0, 0, 0, .35), 0 14px 36px rgba(0, 0, 0, .55);
-    --delta-shadow-code:  0 1px 1px rgba(0, 0, 0, .40), 0 10px 28px rgba(0, 0, 0, .55);
+    --delta-shadow-sm:    0 1px 2px rgb(0 0 0 / calc(.40 * var(--delta-elevation)));
+    --delta-shadow:       0 1px 1px rgb(0 0 0 / calc(.35 * var(--delta-elevation))),
+                          0 6px 18px rgb(0 0 0 / calc(.50 * var(--delta-elevation)));
+    --delta-shadow-lift:  0 1px 2px rgb(0 0 0 / calc(.35 * var(--delta-elevation))),
+                          0 14px 36px rgb(0 0 0 / calc(.55 * var(--delta-elevation)));
+    --delta-shadow-code:  0 1px 1px rgb(0 0 0 / calc(.40 * var(--delta-elevation))),
+                          0 10px 28px rgb(0 0 0 / calc(.55 * var(--delta-elevation)));
   }
 }
+
+} /* @layer delta.mode */
+
+@layer delta.base {
 
 
 /* --- 2. RESET & BASE -------------------------------------------- */
@@ -227,7 +337,7 @@ body {
   font-size: var(--delta-t-base);
   line-height: var(--delta-leading);
   font-optical-sizing: auto;
-  font-variation-settings: "opsz" 16;
+  font-variation-settings: var(--delta-font-variation);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -1606,23 +1716,21 @@ delta-item { display: list-item; margin-left: 1.5em; }
     padding-top: 0.3em;
   }
 
-  /* Numbered equations lay out as a three-column grid: an empty gutter, the
-     (scrollable) equation, and the number. The two gutters are equal (1fr) so the
-     equation stays centered in the column while a genuinely wide one scrolls in the
-     middle cell and can never slide under the number. The middle track is
-     minmax(0, 1fr): it *fills* the available width — so an equation that fits never
-     shows a spurious scrollbar — yet may shrink to 0 so a wide one scrolls. */
+  /* Numbered equations lay out as two grid tracks: the (scrollable) equation and
+     the number. The number track is `auto` — it reserves EXACTLY the width of
+     "(1.2)" and not a pixel more, so the equation keeps essentially the whole
+     column. Reserving a fixed gutter instead (an earlier version used two 3.5em
+     ones, to keep the equation dead-centre) cost ~140px and made equations scroll
+     that had 100px to spare. Width beats perfect centring: the equation is centred
+     in what remains, which is off true centre by half the number's width.
+     minmax(0, 1fr) lets the track shrink below its content, so a genuinely
+     oversized equation scrolls inside itself rather than widening the page. */
   delta-equation[num],
   delta-equations[num] {
     display: grid;
-    grid-template-columns: 3.5em minmax(0, 1fr) 3.5em;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    column-gap: 0.4em;
-  }
-
-  delta-equation[num]::before,
-  delta-equations[num]::before {
-    content: "";
+    column-gap: 0.5em;
   }
 
   delta-equation[num] .katex-display,
@@ -1630,25 +1738,38 @@ delta-item { display: list-item; margin-left: 1.5em; }
     min-width: 0;
   }
 
+  /* Where horizontal space is scarcest, stop reserving for the number at all:
+     it drops to its own row, right-aligned, and the equation gets the full
+     column. Below this width the number's ~3.5em is the difference between
+     fitting and scrolling for a typical display equation. */
+  @media (max-width: 640px) {
+    delta-equation[num],
+    delta-equations[num] {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    delta-equation[num]::after,
+    delta-equations[num]::after {
+      margin-top: 0.2em;
+    }
+  }
+
   delta-equation[num]::after,
   delta-equations[num]::after {
     content: "(" attr(num) ")";
     text-align: right;
-    color: var(--delta-mute);
+    color: var(--delta-num);
     font-variant-numeric: tabular-nums;
   }
 
   /* Inside a popover preview (.delta-pop, e.g. a <ref> card) the number already
      shows in the bubble's header label, and the narrow bubble makes the number
-     crowd the equation — so drop it (and its balancing gutter) there. Same
-     specificity as the rules above, so these must stay after them to win. */
+     crowd the equation — so drop it there. Same specificity as the rules above,
+     so these must stay after them to win. */
   .delta-pop delta-equation[num],
   .delta-pop delta-equations[num] {
     display: block;
   }
 
-  .delta-pop delta-equation[num]::before,
-  .delta-pop delta-equations[num]::before,
   .delta-pop delta-equation[num]::after,
   .delta-pop delta-equations[num]::after {
     content: none;
@@ -1752,6 +1873,17 @@ delta-ref { display: inline; }
   cursor: pointer;
   border-radius: var(--delta-radius-sm);
   transition: background var(--delta-dur-fast) var(--delta-ease);
+  /* Lift the marker into a higher paint layer, or it is not CLICKABLE. KaTeX
+     stacks an aligned environment out of `.vlist` table-cells that are
+     `position: relative; z-index: auto` and overlap each other freely (each row
+     is a zero-height box offset by `top`). A cell later in the DOM therefore
+     paints over an earlier row and swallows every pointer event aimed at it —
+     which is exactly where a `\stackrel{\eqref{…}}{=}` marker lives. Keyboard
+     activation still worked, since that path never hit-tests. z-index needs a
+     positioned element, and both sit in the same stacking context (nothing in
+     the math subtree creates one), so 1 is enough to clear the auto/0 layer. */
+  position: relative;
+  z-index: 1;
 }
 .katex .math-xref:hover {
   background: color-mix(in oklab, var(--delta-accent-soft) 60%, transparent);
@@ -2221,12 +2353,12 @@ delta-subsubsection { margin: 28px 0 0; }
 .chapter-title,
 delta-document > delta-title {
   font-family: var(--delta-serif);
-  font-weight: 500;
+  font-weight: var(--delta-weight-display);
   font-size: var(--delta-t-h1);
   line-height: 0.98;
   letter-spacing: -0.02em;
   margin: 14px 0 0;
-  font-variation-settings: "opsz" 72;
+  font-variation-settings: var(--delta-font-variation-display);
   text-wrap: balance;
 }
 .chapter-title em,
@@ -2274,7 +2406,7 @@ delta-document > delta-title em {
 /* -- Section / subsection headings ------------------------------------ */
 h2.section {
   font-family: var(--delta-serif);
-  font-weight: 500;
+  font-weight: var(--delta-weight-display);
   font-size: var(--delta-t-h2);
   line-height: var(--delta-leading-tight);
   letter-spacing: -0.012em;
@@ -2284,7 +2416,7 @@ h2.section {
 
 h3.sub {
   font-family: var(--delta-serif);
-  font-weight: 500;
+  font-weight: var(--delta-weight-display);
   font-size: var(--delta-t-h3);
   letter-spacing: -0.005em;
   margin: 0 0 8px;
@@ -2294,11 +2426,13 @@ h3.sub {
    every level shares one consistent treatment. */
 h2.section .num,
 h3.sub .num,
-h4.subsub .num { color: var(--delta-mute); margin-right: 0.4em; }
+h4.subsub .num { color: var(--delta-num); margin-right: 0.4em; }
 
 h4.subsub {
   font-family: var(--delta-serif);
-  font-weight: 600;
+  /* the one heading set at `strong` rather than `display`: at h4 the level reads
+     as emphasized body text, not as a display line */
+  font-weight: var(--delta-weight-strong);
   font-size: var(--delta-t-h4);
   letter-spacing: -0.003em;
   margin: 0 0 6px;
@@ -2423,13 +2557,13 @@ delta-i {
 delta-em {
   display: inline-block;
   font-style: italic;
-  font-weight:600;
+  font-weight: var(--delta-weight-strong);
   color: var(--delta-accent-ink);
 }
 
 delta-strong {
   display: inline-block;
-  font-weight: 600;
+  font-weight: var(--delta-weight-strong);
 }
 
 delta-u {
@@ -2566,10 +2700,30 @@ delta-proof {
   display: block;
 }
 
+/* -- Environment tones -------------------------------------------------
+   Each family carries its own tone, assigned here on the element so it inherits
+   down to the label pill. base.css defaults every tone to the page colour, so
+   this is invisible until a theme remaps them. */
+delta-theorem, delta-proposition, delta-lemma, delta-corollary,
+delta-claim, delta-observation, delta-conjecture {
+  --delta-env-tone: var(--delta-tone-theorem);
+}
+delta-definition           { --delta-env-tone: var(--delta-tone-definition); }
+delta-example              { --delta-env-tone: var(--delta-tone-example); }
+delta-remark               { --delta-env-tone: var(--delta-tone-remark); }
+delta-exercise, delta-problem { --delta-env-tone: var(--delta-tone-exercise); }
+
 /* -- .box and label --------------------------------------------------- */
 .box {
-  border: var(--delta-hairline) solid var(--delta-rule);
-  background: var(--delta-surface-1);
+  /* The border is the neutral rule tinted toward the family tone by
+     --delta-env-tint (0 = neutral, the default, so this is a no-op until a theme
+     opts in; 1 = the tone itself). Expressed as a mix rather than a second set of
+     per-family tokens, so a theme dials the whole effect with one number. */
+  border: var(--delta-hairline) solid
+          color-mix(in oklab,
+                    var(--delta-env-tone, var(--delta-paper)) calc(var(--delta-env-tint, 0) * 100%),
+                    var(--delta-env-border));
+  background: var(--delta-env-bg);
   border-radius: var(--delta-radius);
   padding: 20px 24px 18px;
   margin: var(--delta-block-gap) 0;
@@ -2591,11 +2745,11 @@ delta-proof {
   line-height: 1.35;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--delta-accent-ink);
-  background: var(--delta-paper);
+  color: var(--delta-env-tag-ink);
+  background: var(--delta-env-tone, var(--delta-paper));
   padding: 2px 9px;
   border-radius: var(--delta-radius-sm);
-  border: var(--delta-hairline) solid var(--delta-rule);
+  border: var(--delta-hairline) solid var(--delta-env-tag-border);
 }
 /* The author's title rides in the label pill, parenthesised and slightly
    subordinate so the environment kind + number still reads first. */
@@ -2607,7 +2761,7 @@ delta-proof {
 .box-tag-title::after  { content: ")"; }
 
 .box-title {
-  font-weight: 600;
+  font-weight: var(--delta-weight-strong);
   font-size: 17px;
   margin: 0 0 6px;
   letter-spacing: -0.003em;
