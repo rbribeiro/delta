@@ -1,0 +1,24 @@
+<document lang="pt" type="article" theme-accent="purple">
+  <title>Convex Hull</title>
+
+  <meta>
+    <meta-item key="Tópico">Geometria Computacional</meta-item>
+  </meta>
+
+  <abstract>
+    Este documento demonstra o componente interativo de Fecho Convexo.
+    O usuário pode adicionar pontos clicando no campo, selecionar, arrastar com o mouse e deletar
+    com Delete/Backspace. O fecho convexo é recalculado automaticamente após meio segundo de inatividade.
+  </abstract>
+  <import src="../../packages/convex-hull" />
+
+  <convex-hull delay="0.1"/>
+
+  <section id="sec:teoria">
+    O <em>Fecho Convexo</em> de um conjunto de pontos $S$ no plano 2D é o menor
+    polígono convexo que contém todos os pontos de $S$. 
+    
+    Uma analogia intuitiva é imaginar um elástico esticado ao redor de pregos fincados em uma tábua:
+    ao soltar o elástico, o contorno que ele forma é exatamente o fecho convexo.
+  </section>
+</document>

@@ -1,0 +1,71 @@
+delta-convex-hull {
+  display: block;
+  margin: 1.5rem 0;
+  outline: none;
+}
+
+delta-convex-hull:focus-visible .convex-hull-container {
+  border-color: var(--delta-accent, #4f46e5);
+  box-shadow: 0 0 0 1px var(--delta-accent, #4f46e5);
+}
+
+.convex-hull-container {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--delta-color-border, #e2e8f0);
+  border-radius: 6px;
+  background: var(--delta-color-surface, #ffffff);
+  overflow: hidden;
+}
+
+.convex-hull-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.8rem;
+  background: color-mix(in srgb, var(--delta-color-surface, #ffffff) 94%, var(--delta-color-border, #000000) 6%);
+  border-bottom: 1px solid var(--delta-color-border, #e2e8f0);
+  font-family: var(--delta-font-body, system-ui, sans-serif);
+  font-size: 0.8rem;
+}
+
+.convex-hull-status {
+  color: var(--delta-color-text, #334155);
+  font-weight: 500;
+}
+
+.convex-hull-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.convex-hull-count {
+  font-size: 0.75rem;
+  color: var(--delta-color-text-muted, #64748b);
+}
+
+.convex-hull-btn {
+  appearance: none;
+  border: 1px solid var(--delta-color-border, #cbd5e1);
+  background: var(--delta-color-surface, #ffffff);
+  color: var(--delta-color-text, #475569);
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.convex-hull-btn:hover {
+  background: var(--delta-color-border, #f1f5f9);
+}
+
+.convex-hull-canvas {
+  width: 100%;
+  height: 380px;
+  display: block;
+  touch-action: none;
+  background: var(--delta-color-surface, #ffffff);
+  cursor: crosshair;
+}
