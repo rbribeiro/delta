@@ -10,9 +10,9 @@
     O usuário pode adicionar pontos clicando no campo, selecionar, arrastar com o mouse e deletar
     com Delete/Backspace. O fecho convexo é recalculado automaticamente após meio segundo de inatividade.
   </abstract>
-  <import src="../../packages/convex-hull" />
+  <import src="packages/convex-hull" />
 
-  <convex-hull delay="0.1"/>
+  <convex-hull delay="0"/>
 
   <section id="sec:teoria">
     O <em>Fecho Convexo</em> de um conjunto de pontos $S$ no plano 2D é o menor
