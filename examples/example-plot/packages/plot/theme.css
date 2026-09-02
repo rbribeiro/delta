@@ -6,9 +6,9 @@ delta-plot {
 .plot-container {
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--delta-color-border, #e2e8f0);
+  border: 1px solid var(--delta-rule);
   border-radius: 6px;
-  background: var(--delta-color-surface, #ffffff);
+  background: #ffffff;
   overflow: hidden;
 }
 
@@ -17,15 +17,14 @@ delta-plot {
   align-items: center;
   justify-content: space-between;
   padding: 0.5rem 0.8rem;
-  background: color-mix(in srgb, var(--delta-color-surface, #ffffff) 94%, var(--delta-color-border, #000000) 6%);
-  border-bottom: 1px solid var(--delta-color-border, #e2e8f0);
-  font-family: var(--delta-font-body, system-ui, sans-serif);
-  font-size: 0.8rem;
+  background: var(--delta-accent-soft);
+  border-bottom: 1px solid var(--delta-rule);
 }
 
 .plot-title {
-  color: var(--delta-color-text, #334155);
-  font-weight: 500;
+  color: var(--delta-accent-ink);
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 .plot-canvas {
@@ -33,5 +32,5 @@ delta-plot {
   aspect-ratio: 16 / 9;
   display: block;
   touch-action: none;
-  background: var(--delta-color-surface, #ffffff);
+  background: #ffffff;
 }
