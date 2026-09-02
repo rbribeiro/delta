@@ -1,5 +1,5 @@
 <document lang="pt" type="article" theme-accent="yellow">
-  <title>Componente de Plots 2D</title>
+  <title>Componente de Plotagem 2D</title>
 
   <meta>
     <meta-item key="Tópico">Visualização de Dados e Geometria</meta-item>
@@ -15,15 +15,11 @@
   <section id="sec:intro">
     <title>Introdução ao Espaço Cartesiano</title>
 
-    <p>
-      O sistema de coordenadas cartesianas no plano $\mathbb{R}^2$ permite representar geometricamente pares ordenados $(x, y)$, funções e curvas contínuas.
-      <sidenote>O plano cartesiano foi introduzido por René Descartes em 1637, unindo a álgebra e a geometria euclidiana.</sidenote>
-      Neste componente, a origem $(0, 0)$ é posicionada inicialmente no centro da área de desenho, com o eixo $X$ horizontal e o eixo $Y$ vertical.
-    </p>
+    O sistema de coordenadas cartesianas no plano $\mathbb{R}^2$ permite representar geometricamente pares ordenados $(x, y)$, funções e curvas contínuas.
+    <sidenote>O plano cartesiano foi introduzido por René Descartes em 1637, unindo a álgebra e a geometria euclidiana.</sidenote>
+    Neste componente, a origem $(0, 0)$ é posicionada inicialmente no centro da área de desenho, com o eixo $X$ horizontal e o eixo $Y$ vertical.
 
-    <p>
-      Abaixo temos a instância interativa do componente <c><plot></c>. Com a propriedade <c>grab="true"</c> habilitada, você pode clicar e arrastar com o mouse ou tocar com o dedo no celular para transladar a visualização pelo plano.
-    </p>
+    Abaixo temos a instância interativa do componente <c><plot></c>. Com a propriedade <c>grab="true"</c> habilitada, você pode clicar e arrastar com o mouse ou tocar com o dedo no celular para transladar a visualização pelo plano.
 
     <plot title="Espaço Cartesiano Bidimensional" />
   </section>
@@ -31,13 +27,9 @@
   <section id="sec:grid">
     <title>Estrutura da Grade e Eixos</title>
 
-    <p>
-      A malha ortogonal é desenhada dinamicamente acompanhando o deslocamento do usuário. As linhas principais dos eixos cartesianos $x = 0$ e $y = 0$ recebem um traço de maior contraste para facilitar a orientação visual.
-      <sidenote>A proporção de aspecto é mantida fixa em $16:9$, garantindo consistência em qualquer tela ou dispositivo móvel.</sidenote>
-    </p>
+    A malha ortogonal é desenhada dinamicamente acompanhando o deslocamento do usuário. As linhas principais dos eixos cartesianos $x = 0$ e $y = 0$ recebem um traço de maior contraste para facilitar a orientação visual.
+    <sidenote>A proporção de aspecto é mantida fixa em $16:9$, garantindo consistência em qualquer tela ou dispositivo móvel.</sidenote>
 
-    <p>
-      Em passos futuros, este componente permitirá a inserção de pontos de controle, plotagem de curvas polinomiais $f(x)$ e inspeção interativa de valores sob o cursor.
-    </p>
+    Em passos futuros, este componente permitirá a inserção de pontos de controle, plotagem de curvas polinomiais $f(x)$ e inspeção interativa de valores sob o cursor.
   </section>
 </document>
