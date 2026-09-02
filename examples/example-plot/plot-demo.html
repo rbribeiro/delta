@@ -3187,10 +3187,28 @@ class DeltaPlot extends HTMLElement {
         // Parameters
         this.title = this.getAttribute("title") || "";
         this.grab = this.getAttribute("grab") || "true";
+        const zoomAttr = this.getAttribute("zoom") || "0.25,4";
 
         // Attribute settings
-        this.offsetX = 0; this.offsetY = 0;
+        this.offsetX = 0;
+        this.offsetY = 0;
         this.grab = (this.grab !== "false");
+        if (zoomAttr === "false") {
+            this.zoomEnabled = false;
+            this.minZoom = 1;
+            this.maxZoom = 1;
+        } else {
+            this.zoomEnabled = true;
+            const tuple = parse_tuple(zoomAttr, 2, true);
+            if (tuple && tuple[0] > 0 && tuple[1] >= tuple[0]) {
+                this.minZoom = tuple[0];
+                this.maxZoom = tuple[1];
+            } else {
+                this.minZoom = 0.25;
+                this.maxZoom = 4;
+            }
+        }
+        this.zoom = 1;
 
         // Processing
         this.build();
@@ -3221,37 +3239,125 @@ class DeltaPlot extends HTMLElement {
 
     bind() {
         new ResizeObserver(() => this.onResize()).observe(this.canvas);
+        this.bindGrab();
+        this.bindZoom();
+    }
 
-        if (this.grab) {
+    bindGrab() {
+        if (!this.grab) return;
+        this.canvas.style.cursor = "grab";
+
+        let isDragging = false;
+        let dragStartX = 0;
+        let dragStartY = 0;
+        let startOffsetX = 0;
+        let startOffsetY = 0;
+        let activePointerId = null;
+
+        this.canvas.addEventListener("pointerdown", (e) => {
+            if (activePointerId !== null) return;
+            activePointerId = e.pointerId;
+            isDragging = true;
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+            startOffsetX = this.offsetX;
+            startOffsetY = this.offsetY;
+            this.canvas.setPointerCapture(e.pointerId);
+            this.canvas.style.cursor = "grabbing";
+        });
+
+        this.canvas.addEventListener("pointermove", (e) => {
+            if (!isDragging || e.pointerId !== activePointerId) return;
+            this.offsetX = startOffsetX + (e.clientX - dragStartX);
+            this.offsetY = startOffsetY + (e.clientY - dragStartY);
+            this.render();
+        });
+
+        const stopDrag = (e) => {
+            if (e.pointerId !== activePointerId) return;
+            isDragging = false;
+            activePointerId = null;
+            try { this.canvas.releasePointerCapture(e.pointerId); } catch (_) {}
             this.canvas.style.cursor = "grab";
+        };
 
-            this.canvas.addEventListener("pointerdown", (e) => {
-                this.isDragging = true;
-                this.dragStartX = e.clientX;
-                this.dragStartY = e.clientY;
-                this.startOffsetX = this.offsetX;
-                this.startOffsetY = this.offsetY;
-                this.canvas.setPointerCapture(e.pointerId);
-                this.canvas.style.cursor = "grabbing";
-            });
+        this.canvas.addEventListener("pointerup", stopDrag);
+        this.canvas.addEventListener("pointercancel", stopDrag);
+    }
 
-            this.canvas.addEventListener("pointermove", (e) => {
-                if (!this.isDragging) return;
-                this.offsetX = this.startOffsetX + (e.clientX - this.dragStartX);
-                this.offsetY = this.startOffsetY + (e.clientY - this.dragStartY);
-                this.render();
-            });
+    bindZoom() {
+        if (!this.zoomEnabled) return;
 
-            const stopDrag = (e) => {
-                if (!this.isDragging) return;
-                this.isDragging = false;
-                try { this.canvas.releasePointerCapture(e.pointerId); } catch (_) {}
-                this.canvas.style.cursor = "grab";
-            };
+        // Desktop mouse wheel zoom
+        this.canvas.addEventListener("wheel", (e) => {
+            e.preventDefault();
+            const r = this.canvas.getBoundingClientRect();
+            const cx = e.clientX - r.left;
+            const cy = e.clientY - r.top;
 
-            this.canvas.addEventListener("pointerup", stopDrag);
-            this.canvas.addEventListener("pointercancel", stopDrag);
-        }
+            const factor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
+            const newZoom = Math.max(this.minZoom, Math.min(this.maxZoom, this.zoom * factor));
+            this.applyZoom(newZoom, cx, cy);
+        }, { passive: false });
+
+        // Mobile touch pinch-to-zoom
+        const touchPointers = new Map();
+        let pinchStartDist = 0;
+        let pinchStartZoom = 1;
+        let pinchCenter = { x: 0, y: 0 };
+
+        this.canvas.addEventListener("pointerdown", (e) => {
+            if (e.pointerType !== "touch") return;
+            touchPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+            if (touchPointers.size === 2) {
+                const pts = Array.from(touchPointers.values());
+                pinchStartDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+                pinchStartZoom = this.zoom;
+                const r = this.canvas.getBoundingClientRect();
+                pinchCenter = {
+                    x: (pts[0].x + pts[1].x) / 2 - r.left,
+                    y: (pts[0].y + pts[1].y) / 2 - r.top
+                };
+            }
+        });
+
+        this.canvas.addEventListener("pointermove", (e) => {
+            if (e.pointerType !== "touch" || !touchPointers.has(e.pointerId)) return;
+            touchPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+            if (touchPointers.size === 2 && pinchStartDist > 0) {
+                const pts = Array.from(touchPointers.values());
+                const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+                const factor = dist / pinchStartDist;
+                const newZoom = Math.max(this.minZoom, Math.min(this.maxZoom, pinchStartZoom * factor));
+                this.applyZoom(newZoom, pinchCenter.x, pinchCenter.y);
+            }
+        });
+
+        const onTouchEnd = (e) => {
+            touchPointers.delete(e.pointerId);
+            if (touchPointers.size < 2) {
+                pinchStartDist = 0;
+            }
+        };
+
+        this.canvas.addEventListener("pointerup", onTouchEnd);
+        this.canvas.addEventListener("pointercancel", onTouchEnd);
+    }
+
+    applyZoom(newZoom, cx, cy) {
+        if (newZoom === this.zoom) return;
+        const r = this.canvas.getBoundingClientRect();
+        const centerX = r.width / 2 + this.offsetX;
+        const centerY = r.height / 2 + this.offsetY;
+
+        const ratio = newZoom / this.zoom;
+        this.offsetX = this.offsetX + (cx - centerX) * (1 - ratio);
+        this.offsetY = this.offsetY + (cy - centerY) * (1 - ratio);
+        this.zoom = newZoom;
+
+        this.render();
     }
 
     onResize() {
@@ -3280,14 +3386,17 @@ class DeltaPlot extends HTMLElement {
     }
 
     drawGrid(w, h) {
+        const step = GRID_STEP * this.zoom;
         const centerX = Math.round(w / 2 + this.offsetX);
         const centerY = Math.round(h / 2 + this.offsetY);
+
+        // Grid lines
         this.ctx.strokeStyle = GRID_LINE_COLOR;
         this.ctx.lineWidth = GRID_LINE_WIDTH;
 
         // Vertical lines
-        const startX = ((centerX % GRID_STEP) + GRID_STEP) % GRID_STEP;
-        for (let x = startX; x < w; x += GRID_STEP) {
+        const startX = ((centerX % step) + step) % step;
+        for (let x = startX; x < w; x += step) {
             this.ctx.beginPath();
             this.ctx.moveTo(x + 0.5, 0);
             this.ctx.lineTo(x + 0.5, h);
@@ -3295,19 +3404,19 @@ class DeltaPlot extends HTMLElement {
         }
 
         // Horizontal lines
-        const startY = ((centerY % GRID_STEP) + GRID_STEP) % GRID_STEP;
-        for (let y = startY; y < h; y += GRID_STEP) {
+        const startY = ((centerY % step) + step) % step;
+        for (let y = startY; y < h; y += step) {
             this.ctx.beginPath();
             this.ctx.moveTo(0, y + 0.5);
             this.ctx.lineTo(w, y + 0.5);
             this.ctx.stroke();
         }
 
-        // Axis
+        // Origin axes
         this.ctx.strokeStyle = AXIS_LINE_COLOR;
         this.ctx.lineWidth = AXIS_LINE_WIDTH;
 
-        // X Axis
+        // X axis
         if (centerY >= 0 && centerY <= h) {
             this.ctx.beginPath();
             this.ctx.moveTo(0, centerY + 0.5);
