@@ -1,0 +1,15 @@
+<document lang="pt" type="article" theme-accent="purple">
+  <title>Plot Demo</title>
+
+  <meta>
+    <meta-item key="Tópico">Visualização de Dados</meta-item>
+  </meta>
+
+  <abstract>
+    Este documento demonstra o componente de Plot.
+  </abstract>
+
+  <import src="packages/plot" />
+
+  <plot title="Gráfico de Teste" />
+</document>
