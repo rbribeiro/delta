@@ -18,6 +18,13 @@ function parse_tuple(tuple, k = 0, numbers = true) {
     }
 }
 
+// Grid Default Settings
+const GRID_STEP = 30;
+const GRID_LINE_COLOR = "rgba(128, 128, 128, 0.12)";
+const GRID_LINE_WIDTH = 1;
+const AXIS_LINE_COLOR = "rgba(60, 60, 60, 0.4)";
+const AXIS_LINE_WIDTH = 1.5;
+
 // Subcomponents
 
 class PlotHeader {
@@ -45,9 +52,15 @@ class DeltaPlot extends HTMLElement {
         if (this.dataset.deltaReady) return;
         this.dataset.deltaReady = "1";
 
-        // Attributes
+        // Parameters
         this.title = this.getAttribute("title") || "";
+        this.grab = this.getAttribute("grab") || "true";
 
+        // Attribute settings
+        this.offsetX = 0; this.offsetY = 0;
+        this.grab = (this.grab !== "false");
+
+        // Processing
         this.build();
         this.bind();
         this.resize();
@@ -76,6 +89,37 @@ class DeltaPlot extends HTMLElement {
 
     bind() {
         new ResizeObserver(() => this.onResize()).observe(this.canvas);
+
+        if (this.grab) {
+            this.canvas.style.cursor = "grab";
+
+            this.canvas.addEventListener("pointerdown", (e) => {
+                this.isDragging = true;
+                this.dragStartX = e.clientX;
+                this.dragStartY = e.clientY;
+                this.startOffsetX = this.offsetX;
+                this.startOffsetY = this.offsetY;
+                this.canvas.setPointerCapture(e.pointerId);
+                this.canvas.style.cursor = "grabbing";
+            });
+
+            this.canvas.addEventListener("pointermove", (e) => {
+                if (!this.isDragging) return;
+                this.offsetX = this.startOffsetX + (e.clientX - this.dragStartX);
+                this.offsetY = this.startOffsetY + (e.clientY - this.dragStartY);
+                this.render();
+            });
+
+            const stopDrag = (e) => {
+                if (!this.isDragging) return;
+                this.isDragging = false;
+                try { this.canvas.releasePointerCapture(e.pointerId); } catch (_) {}
+                this.canvas.style.cursor = "grab";
+            };
+
+            this.canvas.addEventListener("pointerup", stopDrag);
+            this.canvas.addEventListener("pointercancel", stopDrag);
+        }
     }
 
     onResize() {
@@ -104,57 +148,48 @@ class DeltaPlot extends HTMLElement {
     }
 
     drawGrid(w, h) {
-        const step = 30;
-        const centerX = Math.round(w / 2);
-        const centerY = Math.round(h / 2);
+        const centerX = Math.round(w / 2 + this.offsetX);
+        const centerY = Math.round(h / 2 + this.offsetY);
+        this.ctx.strokeStyle = GRID_LINE_COLOR;
+        this.ctx.lineWidth = GRID_LINE_WIDTH;
 
-        // Linhas finas
-        this.ctx.strokeStyle = "rgba(128, 128, 128, 0.12)";
-        this.ctx.lineWidth = 1;
-        
-        // Verticais
-        for (let x = centerX; x < w; x += step) {
-            this.ctx.beginPath();
-            this.ctx.moveTo(x + 0.5, 0);
-            this.ctx.lineTo(x + 0.5, h);
-            this.ctx.stroke();
-        }
-        for (let x = centerX - step; x > 0; x -= step) {
+        // Vertical lines
+        const startX = ((centerX % GRID_STEP) + GRID_STEP) % GRID_STEP;
+        for (let x = startX; x < w; x += GRID_STEP) {
             this.ctx.beginPath();
             this.ctx.moveTo(x + 0.5, 0);
             this.ctx.lineTo(x + 0.5, h);
             this.ctx.stroke();
         }
 
-        // Horizontais
-        for (let y = centerY; y < h; y += step) {
+        // Horizontal lines
+        const startY = ((centerY % GRID_STEP) + GRID_STEP) % GRID_STEP;
+        for (let y = startY; y < h; y += GRID_STEP) {
             this.ctx.beginPath();
             this.ctx.moveTo(0, y + 0.5);
             this.ctx.lineTo(w, y + 0.5);
             this.ctx.stroke();
         }
-        for (let y = centerY - step; y > 0; y -= step) {
+
+        // Axis
+        this.ctx.strokeStyle = AXIS_LINE_COLOR;
+        this.ctx.lineWidth = AXIS_LINE_WIDTH;
+
+        // X Axis
+        if (centerY >= 0 && centerY <= h) {
             this.ctx.beginPath();
-            this.ctx.moveTo(0, y + 0.5);
-            this.ctx.lineTo(w, y + 0.5);
+            this.ctx.moveTo(0, centerY + 0.5);
+            this.ctx.lineTo(w, centerY + 0.5);
             this.ctx.stroke();
         }
 
-        // Eixos principais X e Y
-        this.ctx.strokeStyle = "rgba(60, 60, 60, 0.4)";
-        this.ctx.lineWidth = 1.5;
-
-        // Eixo X
-        this.ctx.beginPath();
-        this.ctx.moveTo(0, centerY + 0.5);
-        this.ctx.lineTo(w, centerY + 0.5);
-        this.ctx.stroke();
-
-        // Eixo Y
-        this.ctx.beginPath();
-        this.ctx.moveTo(centerX + 0.5, 0);
-        this.ctx.lineTo(centerX + 0.5, h);
-        this.ctx.stroke();
+        // Y axis
+        if (centerX >= 0 && centerX <= w) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(centerX + 0.5, 0);
+            this.ctx.lineTo(centerX + 0.5, h);
+            this.ctx.stroke();
+        }
     }
 }
 
