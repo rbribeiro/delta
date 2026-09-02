@@ -100,6 +100,61 @@ class DeltaPlot extends HTMLElement {
         if (w === 0 || h === 0) return;
 
         this.ctx.clearRect(0, 0, w, h);
+        this.drawGrid(w, h);
+    }
+
+    drawGrid(w, h) {
+        const step = 30;
+        const centerX = Math.round(w / 2);
+        const centerY = Math.round(h / 2);
+
+        // Linhas finas
+        this.ctx.strokeStyle = "rgba(128, 128, 128, 0.12)";
+        this.ctx.lineWidth = 1;
+        
+        // Verticais
+        for (let x = centerX; x < w; x += step) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(x + 0.5, 0);
+            this.ctx.lineTo(x + 0.5, h);
+            this.ctx.stroke();
+        }
+        for (let x = centerX - step; x > 0; x -= step) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(x + 0.5, 0);
+            this.ctx.lineTo(x + 0.5, h);
+            this.ctx.stroke();
+        }
+
+        // Horizontais
+        for (let y = centerY; y < h; y += step) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(0, y + 0.5);
+            this.ctx.lineTo(w, y + 0.5);
+            this.ctx.stroke();
+        }
+        for (let y = centerY - step; y > 0; y -= step) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(0, y + 0.5);
+            this.ctx.lineTo(w, y + 0.5);
+            this.ctx.stroke();
+        }
+
+        // Eixos principais X e Y
+        this.ctx.strokeStyle = "rgba(60, 60, 60, 0.4)";
+        this.ctx.lineWidth = 1.5;
+
+        // Eixo X
+        this.ctx.beginPath();
+        this.ctx.moveTo(0, centerY + 0.5);
+        this.ctx.lineTo(w, centerY + 0.5);
+        this.ctx.stroke();
+
+        // Eixo Y
+        this.ctx.beginPath();
+        this.ctx.moveTo(centerX + 0.5, 0);
+        this.ctx.lineTo(centerX + 0.5, h);
+        this.ctx.stroke();
     }
 }
 
