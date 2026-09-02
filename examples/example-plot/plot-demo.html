@@ -3131,7 +3131,6 @@ delta-plot {
 <script>
 /* pack: plot */
 // Auxiliary Functions
-
 function parse_tuple(tuple, k = 0, numbers = true) {
     if (tuple == null) return null;
     const parts = tuple.split(',');
@@ -3150,8 +3149,18 @@ function parse_tuple(tuple, k = 0, numbers = true) {
     }
 }
 
+function getNiceStep(targetStep) {
+    const pow10 = Math.pow(10, Math.floor(Math.log10(targetStep)));
+    const frac = targetStep / pow10;
+    if (frac >= 7.5) return 10 * pow10;
+    if (frac >= 3.5) return 5 * pow10;
+    if (frac >= 1.5) return 2 * pow10;
+    return pow10;
+}
+
 // Grid Default Settings
-const GRID_STEP = 30;
+const BASE_SCALE = 40;
+const TARGET_GRID_SPACING = 50;
 const GRID_LINE_COLOR = "rgba(128, 128, 128, 0.12)";
 const GRID_LINE_WIDTH = 1;
 const AXIS_LINE_COLOR = "rgba(60, 60, 60, 0.4)";
@@ -3386,17 +3395,21 @@ class DeltaPlot extends HTMLElement {
     }
 
     drawGrid(w, h) {
-        const step = GRID_STEP * this.zoom;
+        const scale = BASE_SCALE * this.zoom;
         const centerX = Math.round(w / 2 + this.offsetX);
         const centerY = Math.round(h / 2 + this.offsetY);
+
+        // Adaptive step in Cartesian coordinates (1, 2, 5, 10, etc.)
+        const stepUnit = getNiceStep(TARGET_GRID_SPACING / scale);
+        const stepPx = stepUnit * scale;
 
         // Grid lines
         this.ctx.strokeStyle = GRID_LINE_COLOR;
         this.ctx.lineWidth = GRID_LINE_WIDTH;
 
         // Vertical lines
-        const startX = ((centerX % step) + step) % step;
-        for (let x = startX; x < w; x += step) {
+        const startX = ((centerX % stepPx) + stepPx) % stepPx;
+        for (let x = startX; x < w; x += stepPx) {
             this.ctx.beginPath();
             this.ctx.moveTo(x + 0.5, 0);
             this.ctx.lineTo(x + 0.5, h);
@@ -3404,8 +3417,8 @@ class DeltaPlot extends HTMLElement {
         }
 
         // Horizontal lines
-        const startY = ((centerY % step) + step) % step;
-        for (let y = startY; y < h; y += step) {
+        const startY = ((centerY % stepPx) + stepPx) % stepPx;
+        for (let y = startY; y < h; y += stepPx) {
             this.ctx.beginPath();
             this.ctx.moveTo(0, y + 0.5);
             this.ctx.lineTo(w, y + 0.5);
