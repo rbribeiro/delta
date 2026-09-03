@@ -3195,11 +3195,14 @@ class DeltaPlot extends HTMLElement {
         this.title = this.getAttribute("title") || "";
         this.grab = this.getAttribute("grab") || "true";
         const zoomAttr = this.getAttribute("zoom") || "0.25,4";
+        const gridAttr = this.getAttribute("grid") || "true";
 
         // Attribute settings
         this.offsetX = 0;
         this.offsetY = 0;
         this.grab = (this.grab !== "false");
+        const validGrids = ["origin", "basic", "false", "true"];
+        this.grid = validGrids.includes(gridAttr) ? gridAttr : "true";
         if (zoomAttr === "false") {
             this.zoomEnabled = false;
             this.minZoom = 1;
@@ -3393,54 +3396,59 @@ class DeltaPlot extends HTMLElement {
     }
 
     drawGrid(w, h) {
+        if (this.grid === "false") return;
+
         const scale = BASE_SCALE * this.zoom;
         const centerX = Math.round(w / 2 + this.offsetX);
         const centerY = Math.round(h / 2 + this.offsetY);
 
-        // Adaptive step in Cartesian coordinates (1, 2, 5, 10, etc.)
-        const stepUnit = getNiceStep(TARGET_GRID_SPACING / scale);
-        const stepPx = stepUnit * scale;
-
         // Grid lines
-        this.ctx.strokeStyle = GRID_LINE_COLOR;
-        this.ctx.lineWidth = GRID_LINE_WIDTH;
+        if (this.grid === "true" || this.grid === "basic") {
+            const stepUnit = getNiceStep(TARGET_GRID_SPACING / scale);
+            const stepPx = stepUnit * scale;
 
-        // Vertical lines
-        const startX = ((centerX % stepPx) + stepPx) % stepPx;
-        for (let x = startX; x < w; x += stepPx) {
-            this.ctx.beginPath();
-            this.ctx.moveTo(x + 0.5, 0);
-            this.ctx.lineTo(x + 0.5, h);
-            this.ctx.stroke();
-        }
+            this.ctx.strokeStyle = GRID_LINE_COLOR;
+            this.ctx.lineWidth = GRID_LINE_WIDTH;
 
-        // Horizontal lines
-        const startY = ((centerY % stepPx) + stepPx) % stepPx;
-        for (let y = startY; y < h; y += stepPx) {
-            this.ctx.beginPath();
-            this.ctx.moveTo(0, y + 0.5);
-            this.ctx.lineTo(w, y + 0.5);
-            this.ctx.stroke();
+            // Vertical lines
+            const startX = ((centerX % stepPx) + stepPx) % stepPx;
+            for (let x = startX; x < w; x += stepPx) {
+                this.ctx.beginPath();
+                this.ctx.moveTo(x + 0.5, 0);
+                this.ctx.lineTo(x + 0.5, h);
+                this.ctx.stroke();
+            }
+
+            // Horizontal lines
+            const startY = ((centerY % stepPx) + stepPx) % stepPx;
+            for (let y = startY; y < h; y += stepPx) {
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, y + 0.5);
+                this.ctx.lineTo(w, y + 0.5);
+                this.ctx.stroke();
+            }
         }
 
         // Origin axes
-        this.ctx.strokeStyle = AXIS_LINE_COLOR;
-        this.ctx.lineWidth = AXIS_LINE_WIDTH;
+        if (this.grid === "true" || this.grid === "origin") {
+            this.ctx.strokeStyle = AXIS_LINE_COLOR;
+            this.ctx.lineWidth = AXIS_LINE_WIDTH;
 
-        // X axis
-        if (centerY >= 0 && centerY <= h) {
-            this.ctx.beginPath();
-            this.ctx.moveTo(0, centerY + 0.5);
-            this.ctx.lineTo(w, centerY + 0.5);
-            this.ctx.stroke();
-        }
+            // X axis
+            if (centerY >= 0 && centerY <= h) {
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, centerY + 0.5);
+                this.ctx.lineTo(w, centerY + 0.5);
+                this.ctx.stroke();
+            }
 
-        // Y axis
-        if (centerX >= 0 && centerX <= w) {
-            this.ctx.beginPath();
-            this.ctx.moveTo(centerX + 0.5, 0);
-            this.ctx.lineTo(centerX + 0.5, h);
-            this.ctx.stroke();
+            // Y axis
+            if (centerX >= 0 && centerX <= w) {
+                this.ctx.beginPath();
+                this.ctx.moveTo(centerX + 0.5, 0);
+                this.ctx.lineTo(centerX + 0.5, h);
+                this.ctx.stroke();
+            }
         }
     }
 }
