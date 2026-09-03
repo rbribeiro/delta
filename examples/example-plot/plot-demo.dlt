@@ -21,7 +21,9 @@
 
     Abaixo temos a instância interativa do componente <c><plot></c>. Com a propriedade <c>grab="true"</c> habilitada, você pode clicar e arrastar com o mouse ou tocar com o dedo no celular para transladar a visualização pelo plano.
 
-    <plot title="Espaço Cartesiano Bidimensional" />
+    <plot title="Espaço Cartesiano Bidimensional">
+      <axis />
+    </plot>
   </section>
 
   <section id="sec:grid">

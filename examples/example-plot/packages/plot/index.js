@@ -26,13 +26,20 @@ function getNiceStep(targetStep) {
     return pow10;
 }
 
+function format_number(val) {
+    if (Math.abs(val) < 1e-10) return "0";
+    return parseFloat(val.toFixed(6)).toString();
+}
+
 // Grid Default Settings
 const BASE_SCALE = 40;
 const TARGET_GRID_SPACING = 50;
 const GRID_LINE_COLOR = "rgba(128, 128, 128, 0.12)";
 const GRID_LINE_WIDTH = 1;
-const AXIS_LINE_COLOR = "rgba(60, 60, 60, 0.4)";
-const AXIS_LINE_WIDTH = 1.5;
+const AXIS_LINE_COLOR = "rgba(128, 128, 128, 0.24)";
+const AXIS_LINE_WIDTH = 1;
+const AXIS_LABEL_FONT = "10px system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+const AXIS_LABEL_COLOR = "rgba(60, 60, 60, 0.75)";
 
 // Subcomponents
 class PlotHeader {
@@ -50,6 +57,66 @@ class PlotHeader {
 
         this.el.append(this.titleEl);
         return this.el;
+    }
+}
+
+class PlotAxis {
+    constructor(mode = "true") {
+        const validModes = ["true", "false", "x", "y"];
+        const m = (mode || "true").toLowerCase();
+        this.mode = validModes.includes(m) ? m : "true";
+    }
+
+    render(ctx, w, h, plot) {
+        if (this.mode === "false") return;
+        const showX = (this.mode === "true" || this.mode === "x");
+        const showY = (this.mode === "true" || this.mode === "y");
+
+        const scale = BASE_SCALE * plot.zoom;
+        const centerX = Math.round(w / 2 + plot.offsetX);
+        const centerY = Math.round(h / 2 + plot.offsetY);
+
+        const stepUnit = getNiceStep(TARGET_GRID_SPACING / scale);
+        const stepPx = stepUnit * scale;
+
+        ctx.font = AXIS_LABEL_FONT;
+        ctx.fillStyle = AXIS_LABEL_COLOR;
+
+        // X-axis markings
+        if (showX) {
+            ctx.textAlign = "center";
+            ctx.textBaseline = "bottom";
+            const textY = h - 6;
+
+            const minUnit = Math.floor((-centerX) / stepPx) * stepUnit;
+            const maxUnit = Math.ceil((w - centerX) / stepPx) * stepUnit;
+
+            for (let u = minUnit; u <= maxUnit + stepUnit * 0.5; u += stepUnit) {
+                const val = parseFloat(u.toFixed(8)) + 0;
+                const sx = Math.round(centerX + u * scale);
+                if (sx >= 15 && sx <= w - 15) {
+                    ctx.fillText(format_number(val), sx, textY);
+                }
+            }
+        }
+
+        // Y-axis markings
+        if (showY) {
+            ctx.textAlign = "left";
+            ctx.textBaseline = "middle";
+            const textX = 8;
+
+            const minUnit = Math.floor((centerY - h) / stepPx) * stepUnit;
+            const maxUnit = Math.ceil((centerY) / stepPx) * stepUnit;
+
+            for (let u = minUnit; u <= maxUnit + stepUnit * 0.5; u += stepUnit) {
+                const val = parseFloat(u.toFixed(8)) + 0;
+                const sy = Math.round(centerY - u * scale);
+                if (sy >= 14 && sy <= h - 20) {
+                    ctx.fillText(format_number(val), textX, sy);
+                }
+            }
+        }
     }
 }
 
@@ -87,6 +154,17 @@ class DeltaPlot extends HTMLElement {
             }
         }
         this.zoom = 1;
+
+        // Axis check
+        const axisEl = this.querySelector("delta-axis, axis");
+        if (axisEl) {
+            const axisMode = axisEl.getAttribute("mode") || axisEl.getAttribute("show") || "true";
+            this.axis = new PlotAxis(axisMode);
+        } else if (this.hasAttribute("axis")) {
+            this.axis = new PlotAxis(this.getAttribute("axis") || "true");
+        } else {
+            this.axis = null;
+        }
 
         // Processing
         this.build();
@@ -139,6 +217,9 @@ class DeltaPlot extends HTMLElement {
 
         this.ctx.clearRect(0, 0, w, h);
         this.drawGrid(w, h);
+        if (this.axis) {
+            this.axis.render(this.ctx, w, h, this);
+        }
     }
 
     bindGrab() {
@@ -321,4 +402,7 @@ class DeltaPlot extends HTMLElement {
     }
 }
 
+class DeltaAxis extends HTMLElement {}
+
+customElements.define("delta-axis", DeltaAxis);
 customElements.define("delta-plot", DeltaPlot);
