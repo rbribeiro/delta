@@ -2,37 +2,73 @@
   <title>Componente de Plotagem 2D</title>
 
   <meta>
-    <meta-item key="Tópico">Visualização de Dados e Geometria</meta-item>
+    <meta-item key="Tópico">Visualização Matemática e Geometria</meta-item>
     <meta-item key="Autor">Delta</meta-item>
   </meta>
 
   <abstract>
-    Este documento apresenta o componente interativo de plotagem geométrica e funções matemáticas construído para o Delta, explorando o sistema de coordenadas e a navegação no plano cartesiano.
+    Este guia apresenta o componente interativo de plotagem para documentos Delta, explicando como configurar o espaço cartesiano, a navegação com arrasto e zoom, a grade adaptativa e as marcações numéricas dos eixos.
   </abstract>
 
   <import src="packages/plot" />
 
   <section id="sec:intro">
-    <title>Introdução ao Espaço Cartesiano</title>
+    <title>Componente <c><plot></c></title>
 
-    O sistema de coordenadas cartesianas no plano $\mathbb{R}^2$ permite representar geometricamente pares ordenados $(x, y)$, funções e curvas contínuas.
-    <sidenote>O plano cartesiano foi introduzido por René Descartes em 1637, unindo a álgebra e a geometria euclidiana.</sidenote>
-    Neste componente, a origem $(0, 0)$ é posicionada inicialmente no centro da área de desenho, com o eixo $X$ horizontal e o eixo $Y$ vertical.
+    O componente <c><plot></c> cria uma área interativa de desenho no plano cartesiano $\mathbb{R}^2$ com proporção (até o momento) fixa de $16:9$. Ele gerencia a renderização em canvas de alta resolução e as interações de navegação do usuário.
+    <sidenote>A navegação no plano preserva o ponto sob o cursor durante o zoom (focal zoom), tanto no mouse quanto em telas sensíveis ao toque.</sidenote>
 
-    Abaixo temos a instância interativa do componente <c><plot></c>. Com a propriedade <c>grab="true"</c> habilitada, você pode clicar e arrastar com o mouse ou tocar com o dedo no celular para transladar a visualização pelo plano.
+    O componente aceita as seguintes propriedades principais:
 
-    <plot title="Espaço Cartesiano Bidimensional">
-      <grid show="true" />
-      <axis show="true" />
-    </plot>
+    - <c>title="..."</c>: Define o título exibido no cabeçalho superior.
+
+    - <c>grab="true/false"</c>: Habilita ou desabilita o arrasto da visualização com o mouse ou toque (padrão: <c>"true"</c>).
+
+    - <c>zoom="true/false/min,max"</c>: Habilita o zoom padrão entre $[0.25, 4]$ (<c>"true"</c>), desativa o zoom (<c>"false"</c>) ou define limites personalizados como <c>"0.5,2"</c> (padrão: <c>"true"</c>). Um zoom de 0.25 representa um zoom-out de 4 vezes, enquanto um zoom de 4 representa um zoom-in de 4 vezes.
+
+    Os subcomponentes de <c>grid</c> e <c>axis</c> já são criados com valor padrão quando inicializamos um plot vazio, sendo necessário declarar os subcomponentes para desativá-los ou alterar suas configurações.
+
+    <plot title="Espaço Cartesiano Bidimensional" grab="true" zoom="true"/>
   </section>
 
   <section id="sec:grid">
-    <title>Estrutura da Grade e Eixos</title>
+    <title>Subcomponente <c><grid></c></title>
 
-    A malha ortogonal é desenhada dinamicamente acompanhando o deslocamento do usuário. As linhas principais dos eixos cartesianos $x = 0$ e $y = 0$ recebem um traço de maior contraste para facilitar a orientação visual.
-    <sidenote>A proporção de aspecto é mantida fixa em $16:9$, garantindo consistência em qualquer tela ou dispositivo móvel.</sidenote>
+    O subcomponente <c><grid></c> adiciona a malha ortogonal ao fundo do gráfico. O espaçamento entre as linhas é dinâmico e adaptativo: conforme você aproxima ou afasta o zoom, a escala escolhe automaticamente múltiplos amigáveis ($1, 2, 5, 10 \times 10^k$).
 
-    Em passos futuros, este componente permitirá a inserção de pontos de controle, plotagem de curvas polinomiais $f(x)$ e inspeção interativa de valores sob o cursor.
+    O parâmetro <c>show</c> aceita quatro modos:
+
+    - <c>show="true"</c> (padrão): Exibe as linhas da grade base e destaca os eixos principais da origem ($x = 0$ e $y = 0$).
+
+    - <c>show="basic"</c>: Exibe apenas as linhas suaves da grade base.
+
+    - <c>show="origin"</c>: Exibe apenas as retas dos eixos principais da origem.
+
+    - <c>show="false"</c>: Mantém o fundo totalmente limpo.
+
+    <plot title="Apenas grid básica, sem a origem" grab="true" zoom="true">
+      <grid show="basic"/>
+      <axis show="false"/>
+    </plot>
+  </section>
+
+  <section id="sec:axis">
+    <title>Subcomponente <c><axis></c></title>
+
+    O subcomponente <c><axis /></c> insere marcações numéricas legíveis nas coordenadas correspondentes às linhas da grade:
+    <sidenote>As marcações numéricas do eixo X ficam centralizadas na base da tela, enquanto as do eixo Y ficam alinhadas à esquerda para facilitar a leitura.</sidenote>
+
+    - <c>show="true"</c> (padrão): Mostra números em ambos os eixos $X$ e $Y$.
+
+    - <c>show="x"</c>: Mostra números apenas na parte inferior do eixo $X$.
+    
+    - <c>show="y"</c>: Mostra números apenas na lateral esquerda do eixo $Y$.
+
+    - <c>show="false"</c>: Desativa as marcações numéricas.
+
+    <plot title="Plot com grid apenas na origem e axis apenas no eixo x" grab="true" zoom="true">
+      <grid show="origin"/>
+      <axis show="x"/>
+    </plot>
   </section>
 </document>

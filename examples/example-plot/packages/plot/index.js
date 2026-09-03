@@ -287,16 +287,12 @@ class DeltaPlot extends HTMLElement {
         this.elements = [];
 
         // Grid
-        const gridEl = this.querySelector("delta-grid");
-        if (gridEl) {
-            this.elements.push(gridEl);
-        }
+        const gridEl = this.querySelector("delta-grid") || document.createElement("delta-grid");
+        this.elements.push(gridEl);
 
         // Axis
-        const axisEl = this.querySelector("delta-axis");
-        if (axisEl) {
-            this.elements.push(axisEl);
-        }
+        const axisEl = this.querySelector("delta-axis") || document.createElement("delta-axis");
+        this.elements.push(axisEl);
     }
 
     buildHeader() {
