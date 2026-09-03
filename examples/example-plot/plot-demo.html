@@ -3413,16 +3413,22 @@ class DeltaPlot extends HTMLElement {
     }
 
     instanceSubcomponents(){
+        for (const child of this.children) {
+            if (child.tagName.toLowerCase().startsWith("delta-")) {
+                child.connectedCallback = () => {};
+            }
+        }
+
         this.elements = [];
 
         // Grid
-        const gridEl = this.querySelector("delta-grid, grid");
+        const gridEl = this.querySelector("delta-grid");
         if (gridEl) {
             this.elements.push(gridEl);
         }
 
         // Axis
-        const axisEl = this.querySelector("delta-axis, axis");
+        const axisEl = this.querySelector("delta-axis");
         if (axisEl) {
             this.elements.push(axisEl);
         }
