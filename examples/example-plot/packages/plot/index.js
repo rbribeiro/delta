@@ -42,28 +42,6 @@ const AXIS_LABEL_FONT = "10px system-ui, -apple-system, BlinkMacSystemFont, 'Seg
 const AXIS_LABEL_COLOR = "rgba(40, 40, 40, 0.85)";
 
 // Subcomponents
-class PlotHeader {
-    constructor(title) {
-        this.title = title;
-    }
-
-    build(plot) {
-        this.el = document.createElement("div");
-        this.el.className = "plot-header";
-
-        this.titleEl = document.createElement("span");
-        this.titleEl.className = "plot-title";
-        this.titleEl.textContent = this.title;
-
-        this.el.append(this.titleEl);
-        return this.el;
-    }
-
-    bind(plot) {}
-
-    render(ctx, w, h, plot) {}
-}
-
 class DeltaAxis extends HTMLElement {
     build(plot) {
         const validShows = ["true", "false", "x", "y"];
@@ -200,49 +178,11 @@ class DeltaPlot extends HTMLElement {
         this.dataset.deltaReady = "1";
 
         // Parameters
-        this.title = this.getAttribute("title") || "";
-        this.grab = this.getAttribute("grab") || "true";
+        const titleAttr = this.getAttribute("title") || "";
+        const grabAttr = this.getAttribute("grab") || "true";
         const zoomAttr = this.getAttribute("zoom") || "0.25,4";
-
-        // Attribute settings
-        this.offsetX = 0;
-        this.offsetY = 0;
-        this.grab = (this.grab !== "false");
-        if (zoomAttr === "false") {
-            this.zoomEnabled = false;
-            this.minZoom = 1;
-            this.maxZoom = 1;
-        } else {
-            this.zoomEnabled = true;
-            const tuple = parse_tuple(zoomAttr, 2, true);
-            if (tuple && tuple[0] > 0 && tuple[1] >= tuple[0]) {
-                this.minZoom = tuple[0];
-                this.maxZoom = tuple[1];
-            } else {
-                this.minZoom = 0.25;
-                this.maxZoom = 4;
-            }
-        }
-        this.zoom = 1;
-
-        // Subcomponents instantiation
-        this.elements = [];
-
-        // Header
-        this.header = new PlotHeader(this.title);
-        this.elements.push(this.header);
-
-        // Grid
-        const gridEl = this.querySelector("delta-grid, grid");
-        if (gridEl) {
-            this.elements.push(gridEl);
-        }
-
-        // Axis
-        const axisEl = this.querySelector("delta-axis, axis");
-        if (axisEl) {
-            this.elements.push(axisEl);
-        }
+        this.configAttributes(titleAttr,grabAttr,zoomAttr);
+        this.instanceSubcomponents();
 
         // Processing lifecycle
         this.build();
@@ -259,26 +199,28 @@ class DeltaPlot extends HTMLElement {
         this.container.className = "plot-container";
 
         // Header
-        this.container.append(this.header.build(this));
+        if (this.title) {
+            this.container.append(this.buildHeader());
+        }
 
         // Canvas
         this.canvas = document.createElement("canvas");
         this.canvas.className = "plot-canvas";
         this.ctx = this.canvas.getContext("2d");
         this.container.append(this.canvas);
-
         this.append(this.container);
 
         // Subcomponents build
         for (const el of this.elements) {
-            if (el !== this.header) {
-                el.build(this);
-            }
+            el.build(this);
         }
     }
 
     bind() {
-        new ResizeObserver(() => this.onResize()).observe(this.canvas);
+        new ResizeObserver(() => {
+            this.resize(); this.render()
+        }).observe(this.canvas);
+
         this.bindGrab();
         this.bindZoom();
 
@@ -288,17 +230,9 @@ class DeltaPlot extends HTMLElement {
         }
     }
 
-    resize() {
-        const r = this.canvas.getBoundingClientRect();
-        if (r.width === 0 || r.height === 0) return;
-        const dpr = window.devicePixelRatio || 1;
-        this.canvas.width = Math.round(r.width * dpr);
-        this.canvas.height = Math.round(r.height * dpr);
-        this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-
     render() {
         if (!this.ctx) return;
+
         const r = this.canvas.getBoundingClientRect();
         const w = r.width;
         const h = r.height;
@@ -310,6 +244,70 @@ class DeltaPlot extends HTMLElement {
         for (const el of this.elements) {
             el.render(this.ctx, w, h, this);
         }
+    }
+
+    configAttributes(titleAttr, grabAttr, zoomAttr) {
+        // Title
+        this.title = titleAttr;
+
+        // Grabbing
+        this.offsetX = 0; this.offsetY = 0;
+        this.grab = (grabAttr !== "false");
+
+        // Zoom
+        if (zoomAttr === "false") {
+            this.zoomEnabled = false;
+            this.minZoom = 1;
+            this.maxZoom = 1;
+        } else {
+            this.zoomEnabled = true;
+            const tuple = parse_tuple(zoomAttr, 2, true);
+            if (tuple && tuple[0] > 0 && tuple[1] >= tuple[0]) {
+                this.minZoom = tuple[0];
+                this.maxZoom = tuple[1];
+            } else {
+                this.minZoom = 0.25;
+                this.maxZoom = 4;
+            }
+        }
+        this.zoom = 1;
+    }
+
+    instanceSubcomponents(){
+        this.elements = [];
+
+        // Grid
+        const gridEl = this.querySelector("delta-grid, grid");
+        if (gridEl) {
+            this.elements.push(gridEl);
+        }
+
+        // Axis
+        const axisEl = this.querySelector("delta-axis, axis");
+        if (axisEl) {
+            this.elements.push(axisEl);
+        }
+    }
+
+    buildHeader() {
+        const headerEl = document.createElement("div");
+        headerEl.className = "plot-header";
+
+        const titleEl = document.createElement("span");
+        titleEl.className = "plot-title";
+        titleEl.textContent = this.title;
+
+        headerEl.append(titleEl);
+        return headerEl;
+    }
+
+    resize() {
+        const r = this.canvas.getBoundingClientRect();
+        if (r.width === 0 || r.height === 0) return;
+        const dpr = window.devicePixelRatio || 1;
+        this.canvas.width = Math.round(r.width * dpr);
+        this.canvas.height = Math.round(r.height * dpr);
+        this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
     bindGrab() {
@@ -413,11 +411,6 @@ class DeltaPlot extends HTMLElement {
 
         this.canvas.addEventListener("pointerup", onTouchEnd);
         this.canvas.addEventListener("pointercancel", onTouchEnd);
-    }
-
-    onResize() {
-        this.resize();
-        this.render();
     }
 
     applyZoom(newZoom, cx, cy) {
