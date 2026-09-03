@@ -47,7 +47,7 @@ class PlotHeader {
         this.title = title;
     }
 
-    build() {
+    build(plot) {
         this.el = document.createElement("div");
         this.el.className = "plot-header";
 
@@ -58,19 +58,25 @@ class PlotHeader {
         this.el.append(this.titleEl);
         return this.el;
     }
+
+    bind(plot) {}
+
+    render(ctx, w, h, plot) {}
 }
 
-class PlotAxis {
-    constructor(mode = "true") {
-        const validModes = ["true", "false", "x", "y"];
-        const m = (mode || "true").toLowerCase();
-        this.mode = validModes.includes(m) ? m : "true";
+class DeltaAxis extends HTMLElement {
+    build(plot) {
+        const validShows = ["true", "false", "x", "y"];
+        const showAttr = (this.getAttribute("show") || "true").toLowerCase();
+        this.show = validShows.includes(showAttr) ? showAttr : "true";
     }
 
+    bind(plot) {}
+
     render(ctx, w, h, plot) {
-        if (this.mode === "false") return;
-        const showX = (this.mode === "true" || this.mode === "x");
-        const showY = (this.mode === "true" || this.mode === "y");
+        if (this.show === "false") return;
+        const showX = (this.show === "true" || this.show === "x");
+        const showY = (this.show === "true" || this.show === "y");
 
         const scale = BASE_SCALE * plot.zoom;
         const centerX = Math.round(w / 2 + plot.offsetX);
@@ -120,6 +126,73 @@ class PlotAxis {
     }
 }
 
+class DeltaGrid extends HTMLElement {
+    build(plot) {
+        const validShows = ["true", "false", "origin", "basic"];
+        const showAttr = (this.getAttribute("show") || "true").toLowerCase();
+        this.show = validShows.includes(showAttr) ? showAttr : "true";
+    }
+
+    bind(plot) {}
+
+    render(ctx, w, h, plot) {
+        if (this.show === "false") return;
+
+        const scale = BASE_SCALE * plot.zoom;
+        const centerX = Math.round(w / 2 + plot.offsetX);
+        const centerY = Math.round(h / 2 + plot.offsetY);
+
+        // Grid lines
+        if (this.show === "true" || this.show === "basic") {
+            const stepUnit = getNiceStep(TARGET_GRID_SPACING / scale);
+            const stepPx = stepUnit * scale;
+
+            ctx.strokeStyle = GRID_LINE_COLOR;
+            ctx.lineWidth = GRID_LINE_WIDTH;
+
+            // Vertical lines
+            const startX = ((centerX % stepPx) + stepPx) % stepPx;
+            for (let x = startX; x < w; x += stepPx) {
+                ctx.beginPath();
+                ctx.moveTo(x + 0.5, 0);
+                ctx.lineTo(x + 0.5, h);
+                ctx.stroke();
+            }
+
+            // Horizontal lines
+            const startY = ((centerY % stepPx) + stepPx) % stepPx;
+            for (let y = startY; y < h; y += stepPx) {
+                ctx.beginPath();
+                ctx.moveTo(0, y + 0.5);
+                ctx.lineTo(w, y + 0.5);
+                ctx.stroke();
+            }
+        }
+
+        // Origin axes
+        if (this.show === "true" || this.show === "origin") {
+            ctx.strokeStyle = AXIS_LINE_COLOR;
+            ctx.lineWidth = AXIS_LINE_WIDTH;
+
+            // X axis
+            if (centerY >= 0 && centerY <= h) {
+                ctx.beginPath();
+                ctx.moveTo(0, centerY + 0.5);
+                ctx.lineTo(w, centerY + 0.5);
+                ctx.stroke();
+            }
+
+            // Y axis
+            if (centerX >= 0 && centerX <= w) {
+                ctx.beginPath();
+                ctx.moveTo(centerX + 0.5, 0);
+                ctx.lineTo(centerX + 0.5, h);
+                ctx.stroke();
+            }
+        }
+    }
+}
+
 // Plot Component
 class DeltaPlot extends HTMLElement {
     connectedCallback() {
@@ -130,14 +203,11 @@ class DeltaPlot extends HTMLElement {
         this.title = this.getAttribute("title") || "";
         this.grab = this.getAttribute("grab") || "true";
         const zoomAttr = this.getAttribute("zoom") || "0.25,4";
-        const gridAttr = this.getAttribute("grid") || "true";
 
         // Attribute settings
         this.offsetX = 0;
         this.offsetY = 0;
         this.grab = (this.grab !== "false");
-        const validGrids = ["origin", "basic", "false", "true"];
-        this.grid = validGrids.includes(gridAttr) ? gridAttr : "true";
         if (zoomAttr === "false") {
             this.zoomEnabled = false;
             this.minZoom = 1;
@@ -155,18 +225,26 @@ class DeltaPlot extends HTMLElement {
         }
         this.zoom = 1;
 
-        // Axis check
-        const axisEl = this.querySelector("delta-axis, axis");
-        if (axisEl) {
-            const axisMode = axisEl.getAttribute("mode") || axisEl.getAttribute("show") || "true";
-            this.axis = new PlotAxis(axisMode);
-        } else if (this.hasAttribute("axis")) {
-            this.axis = new PlotAxis(this.getAttribute("axis") || "true");
-        } else {
-            this.axis = null;
+        // Subcomponents instantiation
+        this.elements = [];
+
+        // Header
+        this.header = new PlotHeader(this.title);
+        this.elements.push(this.header);
+
+        // Grid
+        const gridEl = this.querySelector("delta-grid, grid");
+        if (gridEl) {
+            this.elements.push(gridEl);
         }
 
-        // Processing
+        // Axis
+        const axisEl = this.querySelector("delta-axis, axis");
+        if (axisEl) {
+            this.elements.push(axisEl);
+        }
+
+        // Processing lifecycle
         this.build();
         this.bind();
         this.resize();
@@ -181,8 +259,7 @@ class DeltaPlot extends HTMLElement {
         this.container.className = "plot-container";
 
         // Header
-        this.header = new PlotHeader(this.title);
-        this.container.append(this.header.build());
+        this.container.append(this.header.build(this));
 
         // Canvas
         this.canvas = document.createElement("canvas");
@@ -191,12 +268,24 @@ class DeltaPlot extends HTMLElement {
         this.container.append(this.canvas);
 
         this.append(this.container);
+
+        // Subcomponents build
+        for (const el of this.elements) {
+            if (el !== this.header) {
+                el.build(this);
+            }
+        }
     }
 
     bind() {
         new ResizeObserver(() => this.onResize()).observe(this.canvas);
         this.bindGrab();
         this.bindZoom();
+
+        // Subcomponents bind
+        for (const el of this.elements) {
+            el.bind(this);
+        }
     }
 
     resize() {
@@ -216,9 +305,10 @@ class DeltaPlot extends HTMLElement {
         if (w === 0 || h === 0) return;
 
         this.ctx.clearRect(0, 0, w, h);
-        this.drawGrid(w, h);
-        if (this.axis) {
-            this.axis.render(this.ctx, w, h, this);
+
+        // Subcomponents render
+        for (const el of this.elements) {
+            el.render(this.ctx, w, h, this);
         }
     }
 
@@ -343,66 +433,8 @@ class DeltaPlot extends HTMLElement {
 
         this.render();
     }
-
-    drawGrid(w, h) {
-        if (this.grid === "false") return;
-
-        const scale = BASE_SCALE * this.zoom;
-        const centerX = Math.round(w / 2 + this.offsetX);
-        const centerY = Math.round(h / 2 + this.offsetY);
-
-        // Grid lines
-        if (this.grid === "true" || this.grid === "basic") {
-            const stepUnit = getNiceStep(TARGET_GRID_SPACING / scale);
-            const stepPx = stepUnit * scale;
-
-            this.ctx.strokeStyle = GRID_LINE_COLOR;
-            this.ctx.lineWidth = GRID_LINE_WIDTH;
-
-            // Vertical lines
-            const startX = ((centerX % stepPx) + stepPx) % stepPx;
-            for (let x = startX; x < w; x += stepPx) {
-                this.ctx.beginPath();
-                this.ctx.moveTo(x + 0.5, 0);
-                this.ctx.lineTo(x + 0.5, h);
-                this.ctx.stroke();
-            }
-
-            // Horizontal lines
-            const startY = ((centerY % stepPx) + stepPx) % stepPx;
-            for (let y = startY; y < h; y += stepPx) {
-                this.ctx.beginPath();
-                this.ctx.moveTo(0, y + 0.5);
-                this.ctx.lineTo(w, y + 0.5);
-                this.ctx.stroke();
-            }
-        }
-
-        // Origin axes
-        if (this.grid === "true" || this.grid === "origin") {
-            this.ctx.strokeStyle = AXIS_LINE_COLOR;
-            this.ctx.lineWidth = AXIS_LINE_WIDTH;
-
-            // X axis
-            if (centerY >= 0 && centerY <= h) {
-                this.ctx.beginPath();
-                this.ctx.moveTo(0, centerY + 0.5);
-                this.ctx.lineTo(w, centerY + 0.5);
-                this.ctx.stroke();
-            }
-
-            // Y axis
-            if (centerX >= 0 && centerX <= w) {
-                this.ctx.beginPath();
-                this.ctx.moveTo(centerX + 0.5, 0);
-                this.ctx.lineTo(centerX + 0.5, h);
-                this.ctx.stroke();
-            }
-        }
-    }
 }
 
-class DeltaAxis extends HTMLElement {}
-
+customElements.define("delta-grid", DeltaGrid);
 customElements.define("delta-axis", DeltaAxis);
 customElements.define("delta-plot", DeltaPlot);
