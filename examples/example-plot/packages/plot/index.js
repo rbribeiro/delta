@@ -35,7 +35,6 @@ const AXIS_LINE_COLOR = "rgba(60, 60, 60, 0.4)";
 const AXIS_LINE_WIDTH = 1.5;
 
 // Subcomponents
-
 class PlotHeader {
     constructor(title) {
         this.title = title;
@@ -55,7 +54,6 @@ class PlotHeader {
 }
 
 // Plot Component
-
 class DeltaPlot extends HTMLElement {
     connectedCallback() {
         if (this.dataset.deltaReady) return;
@@ -118,6 +116,26 @@ class DeltaPlot extends HTMLElement {
         new ResizeObserver(() => this.onResize()).observe(this.canvas);
         this.bindGrab();
         this.bindZoom();
+    }
+
+    resize() {
+        const r = this.canvas.getBoundingClientRect();
+        if (r.width === 0 || r.height === 0) return;
+        const dpr = window.devicePixelRatio || 1;
+        this.canvas.width = Math.round(r.width * dpr);
+        this.canvas.height = Math.round(r.height * dpr);
+        this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    render() {
+        if (!this.ctx) return;
+        const r = this.canvas.getBoundingClientRect();
+        const w = r.width;
+        const h = r.height;
+        if (w === 0 || h === 0) return;
+
+        this.ctx.clearRect(0, 0, w, h);
+        this.drawGrid(w, h);
     }
 
     bindGrab() {
@@ -223,6 +241,11 @@ class DeltaPlot extends HTMLElement {
         this.canvas.addEventListener("pointercancel", onTouchEnd);
     }
 
+    onResize() {
+        this.resize();
+        this.render();
+    }
+
     applyZoom(newZoom, cx, cy) {
         if (newZoom === this.zoom) return;
         const r = this.canvas.getBoundingClientRect();
@@ -235,31 +258,6 @@ class DeltaPlot extends HTMLElement {
         this.zoom = newZoom;
 
         this.render();
-    }
-
-    onResize() {
-        this.resize();
-        this.render();
-    }
-
-    resize() {
-        const r = this.canvas.getBoundingClientRect();
-        if (r.width === 0 || r.height === 0) return;
-        const dpr = window.devicePixelRatio || 1;
-        this.canvas.width = Math.round(r.width * dpr);
-        this.canvas.height = Math.round(r.height * dpr);
-        this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-
-    render() {
-        if (!this.ctx) return;
-        const r = this.canvas.getBoundingClientRect();
-        const w = r.width;
-        const h = r.height;
-        if (w === 0 || h === 0) return;
-
-        this.ctx.clearRect(0, 0, w, h);
-        this.drawGrid(w, h);
     }
 
     drawGrid(w, h) {
