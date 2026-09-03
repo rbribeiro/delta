@@ -1,0 +1,73 @@
+/* questão */
+delta-question {
+  display: block;
+
+  background-color: color-mix(in oklab, var(--delta-accent-soft) 20%, var(--delta-env-bg));
+
+  /* Borda acompanha a paleta do documento */
+  border: var(--delta-hairline) solid color-mix(in oklab, var(--delta-accent-soft) 30%, var(--delta-rule));
+
+  border-radius:  var(--delta-radius-lg);
+  padding: 1.5rem;
+  margin: var(--delta-block-gap) 0;
+  box-shadow: var(--delta-shadow);
+}
+
+
+/* alternativas */
+delta-option {
+  --delta-env-soft: var(--delta-env-bg);
+
+  display: block;
+  padding: 10px 15px;
+  margin: 10px 0;
+  border: var(--delta-hairline) solid color-mix(in oklab, var(--delta-accent) 30%, var(--delta-rule));
+  border-radius: 6px;
+  cursor: pointer;
+  background-color: var(--delta-env-soft);
+  color: var(--delta-ink);
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+
+/* hover: */
+delta-question:not([answered]) delta-option:hover {
+  background-color: color-mix(in oklab, var(--delta-accent) 25%, transparent);
+  border-color: var(--delta-accent);
+}
+
+/* feedback após responder: */
+delta-question[answered="true"] delta-option.correct {
+  background-color: var(--delta-accent);
+  border-color: color-mix(in oklab, var(--delta-accent) 10%, black);
+  color: var(--delta-ink);
+  opacity: 1;
+}
+
+delta-question[answered="true"] delta-option:not(.correct):not(.wrong) {
+  opacity: 0.45;
+  background-color: var(--delta-surface);
+  border-color: color-mix(
+    in oklab,
+    var(--delta-ink) 15%,
+    var(--delta-surface)
+  );
+  color: var(--delta-ink);
+}
+
+delta-question[answered="true"] delta-option.wrong {
+  opacity: 0.70;
+  background-color: color-mix(in oklab, gray 25%, transparent);
+  border-color: color-mix(in oklab, var(--delta-ink) 30%, var(--delta-surface));
+
+  color: var(--delta-ink);
+}
+
+/* Desabilita novos cliques:*/
+delta-question[answered="true"] delta-option {
+  cursor: default;
+}
+

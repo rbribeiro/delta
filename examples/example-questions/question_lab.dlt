@@ -1,0 +1,42 @@
+<document lang="pt-BR" type="paper" theme-accent="green" theme-mode="light">
+  <import src="./packages/question" />
+
+  <title>Laboratório de testes do questionário</title>
+
+  <toc> Sumário </toc>
+  
+  <section id="sec:nativos">
+    <title>Componentes Nativos</title>
+    
+    <p>Estes blocos usam as variáveis nativas do Delta. Irei utilizá-los como referências para estilizar as questões do Delta.</p>
+
+    <theorem id="thm:referencia">
+      <title>Bloco de Teorema</title>
+        enunciado do teorema...
+    </theorem>
+
+    <code lang="python">
+      def binomial_square(a, b):
+          return a**2 + 2*a*b + b**2
+    </code>
+  </section>
+
+  <section id="sec:testes">
+    <title>Componente de Questões</title>
+
+    <p>Passe o mouse sobre as opções para testar o hover e clique para ver os estados de sucesso/erro.</p>
+
+    <question>
+      Qual a derivada de $x^2$?
+      <option>$x$</option>
+      <option correct="true">$2x$</option>
+    </question>
+
+    <question>
+      Simulação de erro proposital:
+      <option>Clique nesta opção errada</option>
+      <option correct="true">Para ver como o componente revela esta correta</option>
+      <option>Outra opção errada</option>
+    </question>
+  </section>
+</document>
