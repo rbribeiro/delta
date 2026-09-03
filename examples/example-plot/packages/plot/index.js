@@ -180,7 +180,7 @@ class DeltaPlot extends HTMLElement {
         // Parameters
         const titleAttr = this.getAttribute("title") || "";
         const grabAttr = this.getAttribute("grab") || "true";
-        const zoomAttr = this.getAttribute("zoom") || "0.25,4";
+        const zoomAttr = this.getAttribute("zoom") || "true";
         this.configAttributes(titleAttr,grabAttr,zoomAttr);
         this.instanceSubcomponents();
 
@@ -259,6 +259,10 @@ class DeltaPlot extends HTMLElement {
             this.zoomEnabled = false;
             this.minZoom = 1;
             this.maxZoom = 1;
+        } else if(zoomAttr == "true"){
+            this.zoomEnabled = true;
+            this.minZoom = 0.25;
+            this.maxZoom = 4;
         } else {
             this.zoomEnabled = true;
             const tuple = parse_tuple(zoomAttr, 2, true);
@@ -270,7 +274,7 @@ class DeltaPlot extends HTMLElement {
                 this.maxZoom = 4;
             }
         }
-        this.zoom = 1;
+        this.zoom = Math.max(Math.min(1,this.maxZoom),this.minZoom);
     }
 
     instanceSubcomponents(){
