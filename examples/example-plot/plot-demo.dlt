@@ -96,8 +96,5 @@
       <grid show="origin"/>
       <axis show="y"/>
     </plot>
-
-    <plot title="Visualização de -10 a 10" y="-10,10" x="-10,10">
-    </plot>
   </section>
 </document>

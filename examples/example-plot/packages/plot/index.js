@@ -68,9 +68,6 @@ class DeltaAxis extends HTMLElement {
         if (showX) {
             const stepUnitX = getNiceStep(TARGET_GRID_SPACING / scaleX);
             const stepPxX = stepUnitX * scaleX;
-
-            ctx.textAlign = "center";
-            ctx.textBaseline = "bottom";
             const textY = h - 6;
 
             const minUnit = Math.floor((-centerX) / stepPxX) * stepUnitX;
@@ -79,8 +76,18 @@ class DeltaAxis extends HTMLElement {
             for (let u = minUnit; u <= maxUnit + stepUnitX * 0.5; u += stepUnitX) {
                 const val = parseFloat(u.toFixed(8)) + 0;
                 const sx = Math.round(centerX + u * scaleX);
-                if (sx >= 15 && sx <= w - 15) {
-                    ctx.fillText(format_number(val), sx, textY);
+                if (sx >= 0 && sx <= w) {
+                    ctx.textBaseline = "bottom";
+                    if (sx < 25) {
+                        ctx.textAlign = "left";
+                        ctx.fillText(format_number(val), Math.max(4, sx), textY);
+                    } else if (sx > w - 25) {
+                        ctx.textAlign = "right";
+                        ctx.fillText(format_number(val), Math.min(w - 4, sx), textY);
+                    } else {
+                        ctx.textAlign = "center";
+                        ctx.fillText(format_number(val), sx, textY);
+                    }
                 }
             }
         }
@@ -89,9 +96,6 @@ class DeltaAxis extends HTMLElement {
         if (showY) {
             const stepUnitY = getNiceStep(TARGET_GRID_SPACING / scaleY);
             const stepPxY = stepUnitY * scaleY;
-
-            ctx.textAlign = "left";
-            ctx.textBaseline = "middle";
             const textX = 8;
 
             const minUnit = Math.floor((centerY - h) / stepPxY) * stepUnitY;
@@ -100,8 +104,18 @@ class DeltaAxis extends HTMLElement {
             for (let u = minUnit; u <= maxUnit + stepUnitY * 0.5; u += stepUnitY) {
                 const val = parseFloat(u.toFixed(8)) + 0;
                 const sy = Math.round(centerY - u * scaleY);
-                if (sy >= 14 && sy <= h - 20) {
-                    ctx.fillText(format_number(val), textX, sy);
+                if (sy >= 0 && sy <= h) {
+                    ctx.textAlign = "left";
+                    if (sy < 16) {
+                        ctx.textBaseline = "top";
+                        ctx.fillText(format_number(val), textX, 4);
+                    } else if (sy > h - 22) {
+                        ctx.textBaseline = "bottom";
+                        ctx.fillText(format_number(val), textX, h - 18);
+                    } else {
+                        ctx.textBaseline = "middle";
+                        ctx.fillText(format_number(val), textX, sy);
+                    }
                 }
             }
         }
@@ -134,10 +148,11 @@ class DeltaGrid extends HTMLElement {
             const stepUnitX = getNiceStep(TARGET_GRID_SPACING / scaleX);
             const stepPxX = stepUnitX * scaleX;
             const startX = ((centerX % stepPxX) + stepPxX) % stepPxX;
-            for (let x = startX; x < w; x += stepPxX) {
+            for (let x = startX; x <= w + 0.5; x += stepPxX) {
+                const rx = Math.round(x);
                 ctx.beginPath();
-                ctx.moveTo(x + 0.5, 0);
-                ctx.lineTo(x + 0.5, h);
+                ctx.moveTo(rx + 0.5, 0);
+                ctx.lineTo(rx + 0.5, h);
                 ctx.stroke();
             }
 
@@ -145,10 +160,11 @@ class DeltaGrid extends HTMLElement {
             const stepUnitY = getNiceStep(TARGET_GRID_SPACING / scaleY);
             const stepPxY = stepUnitY * scaleY;
             const startY = ((centerY % stepPxY) + stepPxY) % stepPxY;
-            for (let y = startY; y < h; y += stepPxY) {
+            for (let y = startY; y <= h + 0.5; y += stepPxY) {
+                const ry = Math.round(y);
                 ctx.beginPath();
-                ctx.moveTo(0, y + 0.5);
-                ctx.lineTo(w, y + 0.5);
+                ctx.moveTo(0, ry + 0.5);
+                ctx.lineTo(w, ry + 0.5);
                 ctx.stroke();
             }
         }
@@ -305,7 +321,7 @@ class DeltaPlot extends HTMLElement {
         // Visible range bounds (X and Y)
         this.xRange = parse_tuple(this.xAttr, 2, true);
         this.yRange = parse_tuple(this.yAttr, 2, true);
-        this.boundsApplied = false;
+        this.userInteracted = false;
     }
 
     instanceSubcomponents(){
@@ -341,9 +357,9 @@ class DeltaPlot extends HTMLElement {
     }
 
     applyInitialBounds(w, h) {
-        if (this.boundsApplied) return;
+        if (this.userInteracted) return;
         if (!this.xRange && !this.yRange) return;
-        this.boundsApplied = true;
+        if (w < 10 || h < 10) return;
 
         if (this.xRange && this.yRange) {
             const dx = Math.abs(this.xRange[1] - this.xRange[0]);
@@ -404,7 +420,7 @@ class DeltaPlot extends HTMLElement {
         this.canvas.height = Math.round(r.height * dpr);
         this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-        if (!this.boundsApplied) {
+        if (!this.userInteracted) {
             this.applyInitialBounds(r.width, r.height);
         }
     }
@@ -424,6 +440,7 @@ class DeltaPlot extends HTMLElement {
             if (activePointerId !== null) return;
             activePointerId = e.pointerId;
             isDragging = true;
+            this.userInteracted = true;
             dragStartX = e.clientX;
             dragStartY = e.clientY;
             startOffsetX = this.offsetX;
@@ -457,6 +474,7 @@ class DeltaPlot extends HTMLElement {
         // Desktop mouse wheel zoom
         this.canvas.addEventListener("wheel", (e) => {
             e.preventDefault();
+            this.userInteracted = true;
             const r = this.canvas.getBoundingClientRect();
             const cx = e.clientX - r.left;
             const cy = e.clientY - r.top;
@@ -476,6 +494,7 @@ class DeltaPlot extends HTMLElement {
 
         this.canvas.addEventListener("pointerdown", (e) => {
             if (e.pointerType !== "touch") return;
+            this.userInteracted = true;
             touchPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
             if (touchPointers.size === 2) {
