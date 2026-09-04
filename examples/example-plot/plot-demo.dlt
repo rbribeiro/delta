@@ -71,4 +71,19 @@
       <axis show="x"/>
     </plot>
   </section>
+
+  <section id="sec:exs">
+    <title>Mais Exemplos</title>
+
+    <plot title="Plot definido sem especificações (equivalente ao type='cartesian')">
+    </plot>
+    
+    <plot title="Plot com movimentação fixa" grab="false" zoom="false">
+    </plot>
+    
+    <plot title="Exemplo aleatório" zoom="false">
+      <grid show="origin"/>
+      <axis show="y"/>
+    </plot>
+  </section>
 </document>

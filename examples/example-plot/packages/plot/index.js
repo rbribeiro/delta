@@ -177,11 +177,13 @@ class DeltaPlot extends HTMLElement {
         if (this.dataset.deltaReady) return;
         this.dataset.deltaReady = "1";
 
-        // Parameters
-        const titleAttr = this.getAttribute("title") || "";
-        const grabAttr = this.getAttribute("grab") || "true";
-        const zoomAttr = this.getAttribute("zoom") || "true";
-        this.configAttributes(titleAttr,grabAttr,zoomAttr);
+        // Attributes
+        this.typeAttr = this.getAttribute("type") || "cartesian"
+        this.titleAttr = this.getAttribute("title") || "";
+        this.grabAttr = this.getAttribute("grab") || "true";
+        this.zoomAttr = this.getAttribute("zoom") || "true";
+
+        this.configAttributes();
         this.instanceSubcomponents();
 
         // Processing lifecycle
@@ -246,26 +248,36 @@ class DeltaPlot extends HTMLElement {
         }
     }
 
-    configAttributes(titleAttr, grabAttr, zoomAttr) {
+    configAttributes() {
+        // Type
+        switch (this.typeAttr.toLowerCase()){
+            case "scatter":
+                this.type = "scatter";
+                break;
+            default:
+                this.type = "cartesian";
+                break;
+        }
+
         // Title
-        this.title = titleAttr;
+        this.title = this.titleAttr;
 
         // Grabbing
         this.offsetX = 0; this.offsetY = 0;
-        this.grab = (grabAttr !== "false");
+        this.grab = (this.grabAttr !== "false");
 
         // Zoom
-        if (zoomAttr === "false") {
+        if (this.zoomAttr === "false") {
             this.zoomEnabled = false;
             this.minZoom = 1;
             this.maxZoom = 1;
-        } else if(zoomAttr == "true"){
+        } else if(this.zoomAttr == "true"){
             this.zoomEnabled = true;
             this.minZoom = 0.25;
             this.maxZoom = 4;
         } else {
             this.zoomEnabled = true;
-            const tuple = parse_tuple(zoomAttr, 2, true);
+            const tuple = parse_tuple(this.zoomAttr, 2, true);
             if (tuple && tuple[0] > 0 && tuple[1] >= tuple[0]) {
                 this.minZoom = tuple[0];
                 this.maxZoom = tuple[1];
@@ -287,12 +299,14 @@ class DeltaPlot extends HTMLElement {
         this.elements = [];
 
         // Grid
-        const gridEl = this.querySelector("delta-grid") || document.createElement("delta-grid");
-        this.elements.push(gridEl);
+        let gridEl = this.querySelector("delta-grid");
+        if((this.type === "cartesian" || this.type === "scatter") && !gridEl) gridEl = document.createElement("delta-grid");
+        if(gridEl) this.elements.push(gridEl);
 
         // Axis
-        const axisEl = this.querySelector("delta-axis") || document.createElement("delta-axis");
-        this.elements.push(axisEl);
+        let axisEl = this.querySelector("delta-axis");
+        if((this.type === "cartesian" || this.type === "scatter") && !axisEl) axisEl = document.createElement("delta-axis");
+        if(axisEl) this.elements.push(axisEl);
     }
 
     buildHeader() {
