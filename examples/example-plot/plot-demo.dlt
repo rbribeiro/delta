@@ -72,6 +72,17 @@
     </plot>
   </section>
 
+  <section id="sec:bounds">
+    <title>Intervalos Iniciais <c>x</c> e <c>y</c></title>
+
+    Você pode definir os atributos <c>x="a,b"</c> e <c>y="c,d"</c> para ajustar automaticamente o zoom e o deslocamento inicial do gráfico. Quando ambos os eixos são especificados simultaneamente, o plot calcula escalas independentes para cada eixo (distorção anisotrópica), garantindo que ambos os intervalos caibam exatamente na proporção da tela:
+
+    <plot title="Escalas Independentes: X em [-10, 10] e Y em [-10, 10]" x="-10,10" y="-10,10">
+      <grid show="true"/>
+      <axis show="true"/>
+    </plot>
+  </section>
+
   <section id="sec:exs">
     <title>Mais Exemplos</title>
 
@@ -84,6 +95,9 @@
     <plot title="Exemplo aleatório" zoom="false">
       <grid show="origin"/>
       <axis show="y"/>
+    </plot>
+
+    <plot title="Visualização de -10 a 10" y="-10,10" x="-10,10">
     </plot>
   </section>
 </document>

@@ -3127,12 +3127,18 @@ delta-plot {
       <delta-grid show="origin"></delta-grid>
       <delta-axis show="x"></delta-axis>
     </delta-plot>
-  </delta-section><delta-section id="sec:exs" num="4">
+  </delta-section><delta-section id="sec:bounds" num="4">
+    <delta-title>Intervalos Iniciais <delta-c>x</delta-c> e <delta-c>y</delta-c></delta-title>Você pode definir os atributos <delta-c>x="a,b"</delta-c> e <delta-c>y="c,d"</delta-c> para ajustar automaticamente o zoom e o deslocamento inicial do gráfico. Quando ambos os eixos são especificados simultaneamente, o plot calcula escalas independentes para cada eixo (distorção anisotrópica), garantindo que ambos os intervalos caibam exatamente na proporção da tela:<delta-plot title="Escalas Independentes: X em [-10, 10] e Y em [-10, 10]" x="-10,10" y="-10,10">
+      <delta-grid show="true"></delta-grid>
+      <delta-axis show="true"></delta-axis>
+    </delta-plot>
+  </delta-section><delta-section id="sec:exs" num="5">
     <delta-title>Mais Exemplos</delta-title><delta-plot title="Plot definido sem especificações (equivalente ao type='cartesian')">
     </delta-plot><delta-plot title="Plot com movimentação fixa" grab="false" zoom="false">
     </delta-plot><delta-plot title="Exemplo aleatório" zoom="false">
       <delta-grid show="origin"></delta-grid>
       <delta-axis show="y"></delta-axis>
+    </delta-plot><delta-plot title="Visualização de -10 a 10" y="-10,10" x="-10,10">
     </delta-plot>
   </delta-section>
 </delta-document>
@@ -3202,28 +3208,29 @@ class DeltaAxis extends HTMLElement {
         const showX = (this.show === "true" || this.show === "x");
         const showY = (this.show === "true" || this.show === "y");
 
-        const scale = BASE_SCALE * plot.zoom;
+        const scaleX = BASE_SCALE * (plot.zoomX || plot.zoom);
+        const scaleY = BASE_SCALE * (plot.zoomY || plot.zoom);
         const centerX = Math.round(w / 2 + plot.offsetX);
         const centerY = Math.round(h / 2 + plot.offsetY);
-
-        const stepUnit = getNiceStep(TARGET_GRID_SPACING / scale);
-        const stepPx = stepUnit * scale;
 
         ctx.font = AXIS_LABEL_FONT;
         ctx.fillStyle = AXIS_LABEL_COLOR;
 
         // X-axis markings
         if (showX) {
+            const stepUnitX = getNiceStep(TARGET_GRID_SPACING / scaleX);
+            const stepPxX = stepUnitX * scaleX;
+
             ctx.textAlign = "center";
             ctx.textBaseline = "bottom";
             const textY = h - 6;
 
-            const minUnit = Math.floor((-centerX) / stepPx) * stepUnit;
-            const maxUnit = Math.ceil((w - centerX) / stepPx) * stepUnit;
+            const minUnit = Math.floor((-centerX) / stepPxX) * stepUnitX;
+            const maxUnit = Math.ceil((w - centerX) / stepPxX) * stepUnitX;
 
-            for (let u = minUnit; u <= maxUnit + stepUnit * 0.5; u += stepUnit) {
+            for (let u = minUnit; u <= maxUnit + stepUnitX * 0.5; u += stepUnitX) {
                 const val = parseFloat(u.toFixed(8)) + 0;
-                const sx = Math.round(centerX + u * scale);
+                const sx = Math.round(centerX + u * scaleX);
                 if (sx >= 15 && sx <= w - 15) {
                     ctx.fillText(format_number(val), sx, textY);
                 }
@@ -3232,16 +3239,19 @@ class DeltaAxis extends HTMLElement {
 
         // Y-axis markings
         if (showY) {
+            const stepUnitY = getNiceStep(TARGET_GRID_SPACING / scaleY);
+            const stepPxY = stepUnitY * scaleY;
+
             ctx.textAlign = "left";
             ctx.textBaseline = "middle";
             const textX = 8;
 
-            const minUnit = Math.floor((centerY - h) / stepPx) * stepUnit;
-            const maxUnit = Math.ceil((centerY) / stepPx) * stepUnit;
+            const minUnit = Math.floor((centerY - h) / stepPxY) * stepUnitY;
+            const maxUnit = Math.ceil((centerY) / stepPxY) * stepUnitY;
 
-            for (let u = minUnit; u <= maxUnit + stepUnit * 0.5; u += stepUnit) {
+            for (let u = minUnit; u <= maxUnit + stepUnitY * 0.5; u += stepUnitY) {
                 const val = parseFloat(u.toFixed(8)) + 0;
-                const sy = Math.round(centerY - u * scale);
+                const sy = Math.round(centerY - u * scaleY);
                 if (sy >= 14 && sy <= h - 20) {
                     ctx.fillText(format_number(val), textX, sy);
                 }
@@ -3262,30 +3272,32 @@ class DeltaGrid extends HTMLElement {
     render(ctx, w, h, plot) {
         if (this.show === "false") return;
 
-        const scale = BASE_SCALE * plot.zoom;
+        const scaleX = BASE_SCALE * (plot.zoomX || plot.zoom);
+        const scaleY = BASE_SCALE * (plot.zoomY || plot.zoom);
         const centerX = Math.round(w / 2 + plot.offsetX);
         const centerY = Math.round(h / 2 + plot.offsetY);
 
         // Grid lines
         if (this.show === "true" || this.show === "basic") {
-            const stepUnit = getNiceStep(TARGET_GRID_SPACING / scale);
-            const stepPx = stepUnit * scale;
-
             ctx.strokeStyle = GRID_LINE_COLOR;
             ctx.lineWidth = GRID_LINE_WIDTH;
 
-            // Vertical lines
-            const startX = ((centerX % stepPx) + stepPx) % stepPx;
-            for (let x = startX; x < w; x += stepPx) {
+            // Vertical lines (X direction)
+            const stepUnitX = getNiceStep(TARGET_GRID_SPACING / scaleX);
+            const stepPxX = stepUnitX * scaleX;
+            const startX = ((centerX % stepPxX) + stepPxX) % stepPxX;
+            for (let x = startX; x < w; x += stepPxX) {
                 ctx.beginPath();
                 ctx.moveTo(x + 0.5, 0);
                 ctx.lineTo(x + 0.5, h);
                 ctx.stroke();
             }
 
-            // Horizontal lines
-            const startY = ((centerY % stepPx) + stepPx) % stepPx;
-            for (let y = startY; y < h; y += stepPx) {
+            // Horizontal lines (Y direction)
+            const stepUnitY = getNiceStep(TARGET_GRID_SPACING / scaleY);
+            const stepPxY = stepUnitY * scaleY;
+            const startY = ((centerY % stepPxY) + stepPxY) % stepPxY;
+            for (let y = startY; y < h; y += stepPxY) {
                 ctx.beginPath();
                 ctx.moveTo(0, y + 0.5);
                 ctx.lineTo(w, y + 0.5);
@@ -3328,6 +3340,8 @@ class DeltaPlot extends HTMLElement {
         this.titleAttr = this.getAttribute("title") || "";
         this.grabAttr = this.getAttribute("grab") || "true";
         this.zoomAttr = this.getAttribute("zoom") || "true";
+        this.xAttr = this.getAttribute("x") || "";
+        this.yAttr = this.getAttribute("y") || "";
 
         this.configAttributes();
         this.instanceSubcomponents();
@@ -3433,6 +3447,17 @@ class DeltaPlot extends HTMLElement {
             }
         }
         this.zoom = Math.max(Math.min(1,this.maxZoom),this.minZoom);
+        this.zoomX = this.zoom;
+        this.zoomY = this.zoom;
+        this.minZoomX = this.minZoom;
+        this.maxZoomX = this.maxZoom;
+        this.minZoomY = this.minZoom;
+        this.maxZoomY = this.maxZoom;
+
+        // Visible range bounds (X and Y)
+        this.xRange = parse_tuple(this.xAttr, 2, true);
+        this.yRange = parse_tuple(this.yAttr, 2, true);
+        this.boundsApplied = false;
     }
 
     instanceSubcomponents(){
@@ -3467,6 +3492,62 @@ class DeltaPlot extends HTMLElement {
         return headerEl;
     }
 
+    applyInitialBounds(w, h) {
+        if (this.boundsApplied) return;
+        if (!this.xRange && !this.yRange) return;
+        this.boundsApplied = true;
+
+        if (this.xRange && this.yRange) {
+            const dx = Math.abs(this.xRange[1] - this.xRange[0]);
+            const dy = Math.abs(this.yRange[1] - this.yRange[0]);
+            if (dx > 0 && dy > 0) {
+                this.zoomX = w / (dx * BASE_SCALE);
+                this.zoomY = h / (dy * BASE_SCALE);
+                if (this.zoomX < this.minZoomX) this.minZoomX = this.zoomX;
+                if (this.zoomX > this.maxZoomX) this.maxZoomX = this.zoomX;
+                if (this.zoomY < this.minZoomY) this.minZoomY = this.zoomY;
+                if (this.zoomY > this.maxZoomY) this.maxZoomY = this.zoomY;
+
+                const scaleX = BASE_SCALE * this.zoomX;
+                const scaleY = BASE_SCALE * this.zoomY;
+                const xMid = (this.xRange[0] + this.xRange[1]) / 2;
+                const yMid = (this.yRange[0] + this.yRange[1]) / 2;
+                this.offsetX = -xMid * scaleX;
+                this.offsetY = yMid * scaleY;
+            }
+        } else if (this.xRange) {
+            const dx = Math.abs(this.xRange[1] - this.xRange[0]);
+            if (dx > 0) {
+                this.zoomX = w / (dx * BASE_SCALE);
+                this.zoomY = this.zoomX;
+                if (this.zoomX < this.minZoomX) this.minZoomX = this.zoomX;
+                if (this.zoomX > this.maxZoomX) this.maxZoomX = this.zoomX;
+                if (this.zoomY < this.minZoomY) this.minZoomY = this.zoomY;
+                if (this.zoomY > this.maxZoomY) this.maxZoomY = this.zoomY;
+
+                const scaleX = BASE_SCALE * this.zoomX;
+                const xMid = (this.xRange[0] + this.xRange[1]) / 2;
+                this.offsetX = -xMid * scaleX;
+                this.offsetY = 0;
+            }
+        } else if (this.yRange) {
+            const dy = Math.abs(this.yRange[1] - this.yRange[0]);
+            if (dy > 0) {
+                this.zoomY = h / (dy * BASE_SCALE);
+                this.zoomX = this.zoomY;
+                if (this.zoomX < this.minZoomX) this.minZoomX = this.zoomX;
+                if (this.zoomX > this.maxZoomX) this.maxZoomX = this.zoomX;
+                if (this.zoomY < this.minZoomY) this.minZoomY = this.zoomY;
+                if (this.zoomY > this.maxZoomY) this.maxZoomY = this.zoomY;
+
+                const scaleY = BASE_SCALE * this.zoomY;
+                const yMid = (this.yRange[0] + this.yRange[1]) / 2;
+                this.offsetX = 0;
+                this.offsetY = yMid * scaleY;
+            }
+        }
+    }
+
     resize() {
         const r = this.canvas.getBoundingClientRect();
         if (r.width === 0 || r.height === 0) return;
@@ -3474,6 +3555,10 @@ class DeltaPlot extends HTMLElement {
         this.canvas.width = Math.round(r.width * dpr);
         this.canvas.height = Math.round(r.height * dpr);
         this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        if (!this.boundsApplied) {
+            this.applyInitialBounds(r.width, r.height);
+        }
     }
 
     bindGrab() {
@@ -3529,14 +3614,16 @@ class DeltaPlot extends HTMLElement {
             const cy = e.clientY - r.top;
 
             const factor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
-            const newZoom = Math.max(this.minZoom, Math.min(this.maxZoom, this.zoom * factor));
-            this.applyZoom(newZoom, cx, cy);
+            const newZoomX = Math.max(this.minZoomX, Math.min(this.maxZoomX, this.zoomX * factor));
+            const newZoomY = Math.max(this.minZoomY, Math.min(this.maxZoomY, this.zoomY * factor));
+            this.applyZoom(newZoomX, newZoomY, cx, cy);
         }, { passive: false });
 
         // Mobile touch pinch-to-zoom
         const touchPointers = new Map();
         let pinchStartDist = 0;
-        let pinchStartZoom = 1;
+        let pinchStartZoomX = 1;
+        let pinchStartZoomY = 1;
         let pinchCenter = { x: 0, y: 0 };
 
         this.canvas.addEventListener("pointerdown", (e) => {
@@ -3546,7 +3633,8 @@ class DeltaPlot extends HTMLElement {
             if (touchPointers.size === 2) {
                 const pts = Array.from(touchPointers.values());
                 pinchStartDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
-                pinchStartZoom = this.zoom;
+                pinchStartZoomX = this.zoomX;
+                pinchStartZoomY = this.zoomY;
                 const r = this.canvas.getBoundingClientRect();
                 pinchCenter = {
                     x: (pts[0].x + pts[1].x) / 2 - r.left,
@@ -3563,8 +3651,9 @@ class DeltaPlot extends HTMLElement {
                 const pts = Array.from(touchPointers.values());
                 const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
                 const factor = dist / pinchStartDist;
-                const newZoom = Math.max(this.minZoom, Math.min(this.maxZoom, pinchStartZoom * factor));
-                this.applyZoom(newZoom, pinchCenter.x, pinchCenter.y);
+                const newZoomX = Math.max(this.minZoomX, Math.min(this.maxZoomX, pinchStartZoomX * factor));
+                const newZoomY = Math.max(this.minZoomY, Math.min(this.maxZoomY, pinchStartZoomY * factor));
+                this.applyZoom(newZoomX, newZoomY, pinchCenter.x, pinchCenter.y);
             }
         });
 
@@ -3579,16 +3668,18 @@ class DeltaPlot extends HTMLElement {
         this.canvas.addEventListener("pointercancel", onTouchEnd);
     }
 
-    applyZoom(newZoom, cx, cy) {
-        if (newZoom === this.zoom) return;
+    applyZoom(newZoomX, newZoomY, cx, cy) {
+        if (newZoomX === this.zoomX && newZoomY === this.zoomY) return;
         const r = this.canvas.getBoundingClientRect();
         const centerX = r.width / 2 + this.offsetX;
         const centerY = r.height / 2 + this.offsetY;
 
-        const ratio = newZoom / this.zoom;
-        this.offsetX = this.offsetX + (cx - centerX) * (1 - ratio);
-        this.offsetY = this.offsetY + (cy - centerY) * (1 - ratio);
-        this.zoom = newZoom;
+        const ratioX = newZoomX / this.zoomX;
+        const ratioY = newZoomY / this.zoomY;
+        this.offsetX = this.offsetX + (cx - centerX) * (1 - ratioX);
+        this.offsetY = this.offsetY + (cy - centerY) * (1 - ratioY);
+        this.zoomX = newZoomX;
+        this.zoomY = newZoomY;
 
         this.render();
     }
