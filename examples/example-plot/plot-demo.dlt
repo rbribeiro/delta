@@ -7,7 +7,7 @@
   </meta>
 
   <abstract>
-    Este guia apresenta o componente interativo de plotagem para documentos Delta, explicando como configurar o espaço cartesiano, a navegação com arrasto e zoom, a grade adaptativa e as marcações numéricas dos eixos.
+    Página demonstrativa do componente plot, um componente do delta feito para plotagem de curvas e pontos em um espaço bidimensional.
   </abstract>
 
   <import src="packages/plot" />
@@ -16,109 +16,159 @@
     <title>Componente <c><plot></c></title>
 
     O componente <c><plot></c> cria uma área interativa de desenho no plano cartesiano $\mathbb{R}^2$ com proporção (até o momento) fixa de $16:9$. Ele gerencia a renderização em canvas de alta resolução e as interações de navegação do usuário.
-    <sidenote>A navegação no plano preserva o ponto sob o cursor durante o zoom (focal zoom), tanto no mouse quanto em telas sensíveis ao toque.</sidenote>
-
-    O componente aceita as seguintes propriedades principais:
-
-    - <c>type="cartesian/points"</c>: Define o tipo de ambiente inicial do plot. O padrão <c>"cartesian"</c> inclui automaticamente <c><grid /></c> e <c><axis /></c> com valores padrão. O tipo <c>"points"</c> inclui automaticamente <c><grid /></c>, <c><axis /></c> e <c><points /></c> prontos para uso.
-
-    - <c>title="..."</c>: Define o título exibido no cabeçalho superior.
-
-    - <c>grab="true/false"</c>: Habilita ou desabilita o arrasto da visualização com o mouse ou toque (padrão: <c>"true"</c>).
-
-    - <c>zoom="true/false/min,max"</c>: Habilita o zoom padrão entre $[0.25, 4]$ (<c>"true"</c>), desativa o zoom (<c>"false"</c>) ou define limites personalizados como <c>"0.5,2"</c> (padrão: <c>"true"</c>). Um zoom de 0.25 representa um zoom-out de 4 vezes, enquanto um zoom de 4 representa um zoom-in de 4 vezes.
-
-    - <c>x="a,b"</c> e <c>y="c,d"</c>: Ajustam o enquadramento inicial do gráfico nos eixos horizontal e vertical. Quando ambos são especificados simultaneamente, o plot ajusta as escalas de cada eixo de forma independente para que ambos os intervalos caibam exatamente na tela.
-
-    Os subcomponentes de <c>grid</c> e <c>axis</c> já são criados com valor padrão quando inicializamos um plot vazio, sendo necessário declarar os subcomponentes para desativá-los ou alterar suas configurações.
-
-    <plot title="Espaço Cartesiano Bidimensional" grab="true" zoom="true"/>
+    
+    Parâmetros:
+    <list>
+      <item><c>title</c>: String de texto que representa o título.
+        <list marker="dash">
+          <item>Valores: Qualquer string.</item>
+          <item>Padrão: Vazio</item>
+        </list>
+      </item>
+      <item><c>type</c>: Define o tipo de ambiente padrão.
+        <list marker="dash">
+          <item>Valores: <c>cartesian</c>, <c>points</c>.</item>
+          <item>Padrão: <c>cartesian</c></item>
+        </list>
+      </item>
+      <item><c>x</c>: Tupla de números representando o intervalo inicial do eixo x.
+        <list marker="dash">
+          <item>Valores: Tupla de números.</item>
+          <item>Padrão: <c>-16,16</c></item>
+          <item>Formato: <c>a,b</c>, onde <c>a</c> e <c>b</c> são números inteiros ou ponto flutuante.</item>
+        </list>
+      </item>
+      <item><c>y</c>: Tupla de números representando o intervalo inicial do eixo y.
+        <list marker="dash">
+          <item>Valores: Tupla de números.</item>
+          <item>Padrão: <c>-9,9</c></item>
+          <item>Formato: <c>a,b</c>, onde <c>a</c> e <c>b</c> são números inteiros ou ponto flutuante.</item>
+        </list>
+      </item>
+      <item><c>grab</c>: Define se o usuário pode arrastar e navegar pelo plano.
+        <list marker="dash">
+          <item>Valores: Booleano.</item>
+          <item>Padrão: <c>true</c></item>
+        </list>
+      </item>
+      <item><c>zoom</c>: Define o controle e limites de aproximação/afastamento. Se definido como uma tupla, representa o intervalo <c>min,max</c>, com o zoom mínimo e máximo.
+        <list marker="dash">
+          <item>Valores: Booleano ou Tupla de números.</item>
+          <item>Padrão: <c>true</c>, equivalente a <c>0.25,4</c></item>
+          <item>Formato: <c>a,b</c>, onde <c>a</c> e <c>b</c> são números inteiros ou ponto flutuante.</item>
+        </list>
+      </item>
+    </list>
   </section>
 
   <section id="sec:grid">
     <title>Subcomponente <c><grid></c></title>
 
-    O subcomponente <c><grid></c> adiciona a malha ortogonal ao fundo do gráfico. O espaçamento entre as linhas é dinâmico e adaptativo: conforme você aproxima ou afasta o zoom, a escala escolhe automaticamente múltiplos amigáveis ($1, 2, 5, 10 \times 10^k$).
+    O subcomponente <c><grid></c> é responsável por desenhar as linhas de grade do plano cartesiano e os eixos principais que se cruzam na origem $(0, 0)$.
 
-    O parâmetro <c>show</c> aceita quatro modos:
-
-    - <c>show="true"</c> (padrão): Exibe as linhas da grade base e destaca os eixos principais da origem ($x = 0$ e $y = 0$).
-
-    - <c>show="basic"</c>: Exibe apenas as linhas suaves da grade base.
-
-    - <c>show="origin"</c>: Exibe apenas as retas dos eixos principais da origem.
-
-    - <c>show="false"</c>: Mantém o fundo totalmente limpo.
-
-    <plot title="Apenas grid básica, sem a origem" grab="true" zoom="true">
-      <grid show="basic"/>
-      <axis show="false"/>
-    </plot>
+    Parâmetros:
+    <list>
+      <item><c>show</c>: Define a exibição das linhas básicas e dos eixos da origem.
+        <list marker="dash">
+          <item>Valores: <c>true</c>, <c>false</c>, <c>origin</c>, <c>basic</c>.</item>
+          <item>Padrão: <c>true</c></item>
+        </list>
+      </item>
+    </list>
   </section>
 
   <section id="sec:axis">
     <title>Subcomponente <c><axis></c></title>
 
-    O subcomponente <c><axis /></c> insere marcações numéricas legíveis nas coordenadas correspondentes às linhas da grade:
-    <sidenote>As marcações numéricas do eixo X ficam centralizadas na base da tela, enquanto as do eixo Y ficam alinhadas à esquerda para facilitar a leitura.</sidenote>
+    O subcomponente <c><axis></c> desenha as réguas numéricas nos eixos horizontal e vertical, indicando as coordenadas visíveis no plano.
 
-    - <c>show="true"</c> (padrão): Mostra números em ambos os eixos $X$ e $Y$.
-
-    - <c>show="x"</c>: Mostra números apenas na parte inferior do eixo $X$.
-    
-    - <c>show="y"</c>: Mostra números apenas na lateral esquerda do eixo $Y$.
-
-    - <c>show="false"</c>: Desativa as marcações numéricas.
-
-    <plot title="Plot com grid apenas na origem e axis apenas no eixo x" grab="true" zoom="true">
-      <grid show="origin"/>
-      <axis show="x"/>
-    </plot>
+    Parâmetros:
+    <list>
+      <item><c>show</c>: Define quais eixos terão suas graduações numéricas visíveis.
+        <list marker="dash">
+          <item>Valores: <c>true</c>, <c>false</c>, <c>x</c>, <c>y</c>.</item>
+          <item>Padrão: <c>true</c></item>
+        </list>
+      </item>
+    </list>
   </section>
 
   <section id="sec:points">
     <title>Subcomponente <c><points></c></title>
 
-    O subcomponente <c><points /></c> adiciona uma camada interativa para inserção, seleção e manipulação direta de pontos no plano cartesiano, incluindo uma barra inferior de ferramentas com contador de pontos e controles interativos.
+    O subcomponente <c><points></c> adiciona uma camada de entidades de pontos ao plano cartesiano, permitindo criar, mover, selecionar e remover pontos de forma dinâmica, acompanhados de uma barra de status e balão flutuante de coordenadas.
 
-    - <c>size="1"</c> (padrão): Define o raio visual do ponto (valores entre <c>0.1</c> e <c>10.0</c>).
-
-    A barra de ferramentas e a área de manipulação disponibilizam:
-    <sidenote>No modo de manipulação, você pode excluir pontos via teclado (Delete/Backspace), pelo botão na barra inferior ou diretamente pelo botão × no balão flutuante do ponto selecionado.</sidenote>
-
-    - Contador dinâmico com o número atual de pontos.
-    - Botão de alternância do modo de manipulação: quando ativado, permite criar, mover e deletar pontos; quando desativado, permite arrastar e navegar pelo plano normalmente sem alterar os pontos.
-    - Botão para deletar o ponto atualmente selecionado.
-    - Botão para limpar todos os pontos de uma vez.
-    - Balão flutuante sobre o ponto selecionado exibindo coordenadas e um botão $\times$ para exclusão rápida.
-
-    <plot title="Plano Interativo com Criação e Edição de Pontos" grab="true" zoom="true">
-      <grid show="true"/>
-      <axis show="true"/>
-      <points size="1"/>
-    </plot>
+    Parâmetros:
+    <list>
+      <item><c>size</c>: Fator de escala do raio visual dos pontos renderizados.
+        <list marker="dash">
+          <item>Valores: Número positivo entre <c>0.1</c> e <c>10</c>.</item>
+          <item>Padrão: <c>1</c></item>
+        </list>
+      </item>
+      <item><c>interaction</c>: Define o nível de interação permitido com os pontos, definindo se os pontos terão interação de criação, deleção e movimentação.
+        <list marker="dash">
+          <item>Valores: <c>true</c>, <c>move</c>, <c>false</c>.</item>
+          <item>Padrão: <c>true</c></item>
+        </list>
+      </item>
+    </list>
   </section>
 
-  <section id="sec:exs">
-    <title>Mais Exemplos</title>
+  <section id="sec:ex">
+    <title>Exemplos</title>
 
-    <plot title="Plot definido sem especificações (equivalente ao type='cartesian')">
-    </plot>
-    
-    <plot type="points" title="Plot com type='points' (grid, axis e points automáticos)">
-    </plot>
-    
-    <plot title="Plot com movimentação fixa" grab="false" zoom="false">
-    </plot>
-    
-    <plot title="Exemplo aleatório" zoom="false">
-      <grid show="origin"/>
-      <axis show="y"/>
-    </plot>
+    Lista de exemplos de plots interessantes, ilustrando como usar os seus parâmetros de forma eficiente.
 
-    <plot title="Escalas Independentes: X em [-10, 10] e Y em [-10, 10]" x="-10,10" y="-10,10">
-      <grid show="true"/>
-      <axis show="true"/>
-    </plot>
+    <subsection>
+      <title>Plot Mínimo</title>
+      <code>
+        <plot/>
+      </code>
+      <plot/>
+    </subsection>
+
+    <subsection>
+      <title>Plot Básico</title>
+      <code>
+        <plot title="Espaço Cartesiano" x="-1,1" y="-1,1"/>
+      </code>
+      <plot title="Espaço Cartesiano" x="-1,1" y="-1,1"/>
+    </subsection>
+
+    <subsection>
+      <title>Régua Minimalista</title>
+      <code>
+        <plot title="Ruler" x="-1,1">
+          <grid show="origin"/>
+          <axis show="x"/>
+        </plot>
+      </code>
+      <plot title="Ruler" x="-1,1">
+        <grid show="origin"/>
+        <axis show="x"/>
+      </plot>
+    </subsection>
+
+    <subsection>
+      <title>Espaço de Pontos</title>
+      <code>
+        <plot title="Espaço de Pontos" type="points"/>
+      </code>
+      <plot title="Espaço de Pontos" type="points"/>
+    </subsection>
+
+    <subsection>
+      <title>Sem Interação</title>
+      <code>
+        <plot title="Fixo" type="points" grab="false" zoom="false">
+          <points interaction="false"/>
+        </plot>
+      </code>
+      <plot title="Fixo" type="points" grab="false" zoom="false">
+        <points interaction="false"/>
+      </plot>
+    </subsection>
+
   </section>
 </document>

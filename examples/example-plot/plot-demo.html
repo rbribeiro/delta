@@ -3235,44 +3235,118 @@ delta-plot:focus-visible,
     <delta-meta-item key="Tópico">Visualização Matemática e Geometria</delta-meta-item>
     <delta-meta-item key="Autor">Delta</delta-meta-item>
   </delta-meta><delta-abstract>
-    Este guia apresenta o componente interativo de plotagem para documentos Delta, explicando como configurar o espaço cartesiano, a navegação com arrasto e zoom, a grade adaptativa e as marcações numéricas dos eixos.
+    Página demonstrativa do componente plot, um componente do delta feito para plotagem de curvas e pontos em um espaço bidimensional.
   </delta-abstract><delta-section id="sec:intro" num="1">
-    <delta-title>Componente <delta-c>&lt;plot&gt;</delta-c></delta-title>O componente <delta-c>&lt;plot&gt;</delta-c> cria uma área interativa de desenho no plano cartesiano <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi mathvariant="double-struck">R</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">\mathbb{R}^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathbb">R</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span> com proporção (até o momento) fixa de <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>16</mn><mo>:</mo><mn>9</mn></mrow><annotation encoding="application/x-tex">16:9</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">16</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">:</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">9</span></span></span></span>. Ele gerencia a renderização em canvas de alta resolução e as interações de navegação do usuário.
-    <delta-sidenote>A navegação no plano preserva o ponto sob o cursor durante o zoom (focal zoom), tanto no mouse quanto em telas sensíveis ao toque.</delta-sidenote>O componente aceita as seguintes propriedades principais:<br><br>- <delta-c>type="cartesian/points"</delta-c>: Define o tipo de ambiente inicial do plot. O padrão <delta-c>"cartesian"</delta-c> inclui automaticamente <delta-c>&lt;grid /&gt;</delta-c> e <delta-c>&lt;axis /&gt;</delta-c> com valores padrão. O tipo <delta-c>"points"</delta-c> inclui automaticamente <delta-c>&lt;grid /&gt;</delta-c>, <delta-c>&lt;axis /&gt;</delta-c> e <delta-c>&lt;points /&gt;</delta-c> prontos para uso.<br><br>- <delta-c>title="..."</delta-c>: Define o título exibido no cabeçalho superior.<br><br>- <delta-c>grab="true/false"</delta-c>: Habilita ou desabilita o arrasto da visualização com o mouse ou toque (padrão: <delta-c>"true"</delta-c>).<br><br>- <delta-c>zoom="true/false/min,max"</delta-c>: Habilita o zoom padrão entre <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">[</mo><mn>0.25</mn><mo separator="true">,</mo><mn>4</mn><mo stretchy="false">]</mo></mrow><annotation encoding="application/x-tex">[0.25, 4]</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord">0.25</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">4</span><span class="mclose">]</span></span></span></span> (<delta-c>"true"</delta-c>), desativa o zoom (<delta-c>"false"</delta-c>) ou define limites personalizados como <delta-c>"0.5,2"</delta-c> (padrão: <delta-c>"true"</delta-c>). Um zoom de 0.25 representa um zoom-out de 4 vezes, enquanto um zoom de 4 representa um zoom-in de 4 vezes.<br><br>- <delta-c>x="a,b"</delta-c> e <delta-c>y="c,d"</delta-c>: Ajustam o enquadramento inicial do gráfico nos eixos horizontal e vertical. Quando ambos são especificados simultaneamente, o plot ajusta as escalas de cada eixo de forma independente para que ambos os intervalos caibam exatamente na tela.<br><br>Os subcomponentes de <delta-c>grid</delta-c> e <delta-c>axis</delta-c> já são criados com valor padrão quando inicializamos um plot vazio, sendo necessário declarar os subcomponentes para desativá-los ou alterar suas configurações.<delta-plot title="Espaço Cartesiano Bidimensional" grab="true" zoom="true"></delta-plot>
+    <delta-title>Componente <delta-c>&lt;plot&gt;</delta-c></delta-title>O componente <delta-c>&lt;plot&gt;</delta-c> cria uma área interativa de desenho no plano cartesiano <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi mathvariant="double-struck">R</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">\mathbb{R}^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathbb">R</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span> com proporção (até o momento) fixa de <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>16</mn><mo>:</mo><mn>9</mn></mrow><annotation encoding="application/x-tex">16:9</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">16</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">:</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">9</span></span></span></span>. Ele gerencia a renderização em canvas de alta resolução e as interações de navegação do usuário.<br><br>Parâmetros:
+    <delta-list>
+      <delta-item><delta-c>title</delta-c>: String de texto que representa o título.
+        <delta-list marker="dash">
+          <delta-item>Valores: Qualquer string.</delta-item>
+          <delta-item>Padrão: Vazio</delta-item>
+        </delta-list>
+      </delta-item>
+      <delta-item><delta-c>type</delta-c>: Define o tipo de ambiente padrão.
+        <delta-list marker="dash">
+          <delta-item>Valores: <delta-c>cartesian</delta-c>, <delta-c>points</delta-c>.</delta-item>
+          <delta-item>Padrão: <delta-c>cartesian</delta-c></delta-item>
+        </delta-list>
+      </delta-item>
+      <delta-item><delta-c>x</delta-c>: Tupla de números representando o intervalo inicial do eixo x.
+        <delta-list marker="dash">
+          <delta-item>Valores: Tupla de números.</delta-item>
+          <delta-item>Padrão: <delta-c>-16,16</delta-c></delta-item>
+          <delta-item>Formato: <delta-c>a,b</delta-c>, onde <delta-c>a</delta-c> e <delta-c>b</delta-c> são números inteiros ou ponto flutuante.</delta-item>
+        </delta-list>
+      </delta-item>
+      <delta-item><delta-c>y</delta-c>: Tupla de números representando o intervalo inicial do eixo y.
+        <delta-list marker="dash">
+          <delta-item>Valores: Tupla de números.</delta-item>
+          <delta-item>Padrão: <delta-c>-9,9</delta-c></delta-item>
+          <delta-item>Formato: <delta-c>a,b</delta-c>, onde <delta-c>a</delta-c> e <delta-c>b</delta-c> são números inteiros ou ponto flutuante.</delta-item>
+        </delta-list>
+      </delta-item>
+      <delta-item><delta-c>grab</delta-c>: Define se o usuário pode arrastar e navegar pelo plano.
+        <delta-list marker="dash">
+          <delta-item>Valores: Booleano.</delta-item>
+          <delta-item>Padrão: <delta-c>true</delta-c></delta-item>
+        </delta-list>
+      </delta-item>
+      <delta-item><delta-c>zoom</delta-c>: Define o controle e limites de aproximação/afastamento. Se definido como uma tupla, representa o intervalo <delta-c>min,max</delta-c>, com o zoom mínimo e máximo.
+        <delta-list marker="dash">
+          <delta-item>Valores: Booleano ou Tupla de números.</delta-item>
+          <delta-item>Padrão: <delta-c>true</delta-c>, equivalente a <delta-c>0.25,4</delta-c></delta-item>
+          <delta-item>Formato: <delta-c>a,b</delta-c>, onde <delta-c>a</delta-c> e <delta-c>b</delta-c> são números inteiros ou ponto flutuante.</delta-item>
+        </delta-list>
+      </delta-item>
+    </delta-list>
   </delta-section><delta-section id="sec:grid" num="2">
-    <delta-title>Subcomponente <delta-c>&lt;grid&gt;</delta-c></delta-title>O subcomponente <delta-c>&lt;grid&gt;</delta-c> adiciona a malha ortogonal ao fundo do gráfico. O espaçamento entre as linhas é dinâmico e adaptativo: conforme você aproxima ou afasta o zoom, a escala escolhe automaticamente múltiplos amigáveis (<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo separator="true">,</mo><mn>2</mn><mo separator="true">,</mo><mn>5</mn><mo separator="true">,</mo><mn>10</mn><mo>×</mo><msup><mn>10</mn><mi>k</mi></msup></mrow><annotation encoding="application/x-tex">1, 2, 5, 10 \times 10^k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8389em;vertical-align:-0.1944em;"></span><span class="mord">1</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">2</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">5</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">10</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8491em;"></span><span class="mord">1</span><span class="mord"><span class="mord">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8491em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0315em;">k</span></span></span></span></span></span></span></span></span></span></span>).<br><br>O parâmetro <delta-c>show</delta-c> aceita quatro modos:<br><br>- <delta-c>show="true"</delta-c> (padrão): Exibe as linhas da grade base e destaca os eixos principais da origem (<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">x = 0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">0</span></span></span></span> e <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>y</mi><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">y = 0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.0359em;">y</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">0</span></span></span></span>).<br><br>- <delta-c>show="basic"</delta-c>: Exibe apenas as linhas suaves da grade base.<br><br>- <delta-c>show="origin"</delta-c>: Exibe apenas as retas dos eixos principais da origem.<br><br>- <delta-c>show="false"</delta-c>: Mantém o fundo totalmente limpo.<delta-plot title="Apenas grid básica, sem a origem" grab="true" zoom="true">
-      <delta-grid show="basic"></delta-grid>
-      <delta-axis show="false"></delta-axis>
-    </delta-plot>
+    <delta-title>Subcomponente <delta-c>&lt;grid&gt;</delta-c></delta-title>O subcomponente <delta-c>&lt;grid&gt;</delta-c> é responsável por desenhar as linhas de grade do plano cartesiano e os eixos principais que se cruzam na origem <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">(</mo><mn>0</mn><mo separator="true">,</mo><mn>0</mn><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">(0, 0)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord">0</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">0</span><span class="mclose">)</span></span></span></span>.<br><br>Parâmetros:
+    <delta-list>
+      <delta-item><delta-c>show</delta-c>: Define a exibição das linhas básicas e dos eixos da origem.
+        <delta-list marker="dash">
+          <delta-item>Valores: <delta-c>true</delta-c>, <delta-c>false</delta-c>, <delta-c>origin</delta-c>, <delta-c>basic</delta-c>.</delta-item>
+          <delta-item>Padrão: <delta-c>true</delta-c></delta-item>
+        </delta-list>
+      </delta-item>
+    </delta-list>
   </delta-section><delta-section id="sec:axis" num="3">
-    <delta-title>Subcomponente <delta-c>&lt;axis&gt;</delta-c></delta-title>O subcomponente <delta-c>&lt;axis /&gt;</delta-c> insere marcações numéricas legíveis nas coordenadas correspondentes às linhas da grade:
-    <delta-sidenote>As marcações numéricas do eixo X ficam centralizadas na base da tela, enquanto as do eixo Y ficam alinhadas à esquerda para facilitar a leitura.</delta-sidenote>- <delta-c>show="true"</delta-c> (padrão): Mostra números em ambos os eixos <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi></mrow><annotation encoding="application/x-tex">X</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0785em;">X</span></span></span></span> e <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Y</mi></mrow><annotation encoding="application/x-tex">Y</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.2222em;">Y</span></span></span></span>.<br><br>- <delta-c>show="x"</delta-c>: Mostra números apenas na parte inferior do eixo <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi></mrow><annotation encoding="application/x-tex">X</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0785em;">X</span></span></span></span>.<br><br>- <delta-c>show="y"</delta-c>: Mostra números apenas na lateral esquerda do eixo <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>Y</mi></mrow><annotation encoding="application/x-tex">Y</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.2222em;">Y</span></span></span></span>.<br><br>- <delta-c>show="false"</delta-c>: Desativa as marcações numéricas.<delta-plot title="Plot com grid apenas na origem e axis apenas no eixo x" grab="true" zoom="true">
-      <delta-grid show="origin"></delta-grid>
-      <delta-axis show="x"></delta-axis>
-    </delta-plot>
+    <delta-title>Subcomponente <delta-c>&lt;axis&gt;</delta-c></delta-title>O subcomponente <delta-c>&lt;axis&gt;</delta-c> desenha as réguas numéricas nos eixos horizontal e vertical, indicando as coordenadas visíveis no plano.<br><br>Parâmetros:
+    <delta-list>
+      <delta-item><delta-c>show</delta-c>: Define quais eixos terão suas graduações numéricas visíveis.
+        <delta-list marker="dash">
+          <delta-item>Valores: <delta-c>true</delta-c>, <delta-c>false</delta-c>, <delta-c>x</delta-c>, <delta-c>y</delta-c>.</delta-item>
+          <delta-item>Padrão: <delta-c>true</delta-c></delta-item>
+        </delta-list>
+      </delta-item>
+    </delta-list>
   </delta-section><delta-section id="sec:points" num="4">
-    <delta-title>Subcomponente <delta-c>&lt;points&gt;</delta-c></delta-title>O subcomponente <delta-c>&lt;points /&gt;</delta-c> adiciona uma camada interativa para inserção, seleção e manipulação direta de pontos no plano cartesiano, incluindo uma barra inferior de ferramentas com contador de pontos e controles interativos.<br><br>- <delta-c>size="1"</delta-c> (padrão): Define o raio visual do ponto (valores entre <delta-c>0.1</delta-c> e <delta-c>10.0</delta-c>).<br><br>A barra de ferramentas e a área de manipulação disponibilizam:
-    <delta-sidenote>No modo de manipulação, você pode excluir pontos via teclado (Delete/Backspace), pelo botão na barra inferior ou diretamente pelo botão × no balão flutuante do ponto selecionado.</delta-sidenote>- Contador dinâmico com o número atual de pontos.
-    - Botão de alternância do modo de manipulação: quando ativado, permite criar, mover e deletar pontos; quando desativado, permite arrastar e navegar pelo plano normalmente sem alterar os pontos.
-    - Botão para deletar o ponto atualmente selecionado.
-    - Botão para limpar todos os pontos de uma vez.
-    - Balão flutuante sobre o ponto selecionado exibindo coordenadas e um botão <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>×</mo></mrow><annotation encoding="application/x-tex">\times</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6667em;vertical-align:-0.0833em;"></span><span class="mord">×</span></span></span></span> para exclusão rápida.<delta-plot title="Plano Interativo com Criação e Edição de Pontos" grab="true" zoom="true">
-      <delta-grid show="true"></delta-grid>
-      <delta-axis show="true"></delta-axis>
-      <delta-points size="1"></delta-points>
-    </delta-plot>
-  </delta-section><delta-section id="sec:exs" num="5">
-    <delta-title>Mais Exemplos</delta-title><delta-plot title="Plot definido sem especificações (equivalente ao type='cartesian')">
-    </delta-plot><delta-plot type="points" title="Plot com type='points' (grid, axis e points automáticos)">
-    </delta-plot><delta-plot title="Plot com movimentação fixa" grab="false" zoom="false">
-    </delta-plot><delta-plot title="Exemplo aleatório" zoom="false">
-      <delta-grid show="origin"></delta-grid>
-      <delta-axis show="y"></delta-axis>
-    </delta-plot><delta-plot title="Escalas Independentes: X em [-10, 10] e Y em [-10, 10]" x="-10,10" y="-10,10">
-      <delta-grid show="true"></delta-grid>
-      <delta-axis show="true"></delta-axis>
-    </delta-plot>
-  </delta-section>
+    <delta-title>Subcomponente <delta-c>&lt;points&gt;</delta-c></delta-title>O subcomponente <delta-c>&lt;points&gt;</delta-c> adiciona uma camada de entidades de pontos ao plano cartesiano, permitindo criar, mover, selecionar e remover pontos de forma dinâmica, acompanhados de uma barra de status e balão flutuante de coordenadas.<br><br>Parâmetros:
+    <delta-list>
+      <delta-item><delta-c>size</delta-c>: Fator de escala do raio visual dos pontos renderizados.
+        <delta-list marker="dash">
+          <delta-item>Valores: Número positivo entre <delta-c>0.1</delta-c> e <delta-c>10</delta-c>.</delta-item>
+          <delta-item>Padrão: <delta-c>1</delta-c></delta-item>
+        </delta-list>
+      </delta-item>
+      <delta-item><delta-c>interaction</delta-c>: Define o nível de interação permitido com os pontos, definindo se os pontos terão interação de criação, deleção e movimentação.
+        <delta-list marker="dash">
+          <delta-item>Valores: <delta-c>true</delta-c>, <delta-c>move</delta-c>, <delta-c>false</delta-c>.</delta-item>
+          <delta-item>Padrão: <delta-c>true</delta-c></delta-item>
+        </delta-list>
+      </delta-item>
+    </delta-list>
+  </delta-section><delta-section id="sec:ex" num="5">
+    <delta-title>Exemplos</delta-title>Lista de exemplos de plots interessantes, ilustrando como usar os seus parâmetros de forma eficiente.<delta-subsection num="5.1">
+      <delta-title>Plot Mínimo</delta-title>
+      <delta-code num="5.1">&lt;plot/&gt;</delta-code>
+      <delta-plot></delta-plot>
+    </delta-subsection><delta-subsection num="5.2">
+      <delta-title>Plot Básico</delta-title>
+      <delta-code num="5.2">&lt;plot title="Espaço Cartesiano" x="-1,1" y="-1,1"/&gt;</delta-code>
+      <delta-plot title="Espaço Cartesiano" x="-1,1" y="-1,1"></delta-plot>
+    </delta-subsection><delta-subsection num="5.3">
+      <delta-title>Régua Minimalista</delta-title>
+      <delta-code num="5.3">&lt;plot title="Ruler" x="-1,1"&gt;
+  &lt;grid show="origin"/&gt;
+  &lt;axis show="x"/&gt;
+&lt;/plot&gt;</delta-code>
+      <delta-plot title="Ruler" x="-1,1">
+        <delta-grid show="origin"></delta-grid>
+        <delta-axis show="x"></delta-axis>
+      </delta-plot>
+    </delta-subsection><delta-subsection num="5.4">
+      <delta-title>Espaço de Pontos</delta-title>
+      <delta-code num="5.4">&lt;plot title="Espaço de Pontos" type="points"/&gt;</delta-code>
+      <delta-plot title="Espaço de Pontos" type="points"></delta-plot>
+    </delta-subsection><delta-subsection num="5.5">
+      <delta-title>Sem Interação</delta-title>
+      <delta-code num="5.5">&lt;plot title="Fixo" type="points" grab="false" zoom="false"&gt;
+  &lt;points interaction="false"/&gt;
+&lt;/plot&gt;</delta-code>
+      <delta-plot title="Fixo" type="points" grab="false" zoom="false">
+        <delta-points interaction="false"></delta-points>
+      </delta-plot>
+    </delta-subsection></delta-section>
 </delta-document>
 <script type="application/json" id="delta-i18n">{"theorem":"Teorema","proposition":"Proposição","lemma":"Lema","corollary":"Corolário","conjecture":"Conjectura","definition":"Definição","example":"Exemplo","claim":"Afirmação","observation":"Observação","exercise":"Exercício","problem":"Problema","proof":"Demonstração","solution":"Solução","remark":"Comentário","section":"Seção","subsection":"Subseção","subsubsection":"Subsubseção","equations":"Equações","equation":"Equação","figure":"Figura","interactive":"Interativo","table":"Tabela","video":"Vídeo","audio":"Áudio","contents":"Sumário","hint":"Dica","references":"Referências","close":"Fechar","code":"Código","copy":"Copiar","copied":"Copiado","prevSlide":"Slide anterior","nextSlide":"Próximo slide","abstract":"Resumo","keywords":"Palavras-chave","msc":"Classificação por Assunto (MSC)","received":"Recebido","revised":"Revisado","accepted":"Aceito","submitted":"Submetido","date":"Data","acknowledgements":"Agradecimentos","funding":"Financiamento"}</script>
 <script>
@@ -3489,10 +3563,14 @@ class DeltaPoints extends HTMLElement {
     build(plot) {
         // Attributes
         this.sizeAttr = this.getAttribute("size") || "1";
+        this.interactionAttr = this.getAttribute("interaction") || "true";
 
         // Setup
         const rawSize = parseFloat(this.sizeAttr);
         this.size = isNaN(rawSize) ? 1 : Math.max(0.1, Math.min(10, rawSize));
+
+        const normInteraction = this.interactionAttr.toLowerCase();
+        this.interaction = ["true", "false", "move"].includes(normInteraction) ? normInteraction : "true";
 
         this.plot = plot;
         if (!plot.data) plot.data = {};
@@ -3505,7 +3583,7 @@ class DeltaPoints extends HTMLElement {
         this.nextId = 1;
         this.dragOffset = { x: 0, y: 0 };
 
-        // Button badge
+        // Floating badge (Option 3)
         this.floatingBadge = this.buildFloatingBadge(plot);
         plot.container.append(this.floatingBadge);
 
@@ -3524,16 +3602,21 @@ class DeltaPoints extends HTMLElement {
         this.updateStatus();
         footer.append(this.statusEl);
 
+        // If interaction is false, no action buttons
+        if (this.interaction === "false") {
+            return footer;
+        }
+
         // Actions toolbar
         const actions = document.createElement("div");
         actions.className = "plot-footer-actions";
 
-        // Selection / Edit Mode toggle button
+        // Selection / Edit / Move Mode toggle button
         this.modeBtn = document.createElement("button");
         this.modeBtn.type = "button";
         this.modeBtn.className = "plot-footer-btn";
-        this.modeBtn.title = "Modo de manipulação de pontos";
-        this.modeBtn.setAttribute("aria-label", "Modo de manipulação de pontos");
+        this.modeBtn.title = this.interaction === "move" ? "Modo de movimentação de pontos" : "Modo de manipulação de pontos";
+        this.modeBtn.setAttribute("aria-label", this.modeBtn.title);
         this.modeBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3" fill="currentColor"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 3"/></svg>`;
 
         this.modeBtn.addEventListener("click", (e) => {
@@ -3545,24 +3628,27 @@ class DeltaPoints extends HTMLElement {
         });
         actions.append(this.modeBtn);
 
-        // Delete Selected Point button
-        this.deleteSelectedBtn = this.buildDeleteSelectedBtn(plot);
-        actions.append(this.deleteSelectedBtn);
+        // If interaction is true (full), include delete selected and clear all
+        if (this.interaction === "true") {
+            // Delete Selected Point button
+            this.deleteSelectedBtn = this.buildDeleteSelectedBtn(plot);
+            actions.append(this.deleteSelectedBtn);
 
-        // Clear All Points button
-        this.clearBtn = document.createElement("button");
-        this.clearBtn.type = "button";
-        this.clearBtn.className = "plot-footer-btn";
-        this.clearBtn.title = "Limpar todos os pontos";
-        this.clearBtn.setAttribute("aria-label", "Limpar todos os pontos");
-        this.clearBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M10 11v6M14 11v6"/></svg>`;
+            // Clear All Points button
+            this.clearBtn = document.createElement("button");
+            this.clearBtn.type = "button";
+            this.clearBtn.className = "plot-footer-btn";
+            this.clearBtn.title = "Limpar todos os pontos";
+            this.clearBtn.setAttribute("aria-label", "Limpar todos os pontos");
+            this.clearBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M10 11v6M14 11v6"/></svg>`;
 
-        this.clearBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            this.clearPoints();
-            if (this.mode) plot.focus();
-        });
-        actions.append(this.clearBtn);
+            this.clearBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                this.clearPoints();
+                if (this.mode) plot.focus();
+            });
+            actions.append(this.clearBtn);
+        }
 
         footer.append(actions);
         return footer;
@@ -3625,7 +3711,7 @@ class DeltaPoints extends HTMLElement {
 
     updateFloatingBadge() {
         if (!this.floatingBadge || !this.plot) return;
-        if (this.selectedId === null) {
+        if (this.selectedId === null || this.interaction === "false") {
             this.floatingBadge.style.display = "none";
             return;
         }
@@ -3634,6 +3720,11 @@ class DeltaPoints extends HTMLElement {
         if (!p) {
             this.floatingBadge.style.display = "none";
             return;
+        }
+
+        // Show/hide 'x' button based on interaction mode
+        if (this.floatingBadgeDelete) {
+            this.floatingBadgeDelete.style.display = (this.interaction === "true") ? "inline-flex" : "none";
         }
 
         const pos = this.worldToScreen(p.x, p.y, this.plot);
@@ -3680,7 +3771,7 @@ class DeltaPoints extends HTMLElement {
             }
         } else {
             if (this.plot && this.plot.canvas) {
-                this.plot.canvas.style.cursor = "crosshair";
+                this.plot.canvas.style.cursor = this.interaction === "move" ? "default" : "crosshair";
             }
         }
         if (this.plot) {
@@ -3711,7 +3802,7 @@ class DeltaPoints extends HTMLElement {
     }
 
     isDraggingEntity() {
-        return this.mode;
+        return this.mode && this.interaction !== "false";
     }
 
     screenToWorld(sx, sy, plot) {
@@ -3796,7 +3887,7 @@ class DeltaPoints extends HTMLElement {
     }
 
     onPointerDown(e, plot) {
-        if (!this.mode) return;
+        if (!this.mode || this.interaction === "false") return;
         plot.focus();
         const r = plot.canvas.getBoundingClientRect();
         const sx = e.clientX - r.left;
@@ -3811,14 +3902,21 @@ class DeltaPoints extends HTMLElement {
             try { plot.canvas.setPointerCapture(e.pointerId); } catch (_) {}
             plot.render();
         } else {
-            const world = this.screenToWorld(sx, sy, plot);
-            this.addPoint(world.x, world.y, this.size);
-            try { plot.canvas.setPointerCapture(e.pointerId); } catch (_) {}
+            if (this.interaction === "true") {
+                const world = this.screenToWorld(sx, sy, plot);
+                this.addPoint(world.x, world.y, this.size);
+                try { plot.canvas.setPointerCapture(e.pointerId); } catch (_) {}
+            } else if (this.interaction === "move") {
+                if (this.selectedId !== null) {
+                    this.selectedId = null;
+                    plot.render();
+                }
+            }
         }
     }
 
     onPointerMove(e, plot) {
-        if (!this.mode) return;
+        if (!this.mode || this.interaction === "false") return;
         const r = plot.canvas.getBoundingClientRect();
         const sx = e.clientX - r.left;
         const sy = e.clientY - r.top;
@@ -3833,7 +3931,7 @@ class DeltaPoints extends HTMLElement {
             const newHover = hit ? hit.id : null;
             if (newHover !== this.hoverId) {
                 this.hoverId = newHover;
-                plot.canvas.style.cursor = hit ? "pointer" : "crosshair";
+                plot.canvas.style.cursor = hit ? "pointer" : (this.interaction === "move" ? "default" : "crosshair");
             }
         }
     }
@@ -3862,7 +3960,7 @@ class DeltaPoints extends HTMLElement {
                 plot.render();
             }
         } else if (e.key === "Delete" || e.key === "Backspace") {
-            if (this.mode && this.selectedId !== null) {
+            if (this.interaction === "true" && this.mode && this.selectedId !== null) {
                 e.preventDefault();
                 this.removePoint(this.selectedId);
             }
@@ -3918,12 +4016,12 @@ class DeltaPlot extends HTMLElement {
         this.dataset.deltaReady = "1";
 
         // Attributes
-        this.typeAttr = this.getAttribute("type") || "cartesian"
+        this.typeAttr = this.getAttribute("type") || "cartesian";
         this.titleAttr = this.getAttribute("title") || "";
         this.grabAttr = this.getAttribute("grab") || "true";
         this.zoomAttr = this.getAttribute("zoom") || "true";
-        this.xAttr = this.getAttribute("x") || "";
-        this.yAttr = this.getAttribute("y") || "";
+        this.xAttr = this.getAttribute("x") || "-16,16";
+        this.yAttr = this.getAttribute("y") || "-9,9";
 
         this.configAttributes();
         this.instanceSubcomponents();
