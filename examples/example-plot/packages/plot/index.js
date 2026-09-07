@@ -205,10 +205,14 @@ class DeltaPoints extends HTMLElement {
     build(plot) {
         // Attributes
         this.sizeAttr = this.getAttribute("size") || "1";
+        this.interactionAttr = this.getAttribute("interaction") || "true";
 
         // Setup
         const rawSize = parseFloat(this.sizeAttr);
         this.size = isNaN(rawSize) ? 1 : Math.max(0.1, Math.min(10, rawSize));
+
+        const normInteraction = this.interactionAttr.toLowerCase();
+        this.interaction = ["true", "false", "move"].includes(normInteraction) ? normInteraction : "true";
 
         this.plot = plot;
         if (!plot.data) plot.data = {};
@@ -221,7 +225,7 @@ class DeltaPoints extends HTMLElement {
         this.nextId = 1;
         this.dragOffset = { x: 0, y: 0 };
 
-        // Button badge
+        // Floating badge (Option 3)
         this.floatingBadge = this.buildFloatingBadge(plot);
         plot.container.append(this.floatingBadge);
 
@@ -240,16 +244,21 @@ class DeltaPoints extends HTMLElement {
         this.updateStatus();
         footer.append(this.statusEl);
 
+        // If interaction is false, no action buttons
+        if (this.interaction === "false") {
+            return footer;
+        }
+
         // Actions toolbar
         const actions = document.createElement("div");
         actions.className = "plot-footer-actions";
 
-        // Selection / Edit Mode toggle button
+        // Selection / Edit / Move Mode toggle button
         this.modeBtn = document.createElement("button");
         this.modeBtn.type = "button";
         this.modeBtn.className = "plot-footer-btn";
-        this.modeBtn.title = "Modo de manipulação de pontos";
-        this.modeBtn.setAttribute("aria-label", "Modo de manipulação de pontos");
+        this.modeBtn.title = this.interaction === "move" ? "Modo de movimentação de pontos" : "Modo de manipulação de pontos";
+        this.modeBtn.setAttribute("aria-label", this.modeBtn.title);
         this.modeBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3" fill="currentColor"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 3"/></svg>`;
 
         this.modeBtn.addEventListener("click", (e) => {
@@ -261,24 +270,27 @@ class DeltaPoints extends HTMLElement {
         });
         actions.append(this.modeBtn);
 
-        // Delete Selected Point button
-        this.deleteSelectedBtn = this.buildDeleteSelectedBtn(plot);
-        actions.append(this.deleteSelectedBtn);
+        // If interaction is true (full), include delete selected and clear all
+        if (this.interaction === "true") {
+            // Delete Selected Point button
+            this.deleteSelectedBtn = this.buildDeleteSelectedBtn(plot);
+            actions.append(this.deleteSelectedBtn);
 
-        // Clear All Points button
-        this.clearBtn = document.createElement("button");
-        this.clearBtn.type = "button";
-        this.clearBtn.className = "plot-footer-btn";
-        this.clearBtn.title = "Limpar todos os pontos";
-        this.clearBtn.setAttribute("aria-label", "Limpar todos os pontos");
-        this.clearBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M10 11v6M14 11v6"/></svg>`;
+            // Clear All Points button
+            this.clearBtn = document.createElement("button");
+            this.clearBtn.type = "button";
+            this.clearBtn.className = "plot-footer-btn";
+            this.clearBtn.title = "Limpar todos os pontos";
+            this.clearBtn.setAttribute("aria-label", "Limpar todos os pontos");
+            this.clearBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M10 11v6M14 11v6"/></svg>`;
 
-        this.clearBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            this.clearPoints();
-            if (this.mode) plot.focus();
-        });
-        actions.append(this.clearBtn);
+            this.clearBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                this.clearPoints();
+                if (this.mode) plot.focus();
+            });
+            actions.append(this.clearBtn);
+        }
 
         footer.append(actions);
         return footer;
@@ -341,7 +353,7 @@ class DeltaPoints extends HTMLElement {
 
     updateFloatingBadge() {
         if (!this.floatingBadge || !this.plot) return;
-        if (this.selectedId === null) {
+        if (this.selectedId === null || this.interaction === "false") {
             this.floatingBadge.style.display = "none";
             return;
         }
@@ -350,6 +362,11 @@ class DeltaPoints extends HTMLElement {
         if (!p) {
             this.floatingBadge.style.display = "none";
             return;
+        }
+
+        // Show/hide 'x' button based on interaction mode
+        if (this.floatingBadgeDelete) {
+            this.floatingBadgeDelete.style.display = (this.interaction === "true") ? "inline-flex" : "none";
         }
 
         const pos = this.worldToScreen(p.x, p.y, this.plot);
@@ -396,7 +413,7 @@ class DeltaPoints extends HTMLElement {
             }
         } else {
             if (this.plot && this.plot.canvas) {
-                this.plot.canvas.style.cursor = "crosshair";
+                this.plot.canvas.style.cursor = this.interaction === "move" ? "default" : "crosshair";
             }
         }
         if (this.plot) {
@@ -427,7 +444,7 @@ class DeltaPoints extends HTMLElement {
     }
 
     isDraggingEntity() {
-        return this.mode;
+        return this.mode && this.interaction !== "false";
     }
 
     screenToWorld(sx, sy, plot) {
@@ -512,7 +529,7 @@ class DeltaPoints extends HTMLElement {
     }
 
     onPointerDown(e, plot) {
-        if (!this.mode) return;
+        if (!this.mode || this.interaction === "false") return;
         plot.focus();
         const r = plot.canvas.getBoundingClientRect();
         const sx = e.clientX - r.left;
@@ -527,14 +544,21 @@ class DeltaPoints extends HTMLElement {
             try { plot.canvas.setPointerCapture(e.pointerId); } catch (_) {}
             plot.render();
         } else {
-            const world = this.screenToWorld(sx, sy, plot);
-            this.addPoint(world.x, world.y, this.size);
-            try { plot.canvas.setPointerCapture(e.pointerId); } catch (_) {}
+            if (this.interaction === "true") {
+                const world = this.screenToWorld(sx, sy, plot);
+                this.addPoint(world.x, world.y, this.size);
+                try { plot.canvas.setPointerCapture(e.pointerId); } catch (_) {}
+            } else if (this.interaction === "move") {
+                if (this.selectedId !== null) {
+                    this.selectedId = null;
+                    plot.render();
+                }
+            }
         }
     }
 
     onPointerMove(e, plot) {
-        if (!this.mode) return;
+        if (!this.mode || this.interaction === "false") return;
         const r = plot.canvas.getBoundingClientRect();
         const sx = e.clientX - r.left;
         const sy = e.clientY - r.top;
@@ -549,7 +573,7 @@ class DeltaPoints extends HTMLElement {
             const newHover = hit ? hit.id : null;
             if (newHover !== this.hoverId) {
                 this.hoverId = newHover;
-                plot.canvas.style.cursor = hit ? "pointer" : "crosshair";
+                plot.canvas.style.cursor = hit ? "pointer" : (this.interaction === "move" ? "default" : "crosshair");
             }
         }
     }
@@ -578,7 +602,7 @@ class DeltaPoints extends HTMLElement {
                 plot.render();
             }
         } else if (e.key === "Delete" || e.key === "Backspace") {
-            if (this.mode && this.selectedId !== null) {
+            if (this.interaction === "true" && this.mode && this.selectedId !== null) {
                 e.preventDefault();
                 this.removePoint(this.selectedId);
             }
@@ -634,7 +658,7 @@ class DeltaPlot extends HTMLElement {
         this.dataset.deltaReady = "1";
 
         // Attributes
-        this.typeAttr = this.getAttribute("type") || "cartesian"
+        this.typeAttr = this.getAttribute("type") || "cartesian";
         this.titleAttr = this.getAttribute("title") || "";
         this.grabAttr = this.getAttribute("grab") || "true";
         this.zoomAttr = this.getAttribute("zoom") || "true";
