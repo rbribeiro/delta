@@ -3109,13 +3109,27 @@ delta-question:not([answered]) delta-option:hover {
 }
 
 /* feedback após responder: */
+
+/* definindo cores para o background-color da alternativa correta condicionado ao theme-mode*/
+:root[theme-mode="dark"], 
+[theme-mode="dark"] {
+  --delta-correct-bg: color-mix(in oklab, var(--delta-env-bg) 40%, var(--delta-accent)); /* Cor para o dark mode */
+}
+
+:root[theme-mode="light"], 
+[theme-mode="light"] {
+  --delta-correct-bg: var(--delta-accent); /* Cor para o light mode*/
+}
+
+/* resposta correta*/
 delta-question[answered="true"] delta-option.correct {
-  background-color: var(--delta-accent);
-  border-color: color-mix(in oklab, var(--delta-accent) 10%, black);
+  background-color: var(--delta-correct-bg);
+  border-color: color-mix(in oklab, var(--delta-accent) 90%, black);
   color: var(--delta-ink);
   opacity: 1;
 }
 
+/* respostas que não foram clicadas, mas também não estão certas */
 delta-question[answered="true"] delta-option:not(.correct):not(.wrong) {
   opacity: 0.45;
   background-color: var(--delta-surface);
@@ -3127,6 +3141,7 @@ delta-question[answered="true"] delta-option:not(.correct):not(.wrong) {
   color: var(--delta-ink);
 }
 
+/* resposta errada que foi escolhida */
 delta-question[answered="true"] delta-option.wrong {
   opacity: 0.70;
   background-color: color-mix(in oklab, gray 25%, transparent);
