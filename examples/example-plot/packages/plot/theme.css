@@ -1,9 +1,20 @@
 delta-plot {
   display: block;
   margin: 1.5rem 0;
+  outline: none;
+}
+
+delta-plot:focus,
+delta-plot:focus-visible,
+.plot-container:focus,
+.plot-container:focus-visible,
+.plot-canvas:focus,
+.plot-canvas:focus-visible {
+  outline: none;
 }
 
 .plot-container {
+  position: relative;
   display: flex;
   flex-direction: column;
   border: 1px solid var(--delta-rule);
@@ -33,4 +44,116 @@ delta-plot {
   display: block;
   touch-action: none;
   background: #ffffff;
+}
+
+.plot-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0.8rem;
+  background: var(--delta-accent-soft);
+  border-top: 1px solid var(--delta-rule);
+  font-family: var(--delta-font-body, system-ui, -apple-system, sans-serif);
+  font-size: 0.8rem;
+}
+
+.plot-footer-status {
+  color: var(--delta-accent-ink);
+  font-weight: 500;
+  user-select: none;
+}
+
+.plot-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.plot-footer-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--delta-rule);
+  border-radius: 4px;
+  background: var(--delta-surface-1, #ffffff);
+  color: var(--delta-accent-ink);
+  cursor: pointer;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.plot-footer-btn:hover {
+  background: #ffffff;
+  border-color: var(--delta-accent);
+  color: var(--delta-accent);
+}
+
+.plot-footer-btn.active {
+  background: var(--delta-accent);
+  border-color: var(--delta-accent);
+  color: #ffffff;
+}
+
+.plot-footer-btn:disabled,
+.plot-footer-btn.disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.plot-footer-btn svg {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+
+/* Floating point badge with delete button (Option 3) */
+.plot-point-badge {
+  position: absolute;
+  display: none;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 4px 2px 8px;
+  background: var(--delta-surface-1, #ffffff);
+  color: var(--delta-accent-ink, #334155);
+  border: 1px solid var(--delta-rule, #cbd5e1);
+  border-radius: 9999px;
+  font-size: 11px;
+  font-family: var(--delta-font-body, system-ui, sans-serif);
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  pointer-events: auto;
+  z-index: 10;
+  transform: translate(-50%, -100%);
+  white-space: nowrap;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.plot-point-badge-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--delta-accent, #4f46e5) 15%, transparent);
+  color: var(--delta-accent, #4f46e5);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.plot-point-badge-delete:hover {
+  background: var(--delta-accent, #4f46e5);
+  color: #ffffff;
 }

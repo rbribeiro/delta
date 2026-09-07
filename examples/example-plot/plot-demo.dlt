@@ -20,6 +20,8 @@
 
     O componente aceita as seguintes propriedades principais:
 
+    - <c>type="cartesian/points"</c>: Define o tipo de ambiente inicial do plot. O padrão <c>"cartesian"</c> inclui automaticamente <c><grid /></c> e <c><axis /></c> com valores padrão. O tipo <c>"points"</c> inclui automaticamente <c><grid /></c>, <c><axis /></c> e <c><points /></c> prontos para uso.
+
     - <c>title="..."</c>: Define o título exibido no cabeçalho superior.
 
     - <c>grab="true/false"</c>: Habilita ou desabilita o arrasto da visualização com o mouse ou toque (padrão: <c>"true"</c>).
@@ -74,10 +76,36 @@
     </plot>
   </section>
 
+  <section id="sec:points">
+    <title>Subcomponente <c><points></c></title>
+
+    O subcomponente <c><points /></c> adiciona uma camada interativa para inserção, seleção e manipulação direta de pontos no plano cartesiano, incluindo uma barra inferior de ferramentas com contador de pontos e controles interativos.
+
+    - <c>size="1"</c> (padrão): Define o raio visual do ponto (valores entre <c>0.1</c> e <c>10.0</c>).
+
+    A barra de ferramentas e a área de manipulação disponibilizam:
+    <sidenote>No modo de manipulação, você pode excluir pontos via teclado (Delete/Backspace), pelo botão na barra inferior ou diretamente pelo botão × no balão flutuante do ponto selecionado.</sidenote>
+
+    - Contador dinâmico com o número atual de pontos.
+    - Botão de alternância do modo de manipulação: quando ativado, permite criar, mover e deletar pontos; quando desativado, permite arrastar e navegar pelo plano normalmente sem alterar os pontos.
+    - Botão para deletar o ponto atualmente selecionado.
+    - Botão para limpar todos os pontos de uma vez.
+    - Balão flutuante sobre o ponto selecionado exibindo coordenadas e um botão $\times$ para exclusão rápida.
+
+    <plot title="Plano Interativo com Criação e Edição de Pontos" grab="true" zoom="true">
+      <grid show="true"/>
+      <axis show="true"/>
+      <points size="1"/>
+    </plot>
+  </section>
+
   <section id="sec:exs">
     <title>Mais Exemplos</title>
 
     <plot title="Plot definido sem especificações (equivalente ao type='cartesian')">
+    </plot>
+    
+    <plot type="points" title="Plot com type='points' (grid, axis e points automáticos)">
     </plot>
     
     <plot title="Plot com movimentação fixa" grab="false" zoom="false">

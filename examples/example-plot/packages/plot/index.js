@@ -44,9 +44,13 @@ const AXIS_LABEL_COLOR = "rgba(40, 40, 40, 0.85)";
 // Subcomponents
 class DeltaAxis extends HTMLElement {
     build(plot) {
+        // Attributes
+        this.showAttr = this.getAttribute("show") || "true";
+
+        // Setup
         const validShows = ["true", "false", "x", "y"];
-        const showAttr = (this.getAttribute("show") || "true").toLowerCase();
-        this.show = validShows.includes(showAttr) ? showAttr : "true";
+        const normalizedShow = this.showAttr.toLowerCase();
+        this.show = validShows.includes(normalizedShow) ? normalizedShow : "true";
     }
 
     bind(plot) {}
@@ -124,9 +128,13 @@ class DeltaAxis extends HTMLElement {
 
 class DeltaGrid extends HTMLElement {
     build(plot) {
+        // Attributes
+        this.showAttr = this.getAttribute("show") || "true";
+
+        // Setup
         const validShows = ["true", "false", "origin", "basic"];
-        const showAttr = (this.getAttribute("show") || "true").toLowerCase();
-        this.show = validShows.includes(showAttr) ? showAttr : "true";
+        const normalizedShow = this.showAttr.toLowerCase();
+        this.show = validShows.includes(normalizedShow) ? normalizedShow : "true";
     }
 
     bind(plot) {}
@@ -193,6 +201,432 @@ class DeltaGrid extends HTMLElement {
     }
 }
 
+class DeltaPoints extends HTMLElement {
+    build(plot) {
+        // Attributes
+        this.sizeAttr = this.getAttribute("size") || "1";
+
+        // Setup
+        const rawSize = parseFloat(this.sizeAttr);
+        this.size = isNaN(rawSize) ? 1 : Math.max(0.1, Math.min(10, rawSize));
+
+        this.plot = plot;
+        if (!plot.data) plot.data = {};
+        if (!plot.data.points) plot.data.points = [];
+
+        this.mode = false;
+        this.selectedId = null;
+        this.draggingId = null;
+        this.hoverId = null;
+        this.nextId = 1;
+        this.dragOffset = { x: 0, y: 0 };
+
+        // Button badge
+        this.floatingBadge = this.buildFloatingBadge(plot);
+        plot.container.append(this.floatingBadge);
+
+        // Footer toolbar
+        this.footer = this.buildFooter(plot);
+        plot.container.append(this.footer);
+    }
+
+    buildFooter(plot) {
+        const footer = document.createElement("div");
+        footer.className = "plot-footer";
+
+        // Point count status
+        this.statusEl = document.createElement("span");
+        this.statusEl.className = "plot-footer-status";
+        this.updateStatus();
+        footer.append(this.statusEl);
+
+        // Actions toolbar
+        const actions = document.createElement("div");
+        actions.className = "plot-footer-actions";
+
+        // Selection / Edit Mode toggle button
+        this.modeBtn = document.createElement("button");
+        this.modeBtn.type = "button";
+        this.modeBtn.className = "plot-footer-btn";
+        this.modeBtn.title = "Modo de manipulação de pontos";
+        this.modeBtn.setAttribute("aria-label", "Modo de manipulação de pontos");
+        this.modeBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3" fill="currentColor"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 3"/></svg>`;
+
+        this.modeBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            this.setMode(!this.mode);
+            if (this.mode) {
+                plot.focus();
+            }
+        });
+        actions.append(this.modeBtn);
+
+        // Delete Selected Point button
+        this.deleteSelectedBtn = this.buildDeleteSelectedBtn(plot);
+        actions.append(this.deleteSelectedBtn);
+
+        // Clear All Points button
+        this.clearBtn = document.createElement("button");
+        this.clearBtn.type = "button";
+        this.clearBtn.className = "plot-footer-btn";
+        this.clearBtn.title = "Limpar todos os pontos";
+        this.clearBtn.setAttribute("aria-label", "Limpar todos os pontos");
+        this.clearBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M10 11v6M14 11v6"/></svg>`;
+
+        this.clearBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            this.clearPoints();
+            if (this.mode) plot.focus();
+        });
+        actions.append(this.clearBtn);
+
+        footer.append(actions);
+        return footer;
+    }
+
+    buildDeleteSelectedBtn(plot) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "plot-footer-btn";
+        btn.title = "Deletar ponto selecionado";
+        btn.setAttribute("aria-label", "Deletar ponto selecionado");
+        btn.disabled = true;
+        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M18 6L6 18M6 6l12 12"/></svg>`;
+
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (this.selectedId !== null) {
+                this.removePoint(this.selectedId);
+                if (this.mode) plot.focus();
+            }
+        });
+        return btn;
+    }
+
+    updateDeleteSelectedBtn() {
+        if (!this.deleteSelectedBtn) return;
+        this.deleteSelectedBtn.disabled = (this.selectedId === null);
+    }
+
+    buildFloatingBadge(plot) {
+        const badge = document.createElement("div");
+        badge.className = "plot-point-badge";
+
+        this.floatingBadgeCoords = document.createElement("span");
+        badge.append(this.floatingBadgeCoords);
+
+        this.floatingBadgeDelete = document.createElement("button");
+        this.floatingBadgeDelete.type = "button";
+        this.floatingBadgeDelete.className = "plot-point-badge-delete";
+        this.floatingBadgeDelete.title = "Deletar ponto";
+        this.floatingBadgeDelete.setAttribute("aria-label", "Deletar ponto");
+        this.floatingBadgeDelete.textContent = "×";
+
+        this.floatingBadgeDelete.addEventListener("pointerdown", (e) => {
+            e.stopPropagation();
+        });
+
+        this.floatingBadgeDelete.addEventListener("click", (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            if (this.selectedId !== null) {
+                this.removePoint(this.selectedId);
+                if (this.mode) plot.focus();
+            }
+        });
+
+        badge.append(this.floatingBadgeDelete);
+        return badge;
+    }
+
+    updateFloatingBadge() {
+        if (!this.floatingBadge || !this.plot) return;
+        if (this.selectedId === null) {
+            this.floatingBadge.style.display = "none";
+            return;
+        }
+
+        const p = this.plot.data?.points?.find(pt => pt.id === this.selectedId);
+        if (!p) {
+            this.floatingBadge.style.display = "none";
+            return;
+        }
+
+        const pos = this.worldToScreen(p.x, p.y, this.plot);
+        const canvasTop = this.plot.canvas.offsetTop || 0;
+        const canvasLeft = this.plot.canvas.offsetLeft || 0;
+        const radius = 3 * (p.size || this.size);
+
+        const badgeX = canvasLeft + pos.sx;
+        const badgeY = canvasTop + pos.sy - radius - 6;
+
+        if (pos.sx >= 0 && pos.sx <= this.plot.canvas.clientWidth && pos.sy >= 0 && pos.sy <= this.plot.canvas.clientHeight) {
+            this.floatingBadge.style.display = "flex";
+            this.floatingBadge.style.left = `${badgeX}px`;
+            this.floatingBadge.style.top = `${badgeY}px`;
+            if (this.floatingBadgeCoords) {
+                this.floatingBadgeCoords.textContent = `(${format_number(p.x)}, ${format_number(p.y)})`;
+            }
+        } else {
+            this.floatingBadge.style.display = "none";
+        }
+    }
+
+    updateStatus() {
+        if (!this.statusEl) return;
+        const count = this.plot?.data?.points?.length || 0;
+        this.statusEl.textContent = `${count} ${count === 1 ? "ponto" : "pontos"}`;
+    }
+
+    setMode(mode) {
+        this.mode = Boolean(mode);
+        if (this.modeBtn) {
+            if (this.mode) {
+                this.modeBtn.classList.add("active");
+            } else {
+                this.modeBtn.classList.remove("active");
+            }
+        }
+        if (!this.mode) {
+            this.selectedId = null;
+            this.draggingId = null;
+            this.hoverId = null;
+            if (this.plot && this.plot.canvas) {
+                this.plot.canvas.style.cursor = this.plot.grab ? "grab" : "default";
+            }
+        } else {
+            if (this.plot && this.plot.canvas) {
+                this.plot.canvas.style.cursor = "crosshair";
+            }
+        }
+        if (this.plot) {
+            this.plot.render();
+        }
+    }
+
+    bind(plot) {
+        this.plot = plot;
+        plot.tabIndex = 0;
+
+        plot.canvas.addEventListener("pointerdown", (e) => this.onPointerDown(e, plot));
+        plot.canvas.addEventListener("pointermove", (e) => this.onPointerMove(e, plot));
+        plot.canvas.addEventListener("pointerup", (e) => this.onPointerUp(e, plot));
+        plot.canvas.addEventListener("pointercancel", (e) => this.onPointerUp(e, plot));
+        plot.canvas.addEventListener("pointerleave", () => this.onPointerLeave(plot));
+
+        plot.addEventListener("keydown", (e) => this.onKeyDown(e, plot));
+
+        document.addEventListener("pointerdown", (e) => {
+            if (!plot.contains(e.target)) {
+                if (this.selectedId !== null) {
+                    this.selectedId = null;
+                    plot.render();
+                }
+            }
+        });
+    }
+
+    isDraggingEntity() {
+        return this.mode;
+    }
+
+    screenToWorld(sx, sy, plot) {
+        const r = plot.canvas.getBoundingClientRect();
+        const w = r.width;
+        const h = r.height;
+        const scaleX = BASE_SCALE * (plot.zoomX || plot.zoom);
+        const scaleY = BASE_SCALE * (plot.zoomY || plot.zoom);
+        const centerX = w / 2 + plot.offsetX;
+        const centerY = h / 2 + plot.offsetY;
+
+        const x = (sx - centerX) / scaleX;
+        const y = (centerY - sy) / scaleY;
+        return { x: parseFloat(x.toFixed(6)), y: parseFloat(y.toFixed(6)) };
+    }
+
+    worldToScreen(x, y, plot) {
+        const r = plot.canvas.getBoundingClientRect();
+        const w = r.width;
+        const h = r.height;
+        const scaleX = BASE_SCALE * (plot.zoomX || plot.zoom);
+        const scaleY = BASE_SCALE * (plot.zoomY || plot.zoom);
+        const centerX = Math.round(w / 2 + plot.offsetX);
+        const centerY = Math.round(h / 2 + plot.offsetY);
+
+        const sx = Math.round(centerX + x * scaleX);
+        const sy = Math.round(centerY - y * scaleY);
+        return { sx, sy };
+    }
+
+    addPoint(x, y, size = this.size) {
+        const pt = { id: this.nextId++, x, y, size };
+        this.plot.data.points.push(pt);
+        this.selectedId = pt.id;
+        this.draggingId = pt.id;
+        this.dragOffset = { x: 0, y: 0 };
+        this.updateStatus();
+        this.plot.render();
+        return pt;
+    }
+
+    removePoint(id) {
+        this.plot.data.points = this.plot.data.points.filter(p => p.id !== id);
+        if (this.selectedId === id) this.selectedId = null;
+        if (this.draggingId === id) this.draggingId = null;
+        if (this.hoverId === id) this.hoverId = null;
+        this.updateStatus();
+        this.plot.render();
+    }
+
+    clearPoints() {
+        this.plot.data.points = [];
+        this.selectedId = null;
+        this.draggingId = null;
+        this.hoverId = null;
+        this.updateStatus();
+        this.plot.render();
+    }
+
+    movePoint(id, x, y) {
+        const p = this.plot.data.points.find(pt => pt.id === id);
+        if (!p) return;
+        p.x = x;
+        p.y = y;
+        this.plot.render();
+    }
+
+    hitTest(sx, sy, plot) {
+        const points = plot.data?.points || [];
+        for (let i = points.length - 1; i >= 0; i--) {
+            const p = points[i];
+            const pos = this.worldToScreen(p.x, p.y, plot);
+            const dx = pos.sx - sx;
+            const dy = pos.sy - sy;
+            const radius = 3 * (p.size || this.size);
+            const hitRadius = Math.max(12, radius + 6);
+            if (dx * dx + dy * dy <= hitRadius * hitRadius) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    onPointerDown(e, plot) {
+        if (!this.mode) return;
+        plot.focus();
+        const r = plot.canvas.getBoundingClientRect();
+        const sx = e.clientX - r.left;
+        const sy = e.clientY - r.top;
+
+        const hit = this.hitTest(sx, sy, plot);
+        if (hit) {
+            this.selectedId = hit.id;
+            this.draggingId = hit.id;
+            const hitScreen = this.worldToScreen(hit.x, hit.y, plot);
+            this.dragOffset = { x: hitScreen.sx - sx, y: hitScreen.sy - sy };
+            try { plot.canvas.setPointerCapture(e.pointerId); } catch (_) {}
+            plot.render();
+        } else {
+            const world = this.screenToWorld(sx, sy, plot);
+            this.addPoint(world.x, world.y, this.size);
+            try { plot.canvas.setPointerCapture(e.pointerId); } catch (_) {}
+        }
+    }
+
+    onPointerMove(e, plot) {
+        if (!this.mode) return;
+        const r = plot.canvas.getBoundingClientRect();
+        const sx = e.clientX - r.left;
+        const sy = e.clientY - r.top;
+
+        if (this.draggingId !== null) {
+            const targetSx = sx + this.dragOffset.x;
+            const targetSy = sy + this.dragOffset.y;
+            const world = this.screenToWorld(targetSx, targetSy, plot);
+            this.movePoint(this.draggingId, world.x, world.y);
+        } else {
+            const hit = this.hitTest(sx, sy, plot);
+            const newHover = hit ? hit.id : null;
+            if (newHover !== this.hoverId) {
+                this.hoverId = newHover;
+                plot.canvas.style.cursor = hit ? "pointer" : "crosshair";
+            }
+        }
+    }
+
+    onPointerUp(e, plot) {
+        if (!this.mode) return;
+        if (this.draggingId !== null) {
+            try { plot.canvas.releasePointerCapture(e.pointerId); } catch (_) {}
+            this.draggingId = null;
+            plot.render();
+        }
+    }
+
+    onPointerLeave(plot) {
+        if (!this.mode) return;
+        if (this.draggingId === null && this.hoverId !== null) {
+            this.hoverId = null;
+        }
+    }
+
+    onKeyDown(e, plot) {
+        if (e.key === "Escape") {
+            if (this.selectedId !== null) {
+                e.preventDefault();
+                this.selectedId = null;
+                plot.render();
+            }
+        } else if (e.key === "Delete" || e.key === "Backspace") {
+            if (this.mode && this.selectedId !== null) {
+                e.preventDefault();
+                this.removePoint(this.selectedId);
+            }
+        }
+    }
+
+    render(ctx, w, h, plot) {
+        this.updateDeleteSelectedBtn();
+        this.updateFloatingBadge();
+
+        const points = plot.data?.points || [];
+        if (points.length === 0) return;
+
+        const style = getComputedStyle(plot);
+        const accent = style.getPropertyValue("--delta-accent").trim() || "#4f46e5";
+        const textColor = style.getPropertyValue("--delta-color-text").trim() || "#222222";
+
+        for (const p of points) {
+            const pos = this.worldToScreen(p.x, p.y, plot);
+            const sx = pos.sx;
+            const sy = pos.sy;
+            const isSel = p.id === this.selectedId;
+            const isHov = p.id === this.hoverId;
+            const radius = 3 * (p.size || this.size);
+
+            // Selection halo
+            if (isSel) {
+                ctx.beginPath();
+                ctx.arc(sx, sy, radius + 6, 0, Math.PI * 2);
+                ctx.fillStyle = "rgba(79, 70, 229, 0.2)";
+                ctx.fill();
+                ctx.strokeStyle = accent;
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
+
+            // Point circle
+            ctx.beginPath();
+            ctx.arc(sx, sy, radius, 0, Math.PI * 2);
+            ctx.fillStyle = isSel ? accent : "#ffffff";
+            ctx.fill();
+            ctx.strokeStyle = isSel ? "#ffffff" : accent;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+    }
+}
+
 // Plot Component
 class DeltaPlot extends HTMLElement {
     connectedCallback() {
@@ -247,13 +681,13 @@ class DeltaPlot extends HTMLElement {
             this.resize(); this.render()
         }).observe(this.canvas);
 
-        this.bindGrab();
-        this.bindZoom();
-
         // Subcomponents bind
         for (const el of this.elements) {
             el.bind(this);
         }
+
+        this.bindGrab();
+        this.bindZoom();
     }
 
     render() {
@@ -277,6 +711,9 @@ class DeltaPlot extends HTMLElement {
         switch (this.typeAttr.toLowerCase()){
             case "scatter":
                 this.type = "scatter";
+                break;
+            case "points":
+                this.type = "points";
                 break;
             default:
                 this.type = "cartesian";
@@ -322,6 +759,9 @@ class DeltaPlot extends HTMLElement {
         this.xRange = parse_tuple(this.xAttr, 2, true);
         this.yRange = parse_tuple(this.yAttr, 2, true);
         this.userInteracted = false;
+
+        // Data dictionary for subcomponents
+        this.data = { points: [] };
     }
 
     instanceSubcomponents(){
@@ -335,13 +775,18 @@ class DeltaPlot extends HTMLElement {
 
         // Grid
         let gridEl = this.querySelector("delta-grid");
-        if((this.type === "cartesian" || this.type === "scatter") && !gridEl) gridEl = document.createElement("delta-grid");
+        if((this.type === "cartesian" || this.type === "scatter" || this.type === "points") && !gridEl) gridEl = document.createElement("delta-grid");
         if(gridEl) this.elements.push(gridEl);
 
         // Axis
         let axisEl = this.querySelector("delta-axis");
-        if((this.type === "cartesian" || this.type === "scatter") && !axisEl) axisEl = document.createElement("delta-axis");
+        if((this.type === "cartesian" || this.type === "scatter" || this.type === "points") && !axisEl) axisEl = document.createElement("delta-axis");
         if(axisEl) this.elements.push(axisEl);
+
+        // Points
+        let pointsEl = this.querySelector("delta-points");
+        if(this.type === "points" && !pointsEl) pointsEl = document.createElement("delta-points");
+        if(pointsEl) this.elements.push(pointsEl);
     }
 
     buildHeader() {
@@ -438,6 +883,7 @@ class DeltaPlot extends HTMLElement {
 
         this.canvas.addEventListener("pointerdown", (e) => {
             if (activePointerId !== null) return;
+            if (this.elements.some(el => el.isDraggingEntity && el.isDraggingEntity())) return;
             activePointerId = e.pointerId;
             isDragging = true;
             this.userInteracted = true;
@@ -554,4 +1000,5 @@ class DeltaPlot extends HTMLElement {
 
 customElements.define("delta-grid", DeltaGrid);
 customElements.define("delta-axis", DeltaAxis);
+customElements.define("delta-points", DeltaPoints);
 customElements.define("delta-plot", DeltaPlot);

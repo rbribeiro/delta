@@ -3070,9 +3070,20 @@ delta-tweaks .twk-toggle.is-on::after {
 delta-plot {
   display: block;
   margin: 1.5rem 0;
+  outline: none;
+}
+
+delta-plot:focus,
+delta-plot:focus-visible,
+.plot-container:focus,
+.plot-container:focus-visible,
+.plot-canvas:focus,
+.plot-canvas:focus-visible {
+  outline: none;
 }
 
 .plot-container {
+  position: relative;
   display: flex;
   flex-direction: column;
   border: 1px solid var(--delta-rule);
@@ -3104,6 +3115,118 @@ delta-plot {
   background: #ffffff;
 }
 
+.plot-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0.8rem;
+  background: var(--delta-accent-soft);
+  border-top: 1px solid var(--delta-rule);
+  font-family: var(--delta-font-body, system-ui, -apple-system, sans-serif);
+  font-size: 0.8rem;
+}
+
+.plot-footer-status {
+  color: var(--delta-accent-ink);
+  font-weight: 500;
+  user-select: none;
+}
+
+.plot-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.plot-footer-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--delta-rule);
+  border-radius: 4px;
+  background: var(--delta-surface-1, #ffffff);
+  color: var(--delta-accent-ink);
+  cursor: pointer;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.plot-footer-btn:hover {
+  background: #ffffff;
+  border-color: var(--delta-accent);
+  color: var(--delta-accent);
+}
+
+.plot-footer-btn.active {
+  background: var(--delta-accent);
+  border-color: var(--delta-accent);
+  color: #ffffff;
+}
+
+.plot-footer-btn:disabled,
+.plot-footer-btn.disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.plot-footer-btn svg {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+
+/* Floating point badge with delete button (Option 3) */
+.plot-point-badge {
+  position: absolute;
+  display: none;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 4px 2px 8px;
+  background: var(--delta-surface-1, #ffffff);
+  color: var(--delta-accent-ink, #334155);
+  border: 1px solid var(--delta-rule, #cbd5e1);
+  border-radius: 9999px;
+  font-size: 11px;
+  font-family: var(--delta-font-body, system-ui, sans-serif);
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  pointer-events: auto;
+  z-index: 10;
+  transform: translate(-50%, -100%);
+  white-space: nowrap;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.plot-point-badge-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--delta-accent, #4f46e5) 15%, transparent);
+  color: var(--delta-accent, #4f46e5);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.plot-point-badge-delete:hover {
+  background: var(--delta-accent, #4f46e5);
+  color: #ffffff;
+}
+
 </style>
 </head>
 <body>
@@ -3115,7 +3238,7 @@ delta-plot {
     Este guia apresenta o componente interativo de plotagem para documentos Delta, explicando como configurar o espaço cartesiano, a navegação com arrasto e zoom, a grade adaptativa e as marcações numéricas dos eixos.
   </delta-abstract><delta-section id="sec:intro" num="1">
     <delta-title>Componente <delta-c>&lt;plot&gt;</delta-c></delta-title>O componente <delta-c>&lt;plot&gt;</delta-c> cria uma área interativa de desenho no plano cartesiano <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi mathvariant="double-struck">R</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">\mathbb{R}^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathbb">R</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span> com proporção (até o momento) fixa de <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>16</mn><mo>:</mo><mn>9</mn></mrow><annotation encoding="application/x-tex">16:9</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">16</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">:</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">9</span></span></span></span>. Ele gerencia a renderização em canvas de alta resolução e as interações de navegação do usuário.
-    <delta-sidenote>A navegação no plano preserva o ponto sob o cursor durante o zoom (focal zoom), tanto no mouse quanto em telas sensíveis ao toque.</delta-sidenote>O componente aceita as seguintes propriedades principais:<br><br>- <delta-c>title="..."</delta-c>: Define o título exibido no cabeçalho superior.<br><br>- <delta-c>grab="true/false"</delta-c>: Habilita ou desabilita o arrasto da visualização com o mouse ou toque (padrão: <delta-c>"true"</delta-c>).<br><br>- <delta-c>zoom="true/false/min,max"</delta-c>: Habilita o zoom padrão entre <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">[</mo><mn>0.25</mn><mo separator="true">,</mo><mn>4</mn><mo stretchy="false">]</mo></mrow><annotation encoding="application/x-tex">[0.25, 4]</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord">0.25</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">4</span><span class="mclose">]</span></span></span></span> (<delta-c>"true"</delta-c>), desativa o zoom (<delta-c>"false"</delta-c>) ou define limites personalizados como <delta-c>"0.5,2"</delta-c> (padrão: <delta-c>"true"</delta-c>). Um zoom de 0.25 representa um zoom-out de 4 vezes, enquanto um zoom de 4 representa um zoom-in de 4 vezes.<br><br>- <delta-c>x="a,b"</delta-c> e <delta-c>y="c,d"</delta-c>: Ajustam o enquadramento inicial do gráfico nos eixos horizontal e vertical. Quando ambos são especificados simultaneamente, o plot ajusta as escalas de cada eixo de forma independente para que ambos os intervalos caibam exatamente na tela.<br><br>Os subcomponentes de <delta-c>grid</delta-c> e <delta-c>axis</delta-c> já são criados com valor padrão quando inicializamos um plot vazio, sendo necessário declarar os subcomponentes para desativá-los ou alterar suas configurações.<delta-plot title="Espaço Cartesiano Bidimensional" grab="true" zoom="true"></delta-plot>
+    <delta-sidenote>A navegação no plano preserva o ponto sob o cursor durante o zoom (focal zoom), tanto no mouse quanto em telas sensíveis ao toque.</delta-sidenote>O componente aceita as seguintes propriedades principais:<br><br>- <delta-c>type="cartesian/points"</delta-c>: Define o tipo de ambiente inicial do plot. O padrão <delta-c>"cartesian"</delta-c> inclui automaticamente <delta-c>&lt;grid /&gt;</delta-c> e <delta-c>&lt;axis /&gt;</delta-c> com valores padrão. O tipo <delta-c>"points"</delta-c> inclui automaticamente <delta-c>&lt;grid /&gt;</delta-c>, <delta-c>&lt;axis /&gt;</delta-c> e <delta-c>&lt;points /&gt;</delta-c> prontos para uso.<br><br>- <delta-c>title="..."</delta-c>: Define o título exibido no cabeçalho superior.<br><br>- <delta-c>grab="true/false"</delta-c>: Habilita ou desabilita o arrasto da visualização com o mouse ou toque (padrão: <delta-c>"true"</delta-c>).<br><br>- <delta-c>zoom="true/false/min,max"</delta-c>: Habilita o zoom padrão entre <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">[</mo><mn>0.25</mn><mo separator="true">,</mo><mn>4</mn><mo stretchy="false">]</mo></mrow><annotation encoding="application/x-tex">[0.25, 4]</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord">0.25</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">4</span><span class="mclose">]</span></span></span></span> (<delta-c>"true"</delta-c>), desativa o zoom (<delta-c>"false"</delta-c>) ou define limites personalizados como <delta-c>"0.5,2"</delta-c> (padrão: <delta-c>"true"</delta-c>). Um zoom de 0.25 representa um zoom-out de 4 vezes, enquanto um zoom de 4 representa um zoom-in de 4 vezes.<br><br>- <delta-c>x="a,b"</delta-c> e <delta-c>y="c,d"</delta-c>: Ajustam o enquadramento inicial do gráfico nos eixos horizontal e vertical. Quando ambos são especificados simultaneamente, o plot ajusta as escalas de cada eixo de forma independente para que ambos os intervalos caibam exatamente na tela.<br><br>Os subcomponentes de <delta-c>grid</delta-c> e <delta-c>axis</delta-c> já são criados com valor padrão quando inicializamos um plot vazio, sendo necessário declarar os subcomponentes para desativá-los ou alterar suas configurações.<delta-plot title="Espaço Cartesiano Bidimensional" grab="true" zoom="true"></delta-plot>
   </delta-section><delta-section id="sec:grid" num="2">
     <delta-title>Subcomponente <delta-c>&lt;grid&gt;</delta-c></delta-title>O subcomponente <delta-c>&lt;grid&gt;</delta-c> adiciona a malha ortogonal ao fundo do gráfico. O espaçamento entre as linhas é dinâmico e adaptativo: conforme você aproxima ou afasta o zoom, a escala escolhe automaticamente múltiplos amigáveis (<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo separator="true">,</mo><mn>2</mn><mo separator="true">,</mo><mn>5</mn><mo separator="true">,</mo><mn>10</mn><mo>×</mo><msup><mn>10</mn><mi>k</mi></msup></mrow><annotation encoding="application/x-tex">1, 2, 5, 10 \times 10^k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8389em;vertical-align:-0.1944em;"></span><span class="mord">1</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">2</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">5</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">10</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8491em;"></span><span class="mord">1</span><span class="mord"><span class="mord">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8491em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0315em;">k</span></span></span></span></span></span></span></span></span></span></span>).<br><br>O parâmetro <delta-c>show</delta-c> aceita quatro modos:<br><br>- <delta-c>show="true"</delta-c> (padrão): Exibe as linhas da grade base e destaca os eixos principais da origem (<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">x = 0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">0</span></span></span></span> e <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>y</mi><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">y = 0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.0359em;">y</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">0</span></span></span></span>).<br><br>- <delta-c>show="basic"</delta-c>: Exibe apenas as linhas suaves da grade base.<br><br>- <delta-c>show="origin"</delta-c>: Exibe apenas as retas dos eixos principais da origem.<br><br>- <delta-c>show="false"</delta-c>: Mantém o fundo totalmente limpo.<delta-plot title="Apenas grid básica, sem a origem" grab="true" zoom="true">
       <delta-grid show="basic"></delta-grid>
@@ -3127,8 +3250,20 @@ delta-plot {
       <delta-grid show="origin"></delta-grid>
       <delta-axis show="x"></delta-axis>
     </delta-plot>
-  </delta-section><delta-section id="sec:exs" num="4">
+  </delta-section><delta-section id="sec:points" num="4">
+    <delta-title>Subcomponente <delta-c>&lt;points&gt;</delta-c></delta-title>O subcomponente <delta-c>&lt;points /&gt;</delta-c> adiciona uma camada interativa para inserção, seleção e manipulação direta de pontos no plano cartesiano, incluindo uma barra inferior de ferramentas com contador de pontos e controles interativos.<br><br>- <delta-c>size="1"</delta-c> (padrão): Define o raio visual do ponto (valores entre <delta-c>0.1</delta-c> e <delta-c>10.0</delta-c>).<br><br>A barra de ferramentas e a área de manipulação disponibilizam:
+    <delta-sidenote>No modo de manipulação, você pode excluir pontos via teclado (Delete/Backspace), pelo botão na barra inferior ou diretamente pelo botão × no balão flutuante do ponto selecionado.</delta-sidenote>- Contador dinâmico com o número atual de pontos.
+    - Botão de alternância do modo de manipulação: quando ativado, permite criar, mover e deletar pontos; quando desativado, permite arrastar e navegar pelo plano normalmente sem alterar os pontos.
+    - Botão para deletar o ponto atualmente selecionado.
+    - Botão para limpar todos os pontos de uma vez.
+    - Balão flutuante sobre o ponto selecionado exibindo coordenadas e um botão <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>×</mo></mrow><annotation encoding="application/x-tex">\times</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6667em;vertical-align:-0.0833em;"></span><span class="mord">×</span></span></span></span> para exclusão rápida.<delta-plot title="Plano Interativo com Criação e Edição de Pontos" grab="true" zoom="true">
+      <delta-grid show="true"></delta-grid>
+      <delta-axis show="true"></delta-axis>
+      <delta-points size="1"></delta-points>
+    </delta-plot>
+  </delta-section><delta-section id="sec:exs" num="5">
     <delta-title>Mais Exemplos</delta-title><delta-plot title="Plot definido sem especificações (equivalente ao type='cartesian')">
+    </delta-plot><delta-plot type="points" title="Plot com type='points' (grid, axis e points automáticos)">
     </delta-plot><delta-plot title="Plot com movimentação fixa" grab="false" zoom="false">
     </delta-plot><delta-plot title="Exemplo aleatório" zoom="false">
       <delta-grid show="origin"></delta-grid>
@@ -3193,9 +3328,13 @@ const AXIS_LABEL_COLOR = "rgba(40, 40, 40, 0.85)";
 // Subcomponents
 class DeltaAxis extends HTMLElement {
     build(plot) {
+        // Attributes
+        this.showAttr = this.getAttribute("show") || "true";
+
+        // Setup
         const validShows = ["true", "false", "x", "y"];
-        const showAttr = (this.getAttribute("show") || "true").toLowerCase();
-        this.show = validShows.includes(showAttr) ? showAttr : "true";
+        const normalizedShow = this.showAttr.toLowerCase();
+        this.show = validShows.includes(normalizedShow) ? normalizedShow : "true";
     }
 
     bind(plot) {}
@@ -3273,9 +3412,13 @@ class DeltaAxis extends HTMLElement {
 
 class DeltaGrid extends HTMLElement {
     build(plot) {
+        // Attributes
+        this.showAttr = this.getAttribute("show") || "true";
+
+        // Setup
         const validShows = ["true", "false", "origin", "basic"];
-        const showAttr = (this.getAttribute("show") || "true").toLowerCase();
-        this.show = validShows.includes(showAttr) ? showAttr : "true";
+        const normalizedShow = this.showAttr.toLowerCase();
+        this.show = validShows.includes(normalizedShow) ? normalizedShow : "true";
     }
 
     bind(plot) {}
@@ -3342,6 +3485,432 @@ class DeltaGrid extends HTMLElement {
     }
 }
 
+class DeltaPoints extends HTMLElement {
+    build(plot) {
+        // Attributes
+        this.sizeAttr = this.getAttribute("size") || "1";
+
+        // Setup
+        const rawSize = parseFloat(this.sizeAttr);
+        this.size = isNaN(rawSize) ? 1 : Math.max(0.1, Math.min(10, rawSize));
+
+        this.plot = plot;
+        if (!plot.data) plot.data = {};
+        if (!plot.data.points) plot.data.points = [];
+
+        this.mode = false;
+        this.selectedId = null;
+        this.draggingId = null;
+        this.hoverId = null;
+        this.nextId = 1;
+        this.dragOffset = { x: 0, y: 0 };
+
+        // Button badge
+        this.floatingBadge = this.buildFloatingBadge(plot);
+        plot.container.append(this.floatingBadge);
+
+        // Footer toolbar
+        this.footer = this.buildFooter(plot);
+        plot.container.append(this.footer);
+    }
+
+    buildFooter(plot) {
+        const footer = document.createElement("div");
+        footer.className = "plot-footer";
+
+        // Point count status
+        this.statusEl = document.createElement("span");
+        this.statusEl.className = "plot-footer-status";
+        this.updateStatus();
+        footer.append(this.statusEl);
+
+        // Actions toolbar
+        const actions = document.createElement("div");
+        actions.className = "plot-footer-actions";
+
+        // Selection / Edit Mode toggle button
+        this.modeBtn = document.createElement("button");
+        this.modeBtn.type = "button";
+        this.modeBtn.className = "plot-footer-btn";
+        this.modeBtn.title = "Modo de manipulação de pontos";
+        this.modeBtn.setAttribute("aria-label", "Modo de manipulação de pontos");
+        this.modeBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3" fill="currentColor"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 3"/></svg>`;
+
+        this.modeBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            this.setMode(!this.mode);
+            if (this.mode) {
+                plot.focus();
+            }
+        });
+        actions.append(this.modeBtn);
+
+        // Delete Selected Point button
+        this.deleteSelectedBtn = this.buildDeleteSelectedBtn(plot);
+        actions.append(this.deleteSelectedBtn);
+
+        // Clear All Points button
+        this.clearBtn = document.createElement("button");
+        this.clearBtn.type = "button";
+        this.clearBtn.className = "plot-footer-btn";
+        this.clearBtn.title = "Limpar todos os pontos";
+        this.clearBtn.setAttribute("aria-label", "Limpar todos os pontos");
+        this.clearBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M10 11v6M14 11v6"/></svg>`;
+
+        this.clearBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            this.clearPoints();
+            if (this.mode) plot.focus();
+        });
+        actions.append(this.clearBtn);
+
+        footer.append(actions);
+        return footer;
+    }
+
+    buildDeleteSelectedBtn(plot) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "plot-footer-btn";
+        btn.title = "Deletar ponto selecionado";
+        btn.setAttribute("aria-label", "Deletar ponto selecionado");
+        btn.disabled = true;
+        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M18 6L6 18M6 6l12 12"/></svg>`;
+
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (this.selectedId !== null) {
+                this.removePoint(this.selectedId);
+                if (this.mode) plot.focus();
+            }
+        });
+        return btn;
+    }
+
+    updateDeleteSelectedBtn() {
+        if (!this.deleteSelectedBtn) return;
+        this.deleteSelectedBtn.disabled = (this.selectedId === null);
+    }
+
+    buildFloatingBadge(plot) {
+        const badge = document.createElement("div");
+        badge.className = "plot-point-badge";
+
+        this.floatingBadgeCoords = document.createElement("span");
+        badge.append(this.floatingBadgeCoords);
+
+        this.floatingBadgeDelete = document.createElement("button");
+        this.floatingBadgeDelete.type = "button";
+        this.floatingBadgeDelete.className = "plot-point-badge-delete";
+        this.floatingBadgeDelete.title = "Deletar ponto";
+        this.floatingBadgeDelete.setAttribute("aria-label", "Deletar ponto");
+        this.floatingBadgeDelete.textContent = "×";
+
+        this.floatingBadgeDelete.addEventListener("pointerdown", (e) => {
+            e.stopPropagation();
+        });
+
+        this.floatingBadgeDelete.addEventListener("click", (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            if (this.selectedId !== null) {
+                this.removePoint(this.selectedId);
+                if (this.mode) plot.focus();
+            }
+        });
+
+        badge.append(this.floatingBadgeDelete);
+        return badge;
+    }
+
+    updateFloatingBadge() {
+        if (!this.floatingBadge || !this.plot) return;
+        if (this.selectedId === null) {
+            this.floatingBadge.style.display = "none";
+            return;
+        }
+
+        const p = this.plot.data?.points?.find(pt => pt.id === this.selectedId);
+        if (!p) {
+            this.floatingBadge.style.display = "none";
+            return;
+        }
+
+        const pos = this.worldToScreen(p.x, p.y, this.plot);
+        const canvasTop = this.plot.canvas.offsetTop || 0;
+        const canvasLeft = this.plot.canvas.offsetLeft || 0;
+        const radius = 3 * (p.size || this.size);
+
+        const badgeX = canvasLeft + pos.sx;
+        const badgeY = canvasTop + pos.sy - radius - 6;
+
+        if (pos.sx >= 0 && pos.sx <= this.plot.canvas.clientWidth && pos.sy >= 0 && pos.sy <= this.plot.canvas.clientHeight) {
+            this.floatingBadge.style.display = "flex";
+            this.floatingBadge.style.left = `${badgeX}px`;
+            this.floatingBadge.style.top = `${badgeY}px`;
+            if (this.floatingBadgeCoords) {
+                this.floatingBadgeCoords.textContent = `(${format_number(p.x)}, ${format_number(p.y)})`;
+            }
+        } else {
+            this.floatingBadge.style.display = "none";
+        }
+    }
+
+    updateStatus() {
+        if (!this.statusEl) return;
+        const count = this.plot?.data?.points?.length || 0;
+        this.statusEl.textContent = `${count} ${count === 1 ? "ponto" : "pontos"}`;
+    }
+
+    setMode(mode) {
+        this.mode = Boolean(mode);
+        if (this.modeBtn) {
+            if (this.mode) {
+                this.modeBtn.classList.add("active");
+            } else {
+                this.modeBtn.classList.remove("active");
+            }
+        }
+        if (!this.mode) {
+            this.selectedId = null;
+            this.draggingId = null;
+            this.hoverId = null;
+            if (this.plot && this.plot.canvas) {
+                this.plot.canvas.style.cursor = this.plot.grab ? "grab" : "default";
+            }
+        } else {
+            if (this.plot && this.plot.canvas) {
+                this.plot.canvas.style.cursor = "crosshair";
+            }
+        }
+        if (this.plot) {
+            this.plot.render();
+        }
+    }
+
+    bind(plot) {
+        this.plot = plot;
+        plot.tabIndex = 0;
+
+        plot.canvas.addEventListener("pointerdown", (e) => this.onPointerDown(e, plot));
+        plot.canvas.addEventListener("pointermove", (e) => this.onPointerMove(e, plot));
+        plot.canvas.addEventListener("pointerup", (e) => this.onPointerUp(e, plot));
+        plot.canvas.addEventListener("pointercancel", (e) => this.onPointerUp(e, plot));
+        plot.canvas.addEventListener("pointerleave", () => this.onPointerLeave(plot));
+
+        plot.addEventListener("keydown", (e) => this.onKeyDown(e, plot));
+
+        document.addEventListener("pointerdown", (e) => {
+            if (!plot.contains(e.target)) {
+                if (this.selectedId !== null) {
+                    this.selectedId = null;
+                    plot.render();
+                }
+            }
+        });
+    }
+
+    isDraggingEntity() {
+        return this.mode;
+    }
+
+    screenToWorld(sx, sy, plot) {
+        const r = plot.canvas.getBoundingClientRect();
+        const w = r.width;
+        const h = r.height;
+        const scaleX = BASE_SCALE * (plot.zoomX || plot.zoom);
+        const scaleY = BASE_SCALE * (plot.zoomY || plot.zoom);
+        const centerX = w / 2 + plot.offsetX;
+        const centerY = h / 2 + plot.offsetY;
+
+        const x = (sx - centerX) / scaleX;
+        const y = (centerY - sy) / scaleY;
+        return { x: parseFloat(x.toFixed(6)), y: parseFloat(y.toFixed(6)) };
+    }
+
+    worldToScreen(x, y, plot) {
+        const r = plot.canvas.getBoundingClientRect();
+        const w = r.width;
+        const h = r.height;
+        const scaleX = BASE_SCALE * (plot.zoomX || plot.zoom);
+        const scaleY = BASE_SCALE * (plot.zoomY || plot.zoom);
+        const centerX = Math.round(w / 2 + plot.offsetX);
+        const centerY = Math.round(h / 2 + plot.offsetY);
+
+        const sx = Math.round(centerX + x * scaleX);
+        const sy = Math.round(centerY - y * scaleY);
+        return { sx, sy };
+    }
+
+    addPoint(x, y, size = this.size) {
+        const pt = { id: this.nextId++, x, y, size };
+        this.plot.data.points.push(pt);
+        this.selectedId = pt.id;
+        this.draggingId = pt.id;
+        this.dragOffset = { x: 0, y: 0 };
+        this.updateStatus();
+        this.plot.render();
+        return pt;
+    }
+
+    removePoint(id) {
+        this.plot.data.points = this.plot.data.points.filter(p => p.id !== id);
+        if (this.selectedId === id) this.selectedId = null;
+        if (this.draggingId === id) this.draggingId = null;
+        if (this.hoverId === id) this.hoverId = null;
+        this.updateStatus();
+        this.plot.render();
+    }
+
+    clearPoints() {
+        this.plot.data.points = [];
+        this.selectedId = null;
+        this.draggingId = null;
+        this.hoverId = null;
+        this.updateStatus();
+        this.plot.render();
+    }
+
+    movePoint(id, x, y) {
+        const p = this.plot.data.points.find(pt => pt.id === id);
+        if (!p) return;
+        p.x = x;
+        p.y = y;
+        this.plot.render();
+    }
+
+    hitTest(sx, sy, plot) {
+        const points = plot.data?.points || [];
+        for (let i = points.length - 1; i >= 0; i--) {
+            const p = points[i];
+            const pos = this.worldToScreen(p.x, p.y, plot);
+            const dx = pos.sx - sx;
+            const dy = pos.sy - sy;
+            const radius = 3 * (p.size || this.size);
+            const hitRadius = Math.max(12, radius + 6);
+            if (dx * dx + dy * dy <= hitRadius * hitRadius) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    onPointerDown(e, plot) {
+        if (!this.mode) return;
+        plot.focus();
+        const r = plot.canvas.getBoundingClientRect();
+        const sx = e.clientX - r.left;
+        const sy = e.clientY - r.top;
+
+        const hit = this.hitTest(sx, sy, plot);
+        if (hit) {
+            this.selectedId = hit.id;
+            this.draggingId = hit.id;
+            const hitScreen = this.worldToScreen(hit.x, hit.y, plot);
+            this.dragOffset = { x: hitScreen.sx - sx, y: hitScreen.sy - sy };
+            try { plot.canvas.setPointerCapture(e.pointerId); } catch (_) {}
+            plot.render();
+        } else {
+            const world = this.screenToWorld(sx, sy, plot);
+            this.addPoint(world.x, world.y, this.size);
+            try { plot.canvas.setPointerCapture(e.pointerId); } catch (_) {}
+        }
+    }
+
+    onPointerMove(e, plot) {
+        if (!this.mode) return;
+        const r = plot.canvas.getBoundingClientRect();
+        const sx = e.clientX - r.left;
+        const sy = e.clientY - r.top;
+
+        if (this.draggingId !== null) {
+            const targetSx = sx + this.dragOffset.x;
+            const targetSy = sy + this.dragOffset.y;
+            const world = this.screenToWorld(targetSx, targetSy, plot);
+            this.movePoint(this.draggingId, world.x, world.y);
+        } else {
+            const hit = this.hitTest(sx, sy, plot);
+            const newHover = hit ? hit.id : null;
+            if (newHover !== this.hoverId) {
+                this.hoverId = newHover;
+                plot.canvas.style.cursor = hit ? "pointer" : "crosshair";
+            }
+        }
+    }
+
+    onPointerUp(e, plot) {
+        if (!this.mode) return;
+        if (this.draggingId !== null) {
+            try { plot.canvas.releasePointerCapture(e.pointerId); } catch (_) {}
+            this.draggingId = null;
+            plot.render();
+        }
+    }
+
+    onPointerLeave(plot) {
+        if (!this.mode) return;
+        if (this.draggingId === null && this.hoverId !== null) {
+            this.hoverId = null;
+        }
+    }
+
+    onKeyDown(e, plot) {
+        if (e.key === "Escape") {
+            if (this.selectedId !== null) {
+                e.preventDefault();
+                this.selectedId = null;
+                plot.render();
+            }
+        } else if (e.key === "Delete" || e.key === "Backspace") {
+            if (this.mode && this.selectedId !== null) {
+                e.preventDefault();
+                this.removePoint(this.selectedId);
+            }
+        }
+    }
+
+    render(ctx, w, h, plot) {
+        this.updateDeleteSelectedBtn();
+        this.updateFloatingBadge();
+
+        const points = plot.data?.points || [];
+        if (points.length === 0) return;
+
+        const style = getComputedStyle(plot);
+        const accent = style.getPropertyValue("--delta-accent").trim() || "#4f46e5";
+        const textColor = style.getPropertyValue("--delta-color-text").trim() || "#222222";
+
+        for (const p of points) {
+            const pos = this.worldToScreen(p.x, p.y, plot);
+            const sx = pos.sx;
+            const sy = pos.sy;
+            const isSel = p.id === this.selectedId;
+            const isHov = p.id === this.hoverId;
+            const radius = 3 * (p.size || this.size);
+
+            // Selection halo
+            if (isSel) {
+                ctx.beginPath();
+                ctx.arc(sx, sy, radius + 6, 0, Math.PI * 2);
+                ctx.fillStyle = "rgba(79, 70, 229, 0.2)";
+                ctx.fill();
+                ctx.strokeStyle = accent;
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
+
+            // Point circle
+            ctx.beginPath();
+            ctx.arc(sx, sy, radius, 0, Math.PI * 2);
+            ctx.fillStyle = isSel ? accent : "#ffffff";
+            ctx.fill();
+            ctx.strokeStyle = isSel ? "#ffffff" : accent;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+    }
+}
+
 // Plot Component
 class DeltaPlot extends HTMLElement {
     connectedCallback() {
@@ -3396,13 +3965,13 @@ class DeltaPlot extends HTMLElement {
             this.resize(); this.render()
         }).observe(this.canvas);
 
-        this.bindGrab();
-        this.bindZoom();
-
         // Subcomponents bind
         for (const el of this.elements) {
             el.bind(this);
         }
+
+        this.bindGrab();
+        this.bindZoom();
     }
 
     render() {
@@ -3426,6 +3995,9 @@ class DeltaPlot extends HTMLElement {
         switch (this.typeAttr.toLowerCase()){
             case "scatter":
                 this.type = "scatter";
+                break;
+            case "points":
+                this.type = "points";
                 break;
             default:
                 this.type = "cartesian";
@@ -3471,6 +4043,9 @@ class DeltaPlot extends HTMLElement {
         this.xRange = parse_tuple(this.xAttr, 2, true);
         this.yRange = parse_tuple(this.yAttr, 2, true);
         this.userInteracted = false;
+
+        // Data dictionary for subcomponents
+        this.data = { points: [] };
     }
 
     instanceSubcomponents(){
@@ -3484,13 +4059,18 @@ class DeltaPlot extends HTMLElement {
 
         // Grid
         let gridEl = this.querySelector("delta-grid");
-        if((this.type === "cartesian" || this.type === "scatter") && !gridEl) gridEl = document.createElement("delta-grid");
+        if((this.type === "cartesian" || this.type === "scatter" || this.type === "points") && !gridEl) gridEl = document.createElement("delta-grid");
         if(gridEl) this.elements.push(gridEl);
 
         // Axis
         let axisEl = this.querySelector("delta-axis");
-        if((this.type === "cartesian" || this.type === "scatter") && !axisEl) axisEl = document.createElement("delta-axis");
+        if((this.type === "cartesian" || this.type === "scatter" || this.type === "points") && !axisEl) axisEl = document.createElement("delta-axis");
         if(axisEl) this.elements.push(axisEl);
+
+        // Points
+        let pointsEl = this.querySelector("delta-points");
+        if(this.type === "points" && !pointsEl) pointsEl = document.createElement("delta-points");
+        if(pointsEl) this.elements.push(pointsEl);
     }
 
     buildHeader() {
@@ -3587,6 +4167,7 @@ class DeltaPlot extends HTMLElement {
 
         this.canvas.addEventListener("pointerdown", (e) => {
             if (activePointerId !== null) return;
+            if (this.elements.some(el => el.isDraggingEntity && el.isDraggingEntity())) return;
             activePointerId = e.pointerId;
             isDragging = true;
             this.userInteracted = true;
@@ -3703,6 +4284,7 @@ class DeltaPlot extends HTMLElement {
 
 customElements.define("delta-grid", DeltaGrid);
 customElements.define("delta-axis", DeltaAxis);
+customElements.define("delta-points", DeltaPoints);
 customElements.define("delta-plot", DeltaPlot);
 </script>
 
