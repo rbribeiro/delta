@@ -662,8 +662,8 @@ class DeltaPlot extends HTMLElement {
         this.titleAttr = this.getAttribute("title") || "";
         this.grabAttr = this.getAttribute("grab") || "true";
         this.zoomAttr = this.getAttribute("zoom") || "true";
-        this.xAttr = this.getAttribute("x") || "";
-        this.yAttr = this.getAttribute("y") || "";
+        this.xAttr = this.getAttribute("x") || "-16,16";
+        this.yAttr = this.getAttribute("y") || "-9,9";
 
         this.configAttributes();
         this.instanceSubcomponents();
