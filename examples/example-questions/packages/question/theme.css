@@ -1,18 +1,97 @@
+/* definindo cores para o background-color condicionado ao theme-mode*/
+:root[theme-mode="dark"], 
+[theme-mode="dark"] {
+  --delta-adapted-bg: color-mix(in oklab, var(--delta-env-bg) 40%, var(--delta-accent)); /* Cor para o dark mode */
+}
+
+:root[theme-mode="light"], 
+[theme-mode="light"] {
+  --delta-adapted-bg: var(--delta-accent); /* Cor para o light mode*/
+}
+
 /* questão */
 delta-question {
   display: block;
-
-  background-color: color-mix(in oklab, var(--delta-accent-soft) 20%, var(--delta-env-bg));
-
-  /* Borda acompanha a paleta do documento */
-  border: var(--delta-hairline) solid color-mix(in oklab, var(--delta-accent-soft) 30%, var(--delta-rule));
-
-  border-radius:  var(--delta-radius-lg);
-  padding: 1.5rem;
-  margin: var(--delta-block-gap) 0;
-  box-shadow: var(--delta-shadow);
+  --delta-env-tone: var(--delta-tone-exercise, var(--delta-paper));
 }
 
+delta-question .box {
+  background-color: color-mix(in oklab, var(--delta-accent-soft) 20%, var(--delta-env-bg));
+  border-color: color-mix(in oklab, var(--delta-accent-soft) 30%, var(--delta-rule));
+  position: relative;
+}
+
+delta-question p {
+  margin: 0 0 1em 0;
+  line-height: 1.6;
+}
+
+delta-question p:last-of-type {
+  margin-bottom: 1.2rem;
+}
+
+/* alinhar na parte superior a tag da questão à esquerda e o cronômetro à direita */
+.delta-question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin: -30px 0 16px;
+  gap: 12px;
+}
+
+.delta-question-header .box-tag {
+  margin: 0 !important;
+}
+
+/* Força o cronômetro para o canto direito oposto */
+.delta-timer-display {
+  margin-left: auto !important;
+  /* Copia o estilo exato da box-tag (.box-tag) */
+  display: block;
+  width: fit-content;
+  font-family: var(--delta-sans);
+  font-size: 10.5px;
+  line-height: 1.35;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-radius: var(--delta-radius-sm);
+  border: var(--delta-hairline) solid var(--delta-env-tag-border);
+  padding: 2px 9px;
+  
+  /* Cores customizadas solicitadas */
+  background-color: var(--delta-adapted-bg);
+  color: var(--delta-ink);
+}
+
+/* Cronômetro após a questão ser respondida */
+delta-question[answered="true"] .delta-timer-display {
+  opacity: 0.9;
+}
+
+/* Container do conteúdo que ganha espaçamento para afastar o botão da tag */
+.delta-question-content {
+  margin-top: 1rem; /* Dá espaço para o botão não ficar colado na tag superior */
+}
+
+/* Botão de iniciar questão */
+.delta-start-btn {
+  background-color: var(--delta-adapted-bg);
+  color: var(--delta-ink);
+  border: var(--delta-hairline) solid color-mix(in oklab, var(--delta-accent) 50%, var(--delta-env-bg));
+  padding: 10px 20px;
+  border-radius: var(--delta-radius-lg);
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: bold;
+  transition: opacity 0.2s ease;
+  display: block;
+  margin: 1.5rem auto 0.5rem auto; 
+}
+
+.delta-start-btn:hover {
+  opacity: 0.85;
+}
 
 /* alternativas */
 delta-option {
@@ -40,21 +119,9 @@ delta-question:not([answered]) delta-option:hover {
 }
 
 /* feedback após responder: */
-
-/* definindo cores para o background-color da alternativa correta condicionado ao theme-mode*/
-:root[theme-mode="dark"], 
-[theme-mode="dark"] {
-  --delta-correct-bg: color-mix(in oklab, var(--delta-env-bg) 40%, var(--delta-accent)); /* Cor para o dark mode */
-}
-
-:root[theme-mode="light"], 
-[theme-mode="light"] {
-  --delta-correct-bg: var(--delta-accent); /* Cor para o light mode*/
-}
-
 /* resposta correta*/
 delta-question[answered="true"] delta-option.correct {
-  background-color: var(--delta-correct-bg);
+  background-color: var(--delta-adapted-bg);
   border-color: color-mix(in oklab, var(--delta-accent) 90%, black);
   color: var(--delta-ink);
   opacity: 1;

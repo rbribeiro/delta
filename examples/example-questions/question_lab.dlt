@@ -1,4 +1,4 @@
-<document lang="pt-BR" type="paper" theme-accent="green" theme-mode="light">
+<document lang="pt-BR" type="paper" theme-accent="red" theme-mode="dark">
   <import src="./packages/question" />
 
   <title>Laboratório de testes do questionário</title>
@@ -24,9 +24,27 @@
   <section id="sec:testes">
     <title>Componente de Questões</title>
 
-    <p>Passe o mouse sobre as opções para testar o hover e clique para ver os estados de sucesso/erro.</p>
+    <p>As questões podem ser definidas da seguinte forma:</p>
+    <code lang="Delta">
+      <question timed="true" number="Questão 1" title="Derivadas Básicas" start-text="Iniciar Questão">
+        Qual a derivada de $x^2$?
+        <option>$x$</option>
+        <option correct="true">$2x$</option>
+      </question>
+    </code>
 
-    <question>
+    <itemize>
+    <item> timed="true": Habilita o modo cronometrado. A questão é ocultada inicialmente e exibe um botão para o usuário iniciar o tempo. </item>
+    <item> number="...": Define o número ou identificador da questão. </item>
+    <item> title="...": Define o título ou o assunto principal abordado, exibido ao lado do número. </item>
+    <item> start-text="...": Personaliza o texto do botão de início (trata a questão do idioma ou adicionar instruções). </item>
+    </itemize>
+
+    Passe o mouse sobre as opções para testar o hover e clique para ver os estados de sucesso/erro.
+
+    Inicie a questão para inicializar o cronômetro.
+
+    <question timed="true" number="Questão 1" title="Derivadas Básicas" start-text="Iniciar Questão">
       Qual a derivada de $x^2$?
       <option>$x$</option>
       <option correct="true">$2x$</option>
@@ -37,6 +55,7 @@
       <option>Clique nesta opção errada</option>
       <option correct="true">Para ver como o componente revela esta correta</option>
       <option>Outra opção errada</option>
+      <option>Mais uma opção errada</option>
     </question>
   </section>
 </document>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-accent="green" data-type="paper">
+<html lang="pt-BR" data-accent="red" data-mode="dark" data-type="paper">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -3067,21 +3067,100 @@ delta-tweaks .twk-toggle.is-on::after {
 
 </style>
 <style>
+/* definindo cores para o background-color condicionado ao theme-mode*/
+:root[theme-mode="dark"], 
+[theme-mode="dark"] {
+  --delta-adapted-bg: color-mix(in oklab, var(--delta-env-bg) 40%, var(--delta-accent)); /* Cor para o dark mode */
+}
+
+:root[theme-mode="light"], 
+[theme-mode="light"] {
+  --delta-adapted-bg: var(--delta-accent); /* Cor para o light mode*/
+}
+
 /* questão */
 delta-question {
   display: block;
-
-  background-color: color-mix(in oklab, var(--delta-accent-soft) 20%, var(--delta-env-bg));
-
-  /* Borda acompanha a paleta do documento */
-  border: var(--delta-hairline) solid color-mix(in oklab, var(--delta-accent-soft) 30%, var(--delta-rule));
-
-  border-radius:  var(--delta-radius-lg);
-  padding: 1.5rem;
-  margin: var(--delta-block-gap) 0;
-  box-shadow: var(--delta-shadow);
+  --delta-env-tone: var(--delta-tone-exercise, var(--delta-paper));
 }
 
+delta-question .box {
+  background-color: color-mix(in oklab, var(--delta-accent-soft) 20%, var(--delta-env-bg));
+  border-color: color-mix(in oklab, var(--delta-accent-soft) 30%, var(--delta-rule));
+  position: relative;
+}
+
+delta-question p {
+  margin: 0 0 1em 0;
+  line-height: 1.6;
+}
+
+delta-question p:last-of-type {
+  margin-bottom: 1.2rem;
+}
+
+/* alinhar na parte superior a tag da questão à esquerda e o cronômetro à direita */
+.delta-question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin: -30px 0 16px;
+  gap: 12px;
+}
+
+.delta-question-header .box-tag {
+  margin: 0 !important;
+}
+
+/* Força o cronômetro para o canto direito oposto */
+.delta-timer-display {
+  margin-left: auto !important;
+  /* Copia o estilo exato da box-tag (.box-tag) */
+  display: block;
+  width: fit-content;
+  font-family: var(--delta-sans);
+  font-size: 10.5px;
+  line-height: 1.35;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-radius: var(--delta-radius-sm);
+  border: var(--delta-hairline) solid var(--delta-env-tag-border);
+  padding: 2px 9px;
+  
+  /* Cores customizadas solicitadas */
+  background-color: var(--delta-adapted-bg);
+  color: var(--delta-ink);
+}
+
+/* Cronômetro após a questão ser respondida */
+delta-question[answered="true"] .delta-timer-display {
+  opacity: 0.9;
+}
+
+/* Container do conteúdo que ganha espaçamento para afastar o botão da tag */
+.delta-question-content {
+  margin-top: 1rem; /* Dá espaço para o botão não ficar colado na tag superior */
+}
+
+/* Botão de iniciar questão */
+.delta-start-btn {
+  background-color: var(--delta-adapted-bg);
+  color: var(--delta-ink);
+  border: var(--delta-hairline) solid color-mix(in oklab, var(--delta-accent) 50%, var(--delta-env-bg));
+  padding: 10px 20px;
+  border-radius: var(--delta-radius-lg);
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: bold;
+  transition: opacity 0.2s ease;
+  display: block;
+  margin: 1.5rem auto 0.5rem auto; 
+}
+
+.delta-start-btn:hover {
+  opacity: 0.85;
+}
 
 /* alternativas */
 delta-option {
@@ -3109,21 +3188,9 @@ delta-question:not([answered]) delta-option:hover {
 }
 
 /* feedback após responder: */
-
-/* definindo cores para o background-color da alternativa correta condicionado ao theme-mode*/
-:root[theme-mode="dark"], 
-[theme-mode="dark"] {
-  --delta-correct-bg: color-mix(in oklab, var(--delta-env-bg) 40%, var(--delta-accent)); /* Cor para o dark mode */
-}
-
-:root[theme-mode="light"], 
-[theme-mode="light"] {
-  --delta-correct-bg: var(--delta-accent); /* Cor para o light mode*/
-}
-
 /* resposta correta*/
 delta-question[answered="true"] delta-option.correct {
-  background-color: var(--delta-correct-bg);
+  background-color: var(--delta-adapted-bg);
   border-color: color-mix(in oklab, var(--delta-accent) 90%, black);
   color: var(--delta-ink);
   opacity: 1;
@@ -3159,7 +3226,7 @@ delta-question[answered="true"] delta-option {
 </style>
 </head>
 <body>
-<delta-document lang="pt-BR" type="paper" theme-accent="green" theme-mode="light">
+<delta-document lang="pt-BR" type="paper" theme-accent="red" theme-mode="dark">
   <delta-title>Laboratório de testes do questionário</delta-title><delta-toc> Sumário </delta-toc><delta-section id="sec:nativos" num="1">
     <delta-title>Componentes Nativos</delta-title><delta-p>Estes blocos usam as variáveis nativas do Delta. Irei utilizá-los como referências para estilizar as questões do Delta.</delta-p><delta-theorem id="thm:referencia" num="1.1">
       <delta-title>Bloco de Teorema</delta-title>
@@ -3167,7 +3234,17 @@ delta-question[answered="true"] delta-option {
     </delta-theorem><delta-code lang="python" num="1.1"><span class="hljs-keyword">def</span> <span class="hljs-title function_">binomial_square</span>(<span class="hljs-params">a, b</span>):
     <span class="hljs-keyword">return</span> a**<span class="hljs-number">2</span> + <span class="hljs-number">2</span>*a*b + b**<span class="hljs-number">2</span></delta-code>
   </delta-section><delta-section id="sec:testes" num="2">
-    <delta-title>Componente de Questões</delta-title><delta-p>Passe o mouse sobre as opções para testar o hover e clique para ver os estados de sucesso/erro.</delta-p><delta-question>
+    <delta-title>Componente de Questões</delta-title><delta-p>As questões podem ser definidas da seguinte forma:</delta-p>
+    <delta-code lang="Delta" num="2.2">&lt;question timed="true" number="Questão 1" title="Derivadas Básicas" start-text="Iniciar Questão"&gt;
+  Qual a derivada de $x^2$?
+  &lt;option&gt;$x$&lt;/option&gt;
+  &lt;option correct="true"&gt;$2x$&lt;/option&gt;
+&lt;/question&gt;</delta-code><delta-itemize>
+    <delta-item> timed="true": Habilita o modo cronometrado. A questão é ocultada inicialmente e exibe um botão para o usuário iniciar o tempo. </delta-item>
+    <delta-item> number="...": Define o número ou identificador da questão. </delta-item>
+    <delta-item> title="...": Define o título ou o assunto principal abordado, exibido ao lado do número. </delta-item>
+    <delta-item> start-text="...": Personaliza o texto do botão de início (trata a questão do idioma ou adicionar instruções). </delta-item>
+    </delta-itemize>Passe o mouse sobre as opções para testar o hover e clique para ver os estados de sucesso/erro.<br><br>Inicie a questão para inicializar o cronômetro.<delta-question timed="true" number="Questão 1" title="Derivadas Básicas" start-text="Iniciar Questão">
       Qual a derivada de <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>x</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">x^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span>?
       <delta-option><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi></mrow><annotation encoding="application/x-tex">x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">x</span></span></span></span></delta-option>
       <delta-option correct="true"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mi>x</mi></mrow><annotation encoding="application/x-tex">2x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">2</span><span class="mord mathnormal">x</span></span></span></span></delta-option>
@@ -3176,6 +3253,7 @@ delta-question[answered="true"] delta-option {
       <delta-option>Clique nesta opção errada</delta-option>
       <delta-option correct="true">Para ver como o componente revela esta correta</delta-option>
       <delta-option>Outra opção errada</delta-option>
+      <delta-option>Mais uma opção errada</delta-option>
     </delta-question>
   </delta-section>
 </delta-document>
@@ -3191,16 +3269,15 @@ delta-question[answered="true"] delta-option {
 /*
 Esse componente funciona a partir da definição de um bloco de quiz:
 
-    <quiz-block>
-      Qual a derivada de $x^2$
-      <quiz-option>$x$</quiz-option>
-      <quiz-option correct="true">$2x$</quiz-option>
-    </quiz-block>
+    <question timed="true" number="1" title="Derivadas Básicas" start-text="Iniciar Questão">
+      Qual a derivada de $x^2$?
+      <option>$x$</option>
+      <option correct="true">$2x$</option>
+    </question>
 
 As alternativas devem ser definidas e a alternativa correta ser apontada por:
 correct="true"
 */
-
 
 customElements.define(
     'delta-option',
@@ -3225,6 +3302,11 @@ customElements.define(
             // Marca a questão como respondida para bloquear novos cliques
             if (parentBlock) {
                 parentBlock.setAttribute('answered', 'true');
+
+                // parar o cronômetro, caso a questão tenha um
+                if (typeof parentBlock.stopTimer === 'function'){
+                    parentBlock.stopTimer();
+                }
             }});
         }
     }
@@ -3232,7 +3314,108 @@ customElements.define(
 
 customElements.define(
     'delta-question',
-    class extends HTMLElement {}
+    class extends HTMLElement {
+        connectedCallback() {
+            if (this.hasAttribute('initialized')) return;
+            this.setAttribute('initialized', 'true');
+
+            const isTimed = this.getAttribute('timed') === 'true'; // definir se o timer será usado
+            const qNumber = this.getAttribute('number'); // identificador da questão
+            const qTitle = this.getAttribute('title'); // conteúdo da questão/título
+
+            const customStartText = this.getAttribute('start-text') || 'Iniciar Questão';
+
+            const boxElement = document.createElement('div');
+            boxElement.className = 'box delta-question-box';
+
+            // Cria o cabeçalho com número, título ou cronômetro se forem definidos pelo usuário
+            if (qNumber || qTitle || isTimed) {
+                const header = document.createElement('div');
+                header.className = 'delta-question-header';
+
+                if (qNumber || qTitle) {
+                    const tagElement = document.createElement('div');
+                    tagElement.className = 'box-tag';
+                    let tagText = qNumber ? `${qNumber}` : ' '; // retirando o texto padrão devido a questão da linguagem
+                    if (qTitle) {
+                        tagText += ` <span class="box-tag-title">${qTitle}</span>`;
+                    }
+                    tagElement.innerHTML = tagText;
+                    header.appendChild(tagElement);
+                }
+
+                if (isTimed) {
+                    this.timeDisplay = document.createElement('div');
+                    this.timeDisplay.className = 'delta-timer-display';
+                    this.timeDisplay.style.display = 'none'; // Escondido até iniciar
+                    this.timeDisplay.textContent = '⏱ 00:00';
+                    header.appendChild(this.timeDisplay);
+                }
+
+                boxElement.appendChild(header);
+            }
+
+            const contentContainer = document.createElement('div');
+            contentContainer.className = 'delta-question-content';
+
+            if (isTimed) {
+                const innerContent = document.createElement('div');
+                innerContent.style.display = 'none';
+
+                while (this.firstChild) {
+                    innerContent.appendChild(this.firstChild);
+                }
+
+                this.startButton = document.createElement('button');
+                this.startButton.textContent = customStartText; // Usa o texto customizado
+                this.startButton.className = 'delta-start-btn'; // botão para iniciar a questão
+                
+                contentContainer.appendChild(this.startButton);
+                contentContainer.appendChild(innerContent);
+
+                this.startButton.addEventListener('click', () => {
+                    this.startButton.style.display = 'none';
+                    if (this.timeDisplay) {
+                        this.timeDisplay.style.display = 'block';
+                    }
+                    innerContent.style.display = 'block';
+
+                    // cronometrando o tempo:
+                    this.startTime = Date.now();
+                    this.timerInterval = setInterval(() => {
+                        this.updateTimerDisplay();
+                    }, 1000);
+                });
+            } else {
+                while (this.firstChild) {
+                    contentContainer.appendChild(this.firstChild);
+                }
+            }
+            boxElement.appendChild(contentContainer);
+            this.appendChild(boxElement);
+        }
+
+        disconnectedCallback() {
+            this.stopTimer();
+        }
+
+        updateTimerDisplay() {
+            if (!this.startTime) return;
+            const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+            const minutes = String(Math.floor(elapsed / 60)).padStart(2, '0');
+            const seconds = String(elapsed % 60).padStart(2, '0');
+            if (this.timeDisplay) {
+                this.timeDisplay.textContent = `⏱ ${minutes}:${seconds}`;
+            }
+        }
+
+        stopTimer() {
+            if (this.timerInterval) {
+                clearInterval(this.timerInterval);
+                this.timerInterval = null;
+            }
+        }
+    }
 );
 </script>
 
