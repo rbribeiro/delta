@@ -1,0 +1,152 @@
+<document id="p-apresentacoes" theme="tema.css">
+  <title>Apresentações · Delta</title>
+
+  <floating>
+    <title>Navegação</title>
+    <toc scope="project" depth="1"/>
+  </floating>
+
+  <section id="apresentacoes">
+    <eyebrow>Referência</eyebrow>
+    <title>Apresentações</title>
+    <intro>
+      Trocando o tipo do documento para <c>presentation</c>, o mesmo arquivo vira
+      uma sequência de slides navegável por teclado, toque ou clique, ainda num
+      único HTML offline. Teoremas, matemática e referências continuam funcionando
+      exatamente como no artigo.
+    </intro>
+
+    <toc/>
+
+    <subsection id="sobre-tipo-presentation">
+      <title>Ligando o modo apresentação</title>
+
+      <code lang="xml" numbered="false">
+<document type="presentation" lang="pt-BR">
+  ...
+</document>
+      </code>
+
+      A partir daí cada <c><slide></c> vira uma página da apresentação, e as setas
+      do teclado navegam. Uma barra no rodapé traz os controles, para quem estiver
+      no celular.
+    </subsection>
+
+    <subsection id="tag-cover">
+      <title>&lt;cover&gt;</title>
+
+      O slide de abertura. É filho direto de <c><document></c> e organiza os
+      campos de identificação da palestra. Os dados de autoria também alimentam a
+      faixa discreta que aparece no topo dos demais slides.
+
+      <table numbered="false">
+        <header>
+          <column>Filho</column>
+          <column>Para quê</column>
+        </header>
+        <row><column mono="true">title</column><column>O título da palestra</column></row>
+        <row><column mono="true">subtitle</column><column>O subtítulo</column></row>
+        <row><column mono="true">author</column><column>Quem apresenta</column></row>
+        <row><column mono="true">affiliation</column><column>Instituição</column></row>
+        <row><column mono="true">event</column><column>O evento ou a ocasião</column></row>
+        <row><column mono="true">date</column><column>A data</column></row>
+      </table>
+
+      <code lang="xml" numbered="false">
+<cover>
+  <title>Compacidade em espaços métricos</title>
+  <subtitle>Uma introdução geométrica</subtitle>
+  <author>Ana Ribeiro</author>
+  <affiliation>UFMG</affiliation>
+  <event>Seminário de Análise</event>
+  <date>12 de março de 2026</date>
+</cover>
+      </code>
+    </subsection>
+
+    <subsection id="tag-slide">
+      <title>&lt;slide&gt;</title>
+
+      Um slide. O <c><title></c> filho é o cabeçalho; o resto do conteúdo segue
+      abaixo. Dentro de um slide você usa as mesmas tags de sempre: listas,
+      equações, teoremas, figuras.
+
+      <code lang="xml" numbered="false">
+<slide>
+  <title>O teorema principal</title>
+  <theorem id="thm:heine">
+    Um subconjunto de <m>\mathbb{R}^n</m> é compacto se, e somente se,
+    é fechado e limitado.
+  </theorem>
+</slide>
+      </code>
+
+      <box type="tip">
+        <title>Seções viram slides divisores</title>
+        Uma <c><section></c> numa apresentação não desenha caixa: o título dela
+        vira um slide de transição, centralizado e em cor invertida, e os slides
+        que ela contém seguem normalmente. É como o <c>\section</c> do Beamer.
+      </box>
+    </subsection>
+
+    <subsection id="sobre-reveal">
+      <title>Revelação por etapas</title>
+
+      Para mostrar um slide em partes, marque os elementos com <c>reveal</c>. Cada
+      um aparece a um avanço, antes de passar ao próximo slide.
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">reveal</column>
+          <column mono="true">true</column>
+          <column>Este elemento só aparece após um avanço</column>
+        </row>
+        <row>
+          <column mono="true">reveal-order</column>
+          <column mono="true">número</column>
+          <column>Força a ordem de aparição</column>
+        </row>
+        <row>
+          <column mono="true">animated</column>
+          <column mono="true">true</column>
+          <column>Atalho: marca todos os filhos do elemento para revelação</column>
+        </row>
+      </table>
+
+      <code lang="xml" numbered="false">
+<slide>
+  <title>Três consequências</title>
+  <list animated="true">
+    <item>A primeira aparece sozinha,</item>
+    <item>depois a segunda,</item>
+    <item>e por fim a terceira.</item>
+  </list>
+</slide>
+      </code>
+
+      O <c>animated="true"</c> poupa marcar item por item: ele marca cada filho do
+      elemento, sem tocar em títulos e sem sobrescrever um <c>reveal</c> que você
+      já tenha escrito à mão.
+    </subsection>
+
+    <subsection id="tag-progress">
+      <title>&lt;progress&gt;</title>
+
+      Uma tag vazia que liga a barra de progresso da apresentação. Coloque-a uma
+      vez, em qualquer lugar do documento.
+
+      <code lang="xml" numbered="false">
+<progress/>
+      </code>
+    </subsection>
+  </section>
+
+  <footer>
+    Feito com ❤️ em Delta no IMPA Tech.
+  </footer>
+</document>

@@ -1,0 +1,118 @@
+/* tema.css: a folha do site do Delta.
+ *
+ * Este arquivo é inlinado POR ÚLTIMO e SEM @layer, então vence tudo: o design
+ * system do core, a camada do tipo de documento e até o CSS do KaTeX. Por isso
+ * toda regra aqui é escopada por um elemento `delta-*`, um `#id` ou uma
+ * `.classe` do autor, porque um seletor solto como `a` ou `table` desarranjaria a
+ * matemática renderizada.
+ *
+ * Regra de ouro: re-valorar tokens `--delta-*` em vez de fixar cores, para que
+ * `theme-accent` e `theme-mode` continuem funcionando.
+ */
+
+/* ── Medidas ───────────────────────────────────────────────────────────────
+   O core reserva uma faixa à direita para notas de margem, o que empurra o
+   texto para a esquerda. Um site de documentação quase não usa nota de margem
+   e tem tabelas de atributos largas, então a faixa encolhe e a medida cresce. */
+:root {
+  --delta-measure: 78ch;
+  --delta-margin-w: 6ch;
+  --delta-page-max: 1080px;
+}
+
+/* ── A marca do site ───────────────────────────────────────────────────────
+   O <title> do documento é o nome da aba e também é impresso no topo da
+   página. Aqui ele deixa de ser um título de artigo e vira a assinatura
+   discreta do site, para não competir com o título da própria página. */
+delta-document > delta-title {
+  display: block;
+  font-family: var(--delta-sans, var(--delta-serif));
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  color: var(--delta-accent-ink);
+  margin: 0 0 2.5rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--delta-rule, rgba(0, 0, 0, 0.12));
+}
+
+/* ── Entradas do catálogo ──────────────────────────────────────────────────
+   O catálogo usa dois prefixos de id, e a diferença é de conteúdo: `tag-` é a
+   entrada de uma tag da linguagem, `sobre-` é uma explicação em prosa. Ambas
+   ganham a régua que separa uma entrada da seguinte. */
+delta-subsection[id^="tag-"] > .sub,
+delta-subsection[id^="tag-"] > h3,
+delta-subsection[id^="sobre-"] > .sub,
+delta-subsection[id^="sobre-"] > h3 {
+  margin-top: 2.8rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--delta-rule, rgba(0, 0, 0, 0.1));
+}
+
+/* Só o título que É o nome de uma tag vai em monoespaçada: ali ele é código,
+   não prosa. */
+delta-subsection[id^="tag-"] > .sub,
+delta-subsection[id^="tag-"] > h3 {
+  font-family: var(--delta-mono);
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+}
+
+/* O guia de início e a página inicial são narrativos: sem réguas de catálogo. */
+delta-subsection[id^="passo-"] > .sub,
+delta-subsection[id^="passo-"] > h3,
+delta-subsection[id^="inicio-"] > .sub,
+delta-subsection[id^="inicio-"] > h3 {
+  border-top: 0;
+  padding-top: 0;
+  margin-top: 2.4rem;
+}
+
+/* ── Tabelas de atributos ──────────────────────────────────────────────────
+   Densas e cheias de identificadores: um corpo menor cabe melhor. */
+delta-table .t {
+  font-size: 0.92em;
+}
+
+/* ── Referências ───────────────────────────────────────────────────────────
+   Boa parte dos links deste site aponta para uma seção sem número, e sem
+   número o gatilho fica visualmente apagado. Aqui ele volta a parecer link. */
+delta-ref .ref,
+delta-ref button {
+  color: var(--delta-accent-ink);
+  font-weight: 500;
+}
+
+/* ── Blocos de código ──────────────────────────────────────────────────────
+   O site é feito de exemplos; um respiro maior em volta deles ajuda a leitura. */
+delta-code {
+  margin-block: 1.6rem;
+}
+
+/* ── Colunas de destaque da página inicial ─────────────────────────────────
+   As caixas em duas colunas devem ter a mesma altura e não espremer o texto. */
+#inicio-principios delta-columns {
+  align-items: stretch;
+  margin-block: 1.2rem;
+}
+#inicio-principios delta-box {
+  height: 100%;
+}
+
+/* ── Rodapé ────────────────────────────────────────────────────────────────
+   `<footer>` não é uma tag do Delta: o compilador não tem lista fechada de
+   tags, então ela atravessa como <delta-footer> inerte e o estilo é todo
+   daqui. Vale para um rodapé, que não precisa de comportamento nenhum. */
+delta-footer {
+  display: block;
+  margin-top: 4rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--delta-rule, rgba(0, 0, 0, 0.12));
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+  text-align: center;
+  color: var(--delta-ink-soft, var(--delta-ink));
+  opacity: 0.75;
+}

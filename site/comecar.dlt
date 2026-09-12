@@ -1,0 +1,174 @@
+<document id="p-comecar" theme="tema.css">
+  <title>Primeiros passos · Delta</title>
+
+  <floating>
+    <title>Navegação</title>
+    <toc scope="project" depth="1"/>
+  </floating>
+
+  <section id="comecar">
+    <eyebrow>Guia</eyebrow>
+    <title>Primeiros passos</title>
+    <intro>
+      Do zero a um documento compilado e aberto no navegador. Leva alguns minutos,
+      e no fim você terá um arquivo HTML que pode mandar por e-mail, colocar num
+      pendrive ou abrir num computador sem internet. Ele funciona sozinho.
+    </intro>
+
+    <toc/>
+
+    <subsection id="passo-node">
+      <title>Instalar o Node.js</title>
+
+      O Delta é um programa de linha de comando que roda sobre o
+      <link to="https://nodejs.org">Node.js</link>. Instale a versão LTS para o seu
+      sistema; ela já vem com o <c>npm</c>, que é o instalador que usaremos em
+      seguida.
+
+      Para conferir se deu certo, abra o terminal e peça a versão. É preciso Node
+      20 ou mais novo:
+
+      <code lang="bash" numbered="false">
+node --version
+      </code>
+    </subsection>
+
+    <subsection id="passo-delta">
+      <title>Instalar o Delta</title>
+
+      <code lang="bash" numbered="false">
+npm install -g delta-lang
+      </code>
+
+      O pacote se chama <c>delta-lang</c> porque o nome <c>delta</c> já estava
+      ocupado no npm, mas o comando instalado é <c>delta</c> mesmo. Confira:
+
+      <code lang="bash" numbered="false">
+delta
+      </code>
+
+      Você deve ver o resumo de uso, com os comandos <c>build</c>, <c>create</c> e
+      <c>install</c>.
+    </subsection>
+
+    <subsection id="passo-documento">
+      <title>Escrever o primeiro documento</title>
+
+      Crie um arquivo chamado <c>artigo.dlt</c> com este conteúdo:
+
+      <code lang="xml">
+<document lang="pt-BR" type="article" theme-accent="green">
+  <title>Meu primeiro documento</title>
+
+  <section id="sec:intro">
+    <title>Introdução</title>
+
+    Matemática no meio da frase funciona como no LaTeX: $e^{i\pi} + 1 = 0$.
+    Sinais de menor e maior são livres dentro dela, como em $a < b$.
+
+    <theorem id="thm:pitagoras">
+      <title>Teorema de Pitágoras</title>
+      Em todo triângulo retângulo de catetos $a$ e $b$ e hipotenusa $c$,
+      <equation id="eq:pitagoras">a^2 + b^2 = c^2</equation>
+    </theorem>
+
+    A demonstração de <ref to="thm:pitagoras"/> fica como exercício.
+  </section>
+</document>
+      </code>
+
+      Vale reparar em quatro coisas:
+
+      <list marker="number">
+        <item>
+          <b>Todo atributo tem valor entre aspas.</b> Delta é XML estrito: escreva
+          <c>numbered="false"</c>, nunca <c>numbered</c> sozinho.
+        </item>
+        <item>
+          <b>Você não numera nada.</b> O teorema virará "Teorema 1.1" e a equação
+          "(1.1)" sozinhos, e a contagem se ajusta se você inserir outro teorema
+          antes.
+        </item>
+        <item>
+          <b>A referência se escreve pelo <c>id</c>.</b> O texto "Teorema 1.1" no
+          link é montado na compilação; você nunca digita o número.
+        </item>
+        <item>
+          <b>Fora da matemática, use entidades.</b> No texto comum, um sinal de
+          menor se escreve <c>&lt;</c>; dentro dos cifrões, ele pode ser digitado
+          direto.
+        </item>
+      </list>
+    </subsection>
+
+    <subsection id="passo-compilar">
+      <title>Compilar</title>
+
+      <code lang="bash" numbered="false">
+delta build artigo.dlt -o artigo.html
+      </code>
+
+      Abra o <c>artigo.html</c> no navegador, clicando duas vezes no arquivo
+      mesmo, sem servidor nenhum. Você deve ver o título, a seção numerada, a
+      fórmula renderizada e o teorema numa caixa. Clique na referência ao final: ela
+      abre uma prévia do teorema e oferece um botão para saltar até ele.
+
+      <box type="tip">
+        <title>Deixe o compilador rodando enquanto escreve</title>
+        Com <c>--watch</c>, o Delta recompila a cada vez que você salva, e não só
+        quando o <c>.dlt</c> muda, mas também quando muda o tema, uma imagem ou a
+        bibliografia. Basta recarregar a página do navegador.
+        <code lang="bash" numbered="false">
+delta build artigo.dlt -o artigo.html --watch
+        </code>
+      </box>
+    </subsection>
+
+    <subsection id="passo-erros">
+      <title>Quando algo dá errado</title>
+
+      O Delta distingue dois tipos de problema, e a diferença importa:
+
+      <list marker="dash">
+        <item>
+          <b>Erros</b> interrompem a compilação. São problemas de estrutura: XML
+          malformado, atributo sem aspas, um <c><include></c> apontando para um
+          arquivo que não existe.
+        </item>
+        <item>
+          <b>Avisos</b> não interrompem nada: o documento compila do mesmo jeito.
+          São coisas que ficaram pela metade: uma referência a um <c>id</c> que
+          não existe, uma imagem que não foi encontrada, uma fórmula com erro de
+          LaTeX, um cifrão desemparelhado.
+        </item>
+      </list>
+
+      Por isso vale ler a saída do comando mesmo quando ele termina bem: um
+      documento pode compilar com sucesso e ainda assim ter uma referência mostrando
+      <c>??</c>.
+    </subsection>
+
+    <subsection id="passo-adiante">
+      <title>Para onde ir agora</title>
+
+      <list marker="dash">
+        <item>
+          A referência da linguagem, tag por tag, começa em
+          <ref to="estrutura">Estrutura</ref> e segue por <ref to="matematica">Matemática</ref>,
+          <ref to="ambientes">Ambientes</ref> e <ref to="layout">Prosa e layout</ref>.
+        </item>
+        <item>
+          Para escrever um livro em vários arquivos, ou uma apresentação, veja
+          <ref to="projetos">Projetos multi-arquivo</ref> e <ref to="apresentacoes">Apresentações</ref>.
+        </item>
+        <item>
+          Para mudar a aparência ou criar tags suas, veja <ref to="temas">Temas e pacotes</ref>.
+        </item>
+      </list>
+    </subsection>
+  </section>
+
+  <footer>
+    Feito com ❤️ em Delta no IMPA Tech.
+  </footer>
+</document>

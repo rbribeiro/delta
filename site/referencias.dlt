@@ -1,0 +1,145 @@
+<document id="p-referencias" theme="tema.css">
+  <title>Referências e citações · Delta</title>
+
+  <floating>
+    <title>Navegação</title>
+    <toc scope="project" depth="1"/>
+  </floating>
+
+  <section id="referencias">
+    <eyebrow>Referência</eyebrow>
+    <title>Referências e citações</title>
+    <intro>
+      Apontar para um teorema de três páginas atrás e citar um artigo. Nos dois
+      casos o Delta resolve o alvo na compilação e embarca uma cópia dele na
+      página, para que a prévia funcione sem rede.
+    </intro>
+
+    <toc/>
+
+    <subsection id="tag-ref">
+      <title>&lt;ref&gt;</title>
+
+      Uma referência cruzada. O texto do link, "Teorema 3.1", é montado a partir
+      do alvo, com o rótulo no idioma do documento. Clicar abre uma prévia do alvo
+      e oferece um botão para saltar até ele.
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">to</column>
+          <column mono="true">id</column>
+          <column>O <c>id</c> do alvo. Obrigatório</column>
+        </row>
+      </table>
+
+      <code lang="xml" numbered="false">
+Como vimos em <ref to="thm:bolzano"/>, a sequência converge.
+
+<!-- com texto próprio, no lugar do rótulo automático: -->
+Veja <ref to="thm:bolzano">o resultado central</ref>.
+      </code>
+
+      <box type="note">
+        <title>A prévia não usa rede</title>
+        Na compilação, cada alvo referenciado é copiado para dentro do arquivo, num
+        bloco inerte. É por isso que a prévia abre instantaneamente e continua
+        funcionando com o documento salvo num pendrive.
+      </box>
+    </subsection>
+
+    <subsection id="tag-bibliography">
+      <title>&lt;bibliography&gt; e &lt;paper&gt;</title>
+
+      O banco de artigos. Pode ser escrito direto no documento, como filhos de
+      <c><bibliography></c>, ou mantido num arquivo <c>.ref</c> separado e carregado
+      pelo atributo <c>src</c>.
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">src</column>
+          <column mono="true">arquivo.ref</column>
+          <column>Carrega o banco de um arquivo, relativo ao documento</column>
+        </row>
+      </table>
+
+      Um <c>.ref</c> é XML estrito com raiz <c><bibliography></c>. Os campos
+      reconhecidos de cada <c><paper></c> são <c>author</c>, <c>title</c>,
+      <c>journal</c>, <c>year</c> e <c>link</c> (ou <c>url</c>).
+
+      <code lang="xml" numbered="false">
+<bibliography>
+  <paper id="ARS10">
+    <author>Alon, N. and Rödl, V. and Sudakov, B.</author>
+    <title>Maximum cuts and judicious partitions</title>
+    <journal>Combinatorica</journal>
+    <year>2010</year>
+  </paper>
+</bibliography>
+      </code>
+
+      No documento, basta declarar de onde vem o banco:
+
+      <code lang="xml" numbered="false">
+<bibliography src="refs.ref"/>
+      </code>
+
+      <box type="tip">
+        <title>Só o que é citado aparece</title>
+        A bibliografia impressa lista apenas os artigos efetivamente citados, na
+        ordem em que aparecem pela primeira vez. Você pode manter um <c>.ref</c>
+        enorme e compartilhado entre vários documentos sem poluir nenhum deles.
+      </box>
+    </subsection>
+
+    <subsection id="tag-cite">
+      <title>&lt;cite&gt;</title>
+
+      A citação no texto, numerada por ordem de primeira aparição. Passar o mouse
+      mostra os dados do artigo.
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">paper</column>
+          <column mono="true">id</column>
+          <column>Cita um artigo: <c>[1]</c></column>
+        </row>
+        <row>
+          <column mono="true">papers</column>
+          <column mono="true">id1,id2</column>
+          <column>Cita vários de uma vez: <c>[1, 2]</c></column>
+        </row>
+      </table>
+
+      <code lang="xml" numbered="false">
+O resultado é devido a <cite paper="ARS10"/>, e foi estendido
+em trabalhos posteriores <cite papers="KL98,ARS10"/>.
+      </code>
+
+      <box type="warning">
+        <title>É a única tag que não usa "to"</title>
+        Referências usam <c>to</c>; citações usam <c>paper</c> ou <c>papers</c>.
+        Citar um <c>id</c> inexistente, ou citar sem haver bibliografia no
+        documento, gera aviso e a citação fica inerte.
+      </box>
+    </subsection>
+  </section>
+
+  <footer>
+    Feito com ❤️ em Delta no IMPA Tech.
+  </footer>
+</document>
