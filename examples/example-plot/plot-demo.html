@@ -3357,7 +3357,7 @@ delta-plot:focus-visible,
 <script>
 /* pack: plot */
 // Auxiliary Functions
-function parse_tuple(tuple, k = 0, numbers = true) {
+function parseTuple(tuple, k = 0, numbers = true) {
     if (tuple == null) return null;
     const parts = tuple.split(',');
     if (k > 0 && parts.length !== k) {
@@ -3384,7 +3384,7 @@ function getNiceStep(targetStep) {
     return pow10;
 }
 
-function format_number(val) {
+function formatNumber(val) {
     if (Math.abs(val) < 1e-10) return "0";
     return parseFloat(val.toFixed(6)).toString();
 }
@@ -3442,13 +3442,13 @@ class DeltaAxis extends HTMLElement {
                     ctx.textBaseline = "bottom";
                     if (sx < 25) {
                         ctx.textAlign = "left";
-                        ctx.fillText(format_number(val), Math.max(4, sx), textY);
+                        ctx.fillText(formatNumber(val), Math.max(4, sx), textY);
                     } else if (sx > w - 25) {
                         ctx.textAlign = "right";
-                        ctx.fillText(format_number(val), Math.min(w - 4, sx), textY);
+                        ctx.fillText(formatNumber(val), Math.min(w - 4, sx), textY);
                     } else {
                         ctx.textAlign = "center";
-                        ctx.fillText(format_number(val), sx, textY);
+                        ctx.fillText(formatNumber(val), sx, textY);
                     }
                 }
             }
@@ -3470,13 +3470,13 @@ class DeltaAxis extends HTMLElement {
                     ctx.textAlign = "left";
                     if (sy < 16) {
                         ctx.textBaseline = "top";
-                        ctx.fillText(format_number(val), textX, 4);
+                        ctx.fillText(formatNumber(val), textX, 4);
                     } else if (sy > h - 22) {
                         ctx.textBaseline = "bottom";
-                        ctx.fillText(format_number(val), textX, h - 18);
+                        ctx.fillText(formatNumber(val), textX, h - 18);
                     } else {
                         ctx.textBaseline = "middle";
-                        ctx.fillText(format_number(val), textX, sy);
+                        ctx.fillText(formatNumber(val), textX, sy);
                     }
                 }
             }
@@ -3740,7 +3740,7 @@ class DeltaPoints extends HTMLElement {
             this.floatingBadge.style.left = `${badgeX}px`;
             this.floatingBadge.style.top = `${badgeY}px`;
             if (this.floatingBadgeCoords) {
-                this.floatingBadgeCoords.textContent = `(${format_number(p.x)}, ${format_number(p.y)})`;
+                this.floatingBadgeCoords.textContent = `(${formatNumber(p.x)}, ${formatNumber(p.y)})`;
             }
         } else {
             this.floatingBadge.style.display = "none";
@@ -4120,7 +4120,7 @@ class DeltaPlot extends HTMLElement {
             this.maxZoom = 4;
         } else {
             this.zoomEnabled = true;
-            const tuple = parse_tuple(this.zoomAttr, 2, true);
+            const tuple = parseTuple(this.zoomAttr, 2, true);
             if (tuple && tuple[0] > 0 && tuple[1] >= tuple[0]) {
                 this.minZoom = tuple[0];
                 this.maxZoom = tuple[1];
@@ -4138,8 +4138,8 @@ class DeltaPlot extends HTMLElement {
         this.maxZoomY = this.maxZoom;
 
         // Visible range bounds (X and Y)
-        this.xRange = parse_tuple(this.xAttr, 2, true);
-        this.yRange = parse_tuple(this.yAttr, 2, true);
+        this.xRange = parseTuple(this.xAttr, 2, true);
+        this.yRange = parseTuple(this.yAttr, 2, true);
         this.userInteracted = false;
 
         // Data dictionary for subcomponents
