@@ -68,6 +68,17 @@ See [ROADMAP.md](ROADMAP.md) for what's done and what's next.
 
 ## Documentation
 
+**For writing documents** — the user-facing docs are in **Portuguese**, and they are
+written in Delta itself: the sources are in [site/](site/) and compile to the published
+site in `docs/` (`npm run docs`). Start at [docs/index.html](docs/index.html), or read
+the sources directly — [site/comecar.dlt](site/comecar.dlt) is the getting-started guide
+and the tag reference begins at [site/estrutura.dlt](site/estrutura.dlt).
+
+- **[docs/TUTORIAL_COMPONENTES.md](docs/TUTORIAL_COMPONENTES.md)** (pt-BR) — building a
+  custom component end to end, the entry point to the package system.
+
+**For working on the compiler** (English):
+
 - **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** — how the compiler works: the
   pipeline traced end-to-end, the three core concepts (AST, context, environments
   table), and the compile-time/runtime split. Start here to understand the repo.
@@ -77,6 +88,9 @@ See [ROADMAP.md](ROADMAP.md) for what's done and what's next.
   chapter-by-chapter walk through every compiler pass and the context it threads.
 - **[docs/BUILDING.md](docs/BUILDING.md)** — the build: the generated assets, the CLI
   bundle, and every npm script.
+- **[docs/PACKAGES.md](docs/PACKAGES.md)** and
+  **[docs/AUTHORING_PACKAGES.md](docs/AUTHORING_PACKAGES.md)** — the package system:
+  its design, and the reference for authoring one.
 - **[ROADMAP.md](ROADMAP.md)** — planned features in dependency order.
 
 ## Authoring notes (strict XML)

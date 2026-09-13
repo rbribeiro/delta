@@ -1,0 +1,141 @@
+<document id="p-inicio" theme="tema.css">
+
+  <floating>
+    <title>Navegação</title>
+    <toc scope="project" depth="1"/>
+  </floating>
+
+  <section id="inicio">
+    <eyebrow>Uma linguagem de marcação para quem escreve matemática</eyebrow>
+    <title>Artigos podem ser melhores.</title>
+    <intro>
+      O PDF congelou o artigo científico na forma que ele tinha no papel. A web já
+      tem tudo de que um texto matemático precisa, só faltava uma linguagem que
+      fosse tão confortável quanto o LaTeX! <em>Delta</em> compila um arquivo <c>.dlt</c>
+      num único HTML que é distribuível e que funciona offline.
+    </intro>
+
+    <box type="note">
+      <title>Esta documentação foi feita em Delta</title>
+      Cada página deste site é um arquivo <c>.dlt</c> compilado pelo próprio Delta.
+      O sumário no canto, os blocos de código, as caixas como esta e os teoremas de
+      exemplo não são imitações: são a linguagem se documentando. Os fontes estão em
+      <c>site/</c>, no repositório.
+    </box>
+
+    <subsection id="inicio-instalar">
+      <title>Comece em três linhas</title>
+
+      <code lang="bash" numbered="false">
+npm install -g delta-lang
+delta build artigo.dlt -o artigo.html
+      </code>
+
+      O guia completo está em <ref to="comecar">Primeiros passos</ref>, e a
+      referência da linguagem começa em <ref to="estrutura">Estrutura</ref>.
+    </subsection>
+
+    <subsection id="inicio-exemplo">
+      <title>Como se escreve</title>
+
+      Se você conhece LaTeX, já sabe quase tudo. A diferença é que a marcação é
+      XML, e que o resultado é uma página, não um documento estático.
+
+      <code lang="xml" numbered="false">
+<section id="sec:compacidade">
+  <title>Compacidade</title>
+
+  Um espaço é compacto quando toda cobertura aberta admite
+  subcobertura finita, em $\mathbb{R}^n$, isso equivale a ser
+  fechado e limitado.
+
+  <theorem id="thm:heine">
+    <title>Heine-Borel</title>
+    <equation id="eq:heine">K \text{ compacto} \iff K
+      \text{ fechado e limitado}</equation>
+  </theorem>
+
+  Como afirma <ref to="thm:heine"/>, a caracterização é completa.
+</section>
+      </code>
+
+      Repare no que você <b>não</b> escreveu: nenhum número. O teorema vira
+      "Teorema 1.1", a equação vira "(1.1)", e a referência no fim monta sozinha o
+      texto do link. Insira outro teorema acima e tudo se renumera.
+    </subsection>
+
+    <subsection id="inicio-principios">
+      <title>O que orienta o projeto</title>
+
+      <columns>
+        <column>
+          <box type="note">
+            <title>Um arquivo, e só</title>
+            A saída é um HTML que não referencia nada externo. As fontes, a
+            matemática e as imagens vão dentro dele. Abre de um pendrive, num
+            avião, daqui a dez anos.
+          </box>
+        </column>
+        <column>
+          <box type="tip">
+            <title>O trabalho é da compilação</title>
+            Numeração, referências e fórmulas são resolvidas antes de publicar. O
+            navegador do leitor não calcula nada, só desenha. O que deixa o resultado rápido e confiável.
+          </box>
+        </column>
+      </columns>
+
+      <columns>
+        <column>
+          <box color="purple">
+            <title>Interativo por natureza</title>
+            Uma referência mostra o alvo numa prévia, sem sair da página. Um
+            exercício esconde a solução. Coisas que o papel não faz.
+          </box>
+        </column>
+        <column>
+          <box color="slate">
+            <title>Feito para ser estendido</title>
+            Um ambiente numerado novo é uma linha de tabela; uma tag interativa é
+            um pacote. Veja <ref to="temas">Temas e pacotes</ref>.
+          </box>
+        </column>
+      </columns>
+    </subsection>
+
+    <subsection id="inicio-onde">
+      <title>Por onde seguir</title>
+
+      <list>
+        <item>
+          <ref to="comecar">Primeiros passos</ref>: instalar, escrever e compilar
+          o primeiro documento.
+        </item>
+        <item>
+          A referência da linguagem: <ref to="estrutura">Estrutura</ref>,
+          <ref to="matematica">Matemática</ref>, <ref to="ambientes">Ambientes</ref>,
+          <ref to="referencias">Referências e citações</ref>,
+          <ref to="midia">Mídia</ref>, <ref to="layout">Prosa e layout</ref>.
+        </item>
+        <item>
+          Trabalhos maiores: <ref to="projetos">Projetos multi-arquivo</ref> e
+          <ref to="apresentacoes">Apresentações</ref>.
+        </item>
+        <item>
+          O código e o rastreador de problemas ficam no
+          <link to="https://github.com/rbribeiro/delta">repositório do projeto</link>.
+        </item>
+      </list>
+
+      <box type="warning">
+        <title>Delta está em beta</title>
+        A linguagem é utilizável e já está publicada no npm, mas ainda muda. Espere
+        ajustes na marcação e no resultado antes da versão 1.0.
+      </box>
+    </subsection>
+  </section>
+
+  <footer>
+    Feito com ❤️ em Delta no IMPA Tech.
+  </footer>
+</document>

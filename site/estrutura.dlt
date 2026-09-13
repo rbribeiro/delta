@@ -1,0 +1,274 @@
+<document id="p-estrutura" theme="tema.css">
+  <title>Estrutura · Delta</title>
+
+  <floating>
+    <title>Navegação</title>
+    <toc scope="project" depth="1"/>
+  </floating>
+
+  <section id="estrutura">
+    <eyebrow>Referência</eyebrow>
+    <title>Estrutura</title>
+    <intro>
+      As tags que montam o esqueleto de um documento: a raiz, os títulos, a divisão
+      em seções e os elementos de folha de rosto. Tudo nesta página vale para
+      qualquer tipo de documento: artigo, livro ou apresentação.
+    </intro>
+
+    <toc/>
+
+    <subsection id="tag-document">
+      <title>&lt;document&gt;</title>
+
+      A raiz de todo arquivo <c>.dlt</c>. É onde você declara o idioma, o tipo de
+      documento e o tema. Só pode haver uma por arquivo, e ela envolve todo o resto.
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">lang</column>
+          <column mono="true">pt-BR, en, …</column>
+          <column>Idioma dos rótulos gerados ("Teorema", "Sumário", "Copiar")</column>
+        </row>
+        <row>
+          <column mono="true">type</column>
+          <column mono="true">article, book, presentation</column>
+          <column>Escolhe a escala tipográfica e o comportamento. O padrão é <c>article</c></column>
+        </row>
+        <row>
+          <column mono="true">theme</column>
+          <column mono="true">impatech ou caminho.css</column>
+          <column>Nome simples = tema embutido; qualquer coisa com ponto ou barra = seu CSS</column>
+        </row>
+        <row>
+          <column mono="true">theme-accent</column>
+          <column mono="true">green, purple, blue, …</column>
+          <column>A cor de destaque, entre as 12 paletas nomeadas</column>
+        </row>
+        <row>
+          <column mono="true">theme-mode</column>
+          <column mono="true">dark, auto</column>
+          <column>Modo escuro fixo, ou <c>auto</c> para seguir o sistema do leitor</column>
+        </row>
+      </table>
+
+      <code lang="xml" numbered="false">
+<document lang="pt-BR" type="article" theme-accent="green">
+  <title>Um passeio pela geometria</title>
+
+  <section id="sec:intro">
+    <title>Introdução</title>
+    O texto começa aqui.
+  </section>
+</document>
+      </code>
+
+      <box type="note">
+        <title>Atributo sempre com valor</title>
+        Delta é XML estrito: escreva <c>numbered="false"</c>, nunca apenas
+        <c>numbered</c>. Um atributo sem valor é erro de parse, e a compilação falha.
+      </box>
+    </subsection>
+
+    <subsection id="tag-title">
+      <title>&lt;title&gt;</title>
+
+      Nomeia o que a contém. Dentro de <c><document></c> vira o título da página
+      e o nome da aba do navegador; dentro de uma seção, o cabeçalho dela; dentro de um
+      teorema, o nome entre parênteses no cabeçalho da caixa.
+
+      <code lang="xml" numbered="false">
+<theorem id="thm:pit">
+  <title>Teorema de Pitágoras</title>
+  Em todo triângulo retângulo, o quadrado da hipotenusa é a soma
+  dos quadrados dos catetos.
+</theorem>
+      </code>
+
+      E é isto que o trecho acima produz:
+
+      <theorem id="demo-pitagoras">
+        <title>Teorema de Pitágoras</title>
+        Em todo triângulo retângulo, o quadrado da hipotenusa é a soma
+        dos quadrados dos catetos.
+      </theorem>
+    </subsection>
+
+    <subsection id="tag-secoes">
+      <title>&lt;chapter&gt;, &lt;section&gt;, &lt;subsection&gt;, &lt;subsubsection&gt;</title>
+
+      Os quatro níveis de divisão. A numeração é automática e hierárquica: a segunda
+      subseção da terceira seção é <c>3.2</c>. Cada nível reinicia o contador dos
+      níveis abaixo, exatamente como no LaTeX.
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">id</column>
+          <column mono="true">texto</column>
+          <column>Alvo de <c><ref></c> e âncora no sumário</column>
+        </row>
+        <row>
+          <column mono="true">numbered</column>
+          <column mono="true">false</column>
+          <column>Não numera esta seção nem consome um número</column>
+        </row>
+        <row>
+          <column mono="true">num</column>
+          <column mono="true">texto</column>
+          <column>Fixa o número à mão e reancora a contagem seguinte</column>
+        </row>
+        <row>
+          <column mono="true">collapsible</column>
+          <column mono="true">true</column>
+          <column>O título vira um botão que recolhe o corpo da seção</column>
+        </row>
+        <row>
+          <column mono="true">collapsed</column>
+          <column mono="true">true</column>
+          <column>Começa recolhida (implica <c>collapsible</c>)</column>
+        </row>
+      </table>
+
+      <box type="tip">
+        <title>Dê um id ASCII a todo título</title>
+        Sem <c>id</c>, o Delta gera um a partir do texto, mas a geração só preserva
+        letras e números sem acento, então "Matemática" viraria <c>matem-tica</c>.
+        Escreva o <c>id</c> você mesmo e o link fica estável e legível.
+      </box>
+    </subsection>
+
+    <subsection id="tag-eyebrow-intro">
+      <title>&lt;eyebrow&gt; e &lt;intro&gt;</title>
+
+      Duas aberturas de seção. <c><eyebrow></c> é a linha pequena acima do
+      título, útil para categoria ou numeração própria. <c><intro></c> é o
+      parágrafo de abertura, destacado do corpo.
+
+      <code lang="xml" numbered="false">
+<section id="sec:limites">
+  <eyebrow>Capítulo 2</eyebrow>
+  <title>Limites</title>
+  <intro>
+    A ideia de aproximação, tornada precisa.
+  </intro>
+  O texto normal continua aqui.
+</section>
+      </code>
+    </subsection>
+
+    <subsection id="tag-meta">
+      <title>&lt;meta&gt; e &lt;meta-item&gt;</title>
+
+      Pares de rótulo e valor exibidos logo abaixo do título. Servem para autoria,
+      data, instituição ou qualquer outro metadado. Funcionam no documento, em seções e
+      dentro de ambientes numerados.
+
+      <code lang="xml" numbered="false">
+<meta>
+  <meta-item key="Autora">Ana Ribeiro</meta-item>
+  <meta-item key="Instituição">UFMG</meta-item>
+</meta>
+      </code>
+    </subsection>
+
+    <subsection id="tag-toc">
+      <title>&lt;toc&gt;</title>
+
+      O sumário, montado a partir dos títulos do documento. Não precisa de conteúdo:
+      basta colocar a tag onde o sumário deve aparecer.
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">depth</column>
+          <column mono="true">1, 2, 3…</column>
+          <column>Até que nível descer. O padrão é <c>2</c> (seções e subseções)</column>
+        </row>
+        <row>
+          <column mono="true">scope</column>
+          <column mono="true">project</column>
+          <column>Lista os títulos de <b>todos</b> os arquivos do projeto, não só deste</column>
+        </row>
+      </table>
+
+      Um <c><title></c> filho troca o rótulo "Sumário". O sumário desta página,
+      logo abaixo da introdução, é um <c><toc/></c> sem atributo nenhum.
+    </subsection>
+
+    <subsection id="tag-floating">
+      <title>&lt;floating&gt;</title>
+
+      Um botão fixo no canto da tela que abre um painel. O uso natural é guardar um
+      sumário nele, para que o leitor navegue de qualquer ponto da página sem rolar
+      de volta ao topo. É assim que a navegação deste site funciona: o botão
+      "Navegação" no canto é exatamente o trecho abaixo.
+
+      <code lang="xml" numbered="false">
+<floating>
+  <title>Navegação</title>
+  <toc scope="project" depth="1"/>
+</floating>
+      </code>
+    </subsection>
+
+    <subsection id="sobre-frontmatter">
+      <title>Folha de rosto</title>
+
+      Um conjunto de tags para a primeira página de um artigo. Nenhuma delas é
+      numerada, e cada uma já vem com o rótulo traduzido para o idioma do documento.
+
+      <table numbered="false">
+        <header>
+          <column>Tag</column>
+          <column>Para quê</column>
+        </header>
+        <row>
+          <column mono="true">abstract</column>
+          <column>O resumo, centralizado e mais estreito que o corpo</column>
+        </row>
+        <row>
+          <column mono="true">keywords</column>
+          <column>Palavras-chave</column>
+        </row>
+        <row>
+          <column mono="true">msc</column>
+          <column>Classificação por assunto (MSC)</column>
+        </row>
+        <row>
+          <column mono="true">date, submitted, received, revised, accepted</column>
+          <column>As datas editoriais</column>
+        </row>
+        <row>
+          <column mono="true">acknowledgements, funding</column>
+          <column>Agradecimentos e financiamento</column>
+        </row>
+      </table>
+
+      <code lang="xml" numbered="false">
+<abstract>
+  Mostramos que toda sequência de Cauchy converge.
+</abstract>
+<keywords>análise, completude, sequências</keywords>
+<msc>40A05</msc>
+<received>12 de janeiro de 2026</received>
+      </code>
+    </subsection>
+  </section>
+
+  <footer>
+    Feito com ❤️ em Delta no IMPA Tech.
+  </footer>
+</document>

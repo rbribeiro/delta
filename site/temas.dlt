@@ -1,0 +1,185 @@
+<document id="p-temas" theme="tema.css">
+  <title>Temas e pacotes · Delta</title>
+
+  <floating>
+    <title>Navegação</title>
+    <toc scope="project" depth="1"/>
+  </floating>
+
+  <section id="temas">
+    <eyebrow>Referência</eyebrow>
+    <title>Temas e pacotes</title>
+    <intro>
+      Como mudar a aparência de um documento e como acrescentar elementos que o
+      Delta não traz de fábrica. São os dois caminhos de extensão: o primeiro é
+      CSS, o segundo é um pacote.
+    </intro>
+
+    <toc/>
+
+    <subsection id="sobre-theme-accent">
+      <title>Cor de destaque e modo escuro</title>
+
+      Os dois ajustes mais simples, e os que resolvem a maioria dos casos. Ambos
+      valem para qualquer tipo de documento e para qualquer tema.
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">theme-accent</column>
+          <column mono="true">red, orange, yellow, lime, green, teal, sky, blue, indigo, purple, pink, slate</column>
+          <column>Recolore links, números e destaques</column>
+        </row>
+        <row>
+          <column mono="true">theme-mode</column>
+          <column mono="true">dark, auto</column>
+          <column>Modo escuro sempre, ou seguindo a preferência do sistema</column>
+        </row>
+      </table>
+
+      <code lang="xml" numbered="false">
+<document theme-accent="purple" theme-mode="auto">
+      </code>
+
+      Os dois são apenas troca de valores de cor, não folhas de estilo separadas,
+      e por isso se combinam entre si e com qualquer tema.
+    </subsection>
+
+    <subsection id="tag-theme">
+      <title>&lt;document theme&gt;</title>
+
+      O atributo <c>theme</c> aponta para uma de duas coisas, e o formato do valor
+      é quem decide qual:
+
+      <list marker="number">
+        <item>
+          <b>Um nome simples</b>, com apenas letras, números e hífens, sem ponto nem
+          barra, é um <b>tema embutido</b>, que já vem com o Delta:
+          <c>theme="impatech"</c>.
+        </item>
+        <item>
+          <b>Qualquer coisa com ponto ou barra</b> é um <b>caminho</b> para o seu
+          próprio CSS, resolvido a partir do documento: <c>theme="meu.css"</c>,
+          <c>theme="../compartilhado/estilo.css"</c>.
+        </item>
+      </list>
+
+      A distinção é pelo formato, e um nome simples nunca é procurado no disco.
+      Assim, um tema embutido novo jamais muda o significado de um documento que
+      já existe, e um nome errado avisa "tema desconhecido" em vez de "arquivo não
+      encontrado".
+
+      <box type="tip">
+        <title>Os dois se somam</title>
+        Um tema embutido dá a paleta; o seu CSS, carregado depois, tem sempre a
+        última palavra. Dá para usar o <c>impatech</c> e ainda ajustar três
+        detalhes num arquivo seu.
+      </box>
+    </subsection>
+
+    <subsection id="sobre-tokens">
+      <title>Escrevendo um tema</title>
+
+      Um tema do Delta redefine variáveis de cor e de medida, e não escreve
+      seletores para a estrutura interna dos componentes. Assim ele continua
+      valendo quando o Delta muda por dentro.
+
+      <code lang="css" numbered="false">
+:root {
+  --delta-accent: #7c3aed;   /* a cor de destaque */
+  --delta-paper:  #fffdf8;   /* o fundo da página */
+  --delta-ink:    #1a1a1a;   /* a cor do texto   */
+  --delta-measure: 68ch;     /* a largura de leitura */
+}
+      </code>
+
+      <box type="warning">
+        <title>O seu CSS vence tudo</title>
+        A folha do autor é a última a ser aplicada, acima inclusive do CSS da
+        matemática. Um seletor genérico demais, como <c>span</c>, <c>a</c> ou
+        <c>table</c>, pode desarranjar fórmulas renderizadas. Prefira variáveis, e
+        quando precisar de seletor, prenda-o a um elemento <c>delta-</c> ou a uma
+        classe sua.
+      </box>
+    </subsection>
+
+    <subsection id="tag-import">
+      <title>&lt;import&gt;</title>
+
+      Um pacote acrescenta tags novas ao documento. O código dele é embutido no
+      HTML na compilação, então o documento continua funcionando offline.
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">src</column>
+          <column mono="true">pasta ou nome de pacote</column>
+          <column>Uma pasta local, ou um pacote instalado do npm</column>
+        </row>
+      </table>
+
+      <code lang="xml" numbered="false">
+<document>
+  <import src="./meus-componentes"/>
+  ...
+  <callout label="Atenção">Uma tag que veio do pacote.</callout>
+</document>
+      </code>
+
+      Para instalar e registrar um pacote de uma vez:
+
+      <code lang="bash" numbered="false">
+delta install delta-callout
+      </code>
+
+      Num projeto, a chave <c>packages</c> do <c>project.toml</c> aplica o pacote a
+      todos os arquivos, dispensando o <c><import></c> em cada um.
+    </subsection>
+
+    <subsection id="sobre-escrever-pacote">
+      <title>Escrevendo um pacote</title>
+
+      Um pacote é uma pasta com um script e, opcionalmente, uma folha de estilo:
+
+      <code lang="text" numbered="false">
+meu-pacote/
+  index.js      registra os elementos
+  theme.css     estiliza os elementos (opcional)
+      </code>
+
+      O script registra elementos customizados do navegador, e o Delta expõe
+      <c>window.Delta</c> com utilidades: <c>popover</c>, <c>t</c> para textos
+      traduzidos e <c>deck</c> para apresentações.
+
+      <code lang="bash" numbered="false">
+delta create package meu-pacote
+      </code>
+
+      <box type="note">
+        <title>O passo a passo completo</title>
+        Há um tutorial dedicado, do zero até um componente funcionando: veja
+        <b>TUTORIAL_COMPONENTES.md</b> no repositório. Ele ensina a API de
+        elementos customizados sem pressupor experiência com ela.
+      </box>
+
+      <box type="warning">
+        <title>Pacotes só atuam no navegador</title>
+        Um pacote não participa da compilação: ele não cria ambientes numerados
+        nem novos tipos de referência. Recursos assim precisam de uma alteração no
+        próprio Delta.
+      </box>
+    </subsection>
+  </section>
+
+  <footer>
+    Feito com ❤️ em Delta no IMPA Tech.
+  </footer>
+</document>

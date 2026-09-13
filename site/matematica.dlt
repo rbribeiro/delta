@@ -1,0 +1,133 @@
+<document id="p-matematica" theme="tema.css">
+  <title>Matemática · Delta</title>
+
+  <floating>
+    <title>Navegação</title>
+    <toc scope="project" depth="1"/>
+  </floating>
+
+  <section id="matematica">
+    <eyebrow>Referência</eyebrow>
+    <title>Matemática</title>
+    <intro>
+      Delta escreve matemática em LaTeX e a renderiza na compilação, com KaTeX. O
+      leitor recebe HTML pronto: nenhuma biblioteca de matemática é baixada quando
+      a página abre, e a fórmula aparece instantaneamente, mesmo sem internet.
+    </intro>
+
+    <toc/>
+
+    <subsection id="sobre-math-inline">
+      <title>Matemática no meio da frase</title>
+
+      Cifrões delimitam matemática dentro do texto corrido, como no LaTeX. Escreva
+      <c>$e^{i\pi} + 1 = 0$</c> e o resultado aparece na linha: $e^{i\pi} + 1 = 0$.
+
+      Para um cifrão literal, escape com <c>\$</c>. Um cifrão desemparelhado gera um
+      aviso na compilação, e quase sempre é isso mesmo que você quer saber.
+
+      <box type="tip">
+        <title>Sinais de menor e maior são livres dentro da matemática</title>
+        O pré-processador protege as regiões matemáticas antes do XML ser lido, então
+        <c>$a < b$</c> funciona sem escapar nada. Fora da matemática, no texto comum,
+        use as entidades <c>&lt;</c> e <c>&gt;</c>.
+      </box>
+    </subsection>
+
+    <subsection id="tag-m">
+      <title>&lt;m&gt;</title>
+
+      A forma em tag da matemática de linha. Faz o mesmo que os cifrões e é útil
+      quando a fórmula já tem cifrões demais em volta, ou quando você prefere
+      marcação explícita.
+
+      <code lang="xml" numbered="false">
+A função <m>f(x) = x^2</m> é convexa.
+      </code>
+
+      Resultado: a função <m>f(x) = x^2</m> é convexa.
+    </subsection>
+
+    <subsection id="tag-equation">
+      <title>&lt;equation&gt;</title>
+
+      Uma equação em destaque, centralizada e numerada. Dê um <c>id</c> e ela vira
+      alvo de referência.
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">id</column>
+          <column mono="true">texto</column>
+          <column>Alvo de <c><ref></c> e de <c>\ref{}</c> dentro da matemática</column>
+        </row>
+        <row>
+          <column mono="true">numbered</column>
+          <column mono="true">false</column>
+          <column>Exibe em destaque, mas sem número</column>
+        </row>
+      </table>
+
+      <code lang="xml" numbered="false">
+<equation id="eq:euler">e^{i\pi} + 1 = 0</equation>
+      </code>
+
+      <equation id="demo-euler">e^{i\pi} + 1 = 0</equation>
+
+      Dois cifrões seguidos, <c>$$…$$</c>, fazem o mesmo em texto corrido, mas sem
+      número e sem <c>id</c>.
+    </subsection>
+
+    <subsection id="tag-equations">
+      <title>&lt;equations&gt;</title>
+
+      Várias linhas alinhadas. O conteúdo é embrulhado em um <c>aligned</c> do LaTeX,
+      então use <c>&</c> para marcar o ponto de alinhamento e <c>\\</c> para
+      terminar a linha, sem escapar nada, porque o conteúdo é literal.
+
+      <code lang="xml" numbered="false">
+<equations id="eq:serie">
+  S &= 1 + \frac{1}{2} + \frac{1}{4} + \cdots \\
+    &= \sum_{n=0}^{\infty} \frac{1}{2^n} \\
+    &= 2
+</equations>
+      </code>
+
+      <equations id="demo-serie">
+  S &= 1 + \frac{1}{2} + \frac{1}{4} + \cdots \\
+    &= \sum_{n=0}^{\infty} \frac{1}{2^n} \\
+    &= 2
+      </equations>
+    </subsection>
+
+    <subsection id="sobre-ref-math">
+      <title>Referências dentro da matemática</title>
+
+      <c>\ref{id}</c> e <c>\eqref{id}</c> funcionam dentro de uma fórmula. O número é
+      resolvido na compilação e o resultado continua clicável: leva ao alvo e mostra
+      uma prévia, igual a uma referência comum.
+
+      <code lang="xml" numbered="false">
+Somando <m>A \stackrel{\ref{eq:euler}}{=} 0</m>, concluímos…
+      </code>
+
+      Resultado, apontando para a equação da seção anterior:
+      <m>A \stackrel{\ref{demo-euler}}{=} 0</m>.
+
+      <box type="warning">
+        <title>Um id inexistente não quebra a compilação</title>
+        Referências não resolvidas viram <c>??</c> e geram um aviso. O mesmo vale para
+        erros de LaTeX: a fórmula problemática é emitida como texto e a compilação
+        segue. Leia os avisos: eles apontam exatamente o que ficou pela metade.
+      </box>
+    </subsection>
+  </section>
+
+  <footer>
+    Feito com ❤️ em Delta no IMPA Tech.
+  </footer>
+</document>

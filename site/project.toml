@@ -1,0 +1,38 @@
+# O site do Delta, escrito em Delta e compilado pelo próprio compilador.
+#
+#   npm run docs          compila uma vez
+#   npm run docs:watch    recompila a cada alteração
+#
+# A saída vai direto para docs/, que é o diretório que o GitHub Pages publica.
+# Por isso os HTMLs gerados são versionados junto com os fontes.
+
+inputs = [
+  "index.dlt",          # início
+  "comecar.dlt",        # primeiros passos
+  "estrutura.dlt",      # referência: estrutura do documento
+  "matematica.dlt",     # referência: matemática
+  "ambientes.dlt",      # referência: ambientes numerados
+  "referencias.dlt",    # referência: referências e citações
+  "midia.dlt",          # referência: mídia
+  "layout.dlt",         # referência: prosa e layout
+  "apresentacoes.dlt",  # referência: apresentações
+  "projetos.dlt",       # referência: projetos multi-arquivo
+  "temas.dlt",          # referência: temas e pacotes
+]
+
+# A saída de um projeto é achatada pelo nome-base: cada <arquivo>.dlt vira
+# docs/<arquivo>.html. É por isso que os nomes acima são únicos e planos.
+out = "../docs"
+
+# Padrões aplicados a todas as páginas. Cada .dlt ainda pode sobrescrever
+# qualquer um deles declarando o atributo em seu próprio <document>.
+[document]
+lang         = "pt-BR"     # resolveLang reduz para o bloco "pt" de strings.ts
+type         = "article"
+theme-accent = "green"
+
+# `theme` NÃO é declarado aqui de propósito. O config resolve um tema de projeto
+# para caminho absoluto, e o emit serializa os atributos do <document> verbatim.
+# O resultado seria um theme="/home/rodrigo/Dev/delta/site/tema.css" visível em
+# cada HTML publicado. Cada página declara theme="tema.css" no seu <document>,
+# que é resolvido relativo ao próprio .dlt e não vaza caminho da máquina.

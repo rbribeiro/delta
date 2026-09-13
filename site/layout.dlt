@@ -1,0 +1,282 @@
+<document id="p-layout" theme="tema.css">
+  <title>Prosa e layout · Delta</title>
+
+  <floating>
+    <title>Navegação</title>
+    <toc scope="project" depth="1"/>
+  </floating>
+
+  <section id="layout">
+    <eyebrow>Referência</eyebrow>
+    <title>Prosa e layout</title>
+    <intro>
+      Listas, tabelas, colunas, destaques e código. As ferramentas do dia a dia
+      para organizar a página e enfatizar o texto.
+    </intro>
+
+    <toc/>
+
+    <subsection id="tag-list">
+      <title>&lt;list&gt; e &lt;item&gt;</title>
+
+      Listas com ou sem numeração. O atributo <c>marker</c> escolhe o marcador, e
+      listas podem ser aninhadas livremente.
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">marker</column>
+          <column mono="true">number, a, A, i, I, dash</column>
+          <column>O marcador. Sem o atributo, marcador redondo</column>
+        </row>
+        <row>
+          <column mono="true">start</column>
+          <column mono="true">número</column>
+          <column>Começa a contagem em outro valor</column>
+        </row>
+        <row>
+          <column mono="true">animated</column>
+          <column mono="true">true</column>
+          <column>Em apresentação, revela um item por vez</column>
+        </row>
+      </table>
+
+      <code lang="xml" numbered="false">
+<list marker="a">
+  <item>Primeiro caso</item>
+  <item>
+    Segundo caso, com uma sublista:
+    <list marker="dash">
+      <item>subcaso</item>
+    </list>
+  </item>
+</list>
+      </code>
+
+      <list marker="a">
+        <item>Primeiro caso</item>
+        <item>
+          Segundo caso, com uma sublista:
+          <list marker="dash">
+            <item>subcaso</item>
+          </list>
+        </item>
+      </list>
+    </subsection>
+
+    <subsection id="tag-table">
+      <title>&lt;table&gt;</title>
+
+      Uma tabela de dados. O <c><header></c> guarda os nomes das colunas, cada
+      linha é um <c><row></c> e cada célula um <c><column></c>. O alinhamento
+      definido no cabeçalho vale para a coluna inteira.
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Vale em</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">max-height</column>
+          <column mono="true">table</column>
+          <column>Rola as linhas dentro dessa altura, com o cabeçalho fixo</column>
+        </row>
+        <row>
+          <column mono="true">align</column>
+          <column mono="true">column</column>
+          <column><c>right</c> alinha à direita e usa algarismos tabulares</column>
+        </row>
+        <row>
+          <column mono="true">mono</column>
+          <column mono="true">column</column>
+          <column>Exibe a célula em fonte monoespaçada</column>
+        </row>
+      </table>
+
+      <code lang="xml" numbered="false">
+<table id="tbl:tempos" max-height="250px">
+  <title>Tempo por método</title>
+  <header>
+    <column>Método</column>
+    <column align="right">Tempo (ms)</column>
+  </header>
+  <row><column>Bisseção</column><column align="right">4.2</column></row>
+  <row><column>Newton</column><column align="right">1.1</column></row>
+  <caption>Média de dez execuções.</caption>
+</table>
+      </code>
+    </subsection>
+
+    <subsection id="tag-columns">
+      <title>&lt;columns&gt; e &lt;column&gt;</title>
+
+      Layout lado a lado. Cada <c><column></c> filho é uma coluna, e o atributo
+      <c>width</c> decide como o espaço é dividido: um número puro é um peso
+      (<c>width="2"</c> ocupa o dobro de <c>width="1"</c>), um valor com unidade é
+      largura fixa. Sem <c>width</c>, as colunas ficam iguais. Em telas estreitas
+      elas empilham sozinhas.
+
+      <code lang="xml" numbered="false">
+<columns>
+  <column width="2">A coluna larga, com o texto principal.</column>
+  <column>A coluna estreita, ao lado.</column>
+</columns>
+      </code>
+
+      <columns>
+        <column width="2">A coluna larga, com o texto principal.</column>
+        <column>A coluna estreita, ao lado.</column>
+      </columns>
+
+      <box type="note">
+        <title>Duas tags com o mesmo nome</title>
+        <c><column></c> é usada tanto aqui quanto dentro de <c><table></c>. Não há
+        conflito: o que decide é onde ela está: filha direta de
+        <c><columns></c> é coluna de layout, dentro de <c><row></c> é célula.
+      </box>
+    </subsection>
+
+    <subsection id="tag-box">
+      <title>&lt;box&gt;</title>
+
+      Um bloco de destaque com barra colorida. Os avisos desta página são todos
+      <c><box></c>.
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">type</column>
+          <column mono="true">note, tip, warning, danger</column>
+          <column>Predefinição de cor: azul, verde, laranja, vermelho</column>
+        </row>
+        <row>
+          <column mono="true">color</column>
+          <column mono="true">nome, hex ou cor CSS</column>
+          <column>Cor explícita; tem prioridade sobre <c>type</c></column>
+        </row>
+      </table>
+
+      <code lang="xml" numbered="false">
+<box type="tip">
+  <title>Um atalho útil</title>
+  O corpo do destaque vem aqui.
+</box>
+      </code>
+
+      <box type="danger">
+        <title>Assim fica um type="danger"</title>
+        As quatro predefinições acompanham o modo claro e escuro automaticamente.
+      </box>
+    </subsection>
+
+    <subsection id="tag-hint-sidenote">
+      <title>&lt;hint&gt; e &lt;sidenote&gt;</title>
+
+      Duas formas de dizer algo sem interromper a frase. <c><hint></c> esconde o
+      texto atrás de um gatilho clicável; <c><sidenote></c> o joga para a margem.
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">show-icon</column>
+          <column mono="true">false</column>
+          <column>Esconde o ícone do gatilho da <c><hint></c></column>
+        </row>
+      </table>
+
+      <code lang="xml" numbered="false">
+Um espaço <hint><title>de Banach</title>Espaço vetorial normado
+e completo.</hint> tem a propriedade desejada.
+      </code>
+
+      Um espaço <hint><title>de Banach</title>Espaço vetorial normado e completo.</hint>
+      tem a propriedade desejada.<sidenote>E esta é uma nota de margem.</sidenote>
+    </subsection>
+
+    <subsection id="tag-code">
+      <title>&lt;code&gt; e &lt;c&gt;</title>
+
+      <c><code></c> é o bloco, com destaque de sintaxe feito na compilação, número
+      de linha e botão de copiar. <c><c></c> é o trecho no meio da frase, sempre
+      literal e sem destaque.
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">lang</column>
+          <column mono="true">python, xml, bash, …</column>
+          <column>A linguagem do destaque. Sem ela, o texto sai sem cor</column>
+        </row>
+        <row>
+          <column mono="true">lines</column>
+          <column mono="true">false</column>
+          <column>Esconde a numeração das linhas</column>
+        </row>
+        <row>
+          <column mono="true">collapsible</column>
+          <column mono="true">true</column>
+          <column>Permite recolher o bloco</column>
+        </row>
+      </table>
+
+      <code lang="python" numbered="false">
+def fib(n):
+    a, b = 0, 1
+    for _ in range(n):
+        a, b = b, a + b
+    return a
+      </code>
+
+      <box type="warning">
+        <title>Uma limitação a conhecer</title>
+        O conteúdo de <c><code></c> é literal, e o bloco termina no primeiro
+        fechamento que aparecer. Por isso não é possível mostrar a marca de
+        fechamento de <c>code</c> dentro de um bloco de código. Para exibi-la,
+        use o trecho de linha: <c></code></c>.
+      </box>
+    </subsection>
+
+    <subsection id="sobre-inline">
+      <title>Marcação no meio da frase</title>
+
+      <table numbered="false">
+        <header>
+          <column>Tag</column>
+          <column>Efeito</column>
+        </header>
+        <row><column mono="true">em, i</column><column><em>itálico</em></column></row>
+        <row><column mono="true">strong, b</column><column><strong>negrito</strong></column></row>
+        <row><column mono="true">u</column><column><u>sublinhado</u></column></row>
+        <row><column mono="true">s</column><column><s>riscado</s></column></row>
+        <row><column mono="true">mark</column><column><mark>destacado</mark></column></row>
+        <row><column mono="true">c</column><column><c>código</c></column></row>
+        <row><column mono="true">link</column><column>Um link externo</column></row>
+      </table>
+
+      <code lang="xml" numbered="false">
+Veja a <link to="https://katex.org">documentação do KaTeX</link>.
+      </code>
+    </subsection>
+  </section>
+
+  <footer>
+    Feito com ❤️ em Delta no IMPA Tech.
+  </footer>
+</document>

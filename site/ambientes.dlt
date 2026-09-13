@@ -1,0 +1,167 @@
+<document id="p-ambientes" theme="tema.css">
+  <title>Ambientes · Delta</title>
+
+  <floating>
+    <title>Navegação</title>
+    <toc scope="project" depth="1"/>
+  </floating>
+
+  <section id="ambientes">
+    <eyebrow>Referência</eyebrow>
+    <title>Ambientes</title>
+    <intro>
+      Teoremas, definições, exemplos e demonstrações. São os blocos numerados do
+      texto matemático, e o Delta cuida da contagem, do rótulo traduzido e da
+      caixa. Você escreve só o conteúdo.
+    </intro>
+
+    <toc/>
+
+    <subsection id="sobre-familia-teorema">
+      <title>A família do teorema</title>
+
+      Sete tags para enunciar resultados. Cada uma tem contagem própria e
+      independente: o primeiro lema de uma seção é o Lema 1.1 mesmo que já exista
+      um Teorema 1.1 antes dele. Todas reiniciam a cada seção nova.
+
+      <table numbered="false">
+        <header>
+          <column>Tag</column>
+          <column>Rótulo em português</column>
+        </header>
+        <row><column mono="true">theorem</column><column>Teorema</column></row>
+        <row><column mono="true">proposition</column><column>Proposição</column></row>
+        <row><column mono="true">lemma</column><column>Lema</column></row>
+        <row><column mono="true">corollary</column><column>Corolário</column></row>
+        <row><column mono="true">conjecture</column><column>Conjectura</column></row>
+        <row><column mono="true">claim</column><column>Afirmação</column></row>
+        <row><column mono="true">observation</column><column>Observação</column></row>
+      </table>
+
+      <code lang="xml" numbered="false">
+<theorem id="thm:bolzano">
+  <title>Bolzano-Weierstrass</title>
+  Toda sequência limitada em <m>\mathbb{R}</m> possui subsequência convergente.
+</theorem>
+
+<corollary id="cor:compacto">
+  Todo intervalo fechado e limitado é compacto.
+</corollary>
+      </code>
+
+      <theorem id="demo-bolzano">
+        <title>Bolzano-Weierstrass</title>
+        Toda sequência limitada em <m>\mathbb{R}</m> possui subsequência convergente.
+      </theorem>
+
+      <corollary id="demo-compacto">
+        Todo intervalo fechado e limitado é compacto.
+      </corollary>
+    </subsection>
+
+    <subsection id="sobre-outros-ambientes">
+      <title>Definições, exemplos e exercícios</title>
+
+      A mesma regra vale aqui: cada tag conta por si, então as definições numeram
+      sem interferir nos teoremas nem nos exemplos.
+
+      <table numbered="false">
+        <header>
+          <column>Tag</column>
+          <column>Rótulo</column>
+        </header>
+        <row><column mono="true">definition</column><column>Definição</column></row>
+        <row><column mono="true">example</column><column>Exemplo</column></row>
+        <row><column mono="true">remark</column><column>Comentário</column></row>
+        <row><column mono="true">exercise</column><column>Exercício</column></row>
+        <row><column mono="true">problem</column><column>Problema</column></row>
+      </table>
+
+      <definition id="demo-continua">
+        <title>Função contínua</title>
+        Uma função <m>f</m> é contínua em <m>a</m> quando
+        <m>\lim_{x \to a} f(x) = f(a)</m>.
+      </definition>
+    </subsection>
+
+    <subsection id="tag-proof">
+      <title>&lt;proof&gt; e &lt;solution&gt;</title>
+
+      A demonstração não ganha caixa nem número: abre com a palavra "Demonstração"
+      em itálico e fecha com o quadrado no fim. O atributo <c>of</c> aponta para o
+      resultado que ela demonstra, e o rótulo passa a citá-lo.
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">of</column>
+          <column mono="true">id</column>
+          <column>Diz qual resultado esta demonstração prova</column>
+        </row>
+      </table>
+
+      <code lang="xml" numbered="false">
+<proof of="thm:bolzano">
+  Divida o intervalo ao meio; ao menos uma das metades contém
+  infinitos termos da sequência. Repita.
+</proof>
+      </code>
+
+      <proof of="demo-bolzano">
+        Divida o intervalo ao meio; ao menos uma das metades contém
+        infinitos termos da sequência. Repita.
+      </proof>
+    </subsection>
+
+    <subsection id="sobre-ambiente-atributos">
+      <title>Atributos comuns a todos os ambientes</title>
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">id</column>
+          <column mono="true">texto</column>
+          <column>Alvo de <c><ref></c>. Convém prefixar por tipo: <c>thm:</c>, <c>def:</c></column>
+        </row>
+        <row>
+          <column mono="true">numbered</column>
+          <column mono="true">false</column>
+          <column>Mostra só o rótulo, sem número, e não consome a contagem</column>
+        </row>
+        <row>
+          <column mono="true">num</column>
+          <column mono="true">texto</column>
+          <column>Fixa o número à mão</column>
+        </row>
+        <row>
+          <column mono="true">collapsible</column>
+          <column mono="true">true</column>
+          <column>O cabeçalho vira botão e recolhe o corpo</column>
+        </row>
+        <row>
+          <column mono="true">collapsed</column>
+          <column mono="true">true</column>
+          <column>Começa recolhido (bom para soluções de exercício)</column>
+        </row>
+      </table>
+
+      <exercise id="demo-exercicio" collapsible="true" collapsed="true">
+        <title>Uma solução escondida</title>
+        Este exercício começou recolhido. Clique no cabeçalho para abrir e fechar:
+        é o que <c>collapsed="true"</c> faz.
+      </exercise>
+    </subsection>
+  </section>
+
+  <footer>
+    Feito com ❤️ em Delta no IMPA Tech.
+  </footer>
+</document>
