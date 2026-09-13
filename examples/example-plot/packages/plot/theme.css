@@ -1,3 +1,4 @@
+/* Plot Base */
 delta-plot {
   display: block;
   margin: 1.5rem 0;
@@ -17,25 +18,10 @@ delta-plot:focus-visible,
   position: relative;
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--delta-rule);
+  border: 1px solid var(--delta-rule, #e2e8f0);
   border-radius: 6px;
-  background: #ffffff;
+  background: var(--delta-surface-0, #ffffff);
   overflow: hidden;
-}
-
-.plot-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.5rem 0.8rem;
-  background: var(--delta-accent-soft);
-  border-bottom: 1px solid var(--delta-rule);
-}
-
-.plot-title {
-  color: var(--delta-accent-ink);
-  font-size: 0.85rem;
-  font-weight: 600;
 }
 
 .plot-canvas {
@@ -43,22 +29,39 @@ delta-plot:focus-visible,
   aspect-ratio: 16 / 9;
   display: block;
   touch-action: none;
-  background: #ffffff;
+  background: var(--delta-surface-0, #ffffff);
 }
 
+/* Title Header */
+.plot-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.8rem;
+  background: var(--delta-accent-soft, rgba(128, 128, 128, 0.08));
+  border-bottom: 1px solid var(--delta-rule, #e2e8f0);
+}
+
+.plot-title {
+  color: var(--delta-accent-ink, #333333);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Points Footer & Actions */
 .plot-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0.4rem 0.8rem;
-  background: var(--delta-accent-soft);
-  border-top: 1px solid var(--delta-rule);
+  background: var(--delta-accent-soft, rgba(128, 128, 128, 0.08));
+  border-top: 1px solid var(--delta-rule, #e2e8f0);
   font-family: var(--delta-font-body, system-ui, -apple-system, sans-serif);
   font-size: 0.8rem;
 }
 
 .plot-footer-status {
-  color: var(--delta-accent-ink);
+  color: var(--delta-accent-ink, #333333);
   font-weight: 500;
   user-select: none;
 }
@@ -76,24 +79,24 @@ delta-plot:focus-visible,
   width: 24px;
   height: 24px;
   padding: 0;
-  border: 1px solid var(--delta-rule);
+  border: 1px solid var(--delta-rule, #cbd5e1);
   border-radius: 4px;
   background: var(--delta-surface-1, #ffffff);
-  color: var(--delta-accent-ink);
+  color: var(--delta-accent-ink, #333333);
   cursor: pointer;
   outline: none;
   transition: all 0.15s ease;
 }
 
 .plot-footer-btn:hover {
-  background: #ffffff;
-  border-color: var(--delta-accent);
-  color: var(--delta-accent);
+  background: var(--delta-surface-0, #ffffff);
+  border-color: var(--delta-accent, #505050);
+  color: var(--delta-accent, #505050);
 }
 
 .plot-footer-btn.active {
-  background: var(--delta-accent);
-  border-color: var(--delta-accent);
+  background: var(--delta-accent, #505050);
+  border-color: var(--delta-accent, #505050);
   color: #ffffff;
 }
 
@@ -110,7 +113,7 @@ delta-plot:focus-visible,
   display: block;
 }
 
-/* Floating point badge with delete button (Option 3) */
+/* Floating Point Badge */
 .plot-point-badge {
   position: absolute;
   display: none;
@@ -118,7 +121,7 @@ delta-plot:focus-visible,
   gap: 5px;
   padding: 2px 4px 2px 8px;
   background: var(--delta-surface-1, #ffffff);
-  color: var(--delta-accent-ink, #334155);
+  color: var(--delta-accent-ink, #333333);
   border: 1px solid var(--delta-rule, #cbd5e1);
   border-radius: 9999px;
   font-size: 11px;
@@ -143,8 +146,8 @@ delta-plot:focus-visible,
   margin: 0;
   border: none;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--delta-accent, #4f46e5) 15%, transparent);
-  color: var(--delta-accent, #4f46e5);
+  background: color-mix(in srgb, var(--delta-accent, #505050) 15%, transparent);
+  color: var(--delta-accent, #505050);
   font-size: 13px;
   font-weight: 700;
   line-height: 1;
@@ -154,6 +157,6 @@ delta-plot:focus-visible,
 }
 
 .plot-point-badge-delete:hover {
-  background: var(--delta-accent, #4f46e5);
+  background: var(--delta-accent, #505050);
   color: #ffffff;
 }

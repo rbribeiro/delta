@@ -19,12 +19,6 @@
     
     Parâmetros:
     <list>
-      <item><c>title</c>: String de texto que representa o título.
-        <list marker="dash">
-          <item>Valores: Qualquer string.</item>
-          <item>Padrão: Vazio</item>
-        </list>
-      </item>
       <item><c>type</c>: Define o tipo de ambiente padrão.
         <list marker="dash">
           <item>Valores: <c>cartesian</c>, <c>points</c>.</item>
@@ -58,6 +52,17 @@
           <item>Formato: <c>a,b</c>, onde <c>a</c> e <c>b</c> são números inteiros ou ponto flutuante.</item>
         </list>
       </item>
+    </list>
+  </section>
+
+  <section id="sec:title">
+    <title>Subcomponente <c><title></c></title>
+
+    O subcomponente <c><title></c> define o título exibido no cabeçalho superior da área de plotagem.
+
+    Parâmetros:
+    <list>
+      <item>Não possui parâmetros adicionais. O texto do título é inserido diretamente como conteúdo da tag.</item>
     </list>
   </section>
 
@@ -131,20 +136,26 @@
     <subsection>
       <title>Plot Básico</title>
       <code>
-        <plot title="Espaço Cartesiano" x="-1,1" y="-1,1"/>
+        <plot x="-1,1" y="-1,1">
+          <title>Espaço Cartesiano</title>
+        </plot>
       </code>
-      <plot title="Espaço Cartesiano" x="-1,1" y="-1,1"/>
+      <plot x="-1,1" y="-1,1">
+        <title>Espaço Cartesiano</title>
+      </plot>
     </subsection>
 
     <subsection>
       <title>Régua Minimalista</title>
       <code>
-        <plot title="Ruler" x="-1,1">
+        <plot x="-1,1">
+          <title>Ruler</title>
           <grid show="origin"/>
           <axis show="x"/>
         </plot>
       </code>
-      <plot title="Ruler" x="-1,1">
+      <plot x="-1,1">
+        <title>Ruler</title>
         <grid show="origin"/>
         <axis show="x"/>
       </plot>
@@ -153,19 +164,25 @@
     <subsection>
       <title>Espaço de Pontos</title>
       <code>
-        <plot title="Espaço de Pontos" type="points"/>
+        <plot type="points">
+          <title>Espaço de Pontos</title>
+        </plot>
       </code>
-      <plot title="Espaço de Pontos" type="points"/>
+      <plot type="points">
+        <title>Espaço de Pontos</title>
+      </plot>
     </subsection>
 
     <subsection>
       <title>Sem Interação</title>
       <code>
-        <plot title="Fixo" type="points" grab="false" zoom="false">
+        <plot type="points" grab="false" zoom="false">
+          <title>Fixo</title>
           <points interaction="false"/>
         </plot>
       </code>
-      <plot title="Fixo" type="points" grab="false" zoom="false">
+      <plot type="points" grab="false" zoom="false">
+        <title>Fixo</title>
         <points interaction="false"/>
       </plot>
     </subsection>

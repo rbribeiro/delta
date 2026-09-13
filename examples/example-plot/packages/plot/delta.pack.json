@@ -1,0 +1,12 @@
+{
+  "js": "index.js",
+  "css": "theme.css",
+  "needs": [
+    "./utils/auxiliary",
+    "./utils/parsing",
+    "./subcomponents/axis",
+    "./subcomponents/grid",
+    "./subcomponents/title",
+    "./subcomponents/points"
+  ]
+}

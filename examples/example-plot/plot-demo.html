@@ -3067,6 +3067,7 @@ delta-tweaks .twk-toggle.is-on::after {
 
 </style>
 <style>
+/* Plot Base */
 delta-plot {
   display: block;
   margin: 1.5rem 0;
@@ -3086,25 +3087,10 @@ delta-plot:focus-visible,
   position: relative;
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--delta-rule);
+  border: 1px solid var(--delta-rule, #e2e8f0);
   border-radius: 6px;
-  background: #ffffff;
+  background: var(--delta-surface-0, #ffffff);
   overflow: hidden;
-}
-
-.plot-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.5rem 0.8rem;
-  background: var(--delta-accent-soft);
-  border-bottom: 1px solid var(--delta-rule);
-}
-
-.plot-title {
-  color: var(--delta-accent-ink);
-  font-size: 0.85rem;
-  font-weight: 600;
 }
 
 .plot-canvas {
@@ -3112,22 +3098,39 @@ delta-plot:focus-visible,
   aspect-ratio: 16 / 9;
   display: block;
   touch-action: none;
-  background: #ffffff;
+  background: var(--delta-surface-0, #ffffff);
 }
 
+/* Title Header */
+.plot-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.8rem;
+  background: var(--delta-accent-soft, rgba(128, 128, 128, 0.08));
+  border-bottom: 1px solid var(--delta-rule, #e2e8f0);
+}
+
+.plot-title {
+  color: var(--delta-accent-ink, #333333);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Points Footer & Actions */
 .plot-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0.4rem 0.8rem;
-  background: var(--delta-accent-soft);
-  border-top: 1px solid var(--delta-rule);
+  background: var(--delta-accent-soft, rgba(128, 128, 128, 0.08));
+  border-top: 1px solid var(--delta-rule, #e2e8f0);
   font-family: var(--delta-font-body, system-ui, -apple-system, sans-serif);
   font-size: 0.8rem;
 }
 
 .plot-footer-status {
-  color: var(--delta-accent-ink);
+  color: var(--delta-accent-ink, #333333);
   font-weight: 500;
   user-select: none;
 }
@@ -3145,24 +3148,24 @@ delta-plot:focus-visible,
   width: 24px;
   height: 24px;
   padding: 0;
-  border: 1px solid var(--delta-rule);
+  border: 1px solid var(--delta-rule, #cbd5e1);
   border-radius: 4px;
   background: var(--delta-surface-1, #ffffff);
-  color: var(--delta-accent-ink);
+  color: var(--delta-accent-ink, #333333);
   cursor: pointer;
   outline: none;
   transition: all 0.15s ease;
 }
 
 .plot-footer-btn:hover {
-  background: #ffffff;
-  border-color: var(--delta-accent);
-  color: var(--delta-accent);
+  background: var(--delta-surface-0, #ffffff);
+  border-color: var(--delta-accent, #505050);
+  color: var(--delta-accent, #505050);
 }
 
 .plot-footer-btn.active {
-  background: var(--delta-accent);
-  border-color: var(--delta-accent);
+  background: var(--delta-accent, #505050);
+  border-color: var(--delta-accent, #505050);
   color: #ffffff;
 }
 
@@ -3179,7 +3182,7 @@ delta-plot:focus-visible,
   display: block;
 }
 
-/* Floating point badge with delete button (Option 3) */
+/* Floating Point Badge */
 .plot-point-badge {
   position: absolute;
   display: none;
@@ -3187,7 +3190,7 @@ delta-plot:focus-visible,
   gap: 5px;
   padding: 2px 4px 2px 8px;
   background: var(--delta-surface-1, #ffffff);
-  color: var(--delta-accent-ink, #334155);
+  color: var(--delta-accent-ink, #333333);
   border: 1px solid var(--delta-rule, #cbd5e1);
   border-radius: 9999px;
   font-size: 11px;
@@ -3212,8 +3215,8 @@ delta-plot:focus-visible,
   margin: 0;
   border: none;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--delta-accent, #4f46e5) 15%, transparent);
-  color: var(--delta-accent, #4f46e5);
+  background: color-mix(in srgb, var(--delta-accent, #505050) 15%, transparent);
+  color: var(--delta-accent, #505050);
   font-size: 13px;
   font-weight: 700;
   line-height: 1;
@@ -3223,7 +3226,7 @@ delta-plot:focus-visible,
 }
 
 .plot-point-badge-delete:hover {
-  background: var(--delta-accent, #4f46e5);
+  background: var(--delta-accent, #505050);
   color: #ffffff;
 }
 
@@ -3239,12 +3242,6 @@ delta-plot:focus-visible,
   </delta-abstract><delta-section id="sec:intro" num="1">
     <delta-title>Componente <delta-c>&lt;plot&gt;</delta-c></delta-title>O componente <delta-c>&lt;plot&gt;</delta-c> cria uma área interativa de desenho no plano cartesiano <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi mathvariant="double-struck">R</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">\mathbb{R}^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathbb">R</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span> com proporção (até o momento) fixa de <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>16</mn><mo>:</mo><mn>9</mn></mrow><annotation encoding="application/x-tex">16:9</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">16</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">:</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">9</span></span></span></span>. Ele gerencia a renderização em canvas de alta resolução e as interações de navegação do usuário.<br><br>Parâmetros:
     <delta-list>
-      <delta-item><delta-c>title</delta-c>: String de texto que representa o título.
-        <delta-list marker="dash">
-          <delta-item>Valores: Qualquer string.</delta-item>
-          <delta-item>Padrão: Vazio</delta-item>
-        </delta-list>
-      </delta-item>
       <delta-item><delta-c>type</delta-c>: Define o tipo de ambiente padrão.
         <delta-list marker="dash">
           <delta-item>Valores: <delta-c>cartesian</delta-c>, <delta-c>points</delta-c>.</delta-item>
@@ -3279,7 +3276,12 @@ delta-plot:focus-visible,
         </delta-list>
       </delta-item>
     </delta-list>
-  </delta-section><delta-section id="sec:grid" num="2">
+  </delta-section><delta-section id="sec:title" num="2">
+    <delta-title>Subcomponente <delta-c>&lt;title&gt;</delta-c></delta-title>O subcomponente <delta-c>&lt;title&gt;</delta-c> define o título exibido no cabeçalho superior da área de plotagem.<br><br>Parâmetros:
+    <delta-list>
+      <delta-item>Não possui parâmetros adicionais. O texto do título é inserido diretamente como conteúdo da tag.</delta-item>
+    </delta-list>
+  </delta-section><delta-section id="sec:grid" num="3">
     <delta-title>Subcomponente <delta-c>&lt;grid&gt;</delta-c></delta-title>O subcomponente <delta-c>&lt;grid&gt;</delta-c> é responsável por desenhar as linhas de grade do plano cartesiano e os eixos principais que se cruzam na origem <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">(</mo><mn>0</mn><mo separator="true">,</mo><mn>0</mn><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">(0, 0)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord">0</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">0</span><span class="mclose">)</span></span></span></span>.<br><br>Parâmetros:
     <delta-list>
       <delta-item><delta-c>show</delta-c>: Define a exibição das linhas básicas e dos eixos da origem.
@@ -3289,7 +3291,7 @@ delta-plot:focus-visible,
         </delta-list>
       </delta-item>
     </delta-list>
-  </delta-section><delta-section id="sec:axis" num="3">
+  </delta-section><delta-section id="sec:axis" num="4">
     <delta-title>Subcomponente <delta-c>&lt;axis&gt;</delta-c></delta-title>O subcomponente <delta-c>&lt;axis&gt;</delta-c> desenha as réguas numéricas nos eixos horizontal e vertical, indicando as coordenadas visíveis no plano.<br><br>Parâmetros:
     <delta-list>
       <delta-item><delta-c>show</delta-c>: Define quais eixos terão suas graduações numéricas visíveis.
@@ -3299,7 +3301,7 @@ delta-plot:focus-visible,
         </delta-list>
       </delta-item>
     </delta-list>
-  </delta-section><delta-section id="sec:points" num="4">
+  </delta-section><delta-section id="sec:points" num="5">
     <delta-title>Subcomponente <delta-c>&lt;points&gt;</delta-c></delta-title>O subcomponente <delta-c>&lt;points&gt;</delta-c> adiciona uma camada de entidades de pontos ao plano cartesiano, permitindo criar, mover, selecionar e remover pontos de forma dinâmica, acompanhados de uma barra de status e balão flutuante de coordenadas.<br><br>Parâmetros:
     <delta-list>
       <delta-item><delta-c>size</delta-c>: Fator de escala do raio visual dos pontos renderizados.
@@ -3315,35 +3317,47 @@ delta-plot:focus-visible,
         </delta-list>
       </delta-item>
     </delta-list>
-  </delta-section><delta-section id="sec:ex" num="5">
-    <delta-title>Exemplos</delta-title>Lista de exemplos de plots interessantes, ilustrando como usar os seus parâmetros de forma eficiente.<delta-subsection num="5.1">
+  </delta-section><delta-section id="sec:ex" num="6">
+    <delta-title>Exemplos</delta-title>Lista de exemplos de plots interessantes, ilustrando como usar os seus parâmetros de forma eficiente.<delta-subsection num="6.1">
       <delta-title>Plot Mínimo</delta-title>
-      <delta-code num="5.1">&lt;plot/&gt;</delta-code>
+      <delta-code num="6.1">&lt;plot/&gt;</delta-code>
       <delta-plot></delta-plot>
-    </delta-subsection><delta-subsection num="5.2">
+    </delta-subsection><delta-subsection num="6.2">
       <delta-title>Plot Básico</delta-title>
-      <delta-code num="5.2">&lt;plot title="Espaço Cartesiano" x="-1,1" y="-1,1"/&gt;</delta-code>
-      <delta-plot title="Espaço Cartesiano" x="-1,1" y="-1,1"></delta-plot>
-    </delta-subsection><delta-subsection num="5.3">
+      <delta-code num="6.2">&lt;plot x="-1,1" y="-1,1"&gt;
+  &lt;title&gt;Espaço Cartesiano&lt;/title&gt;
+&lt;/plot&gt;</delta-code>
+      <delta-plot x="-1,1" y="-1,1">
+        <delta-title>Espaço Cartesiano</delta-title>
+      </delta-plot>
+    </delta-subsection><delta-subsection num="6.3">
       <delta-title>Régua Minimalista</delta-title>
-      <delta-code num="5.3">&lt;plot title="Ruler" x="-1,1"&gt;
+      <delta-code num="6.3">&lt;plot x="-1,1"&gt;
+  &lt;title&gt;Ruler&lt;/title&gt;
   &lt;grid show="origin"/&gt;
   &lt;axis show="x"/&gt;
 &lt;/plot&gt;</delta-code>
-      <delta-plot title="Ruler" x="-1,1">
+      <delta-plot x="-1,1">
+        <delta-title>Ruler</delta-title>
         <delta-grid show="origin"></delta-grid>
         <delta-axis show="x"></delta-axis>
       </delta-plot>
-    </delta-subsection><delta-subsection num="5.4">
+    </delta-subsection><delta-subsection num="6.4">
       <delta-title>Espaço de Pontos</delta-title>
-      <delta-code num="5.4">&lt;plot title="Espaço de Pontos" type="points"/&gt;</delta-code>
-      <delta-plot title="Espaço de Pontos" type="points"></delta-plot>
-    </delta-subsection><delta-subsection num="5.5">
+      <delta-code num="6.4">&lt;plot type="points"&gt;
+  &lt;title&gt;Espaço de Pontos&lt;/title&gt;
+&lt;/plot&gt;</delta-code>
+      <delta-plot type="points">
+        <delta-title>Espaço de Pontos</delta-title>
+      </delta-plot>
+    </delta-subsection><delta-subsection num="6.5">
       <delta-title>Sem Interação</delta-title>
-      <delta-code num="5.5">&lt;plot title="Fixo" type="points" grab="false" zoom="false"&gt;
+      <delta-code num="6.5">&lt;plot type="points" grab="false" zoom="false"&gt;
+  &lt;title&gt;Fixo&lt;/title&gt;
   &lt;points interaction="false"/&gt;
 &lt;/plot&gt;</delta-code>
-      <delta-plot title="Fixo" type="points" grab="false" zoom="false">
+      <delta-plot type="points" grab="false" zoom="false">
+        <delta-title>Fixo</delta-title>
         <delta-points interaction="false"></delta-points>
       </delta-plot>
     </delta-subsection></delta-section>
@@ -3355,26 +3369,51 @@ delta-plot:focus-visible,
 `),o.append(l)}o.append(t);let s=document.createElement("div");s.className="code-head";let r=this.getAttribute("lang"),i=document.createElement("span");i.className="code-lang",i.textContent=(r||v("code","Code")).toUpperCase();let m=document.createElement("button");if(m.type="button",m.className="code-copy",m.textContent=v("copy","Copy"),m.addEventListener("click",()=>{navigator.clipboard?.writeText(e).then(()=>{m.textContent=v("copied","Copied"),m.classList.add("is-copied"),setTimeout(()=>{m.textContent=v("copy","Copy"),m.classList.remove("is-copied")},1400)})}),s.append(i,m),this.append(s,o),this.getAttribute("num")){let d=this.getAttribute("num"),l=document.createElement("div");l.classList.add("code-cap");let c=document.createElement("span");c.className="lbl";let u=v("code","code".charAt(0).toUpperCase()+"code".slice(1));c.textContent=u+(d?` ${d}`:""),l.prepend(c," "),this.append(l)}T(this,s)}};function Re(){customElements.define("delta-code",re)}var P={ordered:!1,marker:"bullet"},ie={1:{ordered:!0,marker:"decimal"},number:{ordered:!0,marker:"decimal"},numbers:{ordered:!0,marker:"decimal"},numbered:{ordered:!0,marker:"decimal"},decimal:{ordered:!0,marker:"decimal"},a:{ordered:!0,marker:"alpha"},alpha:{ordered:!0,marker:"alpha"},alphabetical:{ordered:!0,marker:"alpha"},A:{ordered:!0,marker:"alpha-upper"},"alpha-upper":{ordered:!0,marker:"alpha-upper"},i:{ordered:!0,marker:"roman"},roman:{ordered:!0,marker:"roman"},I:{ordered:!0,marker:"roman-upper"},"roman-upper":{ordered:!0,marker:"roman-upper"},bullet:P,disc:P,dot:P,dash:{ordered:!1,marker:"dash"},none:{ordered:!1,marker:"none"}};function Ye(a){if(a.getAttribute("numbered")==="true")return ie.number;let e=(a.getAttribute("marker")??"").trim();return e?ie[e]??ie[e.toLowerCase()]??P:P}var le=class extends HTMLElement{connectedCallback(){this.dataset.deltaReady||(this.dataset.deltaReady="1",this._render())}_render(){let e=Ye(this),t=document.createElement(e.ordered?"ol":"ul");if(t.className="delta-list",t.dataset.marker=e.marker,e.ordered){let n=parseInt(this.getAttribute("start")??"",10);Number.isFinite(n)&&(t.style.counterReset=`delta-item ${n-1}`,t.setAttribute("start",String(n)))}this.querySelectorAll(":scope > delta-item").forEach(n=>{let o=document.createElement("li");o.className="delta-list-item";for(let s of["reveal","reveal-order"]){let r=n.getAttribute(s);r!==null&&o.setAttribute(s,r)}o.append(...n.childNodes),t.append(o)}),this.replaceChildren(t)}};function He(){customElements.define("delta-list",le)}function Se(a,e,t,n,o){let s=e.getAttribute("align");o&&s&&(n[t]=s),s||(s=n[t]),s==="right"?a.classList.add("num"):s==="center"&&(a.style.textAlign="center"),e.getAttribute("mono")==="true"&&a.classList.add("mono")}var ce=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("delta-table");let e=this.querySelector(":scope > delta-title"),t=this.querySelector(":scope > delta-caption"),n=this.getAttribute("num"),o=null;if(e||t||n){if(o=document.createElement("div"),o.className="table-head",e||n){let c=document.createElement("span");c.className="table-lbl",c.textContent=v("table","Table")+(n?` ${n}`:""),o.append(c)}if(e){let c=document.createElement("span");c.className="table-title",c.append(...e.childNodes),o.append(c)}if(t){let c=document.createElement("span");c.className="table-cap",c.append(...t.childNodes),o.append(c)}}let s=document.createElement("table");s.className="t";let r=[],i=this.querySelector(":scope > delta-header");if(i){let c=document.createElement("thead"),u=document.createElement("tr");i.querySelectorAll(":scope > delta-column").forEach((f,E)=>{let h=document.createElement("th");Se(h,f,E,r,!0),h.append(...f.childNodes),u.append(h)}),c.append(u),s.append(c)}let m=document.createElement("tbody");this.querySelectorAll(":scope > delta-row").forEach(c=>{let u=document.createElement("tr");c.querySelectorAll(":scope > delta-column").forEach((f,E)=>{let h=document.createElement("td");Se(h,f,E,r,!1),h.append(...f.childNodes),u.append(h)}),m.append(u)}),s.append(m);let d=document.createElement("div");d.className="table-wrap";let l=this.getAttribute("max-height");l&&(d.style.maxHeight=l,d.style.overflowY="auto"),d.append(s),this.replaceChildren(...o?[o]:[],d)}};function Ie(){customElements.define("delta-table",ce)}var Je=/^\d*\.?\d+(fr)?$/,de=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("gap");e&&(this.style.gap=e);for(let t of this.querySelectorAll(":scope > delta-column")){let n=t.getAttribute("width");if(!n)continue;let o=Je.test(n.trim())?`${parseFloat(n)} 1 0`:`0 1 ${n}`;t.style.setProperty("--col-flex",o)}}};function qe(){customElements.define("delta-columns",de)}var $e={keywords:"Keywords",msc:"Mathematics Subject Classification",received:"Received",revised:"Revised",accepted:"Accepted",submitted:"Submitted",date:"Date",acknowledgements:"Acknowledgements",funding:"Funding"},Qe=new Set(["acknowledgements","funding"]),me=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=document.createElement("div");e.className="abstract-label",e.textContent=v("abstract","Abstract");let t=document.createElement("div");t.className="abstract-body",t.append(...this.childNodes),this.append(e,t)}},pe=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady||(this.dataset.deltaReady="1",this.closest("delta-slide")))return;let e=this.tagName.slice(6).toLowerCase(),t=Qe.has(e);this.classList.add(t?"fm-block":"fm-line");let n=document.createElement("span");n.className="fm-label",n.textContent=v(e,$e[e]??e),this.prepend(n,t?" ":": ")}};function Oe(){customElements.define("delta-abstract",class extends me{});for(let a of Object.keys($e))customElements.define(`delta-${a}`,class extends pe{})}var Ze=new Set(["red","orange","yellow","lime","green","teal","sky","blue","indigo","purple","pink","slate"]),et={danger:"red",warning:"orange",tip:"green",note:"blue"},ue=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("color")?.trim()||et[this.getAttribute("type")?.trim().toLowerCase()??""];e&&(Ze.has(e.toLowerCase())?this.setAttribute("data-accent",e.toLowerCase()):this.style.setProperty("--delta-accent",e));let t=this.querySelector(":scope > delta-title"),n=null;t&&(n=document.createElement("div"),n.className="box-heading",n.append(...t.childNodes),t.remove());let o=document.createElement("div");o.className="box-body",o.append(...this.childNodes),n&&this.append(n),this.append(o)}};function Pe(){customElements.define("delta-box",ue)}function Be(){be(),he(),ge(),ve(),Ee(),ye(),xe(),Le(),ke(),Ne(),Te(),Me(),we(),Re(),He(),Ie(),qe(),Oe(),Pe()}function Fe(){let a=document.documentElement;if(a.dataset.type!=="presentation")return null;let e=[...document.querySelectorAll("delta-slide")];if(e.length===0)return null;a.classList.add("deck-js"),document.querySelector("delta-progress")&&a.classList.add("deck-progress-on");let t=0,n=0,o=0,s=[],r=p=>Math.max(0,Math.min(e.length-1,p)),i=p=>[...p.querySelectorAll('[reveal="true"]')].map((g,y)=>({el:g,order:g.hasAttribute("reveal-order")?Number(g.getAttribute("reveal-order")):y})).sort((g,y)=>g.order-y.order).map(g=>g.el),m=e.map(i),d=(p,g)=>m[p].forEach((y,N)=>y.classList.toggle("is-revealed",N<g)),l=()=>{let p=(t+1)/e.length;a.style.setProperty("--deck-progress-prev",String(o)),a.style.setProperty("--deck-progress",String(p)),o=p},c=(p,g)=>{e[t]?.classList.remove("is-active"),t=r(p),n=g?m[t].length:0,d(t,n),l(),e[t].classList.add("is-active");for(let y of s)y(t,e.length)},u=()=>{n<m[t].length?d(t,++n):t<e.length-1&&c(t+1,!1)},f=()=>{n>0?d(t,--n):t>0&&c(t-1,!0)},E=p=>c(p,!1);document.addEventListener("keydown",p=>{let g=p.target;if(!(g&&(g.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(g.tagName)))&&!(p.metaKey||p.ctrlKey||p.altKey))switch(p.key){case"ArrowRight":case"ArrowDown":case"PageDown":case" ":p.preventDefault(),u();break;case"ArrowLeft":case"ArrowUp":case"PageUp":p.preventDefault(),f();break;case"Home":p.preventDefault(),E(0);break;case"End":p.preventDefault(),E(e.length-1);break}});let h=(p,g,y,N)=>{let C=document.createElement("button");return C.type="button",C.className=`deck-nav ${p}`,C.textContent=g,C.setAttribute("aria-label",y),C.addEventListener("click",N),C},b=document.createElement("div");b.className="deck-controls",b.append(h("deck-prev","\u2039",v("prevSlide","Previous slide"),f),h("deck-next","\u203A",v("nextSlide","Next slide"),u)),document.body.append(b);let k=0,H=0;document.addEventListener("touchstart",p=>{k=p.touches[0].clientX,H=p.touches[0].clientY},{passive:!0}),document.addEventListener("touchend",p=>{let g=p.changedTouches[0].clientX-k,y=p.changedTouches[0].clientY-H;Math.abs(g)>50&&Math.abs(g)>Math.abs(y)*1.5&&(g<0?u:f)()},{passive:!0});let M=p=>document.querySelector(`delta-slide[cover="true"] ${p}`)?.textContent?.trim()??"",S=(p,g)=>{let y=document.createElement("span");return y.className=p,y.textContent=g,y},x=M("delta-author"),w=M("delta-affiliation"),I=[...x?[S("tb-author",x)]:[],...w?[S("tb-affiliation",w)]:[]];if(I.length){let p=document.createElement("div");p.className="deck-topbar eyebrow",I.forEach((g,y)=>{y>0&&p.append(" \xB7 "),p.append(g)}),document.body.append(p),s.push(g=>p.classList.toggle("topbar-hidden",e[g].matches('[cover="true"], [divider="true"]')))}return c(0,!1),{get index(){return t},get total(){return e.length},go:E,next:u,prev:f,goToId(p){let g=document.getElementById(p);if(!g)return!1;let y=g.closest("delta-slide")??g.querySelector("delta-slide"),N=y?e.indexOf(y):-1;return N<0?!1:(E(N),!0)},onChange(p){s.push(p),p(t,e.length)}}}Be();Ae();var tt=Fe();window.Delta={popover:L,t:v,deck:tt};var _e=()=>{location.hash.length>1&&B(decodeURIComponent(location.hash.slice(1)))};_e();window.addEventListener("hashchange",_e);})();
 </script>
 <script>
-/* pack: plot */
-// Auxiliary Functions
+/* pack: auxiliary */
+// Visual Constants
+const BASE_SIZE_SCALE = 40;
+const BASE_SCALE = BASE_SIZE_SCALE;
+const TARGET_GRID_SPACING = 50;
+const GRID_LINE_COLOR = "rgba(128, 128, 128, 0.12)";
+const GRID_LINE_WIDTH = 1;
+const AXIS_LINE_COLOR = "rgba(128, 128, 128, 0.24)";
+const AXIS_LINE_WIDTH = 1;
+const AXIS_LABEL_FONT = "10px sans-serif";
+const AXIS_LABEL_COLOR = "rgba(40, 40, 40, 0.85)";
+
+// Data and String Parsing
 function parseTuple(tuple, k = 0, numbers = true) {
     if (tuple == null) return null;
     const parts = tuple.split(',');
-    if (k > 0 && parts.length !== k) {
-        return null;
-    }
-
+    if (k > 0 && parts.length !== k) return null;
+    
     if (numbers) {
         const nums = parts.map(el => parseFloat(el.trim()));
-        if (nums.some(num => isNaN(num))) {
-            return null;
-        }
+        if (nums.some(num => isNaN(num))) return null;
         return nums;
     } else {
         return parts;
     }
 }
 
+function parseOption(value, options) {
+    const isArray = Array.isArray(options);
+    const keys = isArray ? options : Object.keys(options);
+    const firstValue = isArray ? options[0] : options[keys[0]];
+
+    if (!value) return firstValue;
+    const val = String(value).toLowerCase();
+
+    for (let key of keys) {
+        if (val === String(key).toLowerCase()) {
+            return isArray ? key : options[key];
+        }
+    }
+
+    return firstValue;
+}
+
+// Math and Formatting
 function getNiceStep(targetStep) {
     const pow10 = Math.pow(10, Math.floor(Math.log10(targetStep)));
     const frac = targetStep / pow10;
@@ -3384,31 +3423,188 @@ function getNiceStep(targetStep) {
     return pow10;
 }
 
-function formatNumber(val) {
+function formatNumber(val, precision = 6) {
     if (Math.abs(val) < 1e-10) return "0";
-    return parseFloat(val.toFixed(6)).toString();
+    return parseFloat(val.toFixed(precision)).toString();
 }
 
-// Grid Default Settings
-const BASE_SCALE = 40;
-const TARGET_GRID_SPACING = 50;
-const GRID_LINE_COLOR = "rgba(128, 128, 128, 0.12)";
-const GRID_LINE_WIDTH = 1;
-const AXIS_LINE_COLOR = "rgba(128, 128, 128, 0.24)";
-const AXIS_LINE_WIDTH = 1;
-const AXIS_LABEL_FONT = "10px system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-const AXIS_LABEL_COLOR = "rgba(40, 40, 40, 0.85)";
+// Coordinate Conversion Helpers
+function getPlotCenter(plot, w, h) {
+    const width = (w !== undefined) ? w : (plot.canvas ? plot.canvas.clientWidth : 0);
+    const height = (h !== undefined) ? h : (plot.canvas ? plot.canvas.clientHeight : 0);
+    return {
+        centerX: width / 2 + plot.offsetX,
+        centerY: height / 2 + plot.offsetY,
+        scale: BASE_SIZE_SCALE * plot.zoom
+    };
+}
 
-// Subcomponents
+function worldToScreen(x, y, plot, w, h) {
+    const { centerX, centerY, scale } = getPlotCenter(plot, w, h);
+    return {
+        sx: Math.round(centerX + x * scale),
+        sy: Math.round(centerY - y * scale)
+    };
+}
+
+function screenToWorld(sx, sy, plot, w, h) {
+    const { centerX, centerY, scale } = getPlotCenter(plot, w, h);
+    return {
+        x: parseFloat(((sx - centerX) / scale).toFixed(6)),
+        y: parseFloat(((centerY - sy) / scale).toFixed(6))
+    };
+}
+
+// Reactive Authoritative Plot Data
+function createPlotData(plot, initial = {}) {
+    let nextId = 1;
+    let notifyScheduled = false;
+
+    const notify = () => {
+        if (!plot) return;
+        if (notifyScheduled) return;
+        notifyScheduled = true;
+        queueMicrotask(() => {
+            notifyScheduled = false;
+            if (plot.render) plot.render();
+            plot.dispatchEvent(new CustomEvent("delta:data-change", { detail: plot.data }));
+        });
+    };
+
+    function reactive(obj) {
+        if (typeof obj !== "object" || obj === null) return obj;
+
+        return new Proxy(obj, {
+            get(target, prop, receiver) {
+                const val = Reflect.get(target, prop, receiver);
+                if (typeof val === "object" && val !== null) {
+                    return reactive(val);
+                }
+                return val;
+            },
+            set(target, prop, val, receiver) {
+                // Auto-assign unique id to point object if missing
+                if (Array.isArray(target) && prop !== "length" && typeof val === "object" && val !== null) {
+                    if (val.id === undefined) val.id = nextId++;
+                }
+                const oldVal = target[prop];
+                const res = Reflect.set(target, prop, val, receiver);
+                if (oldVal !== val || prop === "length") {
+                    notify();
+                }
+                return res;
+            },
+            deleteProperty(target, prop) {
+                const res = Reflect.deleteProperty(target, prop);
+                notify();
+                return res;
+            }
+        });
+    }
+
+    return reactive({
+        points: [],
+        ...initial
+    });
+}
+</script>
+<script>
+/* pack: parsing */
+function parsePlotAttributes(plot, typeAttr, grabAttr, zoomAttr, xAttr, yAttr, titleAttr = "") {
+    // Title
+    plot.title = titleAttr || "";
+
+    // Grabbing
+    plot.grab = (grabAttr !== "false");
+    plot.offsetX = 0;
+    plot.offsetY = 0;
+
+    // Zoom
+    let zoomTuple = parseTuple(zoomAttr, 2, true);
+    if (!zoomTuple) {
+        zoomTuple = parseTuple(parseOption(zoomAttr, { "true": "0.25,4", "false": "1,1" }), 2, true);
+    } else {
+        if (zoomTuple[0] > zoomTuple[1] || 1 > zoomTuple[1] || 1 < zoomTuple[0]) zoomTuple = [0.25, 4];
+    }
+    plot.minZoom = zoomTuple[0];
+    plot.maxZoom = zoomTuple[1];
+    plot.zoomEnabled = (zoomTuple[0] !== 1 || zoomTuple[1] !== 1);
+    plot.zoom = Math.max(Math.min(1, plot.maxZoom), plot.minZoom);
+
+    // Initial Position Range
+    plot.xRange = parseTuple(xAttr, 2, true) || [-16, 16];
+    plot.yRange = parseTuple(yAttr, 2, true) || [-9, 9];
+    plot.userInteracted = false;
+
+    // Plot Type
+    plot.type = parseOption(typeAttr, ['cartesian', 'points']);
+
+    // Reactive Authoritative Data Container
+    plot.data = createPlotData(plot, { points: [] });
+}
+
+function parsePointsAttributes(points, sizeAttr, interactionAttr, plot) {
+    // Setup
+    const rawSize = parseFloat(sizeAttr);
+    points.size = isNaN(rawSize) ? 1 : Math.max(0.1, Math.min(10, rawSize));
+    points.interaction = parseOption(interactionAttr, ["true", "false", "move"]);
+
+    points.plot = plot;
+    if (!plot.data) plot.data = createPlotData(plot, { points: [] });
+    if (!plot.data.points) plot.data.points = [];
+
+    points.mode = false;
+    points.selectedId = null;
+    points.draggingId = null;
+    points.hoverId = null;
+    points.dragOffset = { x: 0, y: 0 };
+}
+
+function parseSubcomponentData(plot) {
+    // Disable connectedCallback on child web components
+    for (const child of plot.children) {
+        if (child.tagName.toLowerCase().startsWith("delta-")) {
+            child.connectedCallback = () => {};
+        }
+    }
+    plot.elements = [];
+
+    // Title
+    let titleEl = plot.querySelector("delta-title");
+    if (titleEl) {
+        plot.elements.push(titleEl);
+    }
+
+    // Grid
+    let gridEl = plot.querySelector("delta-grid");
+    if ((plot.type === "cartesian" || plot.type === "points") && !gridEl) {
+        gridEl = document.createElement("delta-grid");
+    }
+    if (gridEl) plot.elements.push(gridEl);
+
+    // Axis
+    let axisEl = plot.querySelector("delta-axis");
+    if ((plot.type === "cartesian" || plot.type === "points") && !axisEl) {
+        axisEl = document.createElement("delta-axis");
+    }
+    if (axisEl) plot.elements.push(axisEl);
+
+    // Points
+    let pointsEl = plot.querySelector("delta-points");
+    if (plot.type === "points" && !pointsEl) {
+        pointsEl = document.createElement("delta-points");
+    }
+    if (pointsEl) plot.elements.push(pointsEl);
+
+    plot.innerHTML = "";
+}
+</script>
+<script>
+/* pack: axis */
 class DeltaAxis extends HTMLElement {
     build(plot) {
-        // Attributes
         this.showAttr = this.getAttribute("show") || "true";
-
-        // Setup
-        const validShows = ["true", "false", "x", "y"];
-        const normalizedShow = this.showAttr.toLowerCase();
-        this.show = validShows.includes(normalizedShow) ? normalizedShow : "true";
+        this.show = parseOption(this.showAttr, ["true", "false", "x", "y"]);
     }
 
     bind(plot) {}
@@ -3418,26 +3614,25 @@ class DeltaAxis extends HTMLElement {
         const showX = (this.show === "true" || this.show === "x");
         const showY = (this.show === "true" || this.show === "y");
 
-        const scaleX = BASE_SCALE * (plot.zoomX || plot.zoom);
-        const scaleY = BASE_SCALE * (plot.zoomY || plot.zoom);
-        const centerX = Math.round(w / 2 + plot.offsetX);
-        const centerY = Math.round(h / 2 + plot.offsetY);
+        const { centerX, centerY, scale } = getPlotCenter(plot, w, h);
+        const roundCenterX = Math.round(centerX);
+        const roundCenterY = Math.round(centerY);
 
         ctx.font = AXIS_LABEL_FONT;
         ctx.fillStyle = AXIS_LABEL_COLOR;
 
         // X-axis markings
         if (showX) {
-            const stepUnitX = getNiceStep(TARGET_GRID_SPACING / scaleX);
-            const stepPxX = stepUnitX * scaleX;
+            const stepUnitX = getNiceStep(TARGET_GRID_SPACING / scale);
+            const stepPxX = stepUnitX * scale;
             const textY = h - 6;
 
-            const minUnit = Math.floor((-centerX) / stepPxX) * stepUnitX;
-            const maxUnit = Math.ceil((w - centerX) / stepPxX) * stepUnitX;
+            const minUnit = Math.floor((-roundCenterX) / stepPxX) * stepUnitX;
+            const maxUnit = Math.ceil((w - roundCenterX) / stepPxX) * stepUnitX;
 
             for (let u = minUnit; u <= maxUnit + stepUnitX * 0.5; u += stepUnitX) {
                 const val = parseFloat(u.toFixed(8)) + 0;
-                const sx = Math.round(centerX + u * scaleX);
+                const sx = Math.round(roundCenterX + u * scale);
                 if (sx >= 0 && sx <= w) {
                     ctx.textBaseline = "bottom";
                     if (sx < 25) {
@@ -3456,16 +3651,16 @@ class DeltaAxis extends HTMLElement {
 
         // Y-axis markings
         if (showY) {
-            const stepUnitY = getNiceStep(TARGET_GRID_SPACING / scaleY);
-            const stepPxY = stepUnitY * scaleY;
+            const stepUnitY = getNiceStep(TARGET_GRID_SPACING / scale);
+            const stepPxY = stepUnitY * scale;
             const textX = 8;
 
-            const minUnit = Math.floor((centerY - h) / stepPxY) * stepUnitY;
-            const maxUnit = Math.ceil((centerY) / stepPxY) * stepUnitY;
+            const minUnit = Math.floor((roundCenterY - h) / stepPxY) * stepUnitY;
+            const maxUnit = Math.ceil(roundCenterY / stepPxY) * stepUnitY;
 
             for (let u = minUnit; u <= maxUnit + stepUnitY * 0.5; u += stepUnitY) {
                 const val = parseFloat(u.toFixed(8)) + 0;
-                const sy = Math.round(centerY - u * scaleY);
+                const sy = Math.round(roundCenterY - u * scale);
                 if (sy >= 0 && sy <= h) {
                     ctx.textAlign = "left";
                     if (sy < 16) {
@@ -3484,15 +3679,15 @@ class DeltaAxis extends HTMLElement {
     }
 }
 
+customElements.define("delta-axis", DeltaAxis);
+
+</script>
+<script>
+/* pack: grid */
 class DeltaGrid extends HTMLElement {
     build(plot) {
-        // Attributes
         this.showAttr = this.getAttribute("show") || "true";
-
-        // Setup
-        const validShows = ["true", "false", "origin", "basic"];
-        const normalizedShow = this.showAttr.toLowerCase();
-        this.show = validShows.includes(normalizedShow) ? normalizedShow : "true";
+        this.show = parseOption(this.showAttr, ["true", "false", "origin", "basic"]);
     }
 
     bind(plot) {}
@@ -3500,21 +3695,21 @@ class DeltaGrid extends HTMLElement {
     render(ctx, w, h, plot) {
         if (this.show === "false") return;
 
-        const scaleX = BASE_SCALE * (plot.zoomX || plot.zoom);
-        const scaleY = BASE_SCALE * (plot.zoomY || plot.zoom);
-        const centerX = Math.round(w / 2 + plot.offsetX);
-        const centerY = Math.round(h / 2 + plot.offsetY);
+        const { centerX, centerY, scale } = getPlotCenter(plot, w, h);
+        const roundCenterX = Math.round(centerX);
+        const roundCenterY = Math.round(centerY);
 
         // Grid lines
         if (this.show === "true" || this.show === "basic") {
             ctx.strokeStyle = GRID_LINE_COLOR;
             ctx.lineWidth = GRID_LINE_WIDTH;
 
+            const stepUnit = getNiceStep(TARGET_GRID_SPACING / scale);
+            const stepPx = stepUnit * scale;
+
             // Vertical lines (X direction)
-            const stepUnitX = getNiceStep(TARGET_GRID_SPACING / scaleX);
-            const stepPxX = stepUnitX * scaleX;
-            const startX = ((centerX % stepPxX) + stepPxX) % stepPxX;
-            for (let x = startX; x <= w + 0.5; x += stepPxX) {
+            const startX = ((roundCenterX % stepPx) + stepPx) % stepPx;
+            for (let x = startX; x <= w + 0.5; x += stepPx) {
                 const rx = Math.round(x);
                 ctx.beginPath();
                 ctx.moveTo(rx + 0.5, 0);
@@ -3523,10 +3718,8 @@ class DeltaGrid extends HTMLElement {
             }
 
             // Horizontal lines (Y direction)
-            const stepUnitY = getNiceStep(TARGET_GRID_SPACING / scaleY);
-            const stepPxY = stepUnitY * scaleY;
-            const startY = ((centerY % stepPxY) + stepPxY) % stepPxY;
-            for (let y = startY; y <= h + 0.5; y += stepPxY) {
+            const startY = ((roundCenterY % stepPx) + stepPx) % stepPx;
+            for (let y = startY; y <= h + 0.5; y += stepPx) {
                 const ry = Math.round(y);
                 ctx.beginPath();
                 ctx.moveTo(0, ry + 0.5);
@@ -3541,141 +3734,172 @@ class DeltaGrid extends HTMLElement {
             ctx.lineWidth = AXIS_LINE_WIDTH;
 
             // X axis
-            if (centerY >= 0 && centerY <= h) {
+            if (roundCenterY >= 0 && roundCenterY <= h) {
                 ctx.beginPath();
-                ctx.moveTo(0, centerY + 0.5);
-                ctx.lineTo(w, centerY + 0.5);
+                ctx.moveTo(0, roundCenterY + 0.5);
+                ctx.lineTo(w, roundCenterY + 0.5);
                 ctx.stroke();
             }
 
             // Y axis
-            if (centerX >= 0 && centerX <= w) {
+            if (roundCenterX >= 0 && roundCenterX <= w) {
                 ctx.beginPath();
-                ctx.moveTo(centerX + 0.5, 0);
-                ctx.lineTo(centerX + 0.5, h);
+                ctx.moveTo(roundCenterX + 0.5, 0);
+                ctx.lineTo(roundCenterX + 0.5, h);
                 ctx.stroke();
             }
         }
     }
 }
 
+customElements.define("delta-grid", DeltaGrid);
+
+</script>
+<script>
+/* pack: title */
+class DeltaTitle extends HTMLElement {
+    build(plot) {
+        plot.title = this.innerHTML;
+    }
+
+    bind(plot) {}
+
+    render(ctx, w, h, plot) {}
+}
+
+customElements.define("delta-title", DeltaTitle);
+
+</script>
+<script>
+/* pack: points */
 class DeltaPoints extends HTMLElement {
     build(plot) {
-        // Attributes
         this.sizeAttr = this.getAttribute("size") || "1";
         this.interactionAttr = this.getAttribute("interaction") || "true";
 
-        // Setup
-        const rawSize = parseFloat(this.sizeAttr);
-        this.size = isNaN(rawSize) ? 1 : Math.max(0.1, Math.min(10, rawSize));
+        parsePointsAttributes(this, this.sizeAttr, this.interactionAttr, plot);
 
-        const normInteraction = this.interactionAttr.toLowerCase();
-        this.interaction = ["true", "false", "move"].includes(normInteraction) ? normInteraction : "true";
-
-        this.plot = plot;
-        if (!plot.data) plot.data = {};
-        if (!plot.data.points) plot.data.points = [];
-
-        this.mode = false;
-        this.selectedId = null;
-        this.draggingId = null;
-        this.hoverId = null;
-        this.nextId = 1;
-        this.dragOffset = { x: 0, y: 0 };
-
-        // Floating badge (Option 3)
         this.floatingBadge = this.buildFloatingBadge(plot);
         plot.container.append(this.floatingBadge);
 
-        // Footer toolbar
         this.footer = this.buildFooter(plot);
         plot.container.append(this.footer);
     }
+
+    bind(plot) {
+        this.plot = plot;
+        plot.tabIndex = 0;
+
+        plot.canvas.addEventListener("pointerdown", (e) => this.onPointerDown(e, plot));
+        plot.canvas.addEventListener("pointermove", (e) => this.onPointerMove(e, plot));
+        plot.canvas.addEventListener("pointerup", (e) => this.onPointerUp(e, plot));
+        plot.canvas.addEventListener("pointercancel", (e) => this.onPointerUp(e, plot));
+        plot.canvas.addEventListener("pointerleave", () => {
+            if (this.mode && this.draggingId === null) this.hoverId = null;
+        });
+
+        plot.addEventListener("keydown", (e) => this.onKeyDown(e, plot));
+
+        document.addEventListener("pointerdown", (e) => {
+            if (!plot.contains(e.target) && this.selectedId !== null) {
+                this.selectedId = null;
+                plot.render();
+            }
+        });
+    }
+
+    render(ctx, w, h, plot) {
+        if (this.deleteSelectedBtn) {
+            this.deleteSelectedBtn.disabled = (this.selectedId === null);
+        }
+        this.updateFloatingBadge();
+        this.updateStatus();
+
+        const points = plot.data?.points || [];
+        if (!points.length) return;
+
+        const defaultAccent = getComputedStyle(plot).getPropertyValue("--delta-accent").trim() || "rgb(80, 80, 80)";
+
+        for (const p of points) {
+            if (!p || typeof p.x !== "number" || typeof p.y !== "number") continue;
+
+            const pos = worldToScreen(p.x, p.y, plot, w, h);
+            const radius = 3 * (p.size || this.size || 1);
+            const pointColor = p.color || defaultAccent;
+            const isSel = p.id === this.selectedId;
+
+            if (isSel) {
+                ctx.beginPath();
+                ctx.arc(pos.sx, pos.sy, radius + 6, 0, Math.PI * 2);
+                ctx.fillStyle = "rgba(80, 80, 80, 0.18)";
+                ctx.fill();
+                ctx.strokeStyle = pointColor;
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
+
+            ctx.beginPath();
+            ctx.arc(pos.sx, pos.sy, radius, 0, Math.PI * 2);
+            ctx.fillStyle = isSel ? pointColor : "#ffffff";
+            ctx.fill();
+            ctx.strokeStyle = isSel ? "#ffffff" : pointColor;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+    }
+
+    // UI Construction
 
     buildFooter(plot) {
         const footer = document.createElement("div");
         footer.className = "plot-footer";
 
-        // Point count status
         this.statusEl = document.createElement("span");
         this.statusEl.className = "plot-footer-status";
         this.updateStatus();
         footer.append(this.statusEl);
 
-        // If interaction is false, no action buttons
-        if (this.interaction === "false") {
-            return footer;
-        }
+        if (this.interaction === "false") return footer;
 
-        // Actions toolbar
         const actions = document.createElement("div");
         actions.className = "plot-footer-actions";
 
-        // Selection / Edit / Move Mode toggle button
-        this.modeBtn = document.createElement("button");
-        this.modeBtn.type = "button";
-        this.modeBtn.className = "plot-footer-btn";
-        this.modeBtn.title = this.interaction === "move" ? "Modo de movimentação de pontos" : "Modo de manipulação de pontos";
-        this.modeBtn.setAttribute("aria-label", this.modeBtn.title);
-        this.modeBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3" fill="currentColor"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 3"/></svg>`;
-
-        this.modeBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            this.setMode(!this.mode);
-            if (this.mode) {
-                plot.focus();
+        // Mode toggle button
+        const modeTitle = this.interaction === "move" ? "Modo de movimentação de pontos" : "Modo de manipulação de pontos";
+        this.modeBtn = this.createBtn("plot-footer-btn", modeTitle,
+            `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3" fill="currentColor"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 3"/></svg>`,
+            () => {
+                this.setMode(!this.mode);
+                if (this.mode) plot.focus();
             }
-        });
+        );
         actions.append(this.modeBtn);
 
-        // If interaction is true (full), include delete selected and clear all
         if (this.interaction === "true") {
-            // Delete Selected Point button
-            this.deleteSelectedBtn = this.buildDeleteSelectedBtn(plot);
+            this.deleteSelectedBtn = this.createBtn("plot-footer-btn", "Deletar ponto selecionado",
+                `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M18 6L6 18M6 6l12 12"/></svg>`,
+                () => {
+                    if (this.selectedId !== null) {
+                        this.removePoint(this.selectedId);
+                        if (this.mode) plot.focus();
+                    }
+                }
+            );
+            this.deleteSelectedBtn.disabled = true;
             actions.append(this.deleteSelectedBtn);
 
-            // Clear All Points button
-            this.clearBtn = document.createElement("button");
-            this.clearBtn.type = "button";
-            this.clearBtn.className = "plot-footer-btn";
-            this.clearBtn.title = "Limpar todos os pontos";
-            this.clearBtn.setAttribute("aria-label", "Limpar todos os pontos");
-            this.clearBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M10 11v6M14 11v6"/></svg>`;
-
-            this.clearBtn.addEventListener("click", (e) => {
-                e.stopPropagation();
-                this.clearPoints();
-                if (this.mode) plot.focus();
-            });
+            this.clearBtn = this.createBtn("plot-footer-btn", "Limpar todos os pontos",
+                `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M10 11v6M14 11v6"/></svg>`,
+                () => {
+                    this.clearPoints();
+                    if (this.mode) plot.focus();
+                }
+            );
             actions.append(this.clearBtn);
         }
 
         footer.append(actions);
         return footer;
-    }
-
-    buildDeleteSelectedBtn(plot) {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "plot-footer-btn";
-        btn.title = "Deletar ponto selecionado";
-        btn.setAttribute("aria-label", "Deletar ponto selecionado");
-        btn.disabled = true;
-        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M18 6L6 18M6 6l12 12"/></svg>`;
-
-        btn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            if (this.selectedId !== null) {
-                this.removePoint(this.selectedId);
-                if (this.mode) plot.focus();
-            }
-        });
-        return btn;
-    }
-
-    updateDeleteSelectedBtn() {
-        if (!this.deleteSelectedBtn) return;
-        this.deleteSelectedBtn.disabled = (this.selectedId === null);
     }
 
     buildFloatingBadge(plot) {
@@ -3691,11 +3915,7 @@ class DeltaPoints extends HTMLElement {
         this.floatingBadgeDelete.title = "Deletar ponto";
         this.floatingBadgeDelete.setAttribute("aria-label", "Deletar ponto");
         this.floatingBadgeDelete.textContent = "×";
-
-        this.floatingBadgeDelete.addEventListener("pointerdown", (e) => {
-            e.stopPropagation();
-        });
-
+        this.floatingBadgeDelete.addEventListener("pointerdown", (e) => e.stopPropagation());
         this.floatingBadgeDelete.addEventListener("click", (e) => {
             e.stopPropagation();
             e.preventDefault();
@@ -3709,39 +3929,42 @@ class DeltaPoints extends HTMLElement {
         return badge;
     }
 
+    createBtn(className, title, innerHTML, onClick) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = className;
+        btn.title = title;
+        btn.setAttribute("aria-label", title);
+        btn.innerHTML = innerHTML;
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            onClick(e);
+        });
+        return btn;
+    }
+
     updateFloatingBadge() {
         if (!this.floatingBadge || !this.plot) return;
-        if (this.selectedId === null || this.interaction === "false") {
+        const p = this.plot.data?.points?.find(pt => pt && pt.id === this.selectedId);
+        if (!p || typeof p.x !== "number" || typeof p.y !== "number" || this.interaction === "false") {
             this.floatingBadge.style.display = "none";
             return;
         }
 
-        const p = this.plot.data?.points?.find(pt => pt.id === this.selectedId);
-        if (!p) {
-            this.floatingBadge.style.display = "none";
-            return;
-        }
-
-        // Show/hide 'x' button based on interaction mode
         if (this.floatingBadgeDelete) {
             this.floatingBadgeDelete.style.display = (this.interaction === "true") ? "inline-flex" : "none";
         }
 
-        const pos = this.worldToScreen(p.x, p.y, this.plot);
-        const canvasTop = this.plot.canvas.offsetTop || 0;
-        const canvasLeft = this.plot.canvas.offsetLeft || 0;
-        const radius = 3 * (p.size || this.size);
-
-        const badgeX = canvasLeft + pos.sx;
-        const badgeY = canvasTop + pos.sy - radius - 6;
+        const pos = worldToScreen(p.x, p.y, this.plot);
+        const radius = 3 * (p.size || this.size || 1);
+        const cx = (this.plot.canvas.offsetLeft || 0) + pos.sx;
+        const cy = (this.plot.canvas.offsetTop || 0) + pos.sy - radius - 6;
 
         if (pos.sx >= 0 && pos.sx <= this.plot.canvas.clientWidth && pos.sy >= 0 && pos.sy <= this.plot.canvas.clientHeight) {
             this.floatingBadge.style.display = "flex";
-            this.floatingBadge.style.left = `${badgeX}px`;
-            this.floatingBadge.style.top = `${badgeY}px`;
-            if (this.floatingBadgeCoords) {
-                this.floatingBadgeCoords.textContent = `(${formatNumber(p.x)}, ${formatNumber(p.y)})`;
-            }
+            this.floatingBadge.style.left = `${cx}px`;
+            this.floatingBadge.style.top = `${cy}px`;
+            this.floatingBadgeCoords.textContent = `(${formatNumber(p.x)}, ${formatNumber(p.y)})`;
         } else {
             this.floatingBadge.style.display = "none";
         }
@@ -3749,142 +3972,70 @@ class DeltaPoints extends HTMLElement {
 
     updateStatus() {
         if (!this.statusEl) return;
-        const count = this.plot?.data?.points?.length || 0;
+        const count = (this.plot?.data?.points || []).length;
         this.statusEl.textContent = `${count} ${count === 1 ? "ponto" : "pontos"}`;
     }
 
     setMode(mode) {
         this.mode = Boolean(mode);
-        if (this.modeBtn) {
-            if (this.mode) {
-                this.modeBtn.classList.add("active");
-            } else {
-                this.modeBtn.classList.remove("active");
-            }
-        }
+        this.modeBtn?.classList.toggle("active", this.mode);
         if (!this.mode) {
-            this.selectedId = null;
-            this.draggingId = null;
-            this.hoverId = null;
-            if (this.plot && this.plot.canvas) {
-                this.plot.canvas.style.cursor = this.plot.grab ? "grab" : "default";
-            }
+            this.selectedId = this.draggingId = this.hoverId = null;
+            if (this.plot?.canvas) this.plot.canvas.style.cursor = this.plot.grab ? "grab" : "default";
         } else {
-            if (this.plot && this.plot.canvas) {
-                this.plot.canvas.style.cursor = this.interaction === "move" ? "default" : "crosshair";
-            }
+            if (this.plot?.canvas) this.plot.canvas.style.cursor = this.interaction === "move" ? "default" : "crosshair";
         }
-        if (this.plot) {
-            this.plot.render();
-        }
-    }
-
-    bind(plot) {
-        this.plot = plot;
-        plot.tabIndex = 0;
-
-        plot.canvas.addEventListener("pointerdown", (e) => this.onPointerDown(e, plot));
-        plot.canvas.addEventListener("pointermove", (e) => this.onPointerMove(e, plot));
-        plot.canvas.addEventListener("pointerup", (e) => this.onPointerUp(e, plot));
-        plot.canvas.addEventListener("pointercancel", (e) => this.onPointerUp(e, plot));
-        plot.canvas.addEventListener("pointerleave", () => this.onPointerLeave(plot));
-
-        plot.addEventListener("keydown", (e) => this.onKeyDown(e, plot));
-
-        document.addEventListener("pointerdown", (e) => {
-            if (!plot.contains(e.target)) {
-                if (this.selectedId !== null) {
-                    this.selectedId = null;
-                    plot.render();
-                }
-            }
-        });
+        if (this.plot) this.plot.render();
     }
 
     isDraggingEntity() {
         return this.mode && this.interaction !== "false";
     }
 
-    screenToWorld(sx, sy, plot) {
-        const r = plot.canvas.getBoundingClientRect();
-        const w = r.width;
-        const h = r.height;
-        const scaleX = BASE_SCALE * (plot.zoomX || plot.zoom);
-        const scaleY = BASE_SCALE * (plot.zoomY || plot.zoom);
-        const centerX = w / 2 + plot.offsetX;
-        const centerY = h / 2 + plot.offsetY;
+    // Points Operations
 
-        const x = (sx - centerX) / scaleX;
-        const y = (centerY - sy) / scaleY;
-        return { x: parseFloat(x.toFixed(6)), y: parseFloat(y.toFixed(6)) };
-    }
-
-    worldToScreen(x, y, plot) {
-        const r = plot.canvas.getBoundingClientRect();
-        const w = r.width;
-        const h = r.height;
-        const scaleX = BASE_SCALE * (plot.zoomX || plot.zoom);
-        const scaleY = BASE_SCALE * (plot.zoomY || plot.zoom);
-        const centerX = Math.round(w / 2 + plot.offsetX);
-        const centerY = Math.round(h / 2 + plot.offsetY);
-
-        const sx = Math.round(centerX + x * scaleX);
-        const sy = Math.round(centerY - y * scaleY);
-        return { sx, sy };
-    }
-
-    addPoint(x, y, size = this.size) {
-        const pt = { id: this.nextId++, x, y, size };
+    addPoint(x, y, size = this.size, color) {
+        const pt = { x, y, size, ...(color && { color }) };
         this.plot.data.points.push(pt);
-        this.selectedId = pt.id;
-        this.draggingId = pt.id;
+        this.selectedId = this.draggingId = pt.id;
         this.dragOffset = { x: 0, y: 0 };
-        this.updateStatus();
-        this.plot.render();
         return pt;
     }
 
     removePoint(id) {
-        this.plot.data.points = this.plot.data.points.filter(p => p.id !== id);
+        const idx = this.plot.data.points.findIndex(p => p && p.id === id);
+        if (idx !== -1) this.plot.data.points.splice(idx, 1);
         if (this.selectedId === id) this.selectedId = null;
         if (this.draggingId === id) this.draggingId = null;
         if (this.hoverId === id) this.hoverId = null;
-        this.updateStatus();
-        this.plot.render();
     }
 
     clearPoints() {
-        this.plot.data.points = [];
-        this.selectedId = null;
-        this.draggingId = null;
-        this.hoverId = null;
-        this.updateStatus();
-        this.plot.render();
+        this.plot.data.points.length = 0;
+        this.selectedId = this.draggingId = this.hoverId = null;
     }
 
     movePoint(id, x, y) {
-        const p = this.plot.data.points.find(pt => pt.id === id);
-        if (!p) return;
-        p.x = x;
-        p.y = y;
-        this.plot.render();
+        const p = this.plot.data.points.find(pt => pt && pt.id === id);
+        if (p) {
+            p.x = x;
+            p.y = y;
+        }
     }
 
     hitTest(sx, sy, plot) {
         const points = plot.data?.points || [];
         for (let i = points.length - 1; i >= 0; i--) {
             const p = points[i];
-            const pos = this.worldToScreen(p.x, p.y, plot);
-            const dx = pos.sx - sx;
-            const dy = pos.sy - sy;
-            const radius = 3 * (p.size || this.size);
-            const hitRadius = Math.max(12, radius + 6);
-            if (dx * dx + dy * dy <= hitRadius * hitRadius) {
-                return p;
-            }
+            if (!p || typeof p.x !== "number" || typeof p.y !== "number") continue;
+            const pos = worldToScreen(p.x, p.y, plot);
+            const r = Math.max(12, 3 * (p.size || this.size || 1) + 6);
+            if (Math.hypot(pos.sx - sx, pos.sy - sy) <= r) return p;
         }
         return null;
     }
+
+    // Event Handlers
 
     onPointerDown(e, plot) {
         if (!this.mode || this.interaction === "false") return;
@@ -3895,23 +4046,18 @@ class DeltaPoints extends HTMLElement {
 
         const hit = this.hitTest(sx, sy, plot);
         if (hit) {
-            this.selectedId = hit.id;
-            this.draggingId = hit.id;
-            const hitScreen = this.worldToScreen(hit.x, hit.y, plot);
+            this.selectedId = this.draggingId = hit.id;
+            const hitScreen = worldToScreen(hit.x, hit.y, plot);
             this.dragOffset = { x: hitScreen.sx - sx, y: hitScreen.sy - sy };
             try { plot.canvas.setPointerCapture(e.pointerId); } catch (_) {}
             plot.render();
-        } else {
-            if (this.interaction === "true") {
-                const world = this.screenToWorld(sx, sy, plot);
-                this.addPoint(world.x, world.y, this.size);
-                try { plot.canvas.setPointerCapture(e.pointerId); } catch (_) {}
-            } else if (this.interaction === "move") {
-                if (this.selectedId !== null) {
-                    this.selectedId = null;
-                    plot.render();
-                }
-            }
+        } else if (this.interaction === "true") {
+            const world = screenToWorld(sx, sy, plot);
+            this.addPoint(world.x, world.y, this.size);
+            try { plot.canvas.setPointerCapture(e.pointerId); } catch (_) {}
+        } else if (this.interaction === "move" && this.selectedId !== null) {
+            this.selectedId = null;
+            plot.render();
         }
     }
 
@@ -3922,9 +4068,7 @@ class DeltaPoints extends HTMLElement {
         const sy = e.clientY - r.top;
 
         if (this.draggingId !== null) {
-            const targetSx = sx + this.dragOffset.x;
-            const targetSy = sy + this.dragOffset.y;
-            const world = this.screenToWorld(targetSx, targetSy, plot);
+            const world = screenToWorld(sx + this.dragOffset.x, sy + this.dragOffset.y, plot);
             this.movePoint(this.draggingId, world.x, world.y);
         } else {
             const hit = this.hitTest(sx, sy, plot);
@@ -3945,105 +4089,45 @@ class DeltaPoints extends HTMLElement {
         }
     }
 
-    onPointerLeave(plot) {
-        if (!this.mode) return;
-        if (this.draggingId === null && this.hoverId !== null) {
-            this.hoverId = null;
-        }
-    }
-
     onKeyDown(e, plot) {
-        if (e.key === "Escape") {
-            if (this.selectedId !== null) {
-                e.preventDefault();
-                this.selectedId = null;
-                plot.render();
-            }
-        } else if (e.key === "Delete" || e.key === "Backspace") {
-            if (this.interaction === "true" && this.mode && this.selectedId !== null) {
-                e.preventDefault();
-                this.removePoint(this.selectedId);
-            }
-        }
-    }
-
-    render(ctx, w, h, plot) {
-        this.updateDeleteSelectedBtn();
-        this.updateFloatingBadge();
-
-        const points = plot.data?.points || [];
-        if (points.length === 0) return;
-
-        const style = getComputedStyle(plot);
-        const accent = style.getPropertyValue("--delta-accent").trim() || "#4f46e5";
-        const textColor = style.getPropertyValue("--delta-color-text").trim() || "#222222";
-
-        for (const p of points) {
-            const pos = this.worldToScreen(p.x, p.y, plot);
-            const sx = pos.sx;
-            const sy = pos.sy;
-            const isSel = p.id === this.selectedId;
-            const isHov = p.id === this.hoverId;
-            const radius = 3 * (p.size || this.size);
-
-            // Selection halo
-            if (isSel) {
-                ctx.beginPath();
-                ctx.arc(sx, sy, radius + 6, 0, Math.PI * 2);
-                ctx.fillStyle = "rgba(79, 70, 229, 0.2)";
-                ctx.fill();
-                ctx.strokeStyle = accent;
-                ctx.lineWidth = 1.5;
-                ctx.stroke();
-            }
-
-            // Point circle
-            ctx.beginPath();
-            ctx.arc(sx, sy, radius, 0, Math.PI * 2);
-            ctx.fillStyle = isSel ? accent : "#ffffff";
-            ctx.fill();
-            ctx.strokeStyle = isSel ? "#ffffff" : accent;
-            ctx.lineWidth = 2;
-            ctx.stroke();
+        if (e.key === "Escape" && this.selectedId !== null) {
+            e.preventDefault();
+            this.selectedId = null;
+            plot.render();
+        } else if ((e.key === "Delete" || e.key === "Backspace") && this.interaction === "true" && this.mode && this.selectedId !== null) {
+            e.preventDefault();
+            this.removePoint(this.selectedId);
         }
     }
 }
 
+customElements.define("delta-points", DeltaPoints);
+</script>
+<script>
+/* pack: plot */
 // Plot Component
 class DeltaPlot extends HTMLElement {
     connectedCallback() {
         if (this.dataset.deltaReady) return;
         this.dataset.deltaReady = "1";
-
-        // Attributes
-        this.typeAttr = this.getAttribute("type") || "cartesian";
-        this.titleAttr = this.getAttribute("title") || "";
-        this.grabAttr = this.getAttribute("grab") || "true";
-        this.zoomAttr = this.getAttribute("zoom") || "true";
-        this.xAttr = this.getAttribute("x") || "-16,16";
-        this.yAttr = this.getAttribute("y") || "-9,9";
-
-        this.configAttributes();
-        this.instanceSubcomponents();
-
-        // Processing lifecycle
         this.build();
-        this.bind();
-        this.resize();
-        this.render();
     }
 
     build() {
-        this.innerHTML = "";
+        // Attributes
+        let typeAttr = this.getAttribute("type") || "cartesian";
+        let grabAttr = this.getAttribute("grab") || "true";
+        let zoomAttr = this.getAttribute("zoom") || "true";
+        let xAttr = this.getAttribute("x") || "-16,16";
+        let yAttr = this.getAttribute("y") || "-9,9";
+        let titleAttr = this.getAttribute("title") || "";
+
+        parsePlotAttributes(this, typeAttr, grabAttr, zoomAttr, xAttr, yAttr, titleAttr);
+        parseSubcomponentData(this);
 
         // Main Container
         this.container = document.createElement("div");
         this.container.className = "plot-container";
-
-        // Header
-        if (this.title) {
-            this.container.append(this.buildHeader());
-        }
 
         // Canvas
         this.canvas = document.createElement("canvas");
@@ -4056,11 +4140,24 @@ class DeltaPlot extends HTMLElement {
         for (const el of this.elements) {
             el.build(this);
         }
+
+        // Header
+        const headerEl = document.createElement("div");
+        headerEl.className = "plot-header";
+        const titleEl = document.createElement("span");
+        titleEl.className = "plot-title";
+        titleEl.textContent = this.title || "";
+        headerEl.append(titleEl);
+        this.container.prepend(headerEl);
+
+        // Other steps
+        this.bind();
+        this.render();
     }
 
     bind() {
         new ResizeObserver(() => {
-            this.resize(); this.render()
+            this.render();
         }).observe(this.canvas);
 
         // Subcomponents bind
@@ -4074,12 +4171,12 @@ class DeltaPlot extends HTMLElement {
 
     render() {
         if (!this.ctx) return;
+        this.resize();
 
         const r = this.canvas.getBoundingClientRect();
         const w = r.width;
         const h = r.height;
         if (w === 0 || h === 0) return;
-
         this.ctx.clearRect(0, 0, w, h);
 
         // Subcomponents render
@@ -4088,168 +4185,43 @@ class DeltaPlot extends HTMLElement {
         }
     }
 
-    configAttributes() {
-        // Type
-        switch (this.typeAttr.toLowerCase()){
-            case "scatter":
-                this.type = "scatter";
-                break;
-            case "points":
-                this.type = "points";
-                break;
-            default:
-                this.type = "cartesian";
-                break;
-        }
-
-        // Title
-        this.title = this.titleAttr;
-
-        // Grabbing
-        this.offsetX = 0; this.offsetY = 0;
-        this.grab = (this.grabAttr !== "false");
-
-        // Zoom
-        if (this.zoomAttr === "false") {
-            this.zoomEnabled = false;
-            this.minZoom = 1;
-            this.maxZoom = 1;
-        } else if(this.zoomAttr == "true"){
-            this.zoomEnabled = true;
-            this.minZoom = 0.25;
-            this.maxZoom = 4;
-        } else {
-            this.zoomEnabled = true;
-            const tuple = parseTuple(this.zoomAttr, 2, true);
-            if (tuple && tuple[0] > 0 && tuple[1] >= tuple[0]) {
-                this.minZoom = tuple[0];
-                this.maxZoom = tuple[1];
-            } else {
-                this.minZoom = 0.25;
-                this.maxZoom = 4;
-            }
-        }
-        this.zoom = Math.max(Math.min(1,this.maxZoom),this.minZoom);
-        this.zoomX = this.zoom;
-        this.zoomY = this.zoom;
-        this.minZoomX = this.minZoom;
-        this.maxZoomX = this.maxZoom;
-        this.minZoomY = this.minZoom;
-        this.maxZoomY = this.maxZoom;
-
-        // Visible range bounds (X and Y)
-        this.xRange = parseTuple(this.xAttr, 2, true);
-        this.yRange = parseTuple(this.yAttr, 2, true);
-        this.userInteracted = false;
-
-        // Data dictionary for subcomponents
-        this.data = { points: [] };
-    }
-
-    instanceSubcomponents(){
-        for (const child of this.children) {
-            if (child.tagName.toLowerCase().startsWith("delta-")) {
-                child.connectedCallback = () => {};
-            }
-        }
-
-        this.elements = [];
-
-        // Grid
-        let gridEl = this.querySelector("delta-grid");
-        if((this.type === "cartesian" || this.type === "scatter" || this.type === "points") && !gridEl) gridEl = document.createElement("delta-grid");
-        if(gridEl) this.elements.push(gridEl);
-
-        // Axis
-        let axisEl = this.querySelector("delta-axis");
-        if((this.type === "cartesian" || this.type === "scatter" || this.type === "points") && !axisEl) axisEl = document.createElement("delta-axis");
-        if(axisEl) this.elements.push(axisEl);
-
-        // Points
-        let pointsEl = this.querySelector("delta-points");
-        if(this.type === "points" && !pointsEl) pointsEl = document.createElement("delta-points");
-        if(pointsEl) this.elements.push(pointsEl);
-    }
-
-    buildHeader() {
-        const headerEl = document.createElement("div");
-        headerEl.className = "plot-header";
-
-        const titleEl = document.createElement("span");
-        titleEl.className = "plot-title";
-        titleEl.textContent = this.title;
-
-        headerEl.append(titleEl);
-        return headerEl;
-    }
-
-    applyInitialBounds(w, h) {
-        if (this.userInteracted) return;
-        if (!this.xRange && !this.yRange) return;
-        if (w < 10 || h < 10) return;
-
-        if (this.xRange && this.yRange) {
-            const dx = Math.abs(this.xRange[1] - this.xRange[0]);
-            const dy = Math.abs(this.yRange[1] - this.yRange[0]);
-            if (dx > 0 && dy > 0) {
-                this.zoomX = w / (dx * BASE_SCALE);
-                this.zoomY = h / (dy * BASE_SCALE);
-                if (this.zoomX < this.minZoomX) this.minZoomX = this.zoomX;
-                if (this.zoomX > this.maxZoomX) this.maxZoomX = this.zoomX;
-                if (this.zoomY < this.minZoomY) this.minZoomY = this.zoomY;
-                if (this.zoomY > this.maxZoomY) this.maxZoomY = this.zoomY;
-
-                const scaleX = BASE_SCALE * this.zoomX;
-                const scaleY = BASE_SCALE * this.zoomY;
-                const xMid = (this.xRange[0] + this.xRange[1]) / 2;
-                const yMid = (this.yRange[0] + this.yRange[1]) / 2;
-                this.offsetX = -xMid * scaleX;
-                this.offsetY = yMid * scaleY;
-            }
-        } else if (this.xRange) {
-            const dx = Math.abs(this.xRange[1] - this.xRange[0]);
-            if (dx > 0) {
-                this.zoomX = w / (dx * BASE_SCALE);
-                this.zoomY = this.zoomX;
-                if (this.zoomX < this.minZoomX) this.minZoomX = this.zoomX;
-                if (this.zoomX > this.maxZoomX) this.maxZoomX = this.zoomX;
-                if (this.zoomY < this.minZoomY) this.minZoomY = this.zoomY;
-                if (this.zoomY > this.maxZoomY) this.maxZoomY = this.zoomY;
-
-                const scaleX = BASE_SCALE * this.zoomX;
-                const xMid = (this.xRange[0] + this.xRange[1]) / 2;
-                this.offsetX = -xMid * scaleX;
-                this.offsetY = 0;
-            }
-        } else if (this.yRange) {
-            const dy = Math.abs(this.yRange[1] - this.yRange[0]);
-            if (dy > 0) {
-                this.zoomY = h / (dy * BASE_SCALE);
-                this.zoomX = this.zoomY;
-                if (this.zoomX < this.minZoomX) this.minZoomX = this.zoomX;
-                if (this.zoomX > this.maxZoomX) this.maxZoomX = this.zoomX;
-                if (this.zoomY < this.minZoomY) this.minZoomY = this.zoomY;
-                if (this.zoomY > this.maxZoomY) this.maxZoomY = this.zoomY;
-
-                const scaleY = BASE_SCALE * this.zoomY;
-                const yMid = (this.yRange[0] + this.yRange[1]) / 2;
-                this.offsetX = 0;
-                this.offsetY = yMid * scaleY;
-            }
-        }
-    }
-
+    // Viewport Management
+    
     resize() {
         const r = this.canvas.getBoundingClientRect();
         if (r.width === 0 || r.height === 0) return;
         const dpr = window.devicePixelRatio || 1;
-        this.canvas.width = Math.round(r.width * dpr);
-        this.canvas.height = Math.round(r.height * dpr);
-        this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        const targetW = Math.round(r.width * dpr);
+        const targetH = Math.round(r.height * dpr);
 
-        if (!this.userInteracted) {
-            this.applyInitialBounds(r.width, r.height);
+        if (this.canvas.width !== targetW || this.canvas.height !== targetH) {
+            this.canvas.width = targetW;
+            this.canvas.height = targetH;
+            this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            if (!this.userInteracted) {
+                this.applyInitialBounds(r.width, r.height);
+            }
         }
+    }
+
+    applyInitialBounds(w, h) {
+        if (this.userInteracted || w < 10 || h < 10) return;
+
+        const dx = Math.abs(this.xRange[1] - this.xRange[0]);
+        const dy = Math.abs(this.yRange[1] - this.yRange[0]);
+        if (dx <= 0 || dy <= 0) return;
+
+        // Fits both x and y ranges on screen
+        this.zoom = Math.min(w / (dx * BASE_SIZE_SCALE), h / (dy * BASE_SIZE_SCALE));
+        this.zoom = Math.max(this.minZoom, Math.min(this.maxZoom, this.zoom));
+
+        // Center camera on range midpoints
+        const scale = BASE_SIZE_SCALE * this.zoom;
+        const xMid = (this.xRange[0] + this.xRange[1]) / 2;
+        const yMid = (this.yRange[0] + this.yRange[1]) / 2;
+        this.offsetX = -xMid * scale;
+        this.offsetY = yMid * scale;
     }
 
     bindGrab() {
@@ -4257,10 +4229,8 @@ class DeltaPlot extends HTMLElement {
         this.canvas.style.cursor = "grab";
 
         let isDragging = false;
-        let dragStartX = 0;
-        let dragStartY = 0;
-        let startOffsetX = 0;
-        let startOffsetY = 0;
+        let dragStartX = 0, dragStartY = 0;
+        let startOffsetX = 0, startOffsetY = 0;
         let activePointerId = null;
 
         this.canvas.addEventListener("pointerdown", (e) => {
@@ -4299,90 +4269,69 @@ class DeltaPlot extends HTMLElement {
     bindZoom() {
         if (!this.zoomEnabled) return;
 
-        // Desktop mouse wheel zoom
         this.canvas.addEventListener("wheel", (e) => {
             e.preventDefault();
             this.userInteracted = true;
-            const r = this.canvas.getBoundingClientRect();
-            const cx = e.clientX - r.left;
-            const cy = e.clientY - r.top;
 
             const factor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
-            const newZoomX = Math.max(this.minZoomX, Math.min(this.maxZoomX, this.zoomX * factor));
-            const newZoomY = Math.max(this.minZoomY, Math.min(this.maxZoomY, this.zoomY * factor));
-            this.applyZoom(newZoomX, newZoomY, cx, cy);
+            const r = this.canvas.getBoundingClientRect();
+            const cx = e.clientX - r.left - r.width / 2;
+            const cy = e.clientY - r.top - r.height / 2;
+
+            this.applyZoom(this.zoom * factor, cx, cy);
         }, { passive: false });
 
-        // Mobile touch pinch-to-zoom
-        const touchPointers = new Map();
-        let pinchStartDist = 0;
-        let pinchStartZoomX = 1;
-        let pinchStartZoomY = 1;
-        let pinchCenter = { x: 0, y: 0 };
+        // Touch pinch-zoom
+        let initialPinchDist = null;
+        let initialPinchZoom = null;
+        let pinchCenter = null;
 
-        this.canvas.addEventListener("pointerdown", (e) => {
-            if (e.pointerType !== "touch") return;
-            this.userInteracted = true;
-            touchPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-
-            if (touchPointers.size === 2) {
-                const pts = Array.from(touchPointers.values());
-                pinchStartDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
-                pinchStartZoomX = this.zoomX;
-                pinchStartZoomY = this.zoomY;
+        this.canvas.addEventListener("touchstart", (e) => {
+            if (e.touches.length === 2) {
+                this.userInteracted = true;
+                const [t1, t2] = e.touches;
+                initialPinchDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+                initialPinchZoom = this.zoom;
                 const r = this.canvas.getBoundingClientRect();
                 pinchCenter = {
-                    x: (pts[0].x + pts[1].x) / 2 - r.left,
-                    y: (pts[0].y + pts[1].y) / 2 - r.top
+                    x: (t1.clientX + t2.clientX) / 2 - r.left - r.width / 2,
+                    y: (t1.clientY + t2.clientY) / 2 - r.top - r.height / 2
                 };
             }
-        });
+        }, { passive: true });
 
-        this.canvas.addEventListener("pointermove", (e) => {
-            if (e.pointerType !== "touch" || !touchPointers.has(e.pointerId)) return;
-            touchPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-
-            if (touchPointers.size === 2 && pinchStartDist > 0) {
-                const pts = Array.from(touchPointers.values());
-                const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
-                const factor = dist / pinchStartDist;
-                const newZoomX = Math.max(this.minZoomX, Math.min(this.maxZoomX, pinchStartZoomX * factor));
-                const newZoomY = Math.max(this.minZoomY, Math.min(this.maxZoomY, pinchStartZoomY * factor));
-                this.applyZoom(newZoomX, newZoomY, pinchCenter.x, pinchCenter.y);
+        this.canvas.addEventListener("touchmove", (e) => {
+            if (e.touches.length === 2 && initialPinchDist !== null) {
+                e.preventDefault();
+                const [t1, t2] = e.touches;
+                const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+                const newZoom = initialPinchZoom * (dist / initialPinchDist);
+                this.applyZoom(newZoom, pinchCenter.x, pinchCenter.y);
             }
-        });
+        }, { passive: false });
 
-        const onTouchEnd = (e) => {
-            touchPointers.delete(e.pointerId);
-            if (touchPointers.size < 2) {
-                pinchStartDist = 0;
-            }
+        const endTouch = () => {
+            initialPinchDist = null;
+            initialPinchZoom = null;
+            pinchCenter = null;
         };
-
-        this.canvas.addEventListener("pointerup", onTouchEnd);
-        this.canvas.addEventListener("pointercancel", onTouchEnd);
+        this.canvas.addEventListener("touchend", endTouch);
+        this.canvas.addEventListener("touchcancel", endTouch);
     }
 
-    applyZoom(newZoomX, newZoomY, cx, cy) {
-        if (newZoomX === this.zoomX && newZoomY === this.zoomY) return;
-        const r = this.canvas.getBoundingClientRect();
-        const centerX = r.width / 2 + this.offsetX;
-        const centerY = r.height / 2 + this.offsetY;
+    applyZoom(newZoom, cx, cy) {
+        const clampedZoom = Math.max(this.minZoom, Math.min(this.maxZoom, newZoom));
+        if (Math.abs(clampedZoom - this.zoom) < 1e-6) return;
 
-        const ratioX = newZoomX / this.zoomX;
-        const ratioY = newZoomY / this.zoomY;
-        this.offsetX = this.offsetX + (cx - centerX) * (1 - ratioX);
-        this.offsetY = this.offsetY + (cy - centerY) * (1 - ratioY);
-        this.zoomX = newZoomX;
-        this.zoomY = newZoomY;
+        // Shift offsets so cursor remains pinned
+        this.offsetX = cx - ((cx - this.offsetX) / this.zoom) * clampedZoom;
+        this.offsetY = cy - ((cy - this.offsetY) / this.zoom) * clampedZoom;
+        this.zoom = clampedZoom;
 
         this.render();
     }
 }
 
-customElements.define("delta-grid", DeltaGrid);
-customElements.define("delta-axis", DeltaAxis);
-customElements.define("delta-points", DeltaPoints);
 customElements.define("delta-plot", DeltaPlot);
 </script>
 
