@@ -3703,7 +3703,7 @@ function parseSubcomponentData(plot) {
 
     // Points Subcomponent
     let pointsEl = plot.querySelector("delta-points");
-    if ((plot.type === "points" || singularPoints.length > 0) && !pointsEl) {
+    if ((plot.type === "points" || plot.data.points.length > 0) && !pointsEl) {
         pointsEl = document.createElement("delta-points");
     }
     if (pointsEl) plot.elements.push(pointsEl);
