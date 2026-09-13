@@ -174,12 +174,12 @@ delta-question-group {
 
 .delta-question-group-title {
   margin: 0;
-  font-family: var(--delta-serif); /* Combina com os títulos do Delta */
+  font-family: var(--delta-serif);
   color: var(--delta-ink);
   font-size: 1.3rem;
 }
 
-/* O Cronômetro Geral (Herda o estilo visual da tag, mas com ajustes) */
+/* cronômetro global */
 .global-timer {
   font-size: 12px;
   padding: 4px 12px;
@@ -188,11 +188,11 @@ delta-question-group {
   transition: all 0.3s ease;
 }
 
-/* Quando todas as questões forem respondidas, o cronômetro global ganha destaque! */
+/* quando todas as questões forem respondidas, o cronômetro global ganha destaque */
 .global-timer.completed {
   background-color: color-mix(in oklab, var(--delta-accent) 25%, var(--delta-surface));
   border-color: var(--delta-accent);
   color: var(--delta-ink);
   font-weight: bold;
-  transform: scale(1.05); /* Um leve aumento para chamar a atenção */
+  transform: scale(1.05);
 }

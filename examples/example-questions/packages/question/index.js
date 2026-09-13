@@ -239,7 +239,7 @@ customElements.define(
             if (totalQuestions > 0 && totalQuestions === answeredQuestions) {
                 this.isCompleted = true; 
                 
-                // finaliza o relógio se ele existir:
+                // finaliza o cronômetro:
                 if (isTimed) {
                     if (this.timerInterval) clearInterval(this.timerInterval);
                     this.globalTimeDisplay.classList.add('completed');
