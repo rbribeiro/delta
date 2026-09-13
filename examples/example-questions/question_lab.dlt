@@ -1,4 +1,4 @@
-<document lang="pt-BR" type="paper" theme-accent="red" theme-mode="dark">
+<document lang="en" type="paper" theme-accent="green" theme-mode="dark">
   <import src="./packages/question" />
 
   <title>Laboratório de testes do questionário</title>
@@ -26,7 +26,8 @@
 
     <p>As questões podem ser definidas da seguinte forma:</p>
     <code lang="Delta">
-      <question timed="true" number="Questão 1" title="Derivadas Básicas" start-text="Iniciar Questão">
+      <question timed="true" number="Questão 1" start-text="Iniciar Questão">
+        <title> Derivadas Básicas </title>
         Qual a derivada de $x^2$?
         <option>$x$</option>
         <option correct="true">$2x$</option>
@@ -34,17 +35,17 @@
     </code>
 
     <itemize>
-    <item> timed="true": Habilita o modo cronometrado. A questão é ocultada inicialmente e exibe um botão para o usuário iniciar o tempo. </item>
-    <item> number="...": Define o número ou identificador da questão. </item>
-    <item> title="...": Define o título ou o assunto principal abordado, exibido ao lado do número. </item>
-    <item> start-text="...": Personaliza o texto do botão de início (trata a questão do idioma ou adicionar instruções). </item>
+    <item> <c>timed="true"</c>: Habilita o modo cronometrado. A questão é ocultada inicialmente e exibe um botão para o usuário iniciar o tempo. </item>
+    <item> <c>number="..."</c>: Define o número ou identificador da questão. </item>
+    <item> <c>start-text="..."</c>: Personaliza o texto do botão de início (trata a questão do idioma ou adicionar instruções). </item>
     </itemize>
 
     Passe o mouse sobre as opções para testar o hover e clique para ver os estados de sucesso/erro.
 
     Inicie a questão para inicializar o cronômetro.
 
-    <question timed="true" number="Questão 1" title="Derivadas Básicas" start-text="Iniciar Questão">
+    <question timed="true" number="Questão 1" start-text="▶︎">
+      <title> Derivadas Básicas </title>
       Qual a derivada de $x^2$?
       <option>$x$</option>
       <option correct="true">$2x$</option>
@@ -57,5 +58,52 @@
       <option>Outra opção errada</option>
       <option>Mais uma opção errada</option>
     </question>
+  </section>
+
+  <section>
+  <title> Componente de Questionário </title>
+
+    <p>A definição do questionário ocorre da seguinte forma:</p>
+    <code lang="Delta">
+      <question-group>
+      <title> Título do questionário </title>
+
+        <question>
+          <!-- questão 1 --!>
+        </question>
+
+        <question>
+          <!-- questão 2 --!>
+        </question>
+      </question-group>
+    </code>
+
+    O padrão do componente <c>question-group</c> é que <c>timed='true'</c>, então o cronômetro é acionado sempre, a menos que seja desativado com <c>timed='false'</c>.
+
+    O cronômetro global pode ser ativado independentemente se os cronômetros das questões individuais estejam desativados ou parcialmente desativados.
+
+    <question-group timed='true'>
+      <title>Avaliação de Cálculo I</title>
+      
+      <question timed="true" number="1" start-text='Resolver'>
+        <title>Derivadas Básicas</title>
+        
+        Qual é a derivada de $x^2$?
+        
+        <option>$x$</option>
+        <option correct="true">$2x$</option>
+        <option>$x^3 / 3$</option>
+      </question>
+
+      <question timed="true" number="2" start-text='Resolver'>
+        <title>Integrais Básicas</title>
+        
+        Qual é a integral de $2x$?
+        
+        <option>$x$</option>
+        <option correct="true">$x^2$</option>
+        <option>Nenhuma das respostas</option>
+      </question>
+    </question-group>
   </section>
 </document>

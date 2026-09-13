@@ -53,9 +53,10 @@ customElements.define(
 
             const isTimed = this.getAttribute('timed') === 'true'; // definir se o timer será usado
             const qNumber = this.getAttribute('number'); // identificador da questão
-            const qTitle = this.getAttribute('title'); // conteúdo da questão/título
 
             const customStartText = this.getAttribute('start-text') || 'Iniciar Questão';
+
+            const titleNode = this.querySelector(':scope > delta-title');
 
             const boxElement = document.createElement('div');
             boxElement.className = 'box delta-question-box';
@@ -65,14 +66,24 @@ customElements.define(
                 const header = document.createElement('div');
                 header.className = 'delta-question-header';
 
-                if (qNumber || qTitle) {
+                if (qNumber || titleNode) {
                     const tagElement = document.createElement('div');
                     tagElement.className = 'box-tag';
-                    let tagText = qNumber ? `${qNumber}` : ' '; // retirando o texto padrão devido a questão da linguagem
-                    if (qTitle) {
-                        tagText += ` <span class="box-tag-title">${qTitle}</span>`;
+
+                    // Se tiver número, adiciona no tagElement
+                    if (qNumber) {
+                        tagElement.append(document.createTextNode(`${qNumber} `));
                     }
-                    tagElement.innerHTML = tagText;
+
+                    if (titleNode) {
+                        const titleSpan = document.createElement('span');
+                        titleSpan.className = 'box-tag-title';
+
+                        titleSpan.append(...titleNode.childNodes);
+                        titleNode.remove();
+                        
+                        tagElement.append(titleSpan);
+                    }
                     header.appendChild(tagElement);
                 }
 
@@ -145,6 +156,95 @@ customElements.define(
             if (this.timerInterval) {
                 clearInterval(this.timerInterval);
                 this.timerInterval = null;
+            }
+        }
+    }
+);
+
+customElements.define(
+    'delta-question-group',
+    class extends HTMLElement {
+        connectedCallback() {
+            if (this.dataset.deltaReady) return;
+            this.dataset.deltaReady = "1";
+
+            const titleNode = this.querySelector(':scope > delta-title');
+            const titleAttr = this.getAttribute('title');
+
+            const isTimed = this.getAttribute('timed') !== 'false'; // por padrão o timer é sempre ativado
+            
+            const header = document.createElement('div');
+            header.className = 'delta-question-group-header';
+
+            const titleElement = document.createElement('h2');
+            titleElement.className = 'delta-question-group-title';
+
+            if (titleNode) {
+                titleElement.append(...titleNode.childNodes);
+                titleNode.remove();
+            } else if (titleAttr) {
+                titleElement.textContent = titleAttr;
+            } else {
+                titleElement.textContent = 'Questionário';
+            }
+            header.appendChild(titleElement);
+
+            if (isTimed) {
+                this.globalTimeDisplay = document.createElement('div');
+                this.globalTimeDisplay.className = 'delta-timer-display global-timer';
+                this.globalTimeDisplay.textContent = '⏱ Tempo Total: 00:00';
+                header.appendChild(this.globalTimeDisplay);
+            }
+            
+            const contentContainer = document.createElement('div');
+            contentContainer.className = 'delta-question-group-content';
+            while (this.firstChild) {
+                contentContainer.appendChild(this.firstChild);
+            }
+
+            this.appendChild(header);
+            this.appendChild(contentContainer);
+
+            this.startTime = null;
+            this.timerInterval = null;
+            this.isCompleted = false;
+
+            this.addEventListener('click', () => {
+                if (isTimed && !this.startTime && !this.isCompleted) {
+                    this.startTime = Date.now();
+                    this.timerInterval = setInterval(() => this.updateGlobalTimer(), 1000);
+                }
+
+                setTimeout(() => {
+                    this.checkCompletion(isTimed);
+                }, 50);
+            });
+        }
+        
+        updateGlobalTimer() {
+            if (!this.startTime || this.isCompleted || !this.globalTimeDisplay) return; // se o isTimed for falso
+            
+            const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+            const minutes = String(Math.floor(elapsed / 60)).padStart(2, '0');
+            const seconds = String(elapsed % 60).padStart(2, '0');
+            this.globalTimeDisplay.textContent = `⏱ Tempo Total: ${minutes}:${seconds}`;
+        }
+
+        checkCompletion(isTimed) {
+            if (this.isCompleted) return;
+
+            const totalQuestions = this.querySelectorAll('delta-question').length;
+            const answeredQuestions = this.querySelectorAll('delta-question[answered="true"]').length;
+
+            if (totalQuestions > 0 && totalQuestions === answeredQuestions) {
+                this.isCompleted = true; 
+                
+                // finaliza o relógio se ele existir:
+                if (isTimed) {
+                    if (this.timerInterval) clearInterval(this.timerInterval);
+                    this.globalTimeDisplay.classList.add('completed');
+                    this.updateGlobalTimer(); 
+                }
             }
         }
     }

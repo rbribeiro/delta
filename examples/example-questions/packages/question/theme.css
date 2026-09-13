@@ -153,3 +153,46 @@ delta-question[answered="true"] delta-option {
   cursor: default;
 }
 
+/* theme do question-group: */
+delta-question-group {
+  display: block;
+  border: 1px solid var(--delta-rule-soft);
+  border-radius: 12px;
+  padding: 2rem;
+  margin: 2.5rem 0;
+  background-color: var(--delta-surface);
+}
+
+.delta-question-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid color-mix(in oklab, var(--delta-accent) 15%, var(--delta-rule-soft));
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+}
+
+.delta-question-group-title {
+  margin: 0;
+  font-family: var(--delta-serif); /* Combina com os títulos do Delta */
+  color: var(--delta-ink);
+  font-size: 1.3rem;
+}
+
+/* O Cronômetro Geral (Herda o estilo visual da tag, mas com ajustes) */
+.global-timer {
+  font-size: 12px;
+  padding: 4px 12px;
+  border-color: color-mix(in oklab, var(--delta-accent) 30%, var(--delta-rule));
+  background-color: color-mix(in oklab, var(--delta-accent) 5%, var(--delta-surface));
+  transition: all 0.3s ease;
+}
+
+/* Quando todas as questões forem respondidas, o cronômetro global ganha destaque! */
+.global-timer.completed {
+  background-color: color-mix(in oklab, var(--delta-accent) 25%, var(--delta-surface));
+  border-color: var(--delta-accent);
+  color: var(--delta-ink);
+  font-weight: bold;
+  transform: scale(1.05); /* Um leve aumento para chamar a atenção */
+}

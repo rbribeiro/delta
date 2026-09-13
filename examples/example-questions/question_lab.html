@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-accent="red" data-mode="dark" data-type="paper">
+<html lang="en" data-accent="green" data-mode="dark" data-type="paper">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -3222,11 +3222,53 @@ delta-question[answered="true"] delta-option {
   cursor: default;
 }
 
+/* theme do question-group: */
+delta-question-group {
+  display: block;
+  border: 1px solid var(--delta-rule-soft);
+  border-radius: 12px;
+  padding: 2rem;
+  margin: 2.5rem 0;
+  background-color: var(--delta-surface);
+}
 
+.delta-question-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid color-mix(in oklab, var(--delta-accent) 15%, var(--delta-rule-soft));
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+}
+
+.delta-question-group-title {
+  margin: 0;
+  font-family: var(--delta-serif); /* Combina com os títulos do Delta */
+  color: var(--delta-ink);
+  font-size: 1.3rem;
+}
+
+/* O Cronômetro Geral (Herda o estilo visual da tag, mas com ajustes) */
+.global-timer {
+  font-size: 12px;
+  padding: 4px 12px;
+  border-color: color-mix(in oklab, var(--delta-accent) 30%, var(--delta-rule));
+  background-color: color-mix(in oklab, var(--delta-accent) 5%, var(--delta-surface));
+  transition: all 0.3s ease;
+}
+
+/* Quando todas as questões forem respondidas, o cronômetro global ganha destaque! */
+.global-timer.completed {
+  background-color: color-mix(in oklab, var(--delta-accent) 25%, var(--delta-surface));
+  border-color: var(--delta-accent);
+  color: var(--delta-ink);
+  font-weight: bold;
+  transform: scale(1.05); /* Um leve aumento para chamar a atenção */
+}
 </style>
 </head>
 <body>
-<delta-document lang="pt-BR" type="paper" theme-accent="red" theme-mode="dark">
+<delta-document lang="en" type="paper" theme-accent="green" theme-mode="dark">
   <delta-title>Laboratório de testes do questionário</delta-title><delta-toc> Sumário </delta-toc><delta-section id="sec:nativos" num="1">
     <delta-title>Componentes Nativos</delta-title><delta-p>Estes blocos usam as variáveis nativas do Delta. Irei utilizá-los como referências para estilizar as questões do Delta.</delta-p><delta-theorem id="thm:referencia" num="1.1">
       <delta-title>Bloco de Teorema</delta-title>
@@ -3235,16 +3277,17 @@ delta-question[answered="true"] delta-option {
     <span class="hljs-keyword">return</span> a**<span class="hljs-number">2</span> + <span class="hljs-number">2</span>*a*b + b**<span class="hljs-number">2</span></delta-code>
   </delta-section><delta-section id="sec:testes" num="2">
     <delta-title>Componente de Questões</delta-title><delta-p>As questões podem ser definidas da seguinte forma:</delta-p>
-    <delta-code lang="Delta" num="2.2">&lt;question timed="true" number="Questão 1" title="Derivadas Básicas" start-text="Iniciar Questão"&gt;
+    <delta-code lang="Delta" num="2.2">&lt;question timed="true" number="Questão 1" start-text="Iniciar Questão"&gt;
+  &lt;title&gt; Derivadas Básicas &lt;/title&gt;
   Qual a derivada de $x^2$?
   &lt;option&gt;$x$&lt;/option&gt;
   &lt;option correct="true"&gt;$2x$&lt;/option&gt;
 &lt;/question&gt;</delta-code><delta-itemize>
-    <delta-item> timed="true": Habilita o modo cronometrado. A questão é ocultada inicialmente e exibe um botão para o usuário iniciar o tempo. </delta-item>
-    <delta-item> number="...": Define o número ou identificador da questão. </delta-item>
-    <delta-item> title="...": Define o título ou o assunto principal abordado, exibido ao lado do número. </delta-item>
-    <delta-item> start-text="...": Personaliza o texto do botão de início (trata a questão do idioma ou adicionar instruções). </delta-item>
-    </delta-itemize>Passe o mouse sobre as opções para testar o hover e clique para ver os estados de sucesso/erro.<br><br>Inicie a questão para inicializar o cronômetro.<delta-question timed="true" number="Questão 1" title="Derivadas Básicas" start-text="Iniciar Questão">
+    <delta-item> <delta-c>timed="true"</delta-c>: Habilita o modo cronometrado. A questão é ocultada inicialmente e exibe um botão para o usuário iniciar o tempo. </delta-item>
+    <delta-item> <delta-c>number="..."</delta-c>: Define o número ou identificador da questão. </delta-item>
+    <delta-item> <delta-c>start-text="..."</delta-c>: Personaliza o texto do botão de início (trata a questão do idioma ou adicionar instruções). </delta-item>
+    </delta-itemize>Passe o mouse sobre as opções para testar o hover e clique para ver os estados de sucesso/erro.<br><br>Inicie a questão para inicializar o cronômetro.<delta-question timed="true" number="Questão 1" start-text="▶︎">
+      <delta-title> Derivadas Básicas </delta-title>
       Qual a derivada de <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>x</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">x^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span>?
       <delta-option><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi></mrow><annotation encoding="application/x-tex">x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">x</span></span></span></span></delta-option>
       <delta-option correct="true"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mi>x</mi></mrow><annotation encoding="application/x-tex">2x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">2</span><span class="mord mathnormal">x</span></span></span></span></delta-option>
@@ -3255,10 +3298,33 @@ delta-question[answered="true"] delta-option {
       <delta-option>Outra opção errada</delta-option>
       <delta-option>Mais uma opção errada</delta-option>
     </delta-question>
+  </delta-section><delta-section num="3" id="componente-de-question-rio">
+  <delta-title> Componente de Questionário </delta-title><delta-p>A definição do questionário ocorre da seguinte forma:</delta-p>
+    <delta-code lang="Delta" num="3.3">&lt;question-group&gt;
+&lt;title&gt; Título do questionário &lt;/title&gt;
+
+  &lt;question&gt;
+    &lt;!-- questão 1 --!&gt;
+  &lt;/question&gt;
+
+  &lt;question&gt;
+    &lt;!-- questão 2 --!&gt;
+  &lt;/question&gt;
+&lt;/question-group&gt;</delta-code>O padrão do componente <delta-c>question-group</delta-c> é que <delta-c>timed='true'</delta-c>, então o cronômetro é acionado sempre, a menos que seja desativado com <delta-c>timed='false'</delta-c>.<br><br>O cronômetro global pode ser ativado independentemente se os cronômetros das questões individuais estejam desativados ou parcialmente desativados.<delta-question-group timed="true">
+      <delta-title>Avaliação de Cálculo I</delta-title><delta-question timed="true" number="1" start-text="Resolver">
+        <delta-title>Derivadas Básicas</delta-title>Qual é a derivada de <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>x</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">x^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span>?<delta-option><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi></mrow><annotation encoding="application/x-tex">x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">x</span></span></span></span></delta-option>
+        <delta-option correct="true"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mi>x</mi></mrow><annotation encoding="application/x-tex">2x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">2</span><span class="mord mathnormal">x</span></span></span></span></delta-option>
+        <delta-option><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>x</mi><mn>3</mn></msup><mi mathvariant="normal">/</mi><mn>3</mn></mrow><annotation encoding="application/x-tex">x^3 / 3</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.0641em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">3</span></span></span></span></span></span></span></span><span class="mord">/3</span></span></span></span></delta-option>
+      </delta-question><delta-question timed="true" number="2" start-text="Resolver">
+        <delta-title>Integrais Básicas</delta-title>Qual é a integral de <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mi>x</mi></mrow><annotation encoding="application/x-tex">2x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">2</span><span class="mord mathnormal">x</span></span></span></span>?<delta-option><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi></mrow><annotation encoding="application/x-tex">x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">x</span></span></span></span></delta-option>
+        <delta-option correct="true"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>x</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">x^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span></delta-option>
+        <delta-option>Nenhuma das respostas</delta-option>
+      </delta-question>
+    </delta-question-group>
   </delta-section>
 </delta-document>
-<script type="application/json" id="delta-toc">[{"level":2,"id":"sec:nativos","num":"1","title":"Componentes Nativos"},{"level":2,"id":"sec:testes","num":"2","title":"Componente de Questões"}]</script>
-<script type="application/json" id="delta-i18n">{"theorem":"Teorema","proposition":"Proposição","lemma":"Lema","corollary":"Corolário","conjecture":"Conjectura","definition":"Definição","example":"Exemplo","claim":"Afirmação","observation":"Observação","exercise":"Exercício","problem":"Problema","proof":"Demonstração","solution":"Solução","remark":"Comentário","section":"Seção","subsection":"Subseção","subsubsection":"Subsubseção","equations":"Equações","equation":"Equação","figure":"Figura","interactive":"Interativo","table":"Tabela","video":"Vídeo","audio":"Áudio","contents":"Sumário","hint":"Dica","references":"Referências","close":"Fechar","code":"Código","copy":"Copiar","copied":"Copiado","prevSlide":"Slide anterior","nextSlide":"Próximo slide","abstract":"Resumo","keywords":"Palavras-chave","msc":"Classificação por Assunto (MSC)","received":"Recebido","revised":"Revisado","accepted":"Aceito","submitted":"Submetido","date":"Data","acknowledgements":"Agradecimentos","funding":"Financiamento"}</script>
+<script type="application/json" id="delta-toc">[{"level":2,"id":"sec:nativos","num":"1","title":"Componentes Nativos"},{"level":2,"id":"sec:testes","num":"2","title":"Componente de Questões"},{"level":2,"id":"componente-de-question-rio","num":"3","title":" Componente de Questionário "}]</script>
+<script type="application/json" id="delta-i18n">{"theorem":"Theorem","proposition":"Proposition","lemma":"Lemma","corollary":"Corollary","conjecture":"Conjecture","definition":"Definition","example":"Example","claim":"Claim","observation":"Observation","exercise":"Exercise","problem":"Problem","proof":"Proof","solution":"Solution","remark":"Remark","section":"Section","subsection":"Subsection","subsubsection":"Subsubsection","equations":"Equations","equation":"Equation","figure":"Figure","interactive":"Interactive","table":"Table","video":"Video","audio":"Audio","contents":"Contents","hint":"Hint","references":"References","close":"Close","code":"Code","copy":"Copy","copied":"Copied","prevSlide":"Previous slide","nextSlide":"Next slide","abstract":"Abstract","keywords":"Keywords","msc":"Mathematics Subject Classification","received":"Received","revised":"Revised","accepted":"Accepted","submitted":"Submitted","date":"Date","acknowledgements":"Acknowledgements","funding":"Funding"}</script>
 <script>
 "use strict";(()=>{function B(a){let e=document.getElementById(a);e&&(e.scrollIntoView({block:"center",behavior:"smooth"}),e.classList.add("is-xref-target"),e.addEventListener("animationend",()=>e.classList.remove("is-xref-target"),{once:!0}))}function F(a){let e=document.createDocumentFragment(),t=s=>a.querySelector(`:scope > delta-${s}`),n=["author","title","journal","year"].map(t).filter(s=>s!==null);n.forEach((s,r)=>{r>0&&e.append(". ");let i=document.createElement("span");i.className=`paper-${s.tagName.toLowerCase().replace("delta-","")}`;for(let m of s.childNodes)i.append(m.cloneNode(!0));e.append(i)}),n.length&&e.append(".");let o=t("link")??t("url");return o&&(e.append(" "),e.append(o.cloneNode(!0))),e}function T(a,e){let t=a.getAttribute("collapsed")==="true";if(!t&&a.getAttribute("collapsible")!=="true")return;let n=document.createElement("div");for(n.className="collapse-body";e.nextSibling;)n.append(e.nextSibling);a.append(n),e.classList.add("collapse-toggle"),e.setAttribute("role","button"),e.tabIndex=0;let o=r=>{a.classList.toggle("is-collapsed",r),e.setAttribute("aria-expanded",String(!r))};o(t);let s=()=>o(!a.classList.contains("is-collapsed"));e.addEventListener("click",s),e.addEventListener("keydown",r=>{(r.key==="Enter"||r.key===" ")&&(r.preventDefault(),s())})}var fe={"delta-chapter":{level:1,cls:"chapter-title"},"delta-section":{level:2,cls:"section"},"delta-subsection":{level:3,cls:"sub"},"delta-subsubsection":{level:4,cls:"subsub"}},D=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelector(":scope > delta-title");if(!e)return;if(document.documentElement.dataset.type==="presentation"){let r=document.createElement("delta-slide");r.setAttribute("divider","true"),r.appendChild(e),this.prepend(r);return}let t=fe[this.tagName.toLowerCase()]??{level:2,cls:"section"},n=document.createElement(`h${t.level}`);n.className=t.cls;let o=this.getAttribute("num");if(o){let r=document.createElement("span");r.className="num",r.textContent=o,n.append(r," ")}n.append(...e.childNodes),e.replaceWith(n);let s=this.querySelector(":scope > delta-meta");if(s){let r=s.querySelectorAll(":scope > delta-meta-item");if(r.length){let i=document.createElement("div");i.classList.add("box-meta"),Array.from(r).forEach(m=>{let d=document.createElement("span");d.className="box-meta-item";let l=document.createElement("span");l.className="k",l.textContent=m.getAttribute("key")??"";let c=document.createElement("span");c.innerHTML=m.innerHTML,c.className="v",d.append(l),d.append(c),i.append(d),s.replaceWith(i)})}}T(this,n)}};function he(){for(let a of Object.keys(fe))customElements.define(a,class extends D{})}var U=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelector(":scope > delta-title"),t=document.createElement("div");t.className="slide-body";for(let n of[...this.childNodes])n!==e&&t.append(n);if(e){let n=document.createElement("h2");n.className="slide-title",n.append(...e.childNodes),e.replaceWith(n);let o=document.createElement("div");o.className="slide-rule";let s=document.createElement("span");s.className="slide-rule-fill",o.append(s),n.after(o)}this.append(t)}};function ge(){customElements.define("delta-slide",U)}var q=null;function je(){if(q)return q;let a=document.getElementById("delta-i18n");try{q=a?JSON.parse(a.textContent||"{}"):{}}catch{q={}}return q}function v(a,e){return je()[a]??e??a}var De=["theorem","proposition","lemma","corollary","conjecture","definition","example","claim","observation","exercise","problem","proof","solution","remark"],Ue=new Set(["theorem","proposition","lemma","corollary","conjecture","definition","example","claim","observation","exercise","problem","remark"]),Ke=new Set(["proof","solution"]),K=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.tagName.toLowerCase().replace(/^delta-/,""),t=this.getAttribute("num"),n=v(e,e.charAt(0).toUpperCase()+e.slice(1)),o=this.querySelector(":scope > delta-title");if(Ke.has(e)){let i=document.createElement("span"),m=this.getAttribute("of"),d=this.getAttribute("data-target-tag"),l=this.getAttribute("data-target-num");if(d&&m&&l){let u=document.createElement("delta-ref");u.setAttribute("to",m),u.setAttribute("data-target-num",l),u.setAttribute("data-target-tag",d),i.append(" "),i.append(u)}i.className="proof-lead",i.prepend(n),o&&(i.append(" (",...o.childNodes,")"),o.remove()),i.append("."),this.prepend(i," ");let c=document.createElement("span");c.className="proof-qed",c.textContent="\u25A1",this.append(c),T(this,i);return}if(!Ue.has(e))return;this.classList.add("box"),e==="example"&&this.classList.add("example");let s=document.createElement("span");if(s.className="box-tag",s.textContent=n+(t?` ${t}`:""),o){let i=document.createElement("span");i.className="box-tag-title",i.append(...o.childNodes),o.remove(),s.append(" ",i)}this.prepend(s);let r=this.querySelector(":scope > delta-meta");if(r){let i=r.querySelectorAll(":scope > delta-meta-item");if(i.length){let m=document.createElement("div");m.className="box-meta";for(let d of i){let l=d.getAttribute("key"),c=d.innerHTML.trim();if(l&&c){let u=document.createElement("span");u.className="box-meta-item",u.innerHTML=`<span class="k">${l}</span><span class='v'> ${c}</span>`,m.appendChild(u)}}r.remove(),this.append(m)}}T(this,s)}};function ve(){for(let a of De)customElements.define(`delta-${a}`,class extends K{})}var V=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady=="1")return;this.dataset.deltaReady="1";let e=this.querySelector(":scope > delta-meta");if(e){let t=e.querySelectorAll(":scope > delta-meta-item");if(t.length){let n=document.createElement("div");n.classList.add("box-meta"),Array.from(t).forEach(o=>{let s=document.createElement("span");s.className="box-meta-item";let r=document.createElement("span");r.className="k",r.textContent=o.getAttribute("key")??"";let i=document.createElement("span");i.innerHTML=o.innerHTML,i.className="v",s.append(r),s.append(i),n.append(s)}),e.replaceWith(n)}}}};function be(){customElements.define("delta-document",class extends V{})}var W=class extends HTMLElement{connectedCallback(){this.dataset.deltaReady||(this.dataset.deltaReady="1",this.classList.add("sidenote"))}};function Ee(){customElements.define("delta-sidenote",class extends W{})}function $(a,e,t,n="video-cap"){let o=a.querySelector(":scope > delta-caption");if(!o)return;o.classList.add(n);let s=document.createElement("span");s.className="lbl";let r=v(e,e.charAt(0).toUpperCase()+e.slice(1));s.textContent=r+(t?` ${t}`:""),o.prepend(s," ")}function _(a,e){let t=document.createElement("div");t.className="video-frame",t.append(e),a.prepend(t)}function Ve(a){if(a=(a||"").trim(),/^[\w-]{11}$/.test(a))return a;try{let e=new URL(a);if(e.hostname==="youtu.be")return e.pathname.slice(1,12);if(e.searchParams.has("v"))return e.searchParams.get("v");let t=e.pathname.match(/\/(?:embed|shorts)\/([\w-]{11})/);if(t)return t[1]}catch{}return""}var z=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("video");let e=Ve(this.getAttribute("src"));if(!e){console.warn("delta-youtube: no valid video ID found in src",this.getAttribute("src"));return}if(location.protocol==="file:"){let t=document.createElement("a");t.className="yt-facade video-media",t.href=`https://www.youtube.com/watch?v=${e}`,t.target="_blank",t.rel="noopener",t.setAttribute("aria-label","Watch on YouTube");let n=document.createElement("img");n.src=`https://i.ytimg.com/vi/${e}/hqdefault.jpg`,n.alt="",n.loading="lazy";let o=document.createElement("span");o.className="yt-play",o.setAttribute("aria-hidden","true"),t.append(n,o),_(this,t)}else{let t=document.createElement("iframe");t.src=`https://www.youtube.com/embed/${e}`,t.allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",t.allowFullscreen=!0,t.className="video-media",t.loading="lazy",_(this,t)}$(this,"video",this.getAttribute("num"))}},X=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("video");let e=this.getAttribute("src");if(!e){let n=document.createElement("div");n.className="video-missing",n.textContent="No video source.",this.prepend(n);return}let t=document.createElement("video");t.src=e,t.controls=!0,t.className="video-media";for(let n of["poster","loop","muted","autoplay","playsinline"])this.hasAttribute(n)&&t.setAttribute(n,this.getAttribute(n)??"");_(this,t),$(this,"video",this.getAttribute("num"))}},G=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("video");let e=this.getAttribute("src");if(!e){let n=document.createElement("div");n.className="video-missing",n.textContent="No audio source.",this.prepend(n);return}let t=document.createElement("audio");t.src=e,t.controls=!0,t.className="audio-media",this.hasAttribute("loop")&&(t.loop=!0),_(this,t),$(this,"audio",this.getAttribute("num"))}},Y=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("figure");let e=this.getAttribute("src");if(e){let t=document.createElement("div");t.className="figure-frame";let n=document.createElement("img");n.src=e;let o=this.getAttribute("alt");o&&(n.alt=o),t.append(n),this.prepend(t)}else{let t=document.createElement("div");t.className="video-missing",t.textContent="Image not found.",this.prepend(t)}$(this,"figure",this.getAttribute("num"),"figure-cap")}},J=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady=="1")return;this.dataset.deltaReady="1",this.classList.add("interactive");let e=this.querySelector(":scope > delta-caption"),t=document.createElement("div");t.className="interactive-frame";for(let n of[...this.childNodes])n!==e&&t.append(n);this.prepend(t),$(this,"interactive",this.getAttribute("num"),"interactive-cap")}};function ye(){customElements.define("delta-youtube",class extends z{}),customElements.define("delta-video",class extends X{}),customElements.define("delta-audio",class extends G{}),customElements.define("delta-figure",class extends Y{}),customElements.define("delta-interactive",class extends J{})}var j=typeof HTMLElement<"u"&&"popover"in HTMLElement.prototype,A=8,Q=12,R=null;function L(a,e,t={}){let{onOpen:n,onClose:o,gap:s=10,triggerClick:r=!0}=t;e.classList.add("delta-pop"),j&&e.setAttribute("popover","manual"),e.parentElement!==document.body&&document.body.appendChild(e),a.setAttribute("aria-haspopup","dialog");let i=!1;function m(){let b=a.getBoundingClientRect(),k=document.documentElement.clientWidth,H=document.documentElement.clientHeight,M=H-A-(b.bottom+s),S=b.top-s-A;e.style.maxHeight="";let x=e.getBoundingClientRect(),w=x.height>M&&S>M,I=w?S:M;x.height>I&&(e.style.maxHeight=`${Math.max(0,Math.floor(I))}px`,x=e.getBoundingClientRect()),e.classList.toggle("is-above",w);let p=w?b.top-s-x.height:b.bottom+s,g=Math.min(Math.max(A,p),Math.max(A,H-x.height-A)),y=Math.min(Math.max(A,b.left),Math.max(A,k-x.width-A));e.style.top=`${Math.round(g)}px`,e.style.left=`${Math.round(y)}px`;let N=Math.max(Q,x.width-Q),C=Math.min(Math.max(Q,b.left+b.width/2-y),N);e.style.setProperty("--arrow-x",`${Math.round(C)}px`)}let d=()=>m(),l=b=>{b.key==="Escape"&&f()},c=b=>{let k=b.target;!e.contains(k)&&!a.contains(k)&&f()};function u(){i||(R&&R!==f&&R(),n?.(e,a),j?e.showPopover():e.classList.add("is-open"),m(),window.addEventListener("scroll",d,{capture:!0,passive:!0}),window.addEventListener("resize",d),document.addEventListener("keydown",l),setTimeout(()=>document.addEventListener("pointerdown",c),0),i=!0,R=f,a.setAttribute("aria-expanded","true"))}function f(){i&&(j?e.matches(":popover-open")&&e.hidePopover():e.classList.remove("is-open"),e.classList.remove("is-above"),window.removeEventListener("scroll",d,{capture:!0}),window.removeEventListener("resize",d),document.removeEventListener("keydown",l),document.removeEventListener("pointerdown",c),i=!1,R===f&&(R=null),a.setAttribute("aria-expanded","false"),o?.(e,a))}function E(){i?f():u()}j&&e.addEventListener("toggle",b=>{b.newState==="closed"&&i&&f()});let h=b=>{b.preventDefault(),E()};return r&&(a.addEventListener("click",h),a.setAttribute("aria-expanded","false")),{open:u,close:f,toggle:E,reposition:m,get isOpen(){return i},destroy(){f(),r&&a.removeEventListener("click",h),e.remove()}}}var Z=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelector(":scope > delta-title"),t=(e?.textContent??"").trim();e?.remove();let n=this.getAttribute("show-icon")!=="false",o=document.createElement("div");o.append(...this.childNodes);let s=document.createElement("button");if(s.type="button",s.className="hint-trigger",n){let r=document.createElement("span");r.className="hint-marker",r.textContent="\u{1F4A1} ",s.append(r)}s.append(t||v("hint","Hint")),this.append(s),L(s,o)}};function xe(){customElements.define("delta-hint",class extends Z{})}var O=null;function We(){if(O)return O;let a=document.getElementById("delta-toc");try{O=a?JSON.parse(a.textContent||"[]"):[]}catch{O=[]}return O}var ee=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=parseInt(this.getAttribute("depth")??"2",10),t=this.getAttribute("scope")==="project",n=We().filter(l=>l.level-1<=e&&(t||!l.file));if(n.length===0)return;let o=document.createElement("nav");o.className="toc";let s=this.querySelector(":scope > delta-title"),r=s?s.innerHTML:v("contents","Contents");o.setAttribute("aria-label",r);let i=document.createElement("div");i.className="toc-title",i.innerHTML=r,o.append(i);let m=document.createElement("ol");m.className="toc-list";let d=[{level:n[0].level,ol:m}];for(let l of n){for(;d.length>1&&l.level<d[d.length-1].level;)d.pop();let c=d[d.length-1];if(l.level>c.level){let h=c.ol.lastElementChild,b=document.createElement("ol");b.className="toc-sub",(h??c.ol).append(b),d.push({level:l.level,ol:b}),c=d[d.length-1]}let u=document.createElement("li");u.className="toc-item";let f=document.createElement("a");if(f.className="toc-link",f.href=l.file?`${l.file}#${l.id}`:`#${l.id}`,l.num){let h=document.createElement("span");h.className="toc-num",h.textContent=l.num,f.append(h," ")}let E=document.createElement("span");E.className="toc-text",E.innerHTML=l.title,f.append(E),f.addEventListener("click",h=>{if(l.file)return;if(window.Delta?.deck?.goToId(l.id)){h.preventDefault();return}let b=document.getElementById(l.id);b&&(h.preventDefault(),b.scrollIntoView({block:"start",behavior:"smooth"}),b.classList.add("is-xref-target"),b.addEventListener("animationend",()=>b.classList.remove("is-xref-target"),{once:!0}))}),u.append(f),c.ol.append(u)}o.append(m),this.replaceChildren(o)}};function Le(){customElements.define("delta-toc",class extends ee{})}var te=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelector(":scope > delta-title"),t=(e?.textContent??"").trim()||v("contents","Contents"),n=e?[...e.childNodes]:null;e?.remove();let o=()=>n?ze(document.createElement("span"),n):t,s=document.createElement("button");s.type="button",s.className="floating-fab",s.setAttribute("aria-label",t);let r=document.createElement("span");r.className="floating-icon",r.setAttribute("aria-hidden","true"),r.textContent="\u2630",s.append(r,o());let i=document.createElement("div");i.className="floating-panel";let m=document.createElement("div");m.className="floating-hd";let d=document.createElement("span");d.className="floating-title",d.append(o());let l=document.createElement("button");l.type="button",l.className="floating-x",l.setAttribute("aria-label",v("close","Close")),l.textContent="\xD7",m.append(d,l);let c=document.createElement("div");c.className="floating-body",c.append(...this.childNodes),i.append(m,c),this.append(s);let u=L(s,i,{gap:12});l.addEventListener("click",()=>u.close()),c.addEventListener("click",f=>{f.target.closest("a")&&u.close()})}};function ze(a,e){for(let t of e)a.append(t.cloneNode(!0));return a}function ke(){customElements.define("delta-floating",class extends te{})}var Xe='<svg class="ext-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"/></svg>',ne=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("to");if(!e)return;let t=document.createElement("a");for(t.className="ext-link",t.href=e,t.target="_blank",t.rel="noopener noreferrer";this.firstChild;)t.appendChild(this.firstChild);this.appendChild(t),t.insertAdjacentHTML("beforeend",Xe)}};function Ne(){customElements.define("delta-link",class extends ne{})}var Ge='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>';function Ce(a,{to:e,num:t,kind:n,href:o}){let s=`${v(n,n.charAt(0).toUpperCase()+n.slice(1))} ${t}`,r=document.createElement("div");r.className="xref-pop";let i=document.createElement("div");i.className="xref-pop-head";let m=document.createElement("span");m.className="xref-pop-label",m.textContent=s;let d=document.createElement("button");d.type="button",d.className="xref-go",d.title=s,d.setAttribute("aria-label",s),d.innerHTML=Ge,i.append(m,d);let l=document.createElement("div");l.className="xref-pop-body",r.append(i,l);let c=!1,u=L(a,r,{onOpen:()=>{if(c)return;c=!0;let f=[...document.querySelectorAll("template[data-delta-pop]")].find(h=>h.dataset.deltaPop===e);if(!f)return;let E=f.content.cloneNode(!0);for(let h of E.querySelectorAll("[id]"))h.removeAttribute("id");for(let h of E.querySelectorAll("[collapsed], [collapsible]"))h.removeAttribute("collapsed"),h.removeAttribute("collapsible");l.append(E)}});d.addEventListener("click",f=>{if(f.preventDefault(),u.close(),window.Delta?.deck?.goToId(e))return;if(o){location.href=o;return}let E=document.getElementById(e);E&&(E.scrollIntoView({block:"center",behavior:"smooth"}),E.classList.add("is-xref-target"),E.addEventListener("animationend",()=>E.classList.remove("is-xref-target"),{once:!0}))})}var ae=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("to")??"",t=this.getAttribute("data-target-num"),n=this.getAttribute("data-target-tag"),o=this.getAttribute("data-target-href");if(!n||!t)return;let s=(this.textContent??"").trim().length>0,r=document.createElement("button");r.type="button",r.className="xref",s?r.append(...this.childNodes):r.textContent=`${v(n,n.charAt(0).toUpperCase()+n.slice(1))} ${t}`,this.replaceChildren(r),Ce(r,{to:e,num:t,kind:n,href:o})}};function Ae(){for(let a of document.querySelectorAll(".katex [data-delta-ref-to]")){let{deltaRefTo:e,deltaRefNum:t,deltaRefTag:n,deltaRefHref:o}=a.dataset;!e||!t||!n||(a.classList.add("math-xref"),a.setAttribute("role","link"),a.tabIndex=0,a.addEventListener("keydown",s=>{(s.key==="Enter"||s.key===" ")&&(s.preventDefault(),a.click())}),Ce(a,{to:e,num:t,kind:n,href:o}))}}function Te(){customElements.define("delta-ref",class extends ae{})}var oe=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelectorAll(":scope > delta-paper");if(e.length===0)return;let t=document.createElement("section");t.className="notes";let n=this.querySelector(":scope > delta-title"),o=document.createElement("h4");o.innerHTML=n?n.innerHTML:v("references","References"),t.append(o);let s=document.createElement("ol");for(let r of e){let i=document.createElement("li");r.id&&(i.id=r.id),i.append(F(r)),s.append(i)}t.append(s),this.replaceChildren(t)}};function Me(){customElements.define("delta-bibliography",class extends oe{})}var se=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=(this.getAttribute("data-cite-nums")??"").split(",").filter(Boolean),t=(this.getAttribute("data-cite-ids")??"").split(",").filter(Boolean),n=this.getAttribute("data-cite-file");if(e.length===0){this.classList.add("cite-missing");return}let o=document.createElement("span");o.className="cite",o.append("["),e.forEach((m,d)=>{d>0&&o.append(", ");let l=document.createElement("a");l.textContent=m,o.append(l)}),o.append("]"),this.replaceChildren(o);let s=document.createElement("div");s.className="cite-pop";let r=!1,i=L(o,s,{onOpen:()=>{r||(r=!0,t.forEach((m,d)=>{let l=document.createElement("div");l.className="cite-pop-item";let c=document.createElement("a");c.className="cite-pop-num",c.href=n?`${n}#${m}`:`#${m}`,c.textContent=`[${e[d]}]`,c.addEventListener("click",h=>{i.close(),!window.Delta?.deck?.goToId(m)&&(n||(h.preventDefault(),B(m)))});let u=document.createElement("span");u.className="cite-pop-text";let E=[...document.querySelectorAll("template[data-delta-pop]")].find(h=>h.dataset.deltaPop===m)?.content.querySelector("delta-paper");E&&u.append(F(E)),l.append(c,u),s.append(l)}))}})}};function we(){customElements.define("delta-cite",class extends se{})}var re=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.textContent??"",t=document.createElement("pre");t.className="code-src";let n=document.createElement("code");for(;this.firstChild;)n.append(this.firstChild);t.append(n);let o=document.createElement("div");if(o.className="code-body",this.getAttribute("lines")!=="false"){let d=e.replace(/\n$/,"").split(`
 `).length,l=document.createElement("span");l.className="code-gutter",l.setAttribute("aria-hidden","true"),l.textContent=Array.from({length:d},(c,u)=>String(u+1)).join(`
@@ -3321,9 +3387,10 @@ customElements.define(
 
             const isTimed = this.getAttribute('timed') === 'true'; // definir se o timer será usado
             const qNumber = this.getAttribute('number'); // identificador da questão
-            const qTitle = this.getAttribute('title'); // conteúdo da questão/título
 
             const customStartText = this.getAttribute('start-text') || 'Iniciar Questão';
+
+            const titleNode = this.querySelector(':scope > delta-title');
 
             const boxElement = document.createElement('div');
             boxElement.className = 'box delta-question-box';
@@ -3333,14 +3400,24 @@ customElements.define(
                 const header = document.createElement('div');
                 header.className = 'delta-question-header';
 
-                if (qNumber || qTitle) {
+                if (qNumber || titleNode) {
                     const tagElement = document.createElement('div');
                     tagElement.className = 'box-tag';
-                    let tagText = qNumber ? `${qNumber}` : ' '; // retirando o texto padrão devido a questão da linguagem
-                    if (qTitle) {
-                        tagText += ` <span class="box-tag-title">${qTitle}</span>`;
+
+                    // Se tiver número, adiciona no tagElement
+                    if (qNumber) {
+                        tagElement.append(document.createTextNode(`${qNumber} `));
                     }
-                    tagElement.innerHTML = tagText;
+
+                    if (titleNode) {
+                        const titleSpan = document.createElement('span');
+                        titleSpan.className = 'box-tag-title';
+
+                        titleSpan.append(...titleNode.childNodes);
+                        titleNode.remove();
+                        
+                        tagElement.append(titleSpan);
+                    }
                     header.appendChild(tagElement);
                 }
 
@@ -3417,6 +3494,96 @@ customElements.define(
         }
     }
 );
+
+customElements.define(
+    'delta-question-group',
+    class extends HTMLElement {
+        connectedCallback() {
+            if (this.dataset.deltaReady) return;
+            this.dataset.deltaReady = "1";
+
+            const titleNode = this.querySelector(':scope > delta-title');
+            const titleAttr = this.getAttribute('title');
+
+            const isTimed = this.getAttribute('timed') !== 'false'; // por padrão o timer é sempre ativado
+            
+            const header = document.createElement('div');
+            header.className = 'delta-question-group-header';
+
+            const titleElement = document.createElement('h2');
+            titleElement.className = 'delta-question-group-title';
+
+            if (titleNode) {
+                titleElement.append(...titleNode.childNodes);
+                titleNode.remove();
+            } else if (titleAttr) {
+                titleElement.textContent = titleAttr;
+            } else {
+                titleElement.textContent = 'Questionário';
+            }
+            header.appendChild(titleElement);
+
+            if (isTimed) {
+                this.globalTimeDisplay = document.createElement('div');
+                this.globalTimeDisplay.className = 'delta-timer-display global-timer';
+                this.globalTimeDisplay.textContent = '⏱ Tempo Total: 00:00';
+                header.appendChild(this.globalTimeDisplay);
+            }
+            
+            const contentContainer = document.createElement('div');
+            contentContainer.className = 'delta-question-group-content';
+            while (this.firstChild) {
+                contentContainer.appendChild(this.firstChild);
+            }
+
+            this.appendChild(header);
+            this.appendChild(contentContainer);
+
+            this.startTime = null;
+            this.timerInterval = null;
+            this.isCompleted = false;
+
+            this.addEventListener('click', () => {
+                if (isTimed && !this.startTime && !this.isCompleted) {
+                    this.startTime = Date.now();
+                    this.timerInterval = setInterval(() => this.updateGlobalTimer(), 1000);
+                }
+
+                setTimeout(() => {
+                    this.checkCompletion(isTimed);
+                }, 50);
+            });
+        }
+        
+        updateGlobalTimer() {
+            if (!this.startTime || this.isCompleted || !this.globalTimeDisplay) return; // se o isTimed for falso
+            
+            const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+            const minutes = String(Math.floor(elapsed / 60)).padStart(2, '0');
+            const seconds = String(elapsed % 60).padStart(2, '0');
+            this.globalTimeDisplay.textContent = `⏱ Tempo Total: ${minutes}:${seconds}`;
+        }
+
+        checkCompletion(isTimed) {
+            if (this.isCompleted) return;
+
+            const totalQuestions = this.querySelectorAll('delta-question').length;
+            const answeredQuestions = this.querySelectorAll('delta-question[answered="true"]').length;
+
+            if (totalQuestions > 0 && totalQuestions === answeredQuestions) {
+                this.isCompleted = true; 
+                
+                // finaliza o relógio se ele existir:
+                if (isTimed) {
+                    if (this.timerInterval) clearInterval(this.timerInterval);
+                    this.globalTimeDisplay.classList.add('completed');
+                    this.updateGlobalTimer(); 
+                }
+            }
+        }
+    }
+);
+
 </script>
 
 </body>
