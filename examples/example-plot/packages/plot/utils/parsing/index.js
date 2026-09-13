@@ -48,6 +48,33 @@ function parsePointsAttributes(points, sizeAttr, interactionAttr, plot) {
     points.dragOffset = { x: 0, y: 0 };
 }
 
+function parsePointToData(plot, ptEl) {
+    let x = NaN, y = NaN;
+    if (ptEl.hasAttribute("x") && ptEl.hasAttribute("y")) {
+        x = parseFloat(ptEl.getAttribute("x"));
+        y = parseFloat(ptEl.getAttribute("y"));
+    } else {
+        const tuple = parseTuple(ptEl.getAttribute("pos") || ptEl.textContent?.trim(), 2, true);
+        if (tuple) {
+            x = tuple[0];
+            y = tuple[1];
+        }
+    }
+
+    if (!isNaN(x) && !isNaN(y)) {
+        const point = { x, y };
+        const sizeAttr = ptEl.getAttribute("size");
+        if (sizeAttr && !isNaN(parseFloat(sizeAttr))) {
+            point.size = parseFloat(sizeAttr);
+        }
+        const colorAttr = ptEl.getAttribute("color");
+        if (colorAttr) {
+            point.color = colorAttr;
+        }
+        plot.data.points.push(point);
+    }
+}
+
 function parseSubcomponentData(plot) {
     // Disable connectedCallback on child web components
     for (const child of plot.children) {
@@ -77,9 +104,15 @@ function parseSubcomponentData(plot) {
     }
     if (axisEl) plot.elements.push(axisEl);
 
-    // Points
+    // Singular Points
+    let singularPoints = plot.querySelectorAll("delta-point");
+    for (const pt of singularPoints) {
+        parsePointToData(plot, pt);
+    }
+
+    // Points Subcomponent
     let pointsEl = plot.querySelector("delta-points");
-    if (plot.type === "points" && !pointsEl) {
+    if ((plot.type === "points" || singularPoints.length > 0) && !pointsEl) {
         pointsEl = document.createElement("delta-points");
     }
     if (pointsEl) plot.elements.push(pointsEl);
