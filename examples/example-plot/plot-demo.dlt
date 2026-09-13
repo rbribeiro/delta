@@ -7,138 +7,188 @@
   </meta>
 
   <abstract>
-    Página demonstrativa do componente plot, um componente do delta feito para plotagem de curvas e pontos em um espaço bidimensional.
+    Página demonstrativa e referência técnica do componente plot, projetado para renderização interativa de curvas, eixos e pontos em um espaço bidimensional.
   </abstract>
 
   <import src="packages/plot" />
 
-  <section id="sec:intro">
-    <title>Componente <c><plot></c></title>
+  <section id="sec:plot">
+    <eyebrow>Referência de Componentes</eyebrow>
+    <title>&lt;plot&gt;</title>
+    <intro>
+      O componente <c><plot></c> cria uma área interativa de desenho no plano cartesiano $\mathbb{R}^2$ com proporção fixa de $16:9$. Ele gerencia a renderização em canvas de alta resolução, controle de coordenadas e interações de navegação (pan e zoom).
+    </intro>
 
-    O componente <c><plot></c> cria uma área interativa de desenho no plano cartesiano $\mathbb{R}^2$ com proporção (até o momento) fixa de $16:9$. Ele gerencia a renderização em canvas de alta resolução e as interações de navegação do usuário.
-    
-    Parâmetros:
-    <list>
-      <item><c>type</c>: Define o tipo de ambiente padrão.
-        <list marker="dash">
-          <item>Valores: <c>cartesian</c>, <c>points</c>.</item>
-          <item>Padrão: <c>cartesian</c></item>
-        </list>
-      </item>
-      <item><c>x</c>: Tupla de números representando o intervalo inicial do eixo x.
-        <list marker="dash">
-          <item>Valores: Tupla de números.</item>
-          <item>Padrão: <c>-16,16</c></item>
-          <item>Formato: <c>a,b</c>, onde <c>a</c> e <c>b</c> são números inteiros ou ponto flutuante.</item>
-        </list>
-      </item>
-      <item><c>y</c>: Tupla de números representando o intervalo inicial do eixo y.
-        <list marker="dash">
-          <item>Valores: Tupla de números.</item>
-          <item>Padrão: <c>-9,9</c></item>
-          <item>Formato: <c>a,b</c>, onde <c>a</c> e <c>b</c> são números inteiros ou ponto flutuante.</item>
-        </list>
-      </item>
-      <item><c>grab</c>: Define se o usuário pode arrastar e navegar pelo plano.
-        <list marker="dash">
-          <item>Valores: Booleano.</item>
-          <item>Padrão: <c>true</c></item>
-        </list>
-      </item>
-      <item><c>zoom</c>: Define o controle e limites de aproximação/afastamento. Se definido como uma tupla, representa o intervalo <c>min,max</c>, com o zoom mínimo e máximo.
-        <list marker="dash">
-          <item>Valores: Booleano ou Tupla de números.</item>
-          <item>Padrão: <c>true</c>, equivalente a <c>0.25,4</c></item>
-          <item>Formato: <c>a,b</c>, onde <c>a</c> e <c>b</c> são números inteiros ou ponto flutuante.</item>
-        </list>
-      </item>
-    </list>
-  </section>
+    <table numbered="false">
+      <header>
+        <column>Atributo</column>
+        <column>Valores</column>
+        <column>O que faz</column>
+      </header>
+      <row>
+        <column mono="true">type</column>
+        <column><c>cartesian</c>, <c>points</c></column>
+        <column>Define o ambiente padrão. O padrão é <c>cartesian</c></column>
+      </row>
+      <row>
+        <column mono="true">x</column>
+        <column>tupla <c>a,b</c></column>
+        <column>Intervalo numérico inicial visível no eixo horizontal. O padrão é <c>-16,16</c></column>
+      </row>
+      <row>
+        <column mono="true">y</column>
+        <column>tupla <c>a,b</c></column>
+        <column>Intervalo numérico inicial visível no eixo vertical. O padrão é <c>-9,9</c></column>
+      </row>
+      <row>
+        <column mono="true">grab</column>
+        <column><c>true</c>, <c>false</c></column>
+        <column>Permite arrastar e navegar livremente pelo plano. O padrão é <c>true</c></column>
+      </row>
+      <row>
+        <column mono="true">zoom</column>
+        <column><c>true</c>, <c>false</c> ou tupla <c>min,max</c></column>
+        <column>Habilita/desabilita aproximação ou define limites com uma tupla. O padrão é <c>true</c> (equivale a <c>0.25,4</c>)</column>
+      </row>
+    </table>
 
-  <section id="sec:title">
-    <title>Subcomponente <c><title></c></title>
+    <subsection id="sec:title">
+      <title>&lt;title&gt;</title>
+      Define o título exibido na barra de cabeçalho superior da área de plotagem. Não possui atributos adicionais: o texto do título é inserido diretamente como conteúdo da tag.
 
-    O subcomponente <c><title></c> define o título exibido no cabeçalho superior da área de plotagem.
+      <code lang="xml" numbered="false">
+<plot>
+  <title>Plano Cartesiano</title>
+</plot>
+      </code>
+    </subsection>
 
-    Parâmetros:
-    <list>
-      <item>Não possui parâmetros adicionais. O texto do título é inserido diretamente como conteúdo da tag.</item>
-    </list>
-  </section>
+    <subsection id="sec:grid">
+      <title>&lt;grid&gt;</title>
+      Responsável por desenhar as linhas de grade de fundo e os eixos principais que se cruzam na origem $(0, 0)$.
 
-  <section id="sec:grid">
-    <title>Subcomponente <c><grid></c></title>
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">show</column>
+          <column><c>true</c>, <c>false</c>, <c>origin</c>, <c>basic</c></column>
+          <column><c>true</c> desenha grade e origem; <c>origin</c> só os eixos centrais; <c>basic</c> só a malha; <c>false</c> oculta ambos.</column>
+        </row>
+      </table>
+    </subsection>
 
-    O subcomponente <c><grid></c> é responsável por desenhar as linhas de grade do plano cartesiano e os eixos principais que se cruzam na origem $(0, 0)$.
+    <subsection id="sec:axis">
+      <title>&lt;axis&gt;</title>
+      Desenha as réguas numéricas nos eixos horizontal e vertical, calculando passos dinâmicos e legíveis conforme o nível de zoom.
 
-    Parâmetros:
-    <list>
-      <item><c>show</c>: Define a exibição das linhas básicas e dos eixos da origem.
-        <list marker="dash">
-          <item>Valores: <c>true</c>, <c>false</c>, <c>origin</c>, <c>basic</c>.</item>
-          <item>Padrão: <c>true</c></item>
-        </list>
-      </item>
-    </list>
-  </section>
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">show</column>
+          <column><c>true</c>, <c>false</c>, <c>x</c>, <c>y</c></column>
+          <column>Controla a visibilidade dos números: ambos os eixos (<c>true</c>), apenas horizontal (<c>x</c>), apenas vertical (<c>y</c>) ou nenhum (<c>false</c>).</column>
+        </row>
+      </table>
+    </subsection>
 
-  <section id="sec:axis">
-    <title>Subcomponente <c><axis></c></title>
+    <subsection id="sec:points">
+      <title>&lt;points&gt;</title>
+      Adiciona uma camada interativa de pontos com barra de status inferior, modo de manipulação/movimentação e balão de coordenadas flutuante.
 
-    O subcomponente <c><axis></c> desenha as réguas numéricas nos eixos horizontal e vertical, indicando as coordenadas visíveis no plano.
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">size</column>
+          <column>número (<c>0.1</c> a <c>10</c>)</column>
+          <column>Fator de escala multiplicador do raio dos pontos renderizados. O padrão é <c>1</c></column>
+        </row>
+        <row>
+          <column mono="true">interaction</column>
+          <column><c>true</c>, <c>move</c>, <c>false</c></column>
+          <column><c>true</c> permite criar, mover e deletar pontos; <c>move</c> permite apenas arrastar; <c>false</c> bloqueia edição.</column>
+        </row>
+      </table>
+    </subsection>
 
-    Parâmetros:
-    <list>
-      <item><c>show</c>: Define quais eixos terão suas graduações numéricas visíveis.
-        <list marker="dash">
-          <item>Valores: <c>true</c>, <c>false</c>, <c>x</c>, <c>y</c>.</item>
-          <item>Padrão: <c>true</c></item>
-        </list>
-      </item>
-    </list>
-  </section>
+    <subsection id="sec:point">
+      <title>&lt;point&gt;</title>
+      Permite declarar pontos estáticos diretamente no corpo do <c><plot></c>. Os dados são carregados na inicialização diretamente na lista autoritativa <c>plot.data.points</c>.
 
-  <section id="sec:points">
-    <title>Subcomponente <c><points></c></title>
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">x</column>
+          <column>número (ex: <c>2</c>)</column>
+          <column>Coordenada horizontal do ponto no plano cartesiano.</column>
+        </row>
+        <row>
+          <column mono="true">y</column>
+          <column>número (ex: <c>3</c>)</column>
+          <column>Coordenada vertical do ponto no plano cartesiano.</column>
+        </row>
+        <row>
+          <column mono="true">pos</column>
+          <column>tupla <c>x,y</c></column>
+          <column>Par de coordenadas como tupla (alternativa a <c>x</c> e <c>y</c> separados ou ao texto interno).</column>
+        </row>
+        <row>
+          <column mono="true">size</column>
+          <column>número (ex: <c>1.5</c>)</column>
+          <column>Fator de tamanho específico deste ponto. O padrão herda o tamanho de <c><points></c>.</column>
+        </row>
+        <row>
+          <column mono="true">color</column>
+          <column>cor CSS (ex: <c>#ef4444</c>, <c>blue</c>)</column>
+          <column>Cor de preenchimento do ponto (hexadecimal, rgb ou nome). O padrão segue a cor do tema.</column>
+        </row>
+      </table>
 
-    O subcomponente <c><points></c> adiciona uma camada de entidades de pontos ao plano cartesiano, permitindo criar, mover, selecionar e remover pontos de forma dinâmica, acompanhados de uma barra de status e balão flutuante de coordenadas.
-
-    Parâmetros:
-    <list>
-      <item><c>size</c>: Fator de escala do raio visual dos pontos renderizados.
-        <list marker="dash">
-          <item>Valores: Número positivo entre <c>0.1</c> e <c>10</c>.</item>
-          <item>Padrão: <c>1</c></item>
-        </list>
-      </item>
-      <item><c>interaction</c>: Define o nível de interação permitido com os pontos, definindo se os pontos terão interação de criação, deleção e movimentação.
-        <list marker="dash">
-          <item>Valores: <c>true</c>, <c>move</c>, <c>false</c>.</item>
-          <item>Padrão: <c>true</c></item>
-        </list>
-      </item>
-    </list>
+      <box type="note">
+        <title>Detecção Automática de Pontos</title>
+        Se houver uma ou mais tags <c><point></c> dentro do gráfico, a camada de renderização de pontos é ativada automaticamente mesmo que <c><points></c> ou <c>type="points"</c> não tenham sido declarados.
+      </box>
+    </subsection>
   </section>
 
   <section id="sec:ex">
-    <title>Exemplos</title>
-
-    Lista de exemplos de plots interessantes, ilustrando como usar os seus parâmetros de forma eficiente.
+    <eyebrow>Demonstração</eyebrow>
+    <title>Exemplos Práticos</title>
+    <intro>
+      Exemplos de configurações frequentes demonstrando as capacidades e combinações do componente.
+    </intro>
 
     <subsection>
       <title>Plot Mínimo</title>
-      <code>
-        <plot/>
+      Área padrão no plano cartesiano sem parâmetros adicionais:
+      <code lang="xml" numbered="false">
+<plot />
       </code>
-      <plot/>
+      <plot />
     </subsection>
 
     <subsection>
-      <title>Plot Básico</title>
-      <code>
-        <plot x="-1,1" y="-1,1">
-          <title>Espaço Cartesiano</title>
-        </plot>
+      <title>Espaço Cartesiano com Limites Iniciais</title>
+      Gráfico com intervalo visível inicial entre $[-1, 1]$ em ambos os eixos e título superior:
+      <code lang="xml" numbered="false">
+<plot x="-1,1" y="-1,1">
+  <title>Espaço Cartesiano</title>
+</plot>
       </code>
       <plot x="-1,1" y="-1,1">
         <title>Espaço Cartesiano</title>
@@ -147,26 +197,28 @@
 
     <subsection>
       <title>Régua Minimalista</title>
-      <code>
-        <plot x="-1,1">
-          <title>Ruler</title>
-          <grid show="origin"/>
-          <axis show="x"/>
-        </plot>
+      Exibição apenas das linhas de origem $(0, 0)$ e régua no eixo horizontal:
+      <code lang="xml" numbered="false">
+<plot x="-1,1">
+  <title>Régua Horizontal</title>
+  <grid show="origin" />
+  <axis show="x" />
+</plot>
       </code>
       <plot x="-1,1">
-        <title>Ruler</title>
-        <grid show="origin"/>
-        <axis show="x"/>
+        <title>Régua Horizontal</title>
+        <grid show="origin" />
+        <axis show="x" />
       </plot>
     </subsection>
 
     <subsection>
-      <title>Espaço de Pontos</title>
-      <code>
-        <plot type="points">
-          <title>Espaço de Pontos</title>
-        </plot>
+      <title>Espaço de Pontos Interativo</title>
+      Ambiente configurado com <c>type="points"</c>, permitindo clicar para criar pontos, arrastá-los ou excluí-los:
+      <code lang="xml" numbered="false">
+<plot type="points">
+  <title>Espaço de Pontos</title>
+</plot>
       </code>
       <plot type="points">
         <title>Espaço de Pontos</title>
@@ -174,18 +226,43 @@
     </subsection>
 
     <subsection>
-      <title>Sem Interação</title>
-      <code>
-        <plot type="points" grab="false" zoom="false">
-          <title>Fixo</title>
-          <points interaction="false"/>
-        </plot>
+      <title>Plot Fixo sem Interação</title>
+      Plano cartesiano estático com zoom, arrasto e manipulação desativados, contendo pontos pré-definidos apenas por <c>x</c> e <c>y</c> que não podem ser movidos nem removidos:
+      <code lang="xml" numbered="false">
+<plot type="points" grab="false" zoom="false">
+  <title>Modo Fixo</title>
+  <points interaction="false" />
+  <point x="-3" y="2" />
+  <point x="0" y="0" />
+  <point x="3" y="-1" />
+</plot>
       </code>
       <plot type="points" grab="false" zoom="false">
-        <title>Fixo</title>
-        <points interaction="false"/>
+        <title>Modo Fixo</title>
+        <points interaction="false" />
+        <point x="-3" y="2" />
+        <point x="0" y="0" />
+        <point x="3" y="-1" />
       </plot>
     </subsection>
 
+    <subsection>
+      <title>Pontos Declarativos com Cores e Tamanhos</title>
+      Pontos pré-definidos no código com atributos individuais de posição, cor e tamanho:
+      <code lang="xml" numbered="false">
+<plot>
+  <title>Pontos Fixados no Código</title>
+  <point x="0" y="0" size="1.5" color="#ef4444" />
+  <point x="4" y="3" color="#3b82f6" />
+  <point x="-4" y="-2" size="2" />
+</plot>
+      </code>
+      <plot>
+        <title>Pontos Fixados no Código</title>
+        <point x="0" y="0" size="1.5" color="#ef4444" />
+        <point x="4" y="3" color="#3b82f6" />
+        <point x="-4" y="-2" size="2" />
+      </plot>
+    </subsection>
   </section>
 </document>

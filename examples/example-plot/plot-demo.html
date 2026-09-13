@@ -3238,129 +3238,208 @@ delta-plot:focus-visible,
     <delta-meta-item key="Tópico">Visualização Matemática e Geometria</delta-meta-item>
     <delta-meta-item key="Autor">Delta</delta-meta-item>
   </delta-meta><delta-abstract>
-    Página demonstrativa do componente plot, um componente do delta feito para plotagem de curvas e pontos em um espaço bidimensional.
-  </delta-abstract><delta-section id="sec:intro" num="1">
-    <delta-title>Componente <delta-c>&lt;plot&gt;</delta-c></delta-title>O componente <delta-c>&lt;plot&gt;</delta-c> cria uma área interativa de desenho no plano cartesiano <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi mathvariant="double-struck">R</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">\mathbb{R}^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathbb">R</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span> com proporção (até o momento) fixa de <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>16</mn><mo>:</mo><mn>9</mn></mrow><annotation encoding="application/x-tex">16:9</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">16</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">:</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">9</span></span></span></span>. Ele gerencia a renderização em canvas de alta resolução e as interações de navegação do usuário.<br><br>Parâmetros:
-    <delta-list>
-      <delta-item><delta-c>type</delta-c>: Define o tipo de ambiente padrão.
-        <delta-list marker="dash">
-          <delta-item>Valores: <delta-c>cartesian</delta-c>, <delta-c>points</delta-c>.</delta-item>
-          <delta-item>Padrão: <delta-c>cartesian</delta-c></delta-item>
-        </delta-list>
-      </delta-item>
-      <delta-item><delta-c>x</delta-c>: Tupla de números representando o intervalo inicial do eixo x.
-        <delta-list marker="dash">
-          <delta-item>Valores: Tupla de números.</delta-item>
-          <delta-item>Padrão: <delta-c>-16,16</delta-c></delta-item>
-          <delta-item>Formato: <delta-c>a,b</delta-c>, onde <delta-c>a</delta-c> e <delta-c>b</delta-c> são números inteiros ou ponto flutuante.</delta-item>
-        </delta-list>
-      </delta-item>
-      <delta-item><delta-c>y</delta-c>: Tupla de números representando o intervalo inicial do eixo y.
-        <delta-list marker="dash">
-          <delta-item>Valores: Tupla de números.</delta-item>
-          <delta-item>Padrão: <delta-c>-9,9</delta-c></delta-item>
-          <delta-item>Formato: <delta-c>a,b</delta-c>, onde <delta-c>a</delta-c> e <delta-c>b</delta-c> são números inteiros ou ponto flutuante.</delta-item>
-        </delta-list>
-      </delta-item>
-      <delta-item><delta-c>grab</delta-c>: Define se o usuário pode arrastar e navegar pelo plano.
-        <delta-list marker="dash">
-          <delta-item>Valores: Booleano.</delta-item>
-          <delta-item>Padrão: <delta-c>true</delta-c></delta-item>
-        </delta-list>
-      </delta-item>
-      <delta-item><delta-c>zoom</delta-c>: Define o controle e limites de aproximação/afastamento. Se definido como uma tupla, representa o intervalo <delta-c>min,max</delta-c>, com o zoom mínimo e máximo.
-        <delta-list marker="dash">
-          <delta-item>Valores: Booleano ou Tupla de números.</delta-item>
-          <delta-item>Padrão: <delta-c>true</delta-c>, equivalente a <delta-c>0.25,4</delta-c></delta-item>
-          <delta-item>Formato: <delta-c>a,b</delta-c>, onde <delta-c>a</delta-c> e <delta-c>b</delta-c> são números inteiros ou ponto flutuante.</delta-item>
-        </delta-list>
-      </delta-item>
-    </delta-list>
-  </delta-section><delta-section id="sec:title" num="2">
-    <delta-title>Subcomponente <delta-c>&lt;title&gt;</delta-c></delta-title>O subcomponente <delta-c>&lt;title&gt;</delta-c> define o título exibido no cabeçalho superior da área de plotagem.<br><br>Parâmetros:
-    <delta-list>
-      <delta-item>Não possui parâmetros adicionais. O texto do título é inserido diretamente como conteúdo da tag.</delta-item>
-    </delta-list>
-  </delta-section><delta-section id="sec:grid" num="3">
-    <delta-title>Subcomponente <delta-c>&lt;grid&gt;</delta-c></delta-title>O subcomponente <delta-c>&lt;grid&gt;</delta-c> é responsável por desenhar as linhas de grade do plano cartesiano e os eixos principais que se cruzam na origem <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">(</mo><mn>0</mn><mo separator="true">,</mo><mn>0</mn><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">(0, 0)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord">0</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">0</span><span class="mclose">)</span></span></span></span>.<br><br>Parâmetros:
-    <delta-list>
-      <delta-item><delta-c>show</delta-c>: Define a exibição das linhas básicas e dos eixos da origem.
-        <delta-list marker="dash">
-          <delta-item>Valores: <delta-c>true</delta-c>, <delta-c>false</delta-c>, <delta-c>origin</delta-c>, <delta-c>basic</delta-c>.</delta-item>
-          <delta-item>Padrão: <delta-c>true</delta-c></delta-item>
-        </delta-list>
-      </delta-item>
-    </delta-list>
-  </delta-section><delta-section id="sec:axis" num="4">
-    <delta-title>Subcomponente <delta-c>&lt;axis&gt;</delta-c></delta-title>O subcomponente <delta-c>&lt;axis&gt;</delta-c> desenha as réguas numéricas nos eixos horizontal e vertical, indicando as coordenadas visíveis no plano.<br><br>Parâmetros:
-    <delta-list>
-      <delta-item><delta-c>show</delta-c>: Define quais eixos terão suas graduações numéricas visíveis.
-        <delta-list marker="dash">
-          <delta-item>Valores: <delta-c>true</delta-c>, <delta-c>false</delta-c>, <delta-c>x</delta-c>, <delta-c>y</delta-c>.</delta-item>
-          <delta-item>Padrão: <delta-c>true</delta-c></delta-item>
-        </delta-list>
-      </delta-item>
-    </delta-list>
-  </delta-section><delta-section id="sec:points" num="5">
-    <delta-title>Subcomponente <delta-c>&lt;points&gt;</delta-c></delta-title>O subcomponente <delta-c>&lt;points&gt;</delta-c> adiciona uma camada de entidades de pontos ao plano cartesiano, permitindo criar, mover, selecionar e remover pontos de forma dinâmica, acompanhados de uma barra de status e balão flutuante de coordenadas.<br><br>Parâmetros:
-    <delta-list>
-      <delta-item><delta-c>size</delta-c>: Fator de escala do raio visual dos pontos renderizados.
-        <delta-list marker="dash">
-          <delta-item>Valores: Número positivo entre <delta-c>0.1</delta-c> e <delta-c>10</delta-c>.</delta-item>
-          <delta-item>Padrão: <delta-c>1</delta-c></delta-item>
-        </delta-list>
-      </delta-item>
-      <delta-item><delta-c>interaction</delta-c>: Define o nível de interação permitido com os pontos, definindo se os pontos terão interação de criação, deleção e movimentação.
-        <delta-list marker="dash">
-          <delta-item>Valores: <delta-c>true</delta-c>, <delta-c>move</delta-c>, <delta-c>false</delta-c>.</delta-item>
-          <delta-item>Padrão: <delta-c>true</delta-c></delta-item>
-        </delta-list>
-      </delta-item>
-    </delta-list>
-  </delta-section><delta-section id="sec:ex" num="6">
-    <delta-title>Exemplos</delta-title>Lista de exemplos de plots interessantes, ilustrando como usar os seus parâmetros de forma eficiente.<delta-subsection num="6.1">
+    Página demonstrativa e referência técnica do componente plot, projetado para renderização interativa de curvas, eixos e pontos em um espaço bidimensional.
+  </delta-abstract><delta-section id="sec:plot" num="1">
+    <delta-eyebrow>Referência de Componentes</delta-eyebrow>
+    <delta-title>&lt;plot&gt;</delta-title>
+    <delta-intro>
+      O componente <delta-c>&lt;plot&gt;</delta-c> cria uma área interativa de desenho no plano cartesiano <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi mathvariant="double-struck">R</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">\mathbb{R}^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathbb">R</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span> com proporção fixa de <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>16</mn><mo>:</mo><mn>9</mn></mrow><annotation encoding="application/x-tex">16:9</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">16</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">:</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">9</span></span></span></span>. Ele gerencia a renderização em canvas de alta resolução, controle de coordenadas e interações de navegação (pan e zoom).
+    </delta-intro><delta-table numbered="false">
+      <delta-header>
+        <delta-column>Atributo</delta-column>
+        <delta-column>Valores</delta-column>
+        <delta-column>O que faz</delta-column>
+      </delta-header>
+      <delta-row>
+        <delta-column mono="true">type</delta-column>
+        <delta-column><delta-c>cartesian</delta-c>, <delta-c>points</delta-c></delta-column>
+        <delta-column>Define o ambiente padrão. O padrão é <delta-c>cartesian</delta-c></delta-column>
+      </delta-row>
+      <delta-row>
+        <delta-column mono="true">x</delta-column>
+        <delta-column>tupla <delta-c>a,b</delta-c></delta-column>
+        <delta-column>Intervalo numérico inicial visível no eixo horizontal. O padrão é <delta-c>-16,16</delta-c></delta-column>
+      </delta-row>
+      <delta-row>
+        <delta-column mono="true">y</delta-column>
+        <delta-column>tupla <delta-c>a,b</delta-c></delta-column>
+        <delta-column>Intervalo numérico inicial visível no eixo vertical. O padrão é <delta-c>-9,9</delta-c></delta-column>
+      </delta-row>
+      <delta-row>
+        <delta-column mono="true">grab</delta-column>
+        <delta-column><delta-c>true</delta-c>, <delta-c>false</delta-c></delta-column>
+        <delta-column>Permite arrastar e navegar livremente pelo plano. O padrão é <delta-c>true</delta-c></delta-column>
+      </delta-row>
+      <delta-row>
+        <delta-column mono="true">zoom</delta-column>
+        <delta-column><delta-c>true</delta-c>, <delta-c>false</delta-c> ou tupla <delta-c>min,max</delta-c></delta-column>
+        <delta-column>Habilita/desabilita aproximação ou define limites com uma tupla. O padrão é <delta-c>true</delta-c> (equivale a <delta-c>0.25,4</delta-c>)</delta-column>
+      </delta-row>
+    </delta-table><delta-subsection id="sec:title" num="1.1">
+      <delta-title>&lt;title&gt;</delta-title>
+      Define o título exibido na barra de cabeçalho superior da área de plotagem. Não possui atributos adicionais: o texto do título é inserido diretamente como conteúdo da tag.<delta-code lang="xml" numbered="false"><span class="hljs-tag">&lt;<span class="hljs-name">plot</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>Plano Cartesiano<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">plot</span>&gt;</span></delta-code>
+    </delta-subsection><delta-subsection id="sec:grid" num="1.2">
+      <delta-title>&lt;grid&gt;</delta-title>
+      Responsável por desenhar as linhas de grade de fundo e os eixos principais que se cruzam na origem <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">(</mo><mn>0</mn><mo separator="true">,</mo><mn>0</mn><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">(0, 0)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord">0</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">0</span><span class="mclose">)</span></span></span></span>.<delta-table numbered="false">
+        <delta-header>
+          <delta-column>Atributo</delta-column>
+          <delta-column>Valores</delta-column>
+          <delta-column>O que faz</delta-column>
+        </delta-header>
+        <delta-row>
+          <delta-column mono="true">show</delta-column>
+          <delta-column><delta-c>true</delta-c>, <delta-c>false</delta-c>, <delta-c>origin</delta-c>, <delta-c>basic</delta-c></delta-column>
+          <delta-column><delta-c>true</delta-c> desenha grade e origem; <delta-c>origin</delta-c> só os eixos centrais; <delta-c>basic</delta-c> só a malha; <delta-c>false</delta-c> oculta ambos.</delta-column>
+        </delta-row>
+      </delta-table>
+    </delta-subsection><delta-subsection id="sec:axis" num="1.3">
+      <delta-title>&lt;axis&gt;</delta-title>
+      Desenha as réguas numéricas nos eixos horizontal e vertical, calculando passos dinâmicos e legíveis conforme o nível de zoom.<delta-table numbered="false">
+        <delta-header>
+          <delta-column>Atributo</delta-column>
+          <delta-column>Valores</delta-column>
+          <delta-column>O que faz</delta-column>
+        </delta-header>
+        <delta-row>
+          <delta-column mono="true">show</delta-column>
+          <delta-column><delta-c>true</delta-c>, <delta-c>false</delta-c>, <delta-c>x</delta-c>, <delta-c>y</delta-c></delta-column>
+          <delta-column>Controla a visibilidade dos números: ambos os eixos (<delta-c>true</delta-c>), apenas horizontal (<delta-c>x</delta-c>), apenas vertical (<delta-c>y</delta-c>) ou nenhum (<delta-c>false</delta-c>).</delta-column>
+        </delta-row>
+      </delta-table>
+    </delta-subsection><delta-subsection id="sec:points" num="1.4">
+      <delta-title>&lt;points&gt;</delta-title>
+      Adiciona uma camada interativa de pontos com barra de status inferior, modo de manipulação/movimentação e balão de coordenadas flutuante.<delta-table numbered="false">
+        <delta-header>
+          <delta-column>Atributo</delta-column>
+          <delta-column>Valores</delta-column>
+          <delta-column>O que faz</delta-column>
+        </delta-header>
+        <delta-row>
+          <delta-column mono="true">size</delta-column>
+          <delta-column>número (<delta-c>0.1</delta-c> a <delta-c>10</delta-c>)</delta-column>
+          <delta-column>Fator de escala multiplicador do raio dos pontos renderizados. O padrão é <delta-c>1</delta-c></delta-column>
+        </delta-row>
+        <delta-row>
+          <delta-column mono="true">interaction</delta-column>
+          <delta-column><delta-c>true</delta-c>, <delta-c>move</delta-c>, <delta-c>false</delta-c></delta-column>
+          <delta-column><delta-c>true</delta-c> permite criar, mover e deletar pontos; <delta-c>move</delta-c> permite apenas arrastar; <delta-c>false</delta-c> bloqueia edição.</delta-column>
+        </delta-row>
+      </delta-table>
+    </delta-subsection><delta-subsection id="sec:point" num="1.5">
+      <delta-title>&lt;point&gt;</delta-title>
+      Permite declarar pontos estáticos diretamente no corpo do <delta-c>&lt;plot&gt;</delta-c>. Os dados são carregados na inicialização diretamente na lista autoritativa <delta-c>plot.data.points</delta-c>.<delta-table numbered="false">
+        <delta-header>
+          <delta-column>Atributo</delta-column>
+          <delta-column>Valores</delta-column>
+          <delta-column>O que faz</delta-column>
+        </delta-header>
+        <delta-row>
+          <delta-column mono="true">x</delta-column>
+          <delta-column>número (ex: <delta-c>2</delta-c>)</delta-column>
+          <delta-column>Coordenada horizontal do ponto no plano cartesiano.</delta-column>
+        </delta-row>
+        <delta-row>
+          <delta-column mono="true">y</delta-column>
+          <delta-column>número (ex: <delta-c>3</delta-c>)</delta-column>
+          <delta-column>Coordenada vertical do ponto no plano cartesiano.</delta-column>
+        </delta-row>
+        <delta-row>
+          <delta-column mono="true">pos</delta-column>
+          <delta-column>tupla <delta-c>x,y</delta-c></delta-column>
+          <delta-column>Par de coordenadas como tupla (alternativa a <delta-c>x</delta-c> e <delta-c>y</delta-c> separados ou ao texto interno).</delta-column>
+        </delta-row>
+        <delta-row>
+          <delta-column mono="true">size</delta-column>
+          <delta-column>número (ex: <delta-c>1.5</delta-c>)</delta-column>
+          <delta-column>Fator de tamanho específico deste ponto. O padrão herda o tamanho de <delta-c>&lt;points&gt;</delta-c>.</delta-column>
+        </delta-row>
+        <delta-row>
+          <delta-column mono="true">color</delta-column>
+          <delta-column>cor CSS (ex: <delta-c>#ef4444</delta-c>, <delta-c>blue</delta-c>)</delta-column>
+          <delta-column>Cor de preenchimento do ponto (hexadecimal, rgb ou nome). O padrão segue a cor do tema.</delta-column>
+        </delta-row>
+      </delta-table><delta-box type="note">
+        <delta-title>Detecção Automática de Pontos</delta-title>
+        Se houver uma ou mais tags <delta-c>&lt;point&gt;</delta-c> dentro do gráfico, a camada de renderização de pontos é ativada automaticamente mesmo que <delta-c>&lt;points&gt;</delta-c> ou <delta-c>type="points"</delta-c> não tenham sido declarados.
+      </delta-box>
+    </delta-subsection>
+  </delta-section><delta-section id="sec:ex" num="2">
+    <delta-eyebrow>Demonstração</delta-eyebrow>
+    <delta-title>Exemplos Práticos</delta-title>
+    <delta-intro>
+      Exemplos de configurações frequentes demonstrando as capacidades e combinações do componente.
+    </delta-intro><delta-subsection num="2.1">
       <delta-title>Plot Mínimo</delta-title>
-      <delta-code num="6.1">&lt;plot/&gt;</delta-code>
+      Área padrão no plano cartesiano sem parâmetros adicionais:
+      <delta-code lang="xml" numbered="false"><span class="hljs-tag">&lt;<span class="hljs-name">plot</span> /&gt;</span></delta-code>
       <delta-plot></delta-plot>
-    </delta-subsection><delta-subsection num="6.2">
-      <delta-title>Plot Básico</delta-title>
-      <delta-code num="6.2">&lt;plot x="-1,1" y="-1,1"&gt;
-  &lt;title&gt;Espaço Cartesiano&lt;/title&gt;
-&lt;/plot&gt;</delta-code>
+    </delta-subsection><delta-subsection num="2.2">
+      <delta-title>Espaço Cartesiano com Limites Iniciais</delta-title>
+      Gráfico com intervalo visível inicial entre <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">[</mo><mo>−</mo><mn>1</mn><mo separator="true">,</mo><mn>1</mn><mo stretchy="false">]</mo></mrow><annotation encoding="application/x-tex">[-1, 1]</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord">−</span><span class="mord">1</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">1</span><span class="mclose">]</span></span></span></span> em ambos os eixos e título superior:
+      <delta-code lang="xml" numbered="false"><span class="hljs-tag">&lt;<span class="hljs-name">plot</span> <span class="hljs-attr">x</span>=<span class="hljs-string">&quot;-1,1&quot;</span> <span class="hljs-attr">y</span>=<span class="hljs-string">&quot;-1,1&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>Espaço Cartesiano<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">plot</span>&gt;</span></delta-code>
       <delta-plot x="-1,1" y="-1,1">
         <delta-title>Espaço Cartesiano</delta-title>
       </delta-plot>
-    </delta-subsection><delta-subsection num="6.3">
+    </delta-subsection><delta-subsection num="2.3">
       <delta-title>Régua Minimalista</delta-title>
-      <delta-code num="6.3">&lt;plot x="-1,1"&gt;
-  &lt;title&gt;Ruler&lt;/title&gt;
-  &lt;grid show="origin"/&gt;
-  &lt;axis show="x"/&gt;
-&lt;/plot&gt;</delta-code>
+      Exibição apenas das linhas de origem <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">(</mo><mn>0</mn><mo separator="true">,</mo><mn>0</mn><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">(0, 0)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord">0</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">0</span><span class="mclose">)</span></span></span></span> e régua no eixo horizontal:
+      <delta-code lang="xml" numbered="false"><span class="hljs-tag">&lt;<span class="hljs-name">plot</span> <span class="hljs-attr">x</span>=<span class="hljs-string">&quot;-1,1&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>Régua Horizontal<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">grid</span> <span class="hljs-attr">show</span>=<span class="hljs-string">&quot;origin&quot;</span> /&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">axis</span> <span class="hljs-attr">show</span>=<span class="hljs-string">&quot;x&quot;</span> /&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">plot</span>&gt;</span></delta-code>
       <delta-plot x="-1,1">
-        <delta-title>Ruler</delta-title>
+        <delta-title>Régua Horizontal</delta-title>
         <delta-grid show="origin"></delta-grid>
         <delta-axis show="x"></delta-axis>
       </delta-plot>
-    </delta-subsection><delta-subsection num="6.4">
-      <delta-title>Espaço de Pontos</delta-title>
-      <delta-code num="6.4">&lt;plot type="points"&gt;
-  &lt;title&gt;Espaço de Pontos&lt;/title&gt;
-&lt;/plot&gt;</delta-code>
+    </delta-subsection><delta-subsection num="2.4">
+      <delta-title>Espaço de Pontos Interativo</delta-title>
+      Ambiente configurado com <delta-c>type="points"</delta-c>, permitindo clicar para criar pontos, arrastá-los ou excluí-los:
+      <delta-code lang="xml" numbered="false"><span class="hljs-tag">&lt;<span class="hljs-name">plot</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;points&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>Espaço de Pontos<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">plot</span>&gt;</span></delta-code>
       <delta-plot type="points">
         <delta-title>Espaço de Pontos</delta-title>
       </delta-plot>
-    </delta-subsection><delta-subsection num="6.5">
-      <delta-title>Sem Interação</delta-title>
-      <delta-code num="6.5">&lt;plot type="points" grab="false" zoom="false"&gt;
-  &lt;title&gt;Fixo&lt;/title&gt;
-  &lt;points interaction="false"/&gt;
-&lt;/plot&gt;</delta-code>
+    </delta-subsection><delta-subsection num="2.5">
+      <delta-title>Plot Fixo sem Interação</delta-title>
+      Plano cartesiano estático com zoom, arrasto e manipulação desativados, contendo pontos pré-definidos apenas por <delta-c>x</delta-c> e <delta-c>y</delta-c> que não podem ser movidos nem removidos:
+      <delta-code lang="xml" numbered="false"><span class="hljs-tag">&lt;<span class="hljs-name">plot</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;points&quot;</span> <span class="hljs-attr">grab</span>=<span class="hljs-string">&quot;false&quot;</span> <span class="hljs-attr">zoom</span>=<span class="hljs-string">&quot;false&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>Modo Fixo<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">points</span> <span class="hljs-attr">interaction</span>=<span class="hljs-string">&quot;false&quot;</span> /&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">point</span> <span class="hljs-attr">x</span>=<span class="hljs-string">&quot;-3&quot;</span> <span class="hljs-attr">y</span>=<span class="hljs-string">&quot;2&quot;</span> /&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">point</span> <span class="hljs-attr">x</span>=<span class="hljs-string">&quot;0&quot;</span> <span class="hljs-attr">y</span>=<span class="hljs-string">&quot;0&quot;</span> /&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">point</span> <span class="hljs-attr">x</span>=<span class="hljs-string">&quot;3&quot;</span> <span class="hljs-attr">y</span>=<span class="hljs-string">&quot;-1&quot;</span> /&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">plot</span>&gt;</span></delta-code>
       <delta-plot type="points" grab="false" zoom="false">
-        <delta-title>Fixo</delta-title>
+        <delta-title>Modo Fixo</delta-title>
         <delta-points interaction="false"></delta-points>
+        <delta-point x="-3" y="2"></delta-point>
+        <delta-point x="0" y="0"></delta-point>
+        <delta-point x="3" y="-1"></delta-point>
       </delta-plot>
-    </delta-subsection></delta-section>
+    </delta-subsection><delta-subsection num="2.6">
+      <delta-title>Pontos Declarativos com Cores e Tamanhos</delta-title>
+      Pontos pré-definidos no código com atributos individuais de posição, cor e tamanho:
+      <delta-code lang="xml" numbered="false"><span class="hljs-tag">&lt;<span class="hljs-name">plot</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>Pontos Fixados no Código<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">point</span> <span class="hljs-attr">x</span>=<span class="hljs-string">&quot;0&quot;</span> <span class="hljs-attr">y</span>=<span class="hljs-string">&quot;0&quot;</span> <span class="hljs-attr">size</span>=<span class="hljs-string">&quot;1.5&quot;</span> <span class="hljs-attr">color</span>=<span class="hljs-string">&quot;#ef4444&quot;</span> /&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">point</span> <span class="hljs-attr">x</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">y</span>=<span class="hljs-string">&quot;3&quot;</span> <span class="hljs-attr">color</span>=<span class="hljs-string">&quot;#3b82f6&quot;</span> /&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">point</span> <span class="hljs-attr">x</span>=<span class="hljs-string">&quot;-4&quot;</span> <span class="hljs-attr">y</span>=<span class="hljs-string">&quot;-2&quot;</span> <span class="hljs-attr">size</span>=<span class="hljs-string">&quot;2&quot;</span> /&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">plot</span>&gt;</span></delta-code>
+      <delta-plot>
+        <delta-title>Pontos Fixados no Código</delta-title>
+        <delta-point x="0" y="0" size="1.5" color="#ef4444"></delta-point>
+        <delta-point x="4" y="3" color="#3b82f6"></delta-point>
+        <delta-point x="-4" y="-2" size="2"></delta-point>
+      </delta-plot>
+    </delta-subsection>
+  </delta-section>
 </delta-document>
 <script type="application/json" id="delta-i18n">{"theorem":"Teorema","proposition":"Proposição","lemma":"Lema","corollary":"Corolário","conjecture":"Conjectura","definition":"Definição","example":"Exemplo","claim":"Afirmação","observation":"Observação","exercise":"Exercício","problem":"Problema","proof":"Demonstração","solution":"Solução","remark":"Comentário","section":"Seção","subsection":"Subseção","subsubsection":"Subsubseção","equations":"Equações","equation":"Equação","figure":"Figura","interactive":"Interativo","table":"Tabela","video":"Vídeo","audio":"Áudio","contents":"Sumário","hint":"Dica","references":"Referências","close":"Fechar","code":"Código","copy":"Copiar","copied":"Copiado","prevSlide":"Slide anterior","nextSlide":"Próximo slide","abstract":"Resumo","keywords":"Palavras-chave","msc":"Classificação por Assunto (MSC)","received":"Recebido","revised":"Revisado","accepted":"Aceito","submitted":"Submetido","date":"Data","acknowledgements":"Agradecimentos","funding":"Financiamento"}</script>
 <script>
@@ -3560,6 +3639,33 @@ function parsePointsAttributes(points, sizeAttr, interactionAttr, plot) {
     points.dragOffset = { x: 0, y: 0 };
 }
 
+function parsePointToData(plot, ptEl) {
+    let x = NaN, y = NaN;
+    if (ptEl.hasAttribute("x") && ptEl.hasAttribute("y")) {
+        x = parseFloat(ptEl.getAttribute("x"));
+        y = parseFloat(ptEl.getAttribute("y"));
+    } else {
+        const tuple = parseTuple(ptEl.getAttribute("pos") || ptEl.textContent?.trim(), 2, true);
+        if (tuple) {
+            x = tuple[0];
+            y = tuple[1];
+        }
+    }
+
+    if (!isNaN(x) && !isNaN(y)) {
+        const point = { x, y };
+        const sizeAttr = ptEl.getAttribute("size");
+        if (sizeAttr && !isNaN(parseFloat(sizeAttr))) {
+            point.size = parseFloat(sizeAttr);
+        }
+        const colorAttr = ptEl.getAttribute("color");
+        if (colorAttr) {
+            point.color = colorAttr;
+        }
+        plot.data.points.push(point);
+    }
+}
+
 function parseSubcomponentData(plot) {
     // Disable connectedCallback on child web components
     for (const child of plot.children) {
@@ -3589,9 +3695,15 @@ function parseSubcomponentData(plot) {
     }
     if (axisEl) plot.elements.push(axisEl);
 
-    // Points
+    // Singular Points
+    let singularPoints = plot.querySelectorAll("delta-point");
+    for (const pt of singularPoints) {
+        parsePointToData(plot, pt);
+    }
+
+    // Points Subcomponent
     let pointsEl = plot.querySelector("delta-points");
-    if (plot.type === "points" && !pointsEl) {
+    if ((plot.type === "points" || singularPoints.length > 0) && !pointsEl) {
         pointsEl = document.createElement("delta-points");
     }
     if (pointsEl) plot.elements.push(pointsEl);
