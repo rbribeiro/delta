@@ -3241,10 +3241,7 @@ delta-plot:focus-visible,
     Página demonstrativa e referência técnica do componente plot, projetado para renderização interativa de curvas, eixos e pontos em um espaço bidimensional.
   </delta-abstract><delta-section id="sec:plot" num="1">
     <delta-eyebrow>Referência de Componentes</delta-eyebrow>
-    <delta-title>&lt;plot&gt;</delta-title>
-    <delta-intro>
-      O componente <delta-c>&lt;plot&gt;</delta-c> cria uma área interativa de desenho no plano cartesiano <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi mathvariant="double-struck">R</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">\mathbb{R}^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathbb">R</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span> com proporção fixa de <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>16</mn><mo>:</mo><mn>9</mn></mrow><annotation encoding="application/x-tex">16:9</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">16</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">:</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">9</span></span></span></span>. Ele gerencia a renderização em canvas de alta resolução, controle de coordenadas e interações de navegação (pan e zoom).
-    </delta-intro><delta-table numbered="false">
+    <delta-title>&lt;plot&gt;</delta-title>O componente <delta-c>&lt;plot&gt;</delta-c> cria uma área interativa de desenho no plano cartesiano <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi mathvariant="double-struck">R</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">\mathbb{R}^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathbb">R</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span> com proporção fixa de <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>16</mn><mo>:</mo><mn>9</mn></mrow><annotation encoding="application/x-tex">16:9</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">16</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">:</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">9</span></span></span></span>. Ele gerencia a renderização em canvas de alta resolução, controle de coordenadas e interações de navegação (pan e zoom).<delta-table numbered="false">
       <delta-header>
         <delta-column>Atributo</delta-column>
         <delta-column>Valores</delta-column>
@@ -3640,17 +3637,11 @@ function parsePointsAttributes(points, sizeAttr, interactionAttr, plot) {
 }
 
 function parsePointToData(plot, ptEl) {
-    let x = NaN, y = NaN;
-    if (ptEl.hasAttribute("x") && ptEl.hasAttribute("y")) {
-        x = parseFloat(ptEl.getAttribute("x"));
-        y = parseFloat(ptEl.getAttribute("y"));
-    } else {
-        const tuple = parseTuple(ptEl.getAttribute("pos") || ptEl.textContent?.trim(), 2, true);
-        if (tuple) {
-            x = tuple[0];
-            y = tuple[1];
-        }
-    }
+    let x = parseFloat(ptEl.getAttribute("x")) || 0;
+    let y = parseFloat(ptEl.getAttribute("y")) || 0;
+    let tup = parseTuple(ptEl.getAttribute("pos"), 2, true);
+
+    if(tup) x, y = tup[0], tup[1];
 
     if (!isNaN(x) && !isNaN(y)) {
         const point = { x, y };

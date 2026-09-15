@@ -49,17 +49,11 @@ function parsePointsAttributes(points, sizeAttr, interactionAttr, plot) {
 }
 
 function parsePointToData(plot, ptEl) {
-    let x = NaN, y = NaN;
-    if (ptEl.hasAttribute("x") && ptEl.hasAttribute("y")) {
-        x = parseFloat(ptEl.getAttribute("x"));
-        y = parseFloat(ptEl.getAttribute("y"));
-    } else {
-        const tuple = parseTuple(ptEl.getAttribute("pos") || ptEl.textContent?.trim(), 2, true);
-        if (tuple) {
-            x = tuple[0];
-            y = tuple[1];
-        }
-    }
+    let x = parseFloat(ptEl.getAttribute("x")) || 0;
+    let y = parseFloat(ptEl.getAttribute("y")) || 0;
+    let tup = parseTuple(ptEl.getAttribute("pos"), 2, true);
+
+    if(tup) x, y = tup[0], tup[1];
 
     if (!isNaN(x) && !isNaN(y)) {
         const point = { x, y };

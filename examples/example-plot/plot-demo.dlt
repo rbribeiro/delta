@@ -15,9 +15,8 @@
   <section id="sec:plot">
     <eyebrow>Referência de Componentes</eyebrow>
     <title>&lt;plot&gt;</title>
-    <intro>
-      O componente <c><plot></c> cria uma área interativa de desenho no plano cartesiano $\mathbb{R}^2$ com proporção fixa de $16:9$. Ele gerencia a renderização em canvas de alta resolução, controle de coordenadas e interações de navegação (pan e zoom).
-    </intro>
+
+    O componente <c><plot></c> cria uma área interativa de desenho no plano cartesiano $\mathbb{R}^2$ com proporção fixa de $16:9$. Ele gerencia a renderização em canvas de alta resolução, controle de coordenadas e interações de navegação (pan e zoom).
 
     <table numbered="false">
       <header>
@@ -57,9 +56,9 @@
       Define o título exibido na barra de cabeçalho superior da área de plotagem. Não possui atributos adicionais: o texto do título é inserido diretamente como conteúdo da tag.
 
       <code lang="xml" numbered="false">
-<plot>
-  <title>Plano Cartesiano</title>
-</plot>
+        <plot>
+          <title>Plano Cartesiano</title>
+        </plot>
       </code>
     </subsection>
 
