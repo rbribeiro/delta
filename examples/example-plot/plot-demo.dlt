@@ -163,6 +163,17 @@
         Se houver uma ou mais tags <c><point></c> dentro do gráfico, a camada de renderização de pontos é ativada automaticamente mesmo que <c><points></c> ou <c>type="points"</c> não tenham sido declarados.
       </box>
     </subsection>
+
+    <subsection id="sec:function">
+      <title>&lt;function&gt;</title>
+      Permite desenhar curvas no plano cartesiano a partir de uma expressão matemática dependente de <c>x</c> e <c>y</c>. O gráfico amostra a expressão ao longo do eixo horizontal e desenha a curva correspondente de forma suave no canvas.
+
+      <code lang="xml" numbered="false">
+<plot>
+  <function>Math.sin(x)</function>
+</plot>
+      </code>
+    </subsection>
   </section>
 
   <section id="sec:ex">
@@ -261,6 +272,21 @@
         <point x="0" y="0" size="1.5" color="#ef4444" />
         <point x="4" y="3" color="#3b82f6" />
         <point x="-4" y="-2" size="2" />
+      </plot>
+    </subsection>
+
+    <subsection>
+      <title>Curva de Função</title>
+      Exemplo de renderização analítica de uma curva definida por expressão matemática:
+      <code lang="xml" numbered="false">
+<plot x="-8,8" y="-4,4">
+  <title>Curva Analítica</title>
+  <function>Math.sin(x)</function>
+</plot>
+      </code>
+      <plot x="-8,8" y="-4,4">
+        <title>Curva Analítica</title>
+        <function>Math.sin(x)</function>
       </plot>
     </subsection>
   </section>

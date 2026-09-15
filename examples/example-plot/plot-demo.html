@@ -3361,6 +3361,11 @@ delta-plot:focus-visible,
         <delta-title>Detecção Automática de Pontos</delta-title>
         Se houver uma ou mais tags <delta-c>&lt;point&gt;</delta-c> dentro do gráfico, a camada de renderização de pontos é ativada automaticamente mesmo que <delta-c>&lt;points&gt;</delta-c> ou <delta-c>type="points"</delta-c> não tenham sido declarados.
       </delta-box>
+    </delta-subsection><delta-subsection id="sec:function" num="1.6">
+      <delta-title>&lt;function&gt;</delta-title>
+      Permite desenhar curvas no plano cartesiano a partir de uma expressão matemática dependente de <delta-c>x</delta-c> e <delta-c>y</delta-c>. O gráfico amostra a expressão ao longo do eixo horizontal e desenha a curva correspondente de forma suave no canvas.<delta-code lang="xml" numbered="false"><span class="hljs-tag">&lt;<span class="hljs-name">plot</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">function</span>&gt;</span>Math.sin(x)<span class="hljs-tag">&lt;/<span class="hljs-name">function</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">plot</span>&gt;</span></delta-code>
     </delta-subsection>
   </delta-section><delta-section id="sec:ex" num="2">
     <delta-eyebrow>Demonstração</delta-eyebrow>
@@ -3434,6 +3439,17 @@ delta-plot:focus-visible,
         <delta-point x="0" y="0" size="1.5" color="#ef4444"></delta-point>
         <delta-point x="4" y="3" color="#3b82f6"></delta-point>
         <delta-point x="-4" y="-2" size="2"></delta-point>
+      </delta-plot>
+    </delta-subsection><delta-subsection num="2.7">
+      <delta-title>Curva de Função</delta-title>
+      Exemplo de renderização analítica de uma curva definida por expressão matemática:
+      <delta-code lang="xml" numbered="false"><span class="hljs-tag">&lt;<span class="hljs-name">plot</span> <span class="hljs-attr">x</span>=<span class="hljs-string">&quot;-8,8&quot;</span> <span class="hljs-attr">y</span>=<span class="hljs-string">&quot;-4,4&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>Curva Analítica<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">function</span>&gt;</span>Math.sin(x)<span class="hljs-tag">&lt;/<span class="hljs-name">function</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">plot</span>&gt;</span></delta-code>
+      <delta-plot x="-8,8" y="-4,4">
+        <delta-title>Curva Analítica</delta-title>
+        <delta-function>Math.sin(x)</delta-function>
       </delta-plot>
     </delta-subsection>
   </delta-section>
@@ -3699,7 +3715,31 @@ function parseSubcomponentData(plot) {
     }
     if (pointsEl) plot.elements.push(pointsEl);
 
+    // Functions
+    let functionEls = plot.querySelectorAll("delta-function");
+    for (const fn of functionEls) {
+        plot.elements.push(fn);
+    }
+
     plot.innerHTML = "";
+}
+</script>
+<script>
+/* pack: factory */
+function make_function(expr, vars) {
+  try {
+    const body = `
+      try {
+        const res = ${expr};
+        return Number.isNaN(res) ? null : res;
+      } catch (e) {
+        return null;
+      }
+    `;
+    return new Function(...vars, body);
+  } catch (e) {
+    return null;
+  }
 }
 </script>
 <script>
@@ -4205,6 +4245,92 @@ class DeltaPoints extends HTMLElement {
 }
 
 customElements.define("delta-points", DeltaPoints);
+</script>
+<script>
+/* pack: function */
+function drawFunction(plot, ctx, w, h, f, precision = 1000, color = null) {
+    if (typeof f !== "function") return;
+    if (!ctx || w === 0 || h === 0) return;
+
+    const { centerX, centerY, scale } = getPlotCenter(plot, w, h);
+    if (scale <= 0) return;
+
+    const xMin = -centerX / scale;
+    const xMax = (w - centerX) / scale;
+    const step = (xMax - xMin) / (precision - 1);
+
+    ctx.save();
+    ctx.strokeStyle = color || getComputedStyle(plot).getPropertyValue("--delta-accent").trim() || "rgb(80, 80, 80)";
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    ctx.beginPath();
+    let penDown = false;
+
+    for (let i = 0; i < precision; i++) {
+        const xi = xMin + i * step;
+        let yi;
+        try {
+            yi = f(xi, 0);
+        } catch (e) {
+            yi = null;
+        }
+
+        const isValid = (yi !== null && typeof yi === "number" && !isNaN(yi) && isFinite(yi));
+
+        if (isValid) {
+            const sx = Math.round(centerX + xi * scale);
+            const sy = Math.round(centerY - yi * scale);
+
+            if (!penDown) {
+                ctx.moveTo(sx, sy);
+                penDown = true;
+            } else {
+                ctx.lineTo(sx, sy);
+            }
+        } else {
+            penDown = false;
+        }
+    }
+
+    ctx.stroke();
+    ctx.restore();
+}
+
+class DeltaFunction extends HTMLElement {
+    build(plot) {
+        this.plot = plot;
+        if (!plot.data) plot.data = {};
+        if (!plot.data.functions) plot.data.functions = [];
+
+        const rawExpr = this.textContent.trim();
+        const vars = ['x', 'y'];
+        const f = make_function(rawExpr, vars);
+        const color = this.getAttribute("color") || null;
+
+        this.fnData = { f, vars, rawExpr, color };
+        plot.data.functions.push(this.fnData);
+    }
+
+    bind(plot) {
+        this.plot = plot;
+    }
+
+    render(ctx, w, h, plot) {
+        const isFirst = (plot.elements.find(el => el.tagName === "DELTA-FUNCTION") === this);
+        if (!isFirst) return;
+
+        const funcs = plot.data?.functions || [];
+        for (const fnObj of funcs) {
+            if (fnObj && fnObj.f) {
+                drawFunction(plot, ctx, w, h, fnObj.f, 1000, fnObj.color);
+            }
+        }
+    }
+}
+
+customElements.define("delta-function", DeltaFunction);
 </script>
 <script>
 /* pack: plot */
