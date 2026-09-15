@@ -4,9 +4,11 @@
   "needs": [
     "./utils/auxiliary",
     "./utils/parsing",
+    "./utils/factory",
     "./subcomponents/axis",
     "./subcomponents/grid",
     "./subcomponents/title",
-    "./subcomponents/points"
+    "./subcomponents/points",
+    "./subcomponents/function"
   ]
 }

@@ -111,5 +111,11 @@ function parseSubcomponentData(plot) {
     }
     if (pointsEl) plot.elements.push(pointsEl);
 
+    // Functions
+    let functionEls = plot.querySelectorAll("delta-function");
+    for (const fn of functionEls) {
+        plot.elements.push(fn);
+    }
+
     plot.innerHTML = "";
 }
