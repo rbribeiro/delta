@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveLang, stringsFor } from "../src/compiler/strings";
+import { resolveLang, STRINGS, stringsFor } from "../src/compiler/strings";
 
 describe("resolveLang", () => {
   it("matches an exact language, case-insensitively", () => {
@@ -30,6 +30,16 @@ describe("stringsFor", () => {
     const pt = stringsFor("pt");
     for (const key of Object.keys(stringsFor("en"))) {
       expect(pt[key]).toBeDefined();
+    }
+  });
+});
+
+describe("STRINGS parity", () => {
+  it("gives every language exactly the en key set (a new string goes in every block)", () => {
+    const en = Object.keys(STRINGS.en).sort();
+    for (const [lang, block] of Object.entries(STRINGS)) {
+      if (lang === "en") continue;
+      expect(Object.keys(block).sort(), `language "${lang}"`).toEqual(en);
     }
   });
 });

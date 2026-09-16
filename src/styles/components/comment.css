@@ -1,0 +1,137 @@
+/* comment.css — <comment>: a threaded review note (DeltaComment,
+   runtime/elements/comment.ts). In the prose only a superscript `.note-marker` pill
+   shows (the comment number, in the author's colour; muted + ✓ once resolved). The
+   thread itself — `.note-pop`, built on the shared .delta-pop bubble — holds the head
+   (author chip, date, status), the body and the `.note-reply` list. `.note-static` is
+   the same thread rendered inline when a comment is snapshotted into a <ref> preview.
+   Hiding (review switch, print) is in collab.css. Tokens via var(--delta-*). */
+
+@layer delta.components {
+
+delta-comment { display: inline; }
+delta-comment.note-hidden { display: none; }
+
+/* -- Marker ------------------------------------------------------------ */
+.note-marker {
+  --delta-accent-ink:  color-mix(in oklab, var(--delta-accent) 64%, var(--delta-ink));
+  --delta-accent-soft: color-mix(in oklab, var(--delta-accent) 14%, var(--delta-paper));
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: super;
+  min-width: 1.6em;
+  height: 1.6em;
+  padding: 0 0.45em;
+  margin: 0 0.12em;
+  font: 600 10px/1 var(--delta-sans);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--delta-accent-ink);
+  background: var(--delta-accent-soft);
+  border: 1px solid color-mix(in oklab, var(--delta-accent-ink) 45%, transparent);
+  border-radius: var(--delta-radius-pill);
+  cursor: pointer;
+  transition: background var(--delta-dur-fast) var(--delta-ease),
+              border-color var(--delta-dur-fast) var(--delta-ease);
+}
+.note-marker:hover,
+.note-marker[aria-expanded="true"] {
+  background: var(--delta-accent);
+  border-color: var(--delta-accent-ink);
+}
+.note-marker:focus-visible {
+  outline: 2px solid var(--delta-accent-ink);
+  outline-offset: 2px;
+}
+.note-marker.is-resolved {
+  color: var(--delta-mute);
+  background: var(--delta-surface-2);
+  border-color: var(--delta-rule);
+}
+.note-marker.is-resolved::before {
+  content: "\2713"; /* ✓ */
+  margin-right: 0.3em;
+  font-size: 0.9em;
+}
+/* Inside a label (box tag, heading, proof lead) the marker sits on the text line. */
+.box-tag .note-marker,
+.proof-lead .note-marker,
+h1 .note-marker, h2 .note-marker, h3 .note-marker, h4 .note-marker {
+  vertical-align: middle;
+  margin-left: 0.35em;
+}
+
+/* -- Thread bubble ------------------------------------------------------ */
+.note-pop {
+  --delta-accent-ink:  color-mix(in oklab, var(--delta-accent) 64%, var(--delta-ink));
+  --delta-accent-soft: color-mix(in oklab, var(--delta-accent) 14%, var(--delta-paper));
+  width: max-content;
+  max-width: min(46ch, 92vw);
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+.note-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 7px;
+  font-family: var(--delta-sans);
+  font-size: 11.5px;
+  color: var(--delta-mute);
+}
+.note-date { font-variant-numeric: tabular-nums; }
+.note-status {
+  margin-left: auto;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: var(--delta-radius-pill);
+  background: var(--delta-accent-soft);
+  color: var(--delta-accent-ink);
+}
+.note-status[data-status="resolved"] {
+  background: var(--delta-surface-2);
+  color: var(--delta-mute);
+}
+.note-body > :first-child { margin-top: 0; }
+.note-body > :last-child  { margin-bottom: 0; }
+
+.note-replies {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: var(--delta-hairline) solid var(--delta-rule-soft);
+}
+.note-reply {
+  padding-left: 10px;
+  border-left: 2px solid var(--delta-rule-soft);
+}
+.note-reply-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+  font-family: var(--delta-sans);
+  font-size: 11px;
+  color: var(--delta-mute);
+}
+.note-reply-body > :first-child { margin-top: 0; }
+.note-reply-body > :last-child  { margin-bottom: 0; }
+
+/* The same thread, inline, when a <ref> previews a comment. */
+.note-static {
+  display: block;
+  padding: 8px 12px;
+  border-left: 3px solid var(--delta-accent);
+  border-radius: var(--delta-radius-sm);
+  background: var(--delta-accent-soft);
+}
+
+}

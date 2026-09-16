@@ -88,6 +88,9 @@ and the tag reference begins at [site/estrutura.dlt](site/estrutura.dlt).
   chapter-by-chapter walk through every compiler pass and the context it threads.
 - **[docs/BUILDING.md](docs/BUILDING.md)** — the build: the generated assets, the CLI
   bundle, and every npm script.
+- **[docs/COLLABORATION.md](docs/COLLABORATION.md)** — writing a paper with several hands
+  (humans and AI agents): comments, tasks, tracked changes, status marks, the review panel,
+  `--final` and `delta review`; includes a guide for agents that annotate a `.dlt`.
 - **[docs/PACKAGES.md](docs/PACKAGES.md)** and
   **[docs/AUTHORING_PACKAGES.md](docs/AUTHORING_PACKAGES.md)** — the package system:
   its design, and the reference for authoring one.

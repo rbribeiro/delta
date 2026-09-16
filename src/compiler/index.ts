@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { addDep, createContext, error, hasErrors, type CompileContext, type Diagnostic } from "./context";
+import { addDep, createContext, error, hasErrors, type CompileContext, type Diagnostic, type ReviewData } from "./context";
 import { emit } from "./emit";
 import { inlineFigures } from "./figures";
 import { resolveIncludes } from "./include";
@@ -16,19 +16,32 @@ import { buildToc } from "./toc";
 import { resolveImports } from "./imports";
 import { resolveLineBreaks } from "./linebreaks";
 import { loadBibliography, resolveCitations } from "./bibliography";
+import { collectTeam } from "./team";
+import { resolveCollab } from "./collab";
+import { finalizeReview } from "./final";
+import { buildReview } from "./review";
+
+/** Per-build switches (the CLI flags), shared by the single-file and project paths. */
+export interface CompileOptions {
+  /** Strip every collaboration mark (comments, tasks, changes, status, team) — the clean publication. */
+  final?: boolean;
+}
 
 export interface CompileResult {
   html?: string; // Only present if compilation succeeded.
   diagnostics: Diagnostic[];
   /** Absolute paths of every user file read while compiling (for `--watch`). */
   deps: string[];
+  /** The collaboration state (`<team>` + comments/tasks/changes/status blocks), for `delta review`. */
+  review?: ReviewData;
 }
 
 /**
  * Compile a source string in the Delta XML dialect to HTML. 
- * It follows the pipeline: preprocess → parse → includes → bibliography → citations → number → math →
- * references → toc → inline figures → resolve theme → imports → emit. Pass order is load-bearing —
- * includes merge first so everything downstream sees one tree, the bibliography splices cited papers
+ * It follows the pipeline: preprocess → parse → includes → team → collab → bibliography → citations →
+ * number → math → references → toc → inline figures → resolve theme → imports → emit. Pass order is
+ * load-bearing — includes merge first so everything downstream sees one tree, the collaboration
+ * passes write the defaults numbering/emit key off, the bibliography splices cited papers
  * 
  * @param source - the source string in the Delta XML dialect to compile
  * @param ctx - the compile context
@@ -40,6 +53,9 @@ export function compileSource(source: string, ctx: CompileContext): string | und
   resolveIncludes(doc, ctx); // splice <include> files into one tree (before numbering)
   if (hasErrors(ctx)) return undefined; // a missing/cyclic include fails the build
   // Parse and processes successfully, but may have non-fatal diagnostics. Continue to emit, but report
+  finalizeReview(doc, ctx); // --final only: strip comments/tasks/team, accept changes (before bib + numbering)
+  collectTeam(doc, ctx); // <team> → ctx.team (the node is removed; data ships in the review island)
+  resolveCollab(doc, ctx); // comment/todo/change/status vocab: defaults + warnings, `by` vs the team
   ctx.lang = doc.attrs.lang ?? "en"; // drives i18n + <html lang>; read by emit and later passes
   expandAnimated(doc); // presentation only: animated="true" → reveal="true" on children
   expandCover(doc); // presentation only: <cover> → <slide cover="true">
@@ -53,6 +69,7 @@ export function compileSource(source: string, ctx: CompileContext): string | und
   highlightCode(doc, ctx); // highlight <code> blocks (after math; math skips the code raw-tag)
   resolveReferences(doc, ctx); // resolve <ref to>; mark targets for snapshotting
   buildToc(doc, ctx); // collect the heading tree (+ auto-slug ids) if a <toc> is present
+  buildReview(doc, ctx); // collect comments/tasks/changes/status blocks (+ their nearest heading)
   inlineFigures(doc, ctx); // read figure images and embed them as data: URIs
   resolveTheme(doc, ctx); // read <document theme> CSS; emit inlines it last
   resolveImports(doc,ctx); // inline <import> packs (themes are inlined before the author theme, JS after the runtime)
@@ -66,8 +83,9 @@ export function compileSource(source: string, ctx: CompileContext): string | und
  * @param path - the path to the source file to compile
  * @returns - CompileResult with the compiled HTML string (if successful) and any diagnostics (errors/warnings)
  */
-export function compileFile(path: string): CompileResult {
+export function compileFile(path: string, options: CompileOptions = {}): CompileResult {
   const ctx = createContext(path);
+  ctx.final = options.final ?? false;
   let source: string;
   try {
     source = readFileSync(path, "utf8");
@@ -77,5 +95,10 @@ export function compileFile(path: string): CompileResult {
   }
   addDep(ctx, path);
   const html = compileSource(source, ctx);
-  return { html, diagnostics: ctx.diagnostics, deps: [...ctx.deps] };
+  return {
+    html,
+    diagnostics: ctx.diagnostics,
+    deps: [...ctx.deps],
+    review: { team: [...ctx.team.values()], items: ctx.review },
+  };
 }

@@ -27,6 +27,11 @@ import { defineTable } from "./table";
 import { defineColumns } from "./columns";
 import { defineFrontMatter } from "./frontmatter";
 import { defineBox } from "./box";
+import { defineComment } from "./comment";
+import { defineTodo } from "./todo";
+import { defineDraft } from "./draft";
+import { defineChange } from "./change";
+import { defineReview } from "./review";
 
 export function defineComponents(): void {
   defineDocument();
@@ -48,4 +53,11 @@ export function defineComponents(): void {
   defineColumns();
   defineFrontMatter();
   defineBox();
+  // Collaboration elements go after sections/environments: a comment anchored with
+  // on="id" moves itself into the target's heading / box tag, which must already exist.
+  defineComment();
+  defineTodo();
+  defineDraft();
+  defineChange();
+  defineReview(); // last: it reads state every other element has finished building
 }

@@ -3,14 +3,18 @@ import { wireMathRefs } from "./elements/ref";
 import { flashTarget } from "./elements/shared";
 import { setupDeck, type Deck } from "./deck";
 import { popover } from "./utils";
-import {t} from "./i18n"
+import { t } from "./i18n";
+import { reviewState } from "./elements/collab";
 
 declare global {
   interface Window {
-    Delta: { popover: typeof popover,
-      t: typeof t,
-      deck: Deck | null
-     };
+    Delta: {
+      popover: typeof popover;
+      t: typeof t;
+      deck: Deck | null;
+      /** Document-wide review switches: annotations on/off, changes markup/final/original. */
+      review: typeof reviewState;
+    };
   }
 }
 
@@ -26,7 +30,7 @@ const deck = setupDeck();
 
 // Expose the shared popover controller and the deck handle so components (and
 // authors) can reuse them.
-window.Delta = { popover: popover, t: t, deck: deck };
+window.Delta = { popover: popover, t: t, deck: deck, review: reviewState };
 
 // A cross-file <ref>/<cite> jump lands on `other.html#id`; flash the target on
 // arrival so it reads like an in-page jump (and reaches runtime-built anchors,

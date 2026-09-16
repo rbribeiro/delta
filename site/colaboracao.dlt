@@ -1,0 +1,450 @@
+<document id="p-colaboracao" theme="tema.css">
+  <title>Colaboração · Delta</title>
+
+  <team>
+    <member id="rodrigo" name="Rodrigo Ribeiro" kind="human" color="blue"/>
+    <member id="claude" name="Claude" kind="agent" color="purple"/>
+  </team>
+
+  <floating>
+    <title>Navegação</title>
+    <toc scope="project" depth="1"/>
+  </floating>
+
+  <section id="colaboracao" numbered="false">
+    <eyebrow>Referência</eyebrow>
+    <title>Colaboração</title>
+    <intro>
+      Anotações, tarefas, alterações rastreadas e estado de revisão, dentro do próprio
+      artigo. São as ferramentas para escrever a várias mãos, humanas ou não, e para
+      conferir o que cada uma escreveu sem rolar a página de volta.
+    </intro>
+
+    <toc/>
+
+    <subsection id="colab-ideia" numbered="false">
+      <title>A ideia</title>
+
+      Um PDF congela a revisão do lado de fora: comentários num e-mail, tarefas numa
+      planilha, mudanças num <c>diff</c> que ninguém lê com calma. Delta põe tudo isso
+      no <c>.dlt</c>, ao lado do texto a que se refere. O arquivo-fonte é o meio de
+      colaboração; o HTML compilado é a superfície de revisão: mostra cada marca no
+      lugar certo, discreta, e reúne todas num painel.
+
+      Nada disso chega ao leitor final. <c>delta build --final</c> remove todas as
+      marcas e aceita as alterações, então o mesmo fonte que carregou a revisão publica
+      o artigo limpo.
+
+      <box type="note">
+        <title>Feito para agentes também</title>
+        Os vocabulários são pequenos, fixos e em minúsculas (<c>status="open"</c>,
+        <c>by="claude"</c>), fáceis de escrever e de procurar com <c>grep</c>. E
+        <c>delta review</c> imprime o estado da revisão como texto ou JSON, para que um
+        agente leia o artigo sem abrir um navegador.
+      </box>
+    </subsection>
+
+    <subsection id="tag-team" numbered="false">
+      <title>&lt;team&gt; e &lt;member&gt;</title>
+
+      Quem participa. Declarado uma vez, filho direto de <c><document></c>; cada
+      <c>by</c>, <c>for</c> e <c>verified-by</c> do documento é conferido contra esta
+      lista, e cada pessoa ganha uma cor fixa em todas as marcas. Agentes recebem um
+      selo <em>agente</em>, para que se saiba de relance quem escreveu o quê.
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">id</column>
+          <column mono="true">texto</column>
+          <column>Como a pessoa é citada em <c>by</c> e <c>for</c>. Obrigatório</column>
+        </row>
+        <row>
+          <column mono="true">name</column>
+          <column mono="true">texto</column>
+          <column>O nome exibido. Obrigatório</column>
+        </row>
+        <row>
+          <column mono="true">kind</column>
+          <column mono="true">human, agent</column>
+          <column>Humano (padrão) ou agente de IA</column>
+        </row>
+        <row>
+          <column mono="true">color</column>
+          <column mono="true">nome de paleta</column>
+          <column>Uma das cores de <c>theme-accent</c>. Sem o atributo, uma cor livre é escolhida</column>
+        </row>
+      </table>
+
+      <code lang="xml" numbered="false">
+<team>
+  <member id="rodrigo" name="Rodrigo Ribeiro" kind="human" color="blue"/>
+  <member id="claude" name="Claude" kind="agent" color="purple"/>
+</team>
+      </code>
+
+      <box type="tip">
+        <title>Num projeto, declare em cada arquivo</title>
+        Cada <c>.dlt</c> continua compilável sozinho. Num projeto multi-arquivo, a mesma
+        equipe repetida em cada arquivo é aceita em silêncio; só uma declaração
+        diferente gera aviso.
+      </box>
+    </subsection>
+
+    <subsection id="tag-comment" numbered="false">
+      <title>&lt;comment&gt; e &lt;reply&gt;</title>
+
+      Uma anotação de revisão, com autor, data e estado. No texto aparece apenas um
+      marcador pequeno com o número da anotação, na cor de quem a escreveu; clicar abre
+      a conversa inteira. As respostas são filhos <c><reply></c>. Anotações são numeradas
+      em sequência no documento todo, sem prefixo de seção, e podem ser alvo de um
+      <c><ref></c>.
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">by</column>
+          <column mono="true">id de membro</column>
+          <column>Quem escreveu</column>
+        </row>
+        <row>
+          <column mono="true">status</column>
+          <column mono="true">open, resolved</column>
+          <column>Aberta (padrão) ou resolvida, que fica cinza com um ✓</column>
+        </row>
+        <row>
+          <column mono="true">date</column>
+          <column mono="true">texto</column>
+          <column>Quando. Texto livre, mas prefira <c>AAAA-MM-DD</c></column>
+        </row>
+        <row>
+          <column mono="true">on</column>
+          <column mono="true">id</column>
+          <column>Ancora a anotação em outro elemento: o marcador vai para o cabeçalho dele</column>
+        </row>
+      </table>
+
+      <code lang="xml" numbered="false">
+Logo $f$ é limitada em $K$.<comment id="c-limitada" by="claude" date="2026-09-12">
+  Isto exige $K$ compacto; <ref to="lem-compacto"/> só garante fechado.
+  <reply by="rodrigo" date="2026-09-13">Boa. $K$ é compacto por hipótese: explicite.</reply>
+</comment>
+
+<!-- ancorada num teorema, escrita em qualquer lugar do arquivo: -->
+<comment on="thm-principal" by="rodrigo" status="resolved">A constante é ótima?</comment>
+      </code>
+
+      Assim fica, na prática. O teorema abaixo traz uma anotação ancorada e resolvida no
+      cabeçalho; a demonstração traz uma aberta, com resposta:
+
+      <theorem id="demo-colab-thm" status="review" by="claude">
+        <title>Limitação</title>
+        Toda função contínua $f \colon K \to \mathbb{R}$ é limitada.
+      </theorem>
+      <comment on="demo-colab-thm" by="rodrigo" status="resolved" date="2026-09-11">
+        Falta dizer que $K$ é compacto no enunciado.
+      </comment>
+      <proof of="demo-colab-thm" status="sketch" by="claude">
+        Como $f$ é contínua, a imagem $f(K)$ é compacta, logo limitada.<comment
+          id="demo-colab-c1" by="claude" date="2026-09-12">
+          Usei que a imagem contínua de compacto é compacta. Devo citar o lema ou isto é
+          padrão o bastante?
+          <reply by="rodrigo" date="2026-09-13">Cite. O leitor deste capítulo ainda não viu o lema.</reply>
+        </comment>
+      </proof>
+
+      <box type="note">
+        <title>Discreta por desenho</title>
+        A anotação não empurra o texto: só o marcador fica na linha. O painel de revisão
+        pode escondê-los todos de uma vez, e a impressão nunca os mostra.
+      </box>
+    </subsection>
+
+    <subsection id="tag-todo" numbered="false">
+      <title>&lt;todo&gt;</title>
+
+      Uma tarefa do plano: o que falta, para quem, em que estado e com que urgência. Vira
+      uma linha de lista de afazeres onde for escrita, e aparece reunida no painel de
+      revisão. Numerada à parte (T1, T2, ...).
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">for</column>
+          <column mono="true">id de membro</column>
+          <column>Responsável</column>
+        </row>
+        <row>
+          <column mono="true">by</column>
+          <column mono="true">id de membro</column>
+          <column>Quem pediu</column>
+        </row>
+        <row>
+          <column mono="true">status</column>
+          <column mono="true">open, doing, done</column>
+          <column>Aberta (padrão), em andamento ou concluída</column>
+        </row>
+        <row>
+          <column mono="true">priority</column>
+          <column mono="true">high, normal, low</column>
+          <column>Urgência; colore a barra lateral</column>
+        </row>
+        <row>
+          <column mono="true">due</column>
+          <column mono="true">texto</column>
+          <column>Prazo</column>
+        </row>
+        <row>
+          <column mono="true">on</column>
+          <column mono="true">id</column>
+          <column>Posiciona a tarefa logo após outro elemento</column>
+        </row>
+      </table>
+
+      <code lang="xml" numbered="false">
+<todo for="claude" by="rodrigo" status="open" priority="high" due="2026-09-20">
+  Completar a demonstração de <ref to="thm-principal"/> no caso não compacto.
+</todo>
+      </code>
+
+      <todo id="demo-colab-t1" for="claude" by="rodrigo" priority="high" due="2026-09-20">
+        Citar o lema da imagem compacta na demonstração de <ref to="demo-colab-thm"/>.
+      </todo>
+      <todo id="demo-colab-t2" for="rodrigo" status="done">
+        Conferir o enunciado de <ref to="demo-colab-thm"/>.
+      </todo>
+    </subsection>
+
+    <subsection id="tag-change" numbered="false">
+      <title>&lt;change&gt;, &lt;old&gt; e &lt;new&gt;</title>
+
+      Uma alteração rastreada: o que estava e o que passou a estar, e de quem foi. É o
+      jeito de um coautor (ou um agente) propor uma mudança sem apagar o texto original.
+      Com <c><old></c> e <c><new></c> é uma substituição; só <c><old></c> é remoção;
+      conteúdo solto é inserção. O tipo é inferido, e a alteração pode envolver um bloco
+      inteiro (um lema, uma demonstração).
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">by</column>
+          <column mono="true">id de membro</column>
+          <column>Autor da alteração</column>
+        </row>
+        <row>
+          <column mono="true">date</column>
+          <column mono="true">texto</column>
+          <column>Quando</column>
+        </row>
+        <row>
+          <column mono="true">note</column>
+          <column mono="true">texto</column>
+          <column>O porquê, mostrado no marcador</column>
+        </row>
+      </table>
+
+      <code lang="xml" numbered="false">
+Daí <change by="claude" date="2026-09-12" note="sinal trocado"><old>$x < 0$</old><new>$x > 0$</new></change>.
+
+<change by="claude">Esta frase foi inserida.</change>
+<change by="claude"><old>Esta frase foi removida.</old></change>
+
+<!-- um bloco inteiro: -->
+<change by="claude"><new><lemma id="lem-novo">...</lemma></new></change>
+      </code>
+
+      O parágrafo a seguir tem uma substituição inline e, logo abaixo, um lema inserido
+      como bloco:
+
+      Como $f(K)$ é compacto, existe $M$ com <change id="demo-colab-ch1" by="claude"
+        date="2026-09-12" note="a desigualdade estava invertida"><old>$|f(x)| > M$</old><new>$|f(x)| \le M$</new></change>
+      para todo $x \in K$. <change id="demo-colab-ch2" by="rodrigo"><old>Isso conclui a prova.</old></change>
+      <change by="claude">Este é o resultado que queríamos.</change>
+
+      <change id="demo-colab-ch3" by="claude" note="lema auxiliar que a demonstração cita">
+        <new>
+          <lemma id="demo-colab-lem-img">
+            <title>Imagem de compacto</title>
+            A imagem de um compacto por uma função contínua é compacta.
+          </lemma>
+        </new>
+      </change>
+
+      <box type="tip">
+        <title>Três visões, um documento</title>
+        O painel de revisão alterna entre <em>marcação</em> (os dois lados, como acima),
+        <em>final</em> (só o texto novo, limpo: o que o artigo vai dizer) e
+        <em>original</em> (só o texto antigo). Aceitar de verdade é editar o fonte, ou
+        compilar com <c>--final</c>.
+      </box>
+    </subsection>
+
+    <subsection id="colab-status" numbered="false">
+      <title>status, by, verified-by e &lt;draft&gt;</title>
+
+      Em que pé está cada pedaço. Qualquer ambiente, demonstração ou seção aceita três
+      atributos: <c>status</c> diz a maturidade, <c>by</c> quem escreveu o bloco e
+      <c>verified-by</c> quem conferiu. O cabeçalho ganha uma etiqueta discreta; blocos
+      em rascunho ou esboço ficam com a borda tracejada. Para prosa solta, sem cabeçalho
+      onde pendurar a etiqueta, existe o envoltório <c><draft></c>.
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">status</column>
+          <column mono="true">draft, sketch, review, verified</column>
+          <column>Rascunho, esboço (argumento delineado, detalhes faltando), em revisão, verificado</column>
+        </row>
+        <row>
+          <column mono="true">by</column>
+          <column mono="true">id de membro</column>
+          <column>Quem escreveu o bloco</column>
+        </row>
+        <row>
+          <column mono="true">verified-by</column>
+          <column mono="true">id de membro</column>
+          <column>Quem conferiu o bloco</column>
+        </row>
+        <row>
+          <column mono="true">note</column>
+          <column mono="true">texto</column>
+          <column>Só em <c><draft></c>: o que ainda falta</column>
+        </row>
+      </table>
+
+      <code lang="xml" numbered="false">
+<lemma id="lem-compacto" status="verified" by="claude" verified-by="rodrigo">...</lemma>
+<proof of="lem-compacto" status="sketch" by="claude">...</proof>
+<section id="sec-aplicacoes" status="draft">...</section>
+
+<draft by="claude" note="o argumento ainda está frouxo">
+  Prosa em construção, sem cabeçalho próprio.
+</draft>
+      </code>
+
+      O teorema e a demonstração da seção anterior já usam isto (<em>em revisão</em> e
+      <em>esboço</em>, ambos de Claude). Um lema verificado e um rascunho:
+
+      <lemma id="demo-colab-lem-ver" status="verified" by="claude" verified-by="rodrigo">
+        <title>Compacto é limitado</title>
+        Todo subconjunto compacto de $\mathbb{R}$ é limitado.
+      </lemma>
+
+      <draft by="claude" note="falta o caso em que K é vazio">
+        Quando $K$ é vazio a afirmação é trivial, e quando não é, o supremo de $|f|$
+        sobre $K$ existe e é atingido.
+      </draft>
+    </subsection>
+
+    <subsection id="tag-review" numbered="false">
+      <title>&lt;review&gt;</title>
+
+      O painel de revisão e planejamento: um resumo (anotações abertas, tarefas abertas,
+      alterações pendentes, blocos por estado), os dois interruptores do documento
+      (mostrar ou esconder anotações; ver alterações como marcação, final ou original),
+      filtros por pessoa e por estado, e a lista de tudo, agrupada, com um salto para o
+      lugar de cada item. Um botão copia a lista filtrada como texto, para colar numa
+      conversa com um agente.
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">scope</column>
+          <column mono="true">project</column>
+          <column>Num projeto, lista os itens de todos os arquivos; sem o atributo, só os deste</column>
+        </row>
+      </table>
+
+      <code lang="xml" numbered="false">
+<review/>
+
+<!-- ou no botão flutuante, para abrir de qualquer ponto da página: -->
+<floating><title>Revisão</title><review scope="project"/></floating>
+      </code>
+
+      O painel desta página, com os itens de exemplo acima:
+
+      <review/>
+    </subsection>
+
+    <subsection id="colab-final" numbered="false">
+      <title>Publicar e consultar</title>
+
+      Duas faces do mesmo fonte. <c>--final</c> produz o artigo limpo: remove anotações,
+      tarefas, equipe e painel, desembrulha os rascunhos, aceita cada alteração (fica o
+      <c><new></c>) e apaga as etiquetas de estado. Um único aviso resume o que ficou
+      pendente, para que ninguém publique sem saber.
+
+      <code lang="bash" numbered="false">
+delta build artigo.dlt --final -o artigo.html
+# warning: final build: 2 open comments, 1 open task, 3 blocks not verified
+      </code>
+
+      <c>delta review</c> imprime o estado da revisão sem navegador, como texto ou JSON,
+      com filtros por estado, responsável, autor e tipo. É o jeito de um agente (ou um
+      script) saber o que falta:
+
+      <code lang="bash" numbered="false">
+delta review artigo.dlt
+delta review projeto.toml --status open --for claude
+delta review artigo.dlt --json
+      </code>
+
+      <box type="note">
+        <title>A numeração não muda</title>
+        Nada dentro de uma anotação, tarefa ou <c><old></c> consome contador: uma equação
+        citada num comentário não desloca a numeração do artigo entre a versão de revisão
+        e a final.
+      </box>
+    </subsection>
+
+    <subsection id="colab-agentes" numbered="false">
+      <title>Trabalhando com um agente</title>
+
+      Um fluxo que funciona bem: o agente escreve direto no <c>.dlt</c>, e toda
+      contribuição dele fica visível como tal.
+
+      <list>
+        <item>Declare o agente em <c><team kind="agent"></c> e peça que ele assine tudo com <c>by</c>.</item>
+        <item>Mudanças em texto existente vão dentro de <c><change></c>, nunca por substituição silenciosa. Você decide no painel, em modo <em>final</em>, se o texto novo convence.</item>
+        <item>Demonstrações novas nascem com <c>status="sketch"</c>; quem confere troca para <c>verified</c> e assina em <c>verified-by</c>.</item>
+        <item>Dúvidas viram <c><comment></c>; pedidos de trabalho viram <c><todo for="..."></c>.</item>
+        <item>Antes de publicar, <c>delta review --status open</c> e <c>delta build --final</c>.</item>
+      </list>
+
+      <box type="tip">
+        <title>Para o agente ler</title>
+        A especificação completa do vocabulário, em inglês e com uma seção dirigida a
+        agentes, está em <c>docs/COLLABORATION.md</c> no repositório.
+      </box>
+    </subsection>
+  </section>
+
+  <footer>
+    Feito com ❤️ em Delta no IMPA Tech.
+  </footer>
+</document>

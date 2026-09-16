@@ -1,0 +1,86 @@
+/* status.css — the maturity / authorship marks any block may carry (applyStatus in
+   runtime/elements/shared.ts): `status="draft|sketch|review|verified"`, `by`,
+   `verified-by`. The `.status-pill` sits in the block's label (box tag, proof lead,
+   heading) or, for <draft> (runtime/elements/draft.ts), in a `.status-bar` row on top.
+   Unfinished blocks (draft/sketch) read as unfinished: a dashed edge. Uses the design
+   system's --delta-ok / --delta-warn status tokens. Hiding (review switch, print) is in
+   collab.css. Tokens via var(--delta-*). */
+
+@layer delta.components {
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  vertical-align: middle;
+  font-family: var(--delta-sans);
+  font-size: 9.5px;
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1;
+  padding: 3px 7px;
+  border-radius: var(--delta-radius-pill);
+  border: 1px solid var(--delta-rule);
+  background: var(--delta-surface-2);
+  color: var(--delta-ink-soft);
+  white-space: nowrap;
+}
+.status-pill .who { font-size: 10.5px; }
+.status-pill[data-status="draft"],
+.status-pill[data-status="sketch"] {
+  color: var(--delta-mute);
+  border-style: dashed;
+}
+.status-pill[data-status="review"] {
+  color: var(--delta-warn);
+  border-color: color-mix(in oklab, var(--delta-warn) 50%, transparent);
+  background: color-mix(in oklab, var(--delta-warn) 10%, var(--delta-paper));
+}
+.status-pill[data-status="verified"] {
+  color: var(--delta-ok);
+  border-color: color-mix(in oklab, var(--delta-ok) 50%, transparent);
+  background: color-mix(in oklab, var(--delta-ok) 10%, var(--delta-paper));
+}
+.status-check { color: var(--delta-ok); font-size: 1.15em; }
+
+/* In a label the pill follows the text. */
+.box-tag .status-pill { margin-left: 0.4em; }
+.proof-lead .status-pill { margin-left: 0.4em; }
+h1 .status-pill, h2 .status-pill, h3 .status-pill, h4 .status-pill { margin-left: 0.6em; font-size: 10px; }
+/* A collapsed box keeps its pill readable at the box-tag's smaller size. */
+.box-tag .status-pill .who-badge { font-size: 8px; }
+
+/* Unfinished blocks: dashed edge. */
+.box[data-status="draft"],
+.box[data-status="sketch"] { border-style: dashed; }
+delta-proof[data-status="draft"],
+delta-proof[data-status="sketch"],
+delta-solution[data-status="draft"],
+delta-solution[data-status="sketch"] {
+  outline: 1px dashed var(--delta-rule);
+  outline-offset: 6px;
+  border-radius: var(--delta-radius-sm);
+}
+
+/* -- <draft>: a status bar over loose prose ---------------------------- */
+delta-draft {
+  display: block;
+  margin: var(--delta-block-gap) 0;
+  padding: 4px 0 4px 14px;
+  border-left: 3px dashed var(--delta-rule);
+}
+.status-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-family: var(--delta-sans);
+  font-size: 11.5px;
+  color: var(--delta-mute);
+}
+.status-note { font-style: italic; }
+
+}

@@ -3,6 +3,9 @@
  * single-component helpers next to their element.
  */
 
+import { t } from "../i18n";
+import { memberChip } from "./collab";
+
 /**
  * Smooth-scrolls to `#id` and flashes it (the shared `.is-xref-target` animation).
  * Used by `<cite>` jump-to links; `<ref>`/`<toc>` inline their own copies.
@@ -85,4 +88,50 @@ export function applyCollapsible(host: HTMLElement, label: HTMLElement): void {
       flip();
     }
   });
+}
+
+/**
+ * Status / authorship chrome for any block carrying `status` (draft | sketch | review |
+ * verified), `by` (who wrote it) or `verified-by` (who checked it): environments, proofs,
+ * sections, `<draft>`. Appends a `.status-pill` — the localized status, the author chip, a
+ * "✓ verified by" chip — to the block's `label` (box tag, proof lead, heading); with no
+ * label it prepends a `.status-bar` row instead. Sets `data-status` on the host so the CSS
+ * can tint an unfinished block. A no-op when none of the three attributes is present, so
+ * every existing document renders exactly as before.
+ */
+export function applyStatus(host: HTMLElement, label: Element | null): void {
+  const status = host.getAttribute("status");
+  const by = host.getAttribute("by");
+  const verifiedBy = host.getAttribute("verified-by");
+  if (!status && !by && !verifiedBy) return;
+  if (status) host.dataset.status = status;
+
+  const pill = document.createElement("span");
+  pill.className = "status-pill";
+  if (status) {
+    pill.dataset.status = status;
+    const s = document.createElement("span");
+    s.className = "status-label";
+    s.textContent = t(status, status);
+    pill.append(s);
+  }
+  const byChip = memberChip(by);
+  if (byChip) pill.append(byChip);
+  const vChip = memberChip(verifiedBy);
+  if (vChip) {
+    const check = document.createElement("span");
+    check.className = "status-check";
+    check.title = t("verifiedBy", "verified by");
+    check.textContent = "\u2713"; // ✓
+    pill.append(check, vChip);
+  }
+
+  if (label) {
+    label.append(" ", pill);
+  } else {
+    const bar = document.createElement("div");
+    bar.className = "status-bar";
+    bar.append(pill);
+    host.prepend(bar);
+  }
 }

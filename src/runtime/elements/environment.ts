@@ -8,7 +8,7 @@
  */
 
 import { t } from "../i18n";
-import { applyCollapsible } from "./shared";
+import { applyCollapsible, applyStatus } from "./shared";
 
 const ENVIRONMENT_TAGS = [
   "theorem",
@@ -72,6 +72,8 @@ class DeltaEnvironment extends HTMLElement {
       }
       lead.append(".");
       this.prepend(lead, " ");
+      applyStatus(this, lead); // status="sketch" by="…" → pill after "Proof."
+
       //if (tagName === "proof") {
       const qed = document.createElement("span");
       qed.className = "proof-qed";
@@ -99,6 +101,7 @@ class DeltaEnvironment extends HTMLElement {
       tag.append(" ", titleEl);
     }
     this.prepend(tag);
+    applyStatus(this, tag); // status/by/verified-by → pill inside the label (stays out of the fold)
 
     const meta = this.querySelector(":scope > delta-meta");
     if (meta) {

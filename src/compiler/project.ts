@@ -12,6 +12,8 @@ import {
   type CompileContext,
   type Diagnostic,
   type LabelEntry,
+  type ReviewData,
+  type TeamMember,
 } from "./context";
 import { emit } from "./emit";
 import { inlineFigures } from "./figures";
@@ -28,6 +30,11 @@ import { preprocess } from "./preprocess";
 import { resolveReferences, REF_TAGS } from "./references";
 import { resolveTheme } from "./theme";
 import { buildProjectToc } from "./toc";
+import { collectTeam } from "./team";
+import { resolveCollab } from "./collab";
+import { describeFinal, finalizeReview, sumFinal, type FinalStats } from "./final";
+import { buildProjectReview } from "./review";
+import type { CompileOptions } from "./index";
 
 export interface ProjectResult {
   /** One per input, in declaration order; written verbatim by the CLI. */
@@ -35,6 +42,8 @@ export interface ProjectResult {
   diagnostics: Diagnostic[];
   /** Absolute paths of every user file read across all inputs (for `--watch`). */
   deps: string[];
+  /** The project's collaboration state, every item tagged with its home output (for `delta review`). */
+  review?: ReviewData;
 }
 
 /** Flat output name for an input: `chapters/01.dlt` → `01.html`. */
@@ -51,12 +60,13 @@ export function outNameFor(input: string): string {
  * shared, and emit is deferred until every file is fully processed so cross-file
  * snapshots carry rendered math.
  */
-export function compileProject(config: ProjectConfig): ProjectResult {
+export function compileProject(config: ProjectConfig, options: CompileOptions = {}): ProjectResult {
   // Shared across the project. `referencedIds` stays per file (each output only
   // snapshots what it itself references).
   const registry = new Map<string, LabelEntry>();
   const papers = new Map<string, ElementNode>();
   const citedPapers: string[] = [];
+  const team = new Map<string, TeamMember>(); // <team> declared once (or identically) anywhere
 
   const projectDiags: Diagnostic[] = [];
   const ctxs: CompileContext[] = [];
@@ -93,11 +103,14 @@ export function compileProject(config: ProjectConfig): ProjectResult {
   // Phase 1 — read, parse, splice includes. Each file gets its own ctx (with the
   // shared registries swapped in) so diagnostics stay attributed to it.
   const files: { ctx: CompileContext; doc: ElementNode; outName: string }[] = [];
+  const finalStats: FinalStats[] = [];
   for (const input of config.inputs) {
     const ctx = createContext(input);
     ctx.registry = registry;
     ctx.papers = papers;
     ctx.citedPapers = citedPapers;
+    ctx.team = team;
+    ctx.final = options.final ?? false;
     ctx.outName = outNameFor(input);
     ctxs.push(ctx);
 
@@ -115,6 +128,8 @@ export function compileProject(config: ProjectConfig): ProjectResult {
     // Project-wide `[document]` defaults, applied here (right after the merge) so every downstream
     // pass — including the type-gated presentation sugar below and the lang read — sees them.
     applyDocumentDefaults(doc, config.document);
+    finalStats.push(finalizeReview(doc, ctx, false)); // --final only; one project-wide summary below
+    collectTeam(doc, ctx); // into the shared map; the node is removed
     expandAnimated(doc); // presentation only: animated="true" → reveal="true" on children
     expandCover(doc); // presentation only: <cover> → <slide cover="true">
     ctx.lang = doc.attrs.lang ?? "en";
@@ -122,6 +137,14 @@ export function compileProject(config: ProjectConfig): ProjectResult {
   }
   // A missing file, parse error, or bad include fails the whole project.
   if (ctxs.some(hasErrors)) return { outputs: [], diagnostics: gather(), deps: collectDeps() };
+
+  // Collaboration vocabulary, once the whole team is known (a `by` in chapter 1 may name a
+  // member declared in the intro). Writes the defaults numbering/emit key off.
+  for (const f of files) resolveCollab(f.doc, f.ctx);
+  if (options.final) {
+    const msg = describeFinal(sumFinal(finalStats));
+    if (msg) projectDiags.push({ severity: "warning", message: msg, file: config.root ?? config.inputs[0] });
+  }
 
   // Phase 2 — bibliography & citations, project-wide. Papers from every file load
   // into the shared registry; cites number across files in first-appearance order.
@@ -179,6 +202,9 @@ export function compileProject(config: ProjectConfig): ProjectResult {
   // One book-wide ToC across the files (when a <toc scope="project"> asks for it),
   // else per-file tocs — replaces the single-file buildToc call.
   buildProjectToc(files);
+  // One project-wide review list (when a <review scope="project"> asks for it), else per-file;
+  // the fully tagged list goes to the CLI either way.
+  const projectReview = buildProjectReview(files);
 
   for (const f of files) {
     resolveReferences(f.doc, f.ctx);
@@ -197,7 +223,12 @@ export function compileProject(config: ProjectConfig): ProjectResult {
     path: join(config.outDir, f.outName),
     html: emit(f.doc, f.ctx, globalById),
   }));
-  return { outputs, diagnostics: gather(), deps: collectDeps() };
+  return {
+    outputs,
+    diagnostics: gather(),
+    deps: collectDeps(),
+    review: { team: [...team.values()], items: projectReview },
+  };
 }
 
 function hasBibliography(doc: ElementNode): boolean {

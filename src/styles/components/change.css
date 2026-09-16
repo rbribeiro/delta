@@ -1,0 +1,159 @@
+/* change.css — <change>: tracked changes (DeltaChange, runtime/elements/change.ts).
+   The host is `.chg` (+ `.chg-block` for block content) in the author's accent; inside,
+   `<delta-old class="chg-del">` is struck and dimmed, `<delta-new class="chg-ins">` is
+   tinted and underlined, and a `.chg-marker` pill opens the who/when/why popover
+   (`.chg-pop`). The three views are pure CSS off `html[data-changes]`, set by
+   Delta.review.setChanges(): markup (default), final (new only, unmarked), original
+   (old only). Print is the final view. Tokens via var(--delta-*). */
+
+@layer delta.components {
+
+delta-change { display: inline; }
+delta-change.chg-block {
+  display: block;
+  margin: var(--delta-block-gap) 0;
+}
+/* <old>/<new> are unregistered custom elements: inline by default, blocks in a block change. */
+delta-old, delta-new { display: inline; }
+
+.chg {
+  --delta-accent-ink:  color-mix(in oklab, var(--delta-accent) 64%, var(--delta-ink));
+  --delta-accent-soft: color-mix(in oklab, var(--delta-accent) 14%, var(--delta-paper));
+}
+
+/* -- Markup view (default) ------------------------------------------------ */
+.chg-ins {
+  background: var(--delta-accent-soft);
+  text-decoration: underline;
+  text-decoration-color: var(--delta-accent-ink);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 2px;
+  border-radius: 2px;
+}
+/* Old then new, inline: a breath between the struck and the replacement text. */
+.chg-del + .chg-ins { margin-left: 0.3em; }
+.chg-del {
+  text-decoration: line-through;
+  text-decoration-color: var(--delta-mute);
+  text-decoration-thickness: 1.5px;
+  color: var(--delta-mute);
+}
+/* Block changes: a rule instead of inline decoration, old then new stacked. */
+.chg-block > .chg-ins,
+.chg-block > .chg-del {
+  display: block;
+  padding-left: 12px;
+  background: none;
+  text-decoration: none;
+  border-left: 3px solid var(--delta-accent-ink);
+}
+.chg-block > .chg-del {
+  border-left-color: var(--delta-mute);
+  border-left-style: dashed;
+  color: var(--delta-ink-soft);
+  opacity: 0.65;
+}
+.chg-block > .chg-del + .chg-ins { margin-top: 10px; }
+
+/* -- Marker ------------------------------------------------------------- */
+.chg-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: super;
+  min-width: 1.6em;
+  height: 1.6em;
+  padding: 0 0.4em;
+  margin: 0 0.15em 0 0;
+  font: 600 10px/1 var(--delta-sans);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--delta-accent-ink);
+  background: var(--delta-paper);
+  border: 1px dashed var(--delta-accent-ink);
+  border-radius: var(--delta-radius-sm);
+  cursor: pointer;
+  transition: background var(--delta-dur-fast) var(--delta-ease);
+}
+.chg-marker::before { content: "\0394"; margin-right: 0.2em; font-size: 0.9em; } /* Δ */
+.chg-marker:hover,
+.chg-marker[aria-expanded="true"] { background: var(--delta-accent-soft); }
+.chg-marker:focus-visible { outline: 2px solid var(--delta-accent-ink); outline-offset: 2px; }
+.chg-block > .chg-marker {
+  float: right;
+  margin: 0 0 6px 10px;
+  vertical-align: baseline;
+}
+
+/* -- Popover ------------------------------------------------------------- */
+.chg-pop {
+  --delta-accent-ink:  color-mix(in oklab, var(--delta-accent) 64%, var(--delta-ink));
+  --delta-accent-soft: color-mix(in oklab, var(--delta-accent) 14%, var(--delta-paper));
+  width: max-content;
+  max-width: min(40ch, 92vw);
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+.chg-pop-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-family: var(--delta-sans);
+  font-size: 11.5px;
+  color: var(--delta-mute);
+}
+.chg-date { font-variant-numeric: tabular-nums; }
+.chg-kind {
+  margin-left: auto;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: var(--delta-radius-pill);
+  background: var(--delta-accent-soft);
+  color: var(--delta-accent-ink);
+}
+.chg-note {
+  margin-top: 7px;
+  font-style: italic;
+  color: var(--delta-ink-soft);
+}
+
+/* -- Final view: what the paper will say ----------------------------------- */
+html[data-changes="final"] .chg-del,
+html[data-changes="final"] .chg-marker { display: none; }
+html[data-changes="final"] .chg-ins,
+html[data-changes="final"] .chg-block > .chg-ins {
+  background: none;
+  text-decoration: none;
+  border-left: 0;
+  padding-left: 0;
+}
+
+/* -- Original view: what it said before ------------------------------------ */
+html[data-changes="original"] .chg-ins,
+html[data-changes="original"] .chg-marker { display: none; }
+html[data-changes="original"] .chg-del,
+html[data-changes="original"] .chg-block > .chg-del {
+  text-decoration: none;
+  color: inherit;
+  opacity: 1;
+  border-left: 0;
+  padding-left: 0;
+}
+
+/* -- Print = final ---------------------------------------------------------- */
+@media print {
+  .chg-del { display: none !important; }
+  .chg-ins, .chg-block > .chg-ins {
+    background: none;
+    text-decoration: none;
+    border-left: 0;
+    padding-left: 0;
+  }
+}
+
+}

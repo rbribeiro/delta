@@ -148,7 +148,12 @@ The flow is always: **extend `ctx` → write the pass → wire it into the orche
    the template is emitted. The existing "no external resources" test keeps the
    offline guarantee honest.
 
-Every later cross-cutting feature is a variation on these six steps.
+Every later cross-cutting feature is a variation on these six steps. A second worked
+example is the collaboration family ([review.ts](../src/compiler/review.ts) +
+[collab.ts](../src/compiler/collab.ts), design in [COLLABORATION.md](COLLABORATION.md)):
+a validation pass that writes defaults, a numbering row per tag, a collector that builds
+`ctx.review` and an island the runtime panel reads — and a `--final` pass that removes it
+all for publication.
 
 ---
 

@@ -3,7 +3,7 @@
  * child into a real heading, prefixed by the compile-time number.
  */
 
-import { applyCollapsible } from "./shared";
+import { applyCollapsible, applyStatus } from "./shared";
 
 // tag → heading level + class the structure stylesheet targets
 // (h2.section gets a .num pill; h3.sub / h4.subsub are quieter).
@@ -30,6 +30,7 @@ class DeltaSection extends HTMLElement {
     if (document.documentElement.dataset.type === "presentation") {
       const slide = document.createElement("delta-slide");
       slide.setAttribute("divider", "true");
+      applyStatus(this, title); // the pill rides along into the divider's title
       slide.appendChild(title);
       this.prepend(slide);
       return;
@@ -47,6 +48,7 @@ class DeltaSection extends HTMLElement {
     }
     heading.append(...title.childNodes);
     title.replaceWith(heading);
+    applyStatus(this, heading); // status="draft" by="…" on a section → pill after the title
 
     // render the meta info 
     const meta = this.querySelector(':scope > delta-meta');

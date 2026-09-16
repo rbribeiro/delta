@@ -879,6 +879,166 @@ delta-box .box-body > :last-child  { margin-bottom: 0; }
 
 }
 
+/* change.css — <change>: tracked changes (DeltaChange, runtime/elements/change.ts).
+   The host is `.chg` (+ `.chg-block` for block content) in the author's accent; inside,
+   `<delta-old class="chg-del">` is struck and dimmed, `<delta-new class="chg-ins">` is
+   tinted and underlined, and a `.chg-marker` pill opens the who/when/why popover
+   (`.chg-pop`). The three views are pure CSS off `html[data-changes]`, set by
+   Delta.review.setChanges(): markup (default), final (new only, unmarked), original
+   (old only). Print is the final view. Tokens via var(--delta-*). */
+
+@layer delta.components {
+
+delta-change { display: inline; }
+delta-change.chg-block {
+  display: block;
+  margin: var(--delta-block-gap) 0;
+}
+/* <old>/<new> are unregistered custom elements: inline by default, blocks in a block change. */
+delta-old, delta-new { display: inline; }
+
+.chg {
+  --delta-accent-ink:  color-mix(in oklab, var(--delta-accent) 64%, var(--delta-ink));
+  --delta-accent-soft: color-mix(in oklab, var(--delta-accent) 14%, var(--delta-paper));
+}
+
+/* -- Markup view (default) ------------------------------------------------ */
+.chg-ins {
+  background: var(--delta-accent-soft);
+  text-decoration: underline;
+  text-decoration-color: var(--delta-accent-ink);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 2px;
+  border-radius: 2px;
+}
+/* Old then new, inline: a breath between the struck and the replacement text. */
+.chg-del + .chg-ins { margin-left: 0.3em; }
+.chg-del {
+  text-decoration: line-through;
+  text-decoration-color: var(--delta-mute);
+  text-decoration-thickness: 1.5px;
+  color: var(--delta-mute);
+}
+/* Block changes: a rule instead of inline decoration, old then new stacked. */
+.chg-block > .chg-ins,
+.chg-block > .chg-del {
+  display: block;
+  padding-left: 12px;
+  background: none;
+  text-decoration: none;
+  border-left: 3px solid var(--delta-accent-ink);
+}
+.chg-block > .chg-del {
+  border-left-color: var(--delta-mute);
+  border-left-style: dashed;
+  color: var(--delta-ink-soft);
+  opacity: 0.65;
+}
+.chg-block > .chg-del + .chg-ins { margin-top: 10px; }
+
+/* -- Marker ------------------------------------------------------------- */
+.chg-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: super;
+  min-width: 1.6em;
+  height: 1.6em;
+  padding: 0 0.4em;
+  margin: 0 0.15em 0 0;
+  font: 600 10px/1 var(--delta-sans);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--delta-accent-ink);
+  background: var(--delta-paper);
+  border: 1px dashed var(--delta-accent-ink);
+  border-radius: var(--delta-radius-sm);
+  cursor: pointer;
+  transition: background var(--delta-dur-fast) var(--delta-ease);
+}
+.chg-marker::before { content: "\0394"; margin-right: 0.2em; font-size: 0.9em; } /* Δ */
+.chg-marker:hover,
+.chg-marker[aria-expanded="true"] { background: var(--delta-accent-soft); }
+.chg-marker:focus-visible { outline: 2px solid var(--delta-accent-ink); outline-offset: 2px; }
+.chg-block > .chg-marker {
+  float: right;
+  margin: 0 0 6px 10px;
+  vertical-align: baseline;
+}
+
+/* -- Popover ------------------------------------------------------------- */
+.chg-pop {
+  --delta-accent-ink:  color-mix(in oklab, var(--delta-accent) 64%, var(--delta-ink));
+  --delta-accent-soft: color-mix(in oklab, var(--delta-accent) 14%, var(--delta-paper));
+  width: max-content;
+  max-width: min(40ch, 92vw);
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+.chg-pop-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-family: var(--delta-sans);
+  font-size: 11.5px;
+  color: var(--delta-mute);
+}
+.chg-date { font-variant-numeric: tabular-nums; }
+.chg-kind {
+  margin-left: auto;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: var(--delta-radius-pill);
+  background: var(--delta-accent-soft);
+  color: var(--delta-accent-ink);
+}
+.chg-note {
+  margin-top: 7px;
+  font-style: italic;
+  color: var(--delta-ink-soft);
+}
+
+/* -- Final view: what the paper will say ----------------------------------- */
+html[data-changes="final"] .chg-del,
+html[data-changes="final"] .chg-marker { display: none; }
+html[data-changes="final"] .chg-ins,
+html[data-changes="final"] .chg-block > .chg-ins {
+  background: none;
+  text-decoration: none;
+  border-left: 0;
+  padding-left: 0;
+}
+
+/* -- Original view: what it said before ------------------------------------ */
+html[data-changes="original"] .chg-ins,
+html[data-changes="original"] .chg-marker { display: none; }
+html[data-changes="original"] .chg-del,
+html[data-changes="original"] .chg-block > .chg-del {
+  text-decoration: none;
+  color: inherit;
+  opacity: 1;
+  border-left: 0;
+  padding-left: 0;
+}
+
+/* -- Print = final ---------------------------------------------------------- */
+@media print {
+  .chg-del { display: none !important; }
+  .chg-ins, .chg-block > .chg-ins {
+    background: none;
+    text-decoration: none;
+    border-left: 0;
+    padding-left: 0;
+  }
+}
+
+}
+
 /* code.css — `<code lang>` highlighted display block + inline `<c>`. highlight.js
    runs at compile time (src/compiler/code.ts) and ships only class-based spans;
    this maps them onto Delta's code palette and styles the chrome the runtime
@@ -1040,6 +1200,78 @@ delta-code .hljs-addition { color: var(--delta-ok); }
 
 }
 
+/* collab.css — shared chrome for the collaboration components (<comment>, <todo>,
+   <change>, status pills, <review>; runtime/elements/collab.ts). Here: the author chip
+   `.who` that memberChip() builds for every `by`/`for`, the document-wide
+   `html[data-review="off"]` switch (the <review> panel's "annotations" toggle) that hides
+   every annotation for a clean read, and the print rule — paper never prints its review
+   marks. Each component's own look lives in its own file. Tokens via var(--delta-*). */
+
+@layer delta.components {
+
+/* -- Author chip ------------------------------------------------------- */
+.who {
+  /* The chip carries its own accent seed (data-accent, set by the runtime from the
+     member's color). Re-derive ink/soft from it here — mirroring box.css — so the
+     chip stays legible in dark mode, where the bare [data-accent] blocks would hand
+     it the light-page ink. */
+  --delta-accent-ink:  color-mix(in oklab, var(--delta-accent) 64%, var(--delta-ink));
+  --delta-accent-soft: color-mix(in oklab, var(--delta-accent) 14%, var(--delta-paper));
+
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--delta-sans);
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: var(--delta-accent-ink);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.who-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--delta-accent);
+  border: 1px solid var(--delta-accent-ink);
+}
+.who-badge {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 5px;
+  border-radius: var(--delta-radius-pill);
+  background: var(--delta-accent-soft);
+  border: 1px solid color-mix(in oklab, var(--delta-accent-ink) 55%, transparent);
+  color: var(--delta-accent-ink);
+}
+/* A `by` that names nobody in <team>: quiet free text, no colour claim. */
+.who-free { color: var(--delta-ink-soft); font-weight: 500; }
+
+/* -- Clean reading view: the panel's "annotations" switch ------------- */
+html[data-review="off"] delta-comment,
+html[data-review="off"] delta-todo,
+html[data-review="off"] .status-pill,
+html[data-review="off"] .status-bar,
+html[data-review="off"] .chg-marker { display: none; }
+
+/* -- Print: the paper, never its review marks -------------------------- */
+@media print {
+  delta-comment,
+  delta-todo,
+  delta-review,
+  .status-pill,
+  .status-bar,
+  .chg-marker { display: none !important; }
+}
+
+}
+
 /* collapse.css — collapsible sections & environments (`collapsible`/`collapsed`).
    The runtime (applyCollapsible in runtime/elements/shared.ts) turns the label — a
    section heading, a `.box-tag`, or a proof `.proof-lead` — into a `.collapse-toggle`
@@ -1149,6 +1381,144 @@ delta-columns[wide] { margin-right: calc(-1 * (var(--delta-col-gap) + var(--delt
      published as --col-flex, not inline `flex`, so this rule wins cleanly). */
   delta-columns { flex-direction: column; }
   delta-columns > delta-column { flex: 0 0 auto; }
+}
+
+}
+
+/* comment.css — <comment>: a threaded review note (DeltaComment,
+   runtime/elements/comment.ts). In the prose only a superscript `.note-marker` pill
+   shows (the comment number, in the author's colour; muted + ✓ once resolved). The
+   thread itself — `.note-pop`, built on the shared .delta-pop bubble — holds the head
+   (author chip, date, status), the body and the `.note-reply` list. `.note-static` is
+   the same thread rendered inline when a comment is snapshotted into a <ref> preview.
+   Hiding (review switch, print) is in collab.css. Tokens via var(--delta-*). */
+
+@layer delta.components {
+
+delta-comment { display: inline; }
+delta-comment.note-hidden { display: none; }
+
+/* -- Marker ------------------------------------------------------------ */
+.note-marker {
+  --delta-accent-ink:  color-mix(in oklab, var(--delta-accent) 64%, var(--delta-ink));
+  --delta-accent-soft: color-mix(in oklab, var(--delta-accent) 14%, var(--delta-paper));
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: super;
+  min-width: 1.6em;
+  height: 1.6em;
+  padding: 0 0.45em;
+  margin: 0 0.12em;
+  font: 600 10px/1 var(--delta-sans);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--delta-accent-ink);
+  background: var(--delta-accent-soft);
+  border: 1px solid color-mix(in oklab, var(--delta-accent-ink) 45%, transparent);
+  border-radius: var(--delta-radius-pill);
+  cursor: pointer;
+  transition: background var(--delta-dur-fast) var(--delta-ease),
+              border-color var(--delta-dur-fast) var(--delta-ease);
+}
+.note-marker:hover,
+.note-marker[aria-expanded="true"] {
+  background: var(--delta-accent);
+  border-color: var(--delta-accent-ink);
+}
+.note-marker:focus-visible {
+  outline: 2px solid var(--delta-accent-ink);
+  outline-offset: 2px;
+}
+.note-marker.is-resolved {
+  color: var(--delta-mute);
+  background: var(--delta-surface-2);
+  border-color: var(--delta-rule);
+}
+.note-marker.is-resolved::before {
+  content: "\2713"; /* ✓ */
+  margin-right: 0.3em;
+  font-size: 0.9em;
+}
+/* Inside a label (box tag, heading, proof lead) the marker sits on the text line. */
+.box-tag .note-marker,
+.proof-lead .note-marker,
+h1 .note-marker, h2 .note-marker, h3 .note-marker, h4 .note-marker {
+  vertical-align: middle;
+  margin-left: 0.35em;
+}
+
+/* -- Thread bubble ------------------------------------------------------ */
+.note-pop {
+  --delta-accent-ink:  color-mix(in oklab, var(--delta-accent) 64%, var(--delta-ink));
+  --delta-accent-soft: color-mix(in oklab, var(--delta-accent) 14%, var(--delta-paper));
+  width: max-content;
+  max-width: min(46ch, 92vw);
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+.note-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 7px;
+  font-family: var(--delta-sans);
+  font-size: 11.5px;
+  color: var(--delta-mute);
+}
+.note-date { font-variant-numeric: tabular-nums; }
+.note-status {
+  margin-left: auto;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: var(--delta-radius-pill);
+  background: var(--delta-accent-soft);
+  color: var(--delta-accent-ink);
+}
+.note-status[data-status="resolved"] {
+  background: var(--delta-surface-2);
+  color: var(--delta-mute);
+}
+.note-body > :first-child { margin-top: 0; }
+.note-body > :last-child  { margin-bottom: 0; }
+
+.note-replies {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: var(--delta-hairline) solid var(--delta-rule-soft);
+}
+.note-reply {
+  padding-left: 10px;
+  border-left: 2px solid var(--delta-rule-soft);
+}
+.note-reply-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 3px;
+  font-family: var(--delta-sans);
+  font-size: 11px;
+  color: var(--delta-mute);
+}
+.note-reply-body > :first-child { margin-top: 0; }
+.note-reply-body > :last-child  { margin-bottom: 0; }
+
+/* The same thread, inline, when a <ref> previews a comment. */
+.note-static {
+  display: block;
+  padding: 8px 12px;
+  border-left: 3px solid var(--delta-accent);
+  border-radius: var(--delta-radius-sm);
+  background: var(--delta-accent-soft);
 }
 
 }
@@ -1952,6 +2322,200 @@ delta-ref { display: inline; }
 
 }
 
+/* review.css — <review>: the review & planning panel (DeltaReview,
+   runtime/elements/review.ts). A `.toc`-like card: header (+ "Copy as text"), the
+   `.review-stat` summary chips, the two switches (`.review-switch` annotations on/off,
+   `.review-seg` change view), `.review-filter` chips (members, statuses) and the
+   `.review-item` rows grouped by kind. Reuses `.status-pill` (status.css) and `.who`
+   (collab.css). Sheds its card chrome inside a <floating> panel. Hidden in print
+   (collab.css). Tokens via var(--delta-*). */
+
+@layer delta.components {
+
+delta-review { display: block; }
+
+.review {
+  margin: var(--delta-block-gap) 0;
+  padding: 16px 20px 12px;
+  border: var(--delta-hairline) solid var(--delta-rule-soft);
+  border-radius: var(--delta-radius-lg);
+  background: var(--delta-surface-1);
+  font-family: var(--delta-sans);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--delta-ink-soft);
+}
+
+.review-hd {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.review-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--delta-tracking-cap);
+  text-transform: uppercase;
+  color: var(--delta-mute);
+}
+
+/* Small pill buttons: the copy action, the switches, the filters. */
+.review-copy,
+.review-switch,
+.review-seg button,
+.review-filter {
+  appearance: none;
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1;
+  padding: 5px 10px;
+  border-radius: var(--delta-radius-pill);
+  border: var(--delta-hairline) solid var(--delta-rule);
+  background: var(--delta-paper);
+  color: var(--delta-ink-soft);
+  cursor: pointer;
+  transition: background var(--delta-dur-fast) var(--delta-ease),
+              color var(--delta-dur-fast) var(--delta-ease),
+              border-color var(--delta-dur-fast) var(--delta-ease);
+}
+.review-copy:hover,
+.review-switch:hover,
+.review-seg button:hover,
+.review-filter:hover { border-color: var(--delta-accent-ink); color: var(--delta-accent-ink); }
+.review-copy.is-copied { color: var(--delta-ok); border-color: var(--delta-ok); }
+.review-switch[aria-pressed="true"],
+.review-seg button.is-active,
+.review-filter.is-active {
+  background: var(--delta-accent-soft);
+  border-color: var(--delta-accent-ink);
+  color: var(--delta-accent-ink);
+}
+.review-switch::before {
+  content: "";
+  display: inline-block;
+  width: 7px; height: 7px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--delta-rule);
+  vertical-align: 1px;
+}
+.review-switch[aria-pressed="true"]::before { background: var(--delta-accent-ink); }
+
+.review-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.review-stat {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: var(--delta-radius-pill);
+  background: var(--delta-surface-2);
+  font-size: 11.5px;
+}
+.review-stat b { font-weight: 700; color: var(--delta-ink); font-variant-numeric: tabular-nums; }
+
+.review-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: var(--delta-hairline) solid var(--delta-rule-soft);
+}
+.review-seg { display: inline-flex; align-items: center; gap: 4px; }
+.review-seg-label {
+  margin-right: 4px;
+  font-size: 10.5px;
+  letter-spacing: var(--delta-tracking-cap);
+  text-transform: uppercase;
+  color: var(--delta-mute);
+}
+
+.review-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.review-filter .who { font-size: 11px; }
+
+.review-group-title {
+  margin: 12px 0 4px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: var(--delta-tracking-cap);
+  text-transform: uppercase;
+  color: var(--delta-mute);
+}
+.review-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 0;
+  border-top: var(--delta-hairline) solid var(--delta-rule-soft);
+}
+.review-item-hd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--delta-mute);
+}
+.review-jump { text-decoration: none; }
+.review-num {
+  font-weight: 700;
+  color: var(--delta-accent-ink);
+  font-variant-numeric: tabular-nums;
+}
+.review-jump:hover .review-num { text-decoration: underline; }
+.review-for { display: inline-flex; align-items: center; gap: 4px; }
+.review-date { font-variant-numeric: tabular-nums; }
+.review-prio[data-priority="high"] { color: var(--delta-warn); border-color: color-mix(in oklab, var(--delta-warn) 50%, transparent); }
+
+.review-text {
+  font-family: var(--delta-serif);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--delta-ink);
+}
+.review-text delta-old { text-decoration: line-through; color: var(--delta-mute); }
+.review-text delta-new { background: var(--delta-accent-soft); border-radius: 2px; }
+.review-block-title { font-style: italic; }
+.review-note { font-style: italic; font-size: 12.5px; }
+.review-reply {
+  padding-left: 10px;
+  border-left: 2px solid var(--delta-rule-soft);
+  font-family: var(--delta-serif);
+  font-size: 13.5px;
+  color: var(--delta-ink-soft);
+}
+.review-loc {
+  font-size: 11.5px;
+  color: var(--delta-mute);
+  text-decoration: none;
+}
+.review-loc:hover { color: var(--delta-accent-ink); }
+.review-empty { margin: 8px 0 0; font-style: italic; color: var(--delta-mute); }
+
+/* Inside a <floating> panel: drop the card chrome, the panel already frames it. */
+.floating-body .review {
+  margin: 0;
+  padding: 6px 0 0;
+  border: 0;
+  background: none;
+}
+
+}
+
 /* sidenote.css — inline marginalia, appearance only. LIVE: DeltaSidenote adds
    .sidenote; positioning (float into the reserved rail, and the narrow-viewport
    collapse) lives in base.css's page layout, since the rail is a page-grid
@@ -2308,6 +2872,93 @@ delta-sidenote { display: block; }
     :root[data-type="presentation"] .deck-controls,
     :root[data-type="presentation"] .deck-topbar { display: none !important; }
   }
+}
+
+/* status.css — the maturity / authorship marks any block may carry (applyStatus in
+   runtime/elements/shared.ts): `status="draft|sketch|review|verified"`, `by`,
+   `verified-by`. The `.status-pill` sits in the block's label (box tag, proof lead,
+   heading) or, for <draft> (runtime/elements/draft.ts), in a `.status-bar` row on top.
+   Unfinished blocks (draft/sketch) read as unfinished: a dashed edge. Uses the design
+   system's --delta-ok / --delta-warn status tokens. Hiding (review switch, print) is in
+   collab.css. Tokens via var(--delta-*). */
+
+@layer delta.components {
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  vertical-align: middle;
+  font-family: var(--delta-sans);
+  font-size: 9.5px;
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1;
+  padding: 3px 7px;
+  border-radius: var(--delta-radius-pill);
+  border: 1px solid var(--delta-rule);
+  background: var(--delta-surface-2);
+  color: var(--delta-ink-soft);
+  white-space: nowrap;
+}
+.status-pill .who { font-size: 10.5px; }
+.status-pill[data-status="draft"],
+.status-pill[data-status="sketch"] {
+  color: var(--delta-mute);
+  border-style: dashed;
+}
+.status-pill[data-status="review"] {
+  color: var(--delta-warn);
+  border-color: color-mix(in oklab, var(--delta-warn) 50%, transparent);
+  background: color-mix(in oklab, var(--delta-warn) 10%, var(--delta-paper));
+}
+.status-pill[data-status="verified"] {
+  color: var(--delta-ok);
+  border-color: color-mix(in oklab, var(--delta-ok) 50%, transparent);
+  background: color-mix(in oklab, var(--delta-ok) 10%, var(--delta-paper));
+}
+.status-check { color: var(--delta-ok); font-size: 1.15em; }
+
+/* In a label the pill follows the text. */
+.box-tag .status-pill { margin-left: 0.4em; }
+.proof-lead .status-pill { margin-left: 0.4em; }
+h1 .status-pill, h2 .status-pill, h3 .status-pill, h4 .status-pill { margin-left: 0.6em; font-size: 10px; }
+/* A collapsed box keeps its pill readable at the box-tag's smaller size. */
+.box-tag .status-pill .who-badge { font-size: 8px; }
+
+/* Unfinished blocks: dashed edge. */
+.box[data-status="draft"],
+.box[data-status="sketch"] { border-style: dashed; }
+delta-proof[data-status="draft"],
+delta-proof[data-status="sketch"],
+delta-solution[data-status="draft"],
+delta-solution[data-status="sketch"] {
+  outline: 1px dashed var(--delta-rule);
+  outline-offset: 6px;
+  border-radius: var(--delta-radius-sm);
+}
+
+/* -- <draft>: a status bar over loose prose ---------------------------- */
+delta-draft {
+  display: block;
+  margin: var(--delta-block-gap) 0;
+  padding: 4px 0 4px 14px;
+  border-left: 3px dashed var(--delta-rule);
+}
+.status-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-family: var(--delta-sans);
+  font-size: 11.5px;
+  color: var(--delta-mute);
+}
+.status-note { font-style: italic; }
+
 }
 
 /* structure.css — runhead, chapter front-matter, section/subsection headings,
@@ -2896,6 +3547,88 @@ delta-toc { display: block; }
 
 }
 
+/* todo.css — <todo>: a task row (DeltaTodo, runtime/elements/todo.ts). The host gets
+   .todo + data-status/data-priority and the assignee's accent; inside: `.todo-state`
+   (☐ ◐ ☑), `.todo-text` (with the "Task N" label) and a `.todo-meta` line (assignee,
+   due, priority). Priority colours the left rule; a done task strikes through. Hiding
+   (review switch, print) is in collab.css. Tokens via var(--delta-*). */
+
+@layer delta.components {
+
+delta-todo { display: block; }
+
+.todo {
+  --delta-accent-ink:  color-mix(in oklab, var(--delta-accent) 64%, var(--delta-ink));
+  --delta-accent-soft: color-mix(in oklab, var(--delta-accent) 14%, var(--delta-paper));
+
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 10px;
+  row-gap: 4px;
+  align-items: baseline;
+  margin: calc(var(--delta-block-gap) / 2) 0;
+  padding: 9px 14px 9px 12px;
+  border-left: 3px solid var(--delta-rule);
+  border-radius: var(--delta-radius-sm);
+  background: var(--delta-surface-1);
+  font-size: 0.95em;
+}
+.todo[data-priority="high"] { border-left-color: var(--delta-warn); }
+.todo[data-priority="low"]  { border-left-color: var(--delta-rule-soft); color: var(--delta-ink-soft); }
+.todo[data-status="done"]   { border-left-color: var(--delta-ok); }
+
+.todo-state {
+  font-family: var(--delta-sans);
+  font-size: 1.1em;
+  line-height: 1.3;
+  color: var(--delta-accent-ink);
+  -webkit-user-select: none;
+  user-select: none;
+}
+.todo[data-status="done"] .todo-state { color: var(--delta-ok); }
+
+.todo-num {
+  display: inline-block; /* atomic, so a done task's strike-through skips the label */
+  font-family: var(--delta-sans);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: var(--delta-tracking-cap);
+  text-transform: uppercase;
+  color: var(--delta-mute);
+}
+.todo-text > :first-child { margin-top: 0; }
+.todo-text > :last-child  { margin-bottom: 0; }
+.todo[data-status="done"] .todo-text {
+  text-decoration: line-through;
+  text-decoration-color: var(--delta-mute);
+  color: var(--delta-mute);
+}
+
+.todo-meta {
+  grid-column: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  font-family: var(--delta-sans);
+  font-size: 11.5px;
+  color: var(--delta-mute);
+}
+.todo-for, .todo-by { display: inline-flex; align-items: center; gap: 4px; }
+.todo-due { font-variant-numeric: tabular-nums; }
+.todo-prio {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border-radius: var(--delta-radius-pill);
+  border: 1px solid currentColor;
+}
+.todo-prio[data-priority="high"] { color: var(--delta-warn); }
+
+}
+
 /* tweaks.css — floating settings panel UI. STAGED — the tweaks runtime is not
    built yet. Pure component chrome: deliberately self-contained glassmorphism
    with hardcoded colours (no theme tokens), so it reads consistently over any
@@ -3312,12 +4045,14 @@ delta-footer {
         <delta-title>Bolzano-Weierstrass</delta-title>
         Toda sequência limitada em <delta-m><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="double-struck">R</mi></mrow><annotation encoding="application/x-tex">\mathbb{R}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6889em;"></span><span class="mord mathbb">R</span></span></span></span></delta-m> possui subsequência convergente.
       </delta-theorem></template>
-<script type="application/json" id="delta-toc">[{"level":2,"id":"inicio","num":"1","title":"Artigos podem ser melhores.","file":"index.html"},{"level":3,"id":"inicio-instalar","num":"1.1","title":"Comece em três linhas","file":"index.html"},{"level":3,"id":"inicio-exemplo","num":"1.2","title":"Como se escreve","file":"index.html"},{"level":3,"id":"inicio-principios","num":"1.3","title":"O que orienta o projeto","file":"index.html"},{"level":3,"id":"inicio-onde","num":"1.4","title":"Por onde seguir","file":"index.html"},{"level":2,"id":"comecar","num":"2","title":"Primeiros passos","file":"comecar.html"},{"level":3,"id":"passo-node","num":"2.1","title":"Instalar o Node.js","file":"comecar.html"},{"level":3,"id":"passo-delta","num":"2.2","title":"Instalar o Delta","file":"comecar.html"},{"level":3,"id":"passo-documento","num":"2.3","title":"Escrever o primeiro documento","file":"comecar.html"},{"level":3,"id":"passo-compilar","num":"2.4","title":"Compilar","file":"comecar.html"},{"level":3,"id":"passo-erros","num":"2.5","title":"Quando algo dá errado","file":"comecar.html"},{"level":3,"id":"passo-adiante","num":"2.6","title":"Para onde ir agora","file":"comecar.html"},{"level":2,"id":"estrutura","num":"3","title":"Estrutura","file":"estrutura.html"},{"level":3,"id":"tag-document","num":"3.1","title":"&lt;document&gt;","file":"estrutura.html"},{"level":3,"id":"tag-title","num":"3.2","title":"&lt;title&gt;","file":"estrutura.html"},{"level":3,"id":"tag-secoes","num":"3.3","title":"&lt;chapter&gt;, &lt;section&gt;, &lt;subsection&gt;, &lt;subsubsection&gt;","file":"estrutura.html"},{"level":3,"id":"tag-eyebrow-intro","num":"3.4","title":"&lt;eyebrow&gt; e &lt;intro&gt;","file":"estrutura.html"},{"level":3,"id":"tag-meta","num":"3.5","title":"&lt;meta&gt; e &lt;meta-item&gt;","file":"estrutura.html"},{"level":3,"id":"tag-toc","num":"3.6","title":"&lt;toc&gt;","file":"estrutura.html"},{"level":3,"id":"tag-floating","num":"3.7","title":"&lt;floating&gt;","file":"estrutura.html"},{"level":3,"id":"sobre-frontmatter","num":"3.8","title":"Folha de rosto","file":"estrutura.html"},{"level":2,"id":"matematica","num":"4","title":"Matemática","file":"matematica.html"},{"level":3,"id":"sobre-math-inline","num":"4.1","title":"Matemática no meio da frase","file":"matematica.html"},{"level":3,"id":"tag-m","num":"4.2","title":"&lt;m&gt;","file":"matematica.html"},{"level":3,"id":"tag-equation","num":"4.3","title":"&lt;equation&gt;","file":"matematica.html"},{"level":3,"id":"tag-equations","num":"4.4","title":"&lt;equations&gt;","file":"matematica.html"},{"level":3,"id":"sobre-ref-math","num":"4.5","title":"Referências dentro da matemática","file":"matematica.html"},{"level":2,"id":"ambientes","num":"5","title":"Ambientes"},{"level":3,"id":"sobre-familia-teorema","num":"5.1","title":"A família do teorema"},{"level":3,"id":"sobre-outros-ambientes","num":"5.2","title":"Definições, exemplos e exercícios"},{"level":3,"id":"tag-proof","num":"5.3","title":"&lt;proof&gt; e &lt;solution&gt;"},{"level":3,"id":"sobre-ambiente-atributos","num":"5.4","title":"Atributos comuns a todos os ambientes"},{"level":2,"id":"referencias","num":"6","title":"Referências e citações","file":"referencias.html"},{"level":3,"id":"tag-ref","num":"6.1","title":"&lt;ref&gt;","file":"referencias.html"},{"level":3,"id":"tag-bibliography","num":"6.2","title":"&lt;bibliography&gt; e &lt;paper&gt;","file":"referencias.html"},{"level":3,"id":"tag-cite","num":"6.3","title":"&lt;cite&gt;","file":"referencias.html"},{"level":2,"id":"midia","num":"7","title":"Mídia","file":"midia.html"},{"level":3,"id":"tag-figure","num":"7.1","title":"&lt;figure&gt;","file":"midia.html"},{"level":3,"id":"tag-video-audio","num":"7.2","title":"&lt;video&gt; e &lt;audio&gt;","file":"midia.html"},{"level":3,"id":"tag-youtube","num":"7.3","title":"&lt;youtube&gt;","file":"midia.html"},{"level":3,"id":"tag-interactive","num":"7.4","title":"&lt;interactive&gt;","file":"midia.html"},{"level":3,"id":"tag-caption","num":"7.5","title":"&lt;caption&gt;","file":"midia.html"},{"level":2,"id":"layout","num":"8","title":"Prosa e layout","file":"layout.html"},{"level":3,"id":"tag-list","num":"8.1","title":"&lt;list&gt; e &lt;item&gt;","file":"layout.html"},{"level":3,"id":"tag-table","num":"8.2","title":"&lt;table&gt;","file":"layout.html"},{"level":3,"id":"tag-columns","num":"8.3","title":"&lt;columns&gt; e &lt;column&gt;","file":"layout.html"},{"level":3,"id":"tag-box","num":"8.4","title":"&lt;box&gt;","file":"layout.html"},{"level":3,"id":"tag-hint-sidenote","num":"8.5","title":"&lt;hint&gt; e &lt;sidenote&gt;","file":"layout.html"},{"level":3,"id":"tag-code","num":"8.6","title":"&lt;code&gt; e &lt;c&gt;","file":"layout.html"},{"level":3,"id":"sobre-inline","num":"8.7","title":"Marcação no meio da frase","file":"layout.html"},{"level":2,"id":"apresentacoes","num":"9","title":"Apresentações","file":"apresentacoes.html"},{"level":3,"id":"sobre-tipo-presentation","num":"9.1","title":"Ligando o modo apresentação","file":"apresentacoes.html"},{"level":3,"id":"tag-cover","num":"9.2","title":"&lt;cover&gt;","file":"apresentacoes.html"},{"level":3,"id":"tag-slide","num":"9.3","title":"&lt;slide&gt;","file":"apresentacoes.html"},{"level":3,"id":"sobre-reveal","num":"9.4","title":"Revelação por etapas","file":"apresentacoes.html"},{"level":3,"id":"tag-progress","num":"9.5","title":"&lt;progress&gt;","file":"apresentacoes.html"},{"level":2,"id":"projetos","num":"10","title":"Projetos multi-arquivo","file":"projetos.html"},{"level":3,"id":"tag-include","num":"10.1","title":"&lt;include&gt;","file":"projetos.html"},{"level":3,"id":"sobre-project-toml","num":"10.2","title":"O arquivo project.toml","file":"projetos.html"},{"level":3,"id":"sobre-projeto-compartilhado","num":"10.3","title":"O que os arquivos compartilham","file":"projetos.html"},{"level":3,"id":"sobre-toc-project","num":"10.4","title":"Sumário do projeto inteiro","file":"projetos.html"},{"level":3,"id":"sobre-cli-projeto","num":"10.5","title":"Criando um projeto","file":"projetos.html"},{"level":2,"id":"temas","num":"11","title":"Temas e pacotes","file":"temas.html"},{"level":3,"id":"sobre-theme-accent","num":"11.1","title":"Cor de destaque e modo escuro","file":"temas.html"},{"level":3,"id":"tag-theme","num":"11.2","title":"&lt;document theme&gt;","file":"temas.html"},{"level":3,"id":"sobre-tokens","num":"11.3","title":"Escrevendo um tema","file":"temas.html"},{"level":3,"id":"tag-import","num":"11.4","title":"&lt;import&gt;","file":"temas.html"},{"level":3,"id":"sobre-escrever-pacote","num":"11.5","title":"Escrevendo um pacote","file":"temas.html"}]</script>
-<script type="application/json" id="delta-i18n">{"theorem":"Teorema","proposition":"Proposição","lemma":"Lema","corollary":"Corolário","conjecture":"Conjectura","definition":"Definição","example":"Exemplo","claim":"Afirmação","observation":"Observação","exercise":"Exercício","problem":"Problema","proof":"Demonstração","solution":"Solução","remark":"Comentário","section":"Seção","subsection":"Subseção","subsubsection":"Subsubseção","equations":"Equações","equation":"Equação","figure":"Figura","interactive":"Interativo","table":"Tabela","video":"Vídeo","audio":"Áudio","contents":"Sumário","hint":"Dica","references":"Referências","close":"Fechar","code":"Código","copy":"Copiar","copied":"Copiado","prevSlide":"Slide anterior","nextSlide":"Próximo slide","abstract":"Resumo","keywords":"Palavras-chave","msc":"Classificação por Assunto (MSC)","received":"Recebido","revised":"Revisado","accepted":"Aceito","submitted":"Submetido","date":"Data","acknowledgements":"Agradecimentos","funding":"Financiamento"}</script>
+<script type="application/json" id="delta-toc">[{"level":2,"id":"inicio","num":"1","title":"Artigos podem ser melhores.","file":"index.html"},{"level":3,"id":"inicio-instalar","num":"1.1","title":"Comece em três linhas","file":"index.html"},{"level":3,"id":"inicio-exemplo","num":"1.2","title":"Como se escreve","file":"index.html"},{"level":3,"id":"inicio-principios","num":"1.3","title":"O que orienta o projeto","file":"index.html"},{"level":3,"id":"inicio-onde","num":"1.4","title":"Por onde seguir","file":"index.html"},{"level":2,"id":"comecar","num":"2","title":"Primeiros passos","file":"comecar.html"},{"level":3,"id":"passo-node","num":"2.1","title":"Instalar o Node.js","file":"comecar.html"},{"level":3,"id":"passo-delta","num":"2.2","title":"Instalar o Delta","file":"comecar.html"},{"level":3,"id":"passo-documento","num":"2.3","title":"Escrever o primeiro documento","file":"comecar.html"},{"level":3,"id":"passo-compilar","num":"2.4","title":"Compilar","file":"comecar.html"},{"level":3,"id":"passo-erros","num":"2.5","title":"Quando algo dá errado","file":"comecar.html"},{"level":3,"id":"passo-adiante","num":"2.6","title":"Para onde ir agora","file":"comecar.html"},{"level":2,"id":"estrutura","num":"3","title":"Estrutura","file":"estrutura.html"},{"level":3,"id":"tag-document","num":"3.1","title":"&lt;document&gt;","file":"estrutura.html"},{"level":3,"id":"tag-title","num":"3.2","title":"&lt;title&gt;","file":"estrutura.html"},{"level":3,"id":"tag-secoes","num":"3.3","title":"&lt;chapter&gt;, &lt;section&gt;, &lt;subsection&gt;, &lt;subsubsection&gt;","file":"estrutura.html"},{"level":3,"id":"tag-eyebrow-intro","num":"3.4","title":"&lt;eyebrow&gt; e &lt;intro&gt;","file":"estrutura.html"},{"level":3,"id":"tag-meta","num":"3.5","title":"&lt;meta&gt; e &lt;meta-item&gt;","file":"estrutura.html"},{"level":3,"id":"tag-toc","num":"3.6","title":"&lt;toc&gt;","file":"estrutura.html"},{"level":3,"id":"tag-floating","num":"3.7","title":"&lt;floating&gt;","file":"estrutura.html"},{"level":3,"id":"sobre-frontmatter","num":"3.8","title":"Folha de rosto","file":"estrutura.html"},{"level":2,"id":"matematica","num":"4","title":"Matemática","file":"matematica.html"},{"level":3,"id":"sobre-math-inline","num":"4.1","title":"Matemática no meio da frase","file":"matematica.html"},{"level":3,"id":"tag-m","num":"4.2","title":"&lt;m&gt;","file":"matematica.html"},{"level":3,"id":"tag-equation","num":"4.3","title":"&lt;equation&gt;","file":"matematica.html"},{"level":3,"id":"tag-equations","num":"4.4","title":"&lt;equations&gt;","file":"matematica.html"},{"level":3,"id":"sobre-ref-math","num":"4.5","title":"Referências dentro da matemática","file":"matematica.html"},{"level":2,"id":"ambientes","num":"5","title":"Ambientes"},{"level":3,"id":"sobre-familia-teorema","num":"5.1","title":"A família do teorema"},{"level":3,"id":"sobre-outros-ambientes","num":"5.2","title":"Definições, exemplos e exercícios"},{"level":3,"id":"tag-proof","num":"5.3","title":"&lt;proof&gt; e &lt;solution&gt;"},{"level":3,"id":"sobre-ambiente-atributos","num":"5.4","title":"Atributos comuns a todos os ambientes"},{"level":2,"id":"referencias","num":"6","title":"Referências e citações","file":"referencias.html"},{"level":3,"id":"tag-ref","num":"6.1","title":"&lt;ref&gt;","file":"referencias.html"},{"level":3,"id":"tag-bibliography","num":"6.2","title":"&lt;bibliography&gt; e &lt;paper&gt;","file":"referencias.html"},{"level":3,"id":"tag-cite","num":"6.3","title":"&lt;cite&gt;","file":"referencias.html"},{"level":2,"id":"midia","num":"7","title":"Mídia","file":"midia.html"},{"level":3,"id":"tag-figure","num":"7.1","title":"&lt;figure&gt;","file":"midia.html"},{"level":3,"id":"tag-video-audio","num":"7.2","title":"&lt;video&gt; e &lt;audio&gt;","file":"midia.html"},{"level":3,"id":"tag-youtube","num":"7.3","title":"&lt;youtube&gt;","file":"midia.html"},{"level":3,"id":"tag-interactive","num":"7.4","title":"&lt;interactive&gt;","file":"midia.html"},{"level":3,"id":"tag-caption","num":"7.5","title":"&lt;caption&gt;","file":"midia.html"},{"level":2,"id":"layout","num":"8","title":"Prosa e layout","file":"layout.html"},{"level":3,"id":"tag-list","num":"8.1","title":"&lt;list&gt; e &lt;item&gt;","file":"layout.html"},{"level":3,"id":"tag-table","num":"8.2","title":"&lt;table&gt;","file":"layout.html"},{"level":3,"id":"tag-columns","num":"8.3","title":"&lt;columns&gt; e &lt;column&gt;","file":"layout.html"},{"level":3,"id":"tag-box","num":"8.4","title":"&lt;box&gt;","file":"layout.html"},{"level":3,"id":"tag-hint-sidenote","num":"8.5","title":"&lt;hint&gt; e &lt;sidenote&gt;","file":"layout.html"},{"level":3,"id":"tag-code","num":"8.6","title":"&lt;code&gt; e &lt;c&gt;","file":"layout.html"},{"level":3,"id":"sobre-inline","num":"8.7","title":"Marcação no meio da frase","file":"layout.html"},{"level":2,"id":"apresentacoes","num":"9","title":"Apresentações","file":"apresentacoes.html"},{"level":3,"id":"sobre-tipo-presentation","num":"9.1","title":"Ligando o modo apresentação","file":"apresentacoes.html"},{"level":3,"id":"tag-cover","num":"9.2","title":"&lt;cover&gt;","file":"apresentacoes.html"},{"level":3,"id":"tag-slide","num":"9.3","title":"&lt;slide&gt;","file":"apresentacoes.html"},{"level":3,"id":"sobre-reveal","num":"9.4","title":"Revelação por etapas","file":"apresentacoes.html"},{"level":3,"id":"tag-progress","num":"9.5","title":"&lt;progress&gt;","file":"apresentacoes.html"},{"level":2,"id":"projetos","num":"10","title":"Projetos multi-arquivo","file":"projetos.html"},{"level":3,"id":"tag-include","num":"10.1","title":"&lt;include&gt;","file":"projetos.html"},{"level":3,"id":"sobre-project-toml","num":"10.2","title":"O arquivo project.toml","file":"projetos.html"},{"level":3,"id":"sobre-projeto-compartilhado","num":"10.3","title":"O que os arquivos compartilham","file":"projetos.html"},{"level":3,"id":"sobre-toc-project","num":"10.4","title":"Sumário do projeto inteiro","file":"projetos.html"},{"level":3,"id":"sobre-cli-projeto","num":"10.5","title":"Criando um projeto","file":"projetos.html"},{"level":2,"id":"colaboracao","num":"","title":"Colaboração","file":"colaboracao.html"},{"level":3,"id":"colab-ideia","num":"","title":"A ideia","file":"colaboracao.html"},{"level":3,"id":"tag-team","num":"","title":"&lt;team&gt; e &lt;member&gt;","file":"colaboracao.html"},{"level":3,"id":"tag-comment","num":"","title":"&lt;comment&gt; e &lt;reply&gt;","file":"colaboracao.html"},{"level":3,"id":"tag-todo","num":"","title":"&lt;todo&gt;","file":"colaboracao.html"},{"level":3,"id":"tag-change","num":"","title":"&lt;change&gt;, &lt;old&gt; e &lt;new&gt;","file":"colaboracao.html"},{"level":3,"id":"colab-status","num":"","title":"status, by, verified-by e &lt;draft&gt;","file":"colaboracao.html"},{"level":3,"id":"tag-review","num":"","title":"&lt;review&gt;","file":"colaboracao.html"},{"level":3,"id":"colab-final","num":"","title":"Publicar e consultar","file":"colaboracao.html"},{"level":3,"id":"colab-agentes","num":"","title":"Trabalhando com um agente","file":"colaboracao.html"},{"level":2,"id":"temas","num":"11","title":"Temas e pacotes","file":"temas.html"},{"level":3,"id":"sobre-theme-accent","num":"11.1","title":"Cor de destaque e modo escuro","file":"temas.html"},{"level":3,"id":"tag-theme","num":"11.2","title":"&lt;document theme&gt;","file":"temas.html"},{"level":3,"id":"sobre-tokens","num":"11.3","title":"Escrevendo um tema","file":"temas.html"},{"level":3,"id":"tag-import","num":"11.4","title":"&lt;import&gt;","file":"temas.html"},{"level":3,"id":"sobre-escrever-pacote","num":"11.5","title":"Escrevendo um pacote","file":"temas.html"}]</script>
+<script type="application/json" id="delta-i18n">{"theorem":"Teorema","proposition":"Proposição","lemma":"Lema","corollary":"Corolário","conjecture":"Conjectura","definition":"Definição","example":"Exemplo","claim":"Afirmação","observation":"Observação","exercise":"Exercício","problem":"Problema","proof":"Demonstração","solution":"Solução","remark":"Comentário","section":"Seção","subsection":"Subseção","subsubsection":"Subsubseção","equations":"Equações","equation":"Equação","figure":"Figura","interactive":"Interativo","table":"Tabela","video":"Vídeo","audio":"Áudio","contents":"Sumário","hint":"Dica","references":"Referências","close":"Fechar","code":"Código","copy":"Copiar","copied":"Copiado","prevSlide":"Slide anterior","nextSlide":"Próximo slide","abstract":"Resumo","keywords":"Palavras-chave","msc":"Classificação por Assunto (MSC)","received":"Recebido","revised":"Revisado","accepted":"Aceito","submitted":"Submetido","date":"Data","acknowledgements":"Agradecimentos","funding":"Financiamento","comment":"Anotação","todo":"Tarefa","tasks":"Tarefas","change":"Alteração","reply":"Resposta","open":"Aberta","resolved":"Resolvida","doing":"Em andamento","done":"Concluída","draft":"Rascunho","sketch":"Esboço","review":"Em revisão","verified":"Verificado","human":"humano","agent":"agente","insert":"Inserido","delete":"Removido","replace":"Substituído","pending":"Pendente","reviewPanel":"Revisão","annotations":"Anotações","changes":"Alterações","markup":"Marcação","final":"Final","original":"Original","copyText":"Copiar como texto","openComments":"anotações abertas","openTasks":"tarefas abertas","pendingChanges":"alterações pendentes","blocks":"blocos","all":"Todos","nothingToReview":"Nada a revisar","high":"Alta","normal":"Normal","low":"Baixa","due":"Prazo","by":"por","for":"para","verifiedBy":"verificado por","note":"Nota","jumpTo":"Ir para"}</script>
 <script>
-"use strict";(()=>{function B(a){let e=document.getElementById(a);e&&(e.scrollIntoView({block:"center",behavior:"smooth"}),e.classList.add("is-xref-target"),e.addEventListener("animationend",()=>e.classList.remove("is-xref-target"),{once:!0}))}function F(a){let e=document.createDocumentFragment(),t=s=>a.querySelector(`:scope > delta-${s}`),n=["author","title","journal","year"].map(t).filter(s=>s!==null);n.forEach((s,r)=>{r>0&&e.append(". ");let i=document.createElement("span");i.className=`paper-${s.tagName.toLowerCase().replace("delta-","")}`;for(let m of s.childNodes)i.append(m.cloneNode(!0));e.append(i)}),n.length&&e.append(".");let o=t("link")??t("url");return o&&(e.append(" "),e.append(o.cloneNode(!0))),e}function T(a,e){let t=a.getAttribute("collapsed")==="true";if(!t&&a.getAttribute("collapsible")!=="true")return;let n=document.createElement("div");for(n.className="collapse-body";e.nextSibling;)n.append(e.nextSibling);a.append(n),e.classList.add("collapse-toggle"),e.setAttribute("role","button"),e.tabIndex=0;let o=r=>{a.classList.toggle("is-collapsed",r),e.setAttribute("aria-expanded",String(!r))};o(t);let s=()=>o(!a.classList.contains("is-collapsed"));e.addEventListener("click",s),e.addEventListener("keydown",r=>{(r.key==="Enter"||r.key===" ")&&(r.preventDefault(),s())})}var fe={"delta-chapter":{level:1,cls:"chapter-title"},"delta-section":{level:2,cls:"section"},"delta-subsection":{level:3,cls:"sub"},"delta-subsubsection":{level:4,cls:"subsub"}},D=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelector(":scope > delta-title");if(!e)return;if(document.documentElement.dataset.type==="presentation"){let r=document.createElement("delta-slide");r.setAttribute("divider","true"),r.appendChild(e),this.prepend(r);return}let t=fe[this.tagName.toLowerCase()]??{level:2,cls:"section"},n=document.createElement(`h${t.level}`);n.className=t.cls;let o=this.getAttribute("num");if(o){let r=document.createElement("span");r.className="num",r.textContent=o,n.append(r," ")}n.append(...e.childNodes),e.replaceWith(n);let s=this.querySelector(":scope > delta-meta");if(s){let r=s.querySelectorAll(":scope > delta-meta-item");if(r.length){let i=document.createElement("div");i.classList.add("box-meta"),Array.from(r).forEach(m=>{let d=document.createElement("span");d.className="box-meta-item";let l=document.createElement("span");l.className="k",l.textContent=m.getAttribute("key")??"";let c=document.createElement("span");c.innerHTML=m.innerHTML,c.className="v",d.append(l),d.append(c),i.append(d),s.replaceWith(i)})}}T(this,n)}};function he(){for(let a of Object.keys(fe))customElements.define(a,class extends D{})}var U=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelector(":scope > delta-title"),t=document.createElement("div");t.className="slide-body";for(let n of[...this.childNodes])n!==e&&t.append(n);if(e){let n=document.createElement("h2");n.className="slide-title",n.append(...e.childNodes),e.replaceWith(n);let o=document.createElement("div");o.className="slide-rule";let s=document.createElement("span");s.className="slide-rule-fill",o.append(s),n.after(o)}this.append(t)}};function ge(){customElements.define("delta-slide",U)}var q=null;function je(){if(q)return q;let a=document.getElementById("delta-i18n");try{q=a?JSON.parse(a.textContent||"{}"):{}}catch{q={}}return q}function v(a,e){return je()[a]??e??a}var De=["theorem","proposition","lemma","corollary","conjecture","definition","example","claim","observation","exercise","problem","proof","solution","remark"],Ue=new Set(["theorem","proposition","lemma","corollary","conjecture","definition","example","claim","observation","exercise","problem","remark"]),Ke=new Set(["proof","solution"]),K=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.tagName.toLowerCase().replace(/^delta-/,""),t=this.getAttribute("num"),n=v(e,e.charAt(0).toUpperCase()+e.slice(1)),o=this.querySelector(":scope > delta-title");if(Ke.has(e)){let i=document.createElement("span"),m=this.getAttribute("of"),d=this.getAttribute("data-target-tag"),l=this.getAttribute("data-target-num");if(d&&m&&l){let u=document.createElement("delta-ref");u.setAttribute("to",m),u.setAttribute("data-target-num",l),u.setAttribute("data-target-tag",d),i.append(" "),i.append(u)}i.className="proof-lead",i.prepend(n),o&&(i.append(" (",...o.childNodes,")"),o.remove()),i.append("."),this.prepend(i," ");let c=document.createElement("span");c.className="proof-qed",c.textContent="\u25A1",this.append(c),T(this,i);return}if(!Ue.has(e))return;this.classList.add("box"),e==="example"&&this.classList.add("example");let s=document.createElement("span");if(s.className="box-tag",s.textContent=n+(t?` ${t}`:""),o){let i=document.createElement("span");i.className="box-tag-title",i.append(...o.childNodes),o.remove(),s.append(" ",i)}this.prepend(s);let r=this.querySelector(":scope > delta-meta");if(r){let i=r.querySelectorAll(":scope > delta-meta-item");if(i.length){let m=document.createElement("div");m.className="box-meta";for(let d of i){let l=d.getAttribute("key"),c=d.innerHTML.trim();if(l&&c){let u=document.createElement("span");u.className="box-meta-item",u.innerHTML=`<span class="k">${l}</span><span class='v'> ${c}</span>`,m.appendChild(u)}}r.remove(),this.append(m)}}T(this,s)}};function ve(){for(let a of De)customElements.define(`delta-${a}`,class extends K{})}var V=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady=="1")return;this.dataset.deltaReady="1";let e=this.querySelector(":scope > delta-meta");if(e){let t=e.querySelectorAll(":scope > delta-meta-item");if(t.length){let n=document.createElement("div");n.classList.add("box-meta"),Array.from(t).forEach(o=>{let s=document.createElement("span");s.className="box-meta-item";let r=document.createElement("span");r.className="k",r.textContent=o.getAttribute("key")??"";let i=document.createElement("span");i.innerHTML=o.innerHTML,i.className="v",s.append(r),s.append(i),n.append(s)}),e.replaceWith(n)}}}};function be(){customElements.define("delta-document",class extends V{})}var W=class extends HTMLElement{connectedCallback(){this.dataset.deltaReady||(this.dataset.deltaReady="1",this.classList.add("sidenote"))}};function Ee(){customElements.define("delta-sidenote",class extends W{})}function $(a,e,t,n="video-cap"){let o=a.querySelector(":scope > delta-caption");if(!o)return;o.classList.add(n);let s=document.createElement("span");s.className="lbl";let r=v(e,e.charAt(0).toUpperCase()+e.slice(1));s.textContent=r+(t?` ${t}`:""),o.prepend(s," ")}function _(a,e){let t=document.createElement("div");t.className="video-frame",t.append(e),a.prepend(t)}function Ve(a){if(a=(a||"").trim(),/^[\w-]{11}$/.test(a))return a;try{let e=new URL(a);if(e.hostname==="youtu.be")return e.pathname.slice(1,12);if(e.searchParams.has("v"))return e.searchParams.get("v");let t=e.pathname.match(/\/(?:embed|shorts)\/([\w-]{11})/);if(t)return t[1]}catch{}return""}var z=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("video");let e=Ve(this.getAttribute("src"));if(!e){console.warn("delta-youtube: no valid video ID found in src",this.getAttribute("src"));return}if(location.protocol==="file:"){let t=document.createElement("a");t.className="yt-facade video-media",t.href=`https://www.youtube.com/watch?v=${e}`,t.target="_blank",t.rel="noopener",t.setAttribute("aria-label","Watch on YouTube");let n=document.createElement("img");n.src=`https://i.ytimg.com/vi/${e}/hqdefault.jpg`,n.alt="",n.loading="lazy";let o=document.createElement("span");o.className="yt-play",o.setAttribute("aria-hidden","true"),t.append(n,o),_(this,t)}else{let t=document.createElement("iframe");t.src=`https://www.youtube.com/embed/${e}`,t.allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",t.allowFullscreen=!0,t.className="video-media",t.loading="lazy",_(this,t)}$(this,"video",this.getAttribute("num"))}},X=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("video");let e=this.getAttribute("src");if(!e){let n=document.createElement("div");n.className="video-missing",n.textContent="No video source.",this.prepend(n);return}let t=document.createElement("video");t.src=e,t.controls=!0,t.className="video-media";for(let n of["poster","loop","muted","autoplay","playsinline"])this.hasAttribute(n)&&t.setAttribute(n,this.getAttribute(n)??"");_(this,t),$(this,"video",this.getAttribute("num"))}},G=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("video");let e=this.getAttribute("src");if(!e){let n=document.createElement("div");n.className="video-missing",n.textContent="No audio source.",this.prepend(n);return}let t=document.createElement("audio");t.src=e,t.controls=!0,t.className="audio-media",this.hasAttribute("loop")&&(t.loop=!0),_(this,t),$(this,"audio",this.getAttribute("num"))}},Y=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("figure");let e=this.getAttribute("src");if(e){let t=document.createElement("div");t.className="figure-frame";let n=document.createElement("img");n.src=e;let o=this.getAttribute("alt");o&&(n.alt=o),t.append(n),this.prepend(t)}else{let t=document.createElement("div");t.className="video-missing",t.textContent="Image not found.",this.prepend(t)}$(this,"figure",this.getAttribute("num"),"figure-cap")}},J=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady=="1")return;this.dataset.deltaReady="1",this.classList.add("interactive");let e=this.querySelector(":scope > delta-caption"),t=document.createElement("div");t.className="interactive-frame";for(let n of[...this.childNodes])n!==e&&t.append(n);this.prepend(t),$(this,"interactive",this.getAttribute("num"),"interactive-cap")}};function ye(){customElements.define("delta-youtube",class extends z{}),customElements.define("delta-video",class extends X{}),customElements.define("delta-audio",class extends G{}),customElements.define("delta-figure",class extends Y{}),customElements.define("delta-interactive",class extends J{})}var j=typeof HTMLElement<"u"&&"popover"in HTMLElement.prototype,A=8,Q=12,R=null;function L(a,e,t={}){let{onOpen:n,onClose:o,gap:s=10,triggerClick:r=!0}=t;e.classList.add("delta-pop"),j&&e.setAttribute("popover","manual"),e.parentElement!==document.body&&document.body.appendChild(e),a.setAttribute("aria-haspopup","dialog");let i=!1;function m(){let b=a.getBoundingClientRect(),k=document.documentElement.clientWidth,H=document.documentElement.clientHeight,M=H-A-(b.bottom+s),S=b.top-s-A;e.style.maxHeight="";let x=e.getBoundingClientRect(),w=x.height>M&&S>M,I=w?S:M;x.height>I&&(e.style.maxHeight=`${Math.max(0,Math.floor(I))}px`,x=e.getBoundingClientRect()),e.classList.toggle("is-above",w);let p=w?b.top-s-x.height:b.bottom+s,g=Math.min(Math.max(A,p),Math.max(A,H-x.height-A)),y=Math.min(Math.max(A,b.left),Math.max(A,k-x.width-A));e.style.top=`${Math.round(g)}px`,e.style.left=`${Math.round(y)}px`;let N=Math.max(Q,x.width-Q),C=Math.min(Math.max(Q,b.left+b.width/2-y),N);e.style.setProperty("--arrow-x",`${Math.round(C)}px`)}let d=()=>m(),l=b=>{b.key==="Escape"&&f()},c=b=>{let k=b.target;!e.contains(k)&&!a.contains(k)&&f()};function u(){i||(R&&R!==f&&R(),n?.(e,a),j?e.showPopover():e.classList.add("is-open"),m(),window.addEventListener("scroll",d,{capture:!0,passive:!0}),window.addEventListener("resize",d),document.addEventListener("keydown",l),setTimeout(()=>document.addEventListener("pointerdown",c),0),i=!0,R=f,a.setAttribute("aria-expanded","true"))}function f(){i&&(j?e.matches(":popover-open")&&e.hidePopover():e.classList.remove("is-open"),e.classList.remove("is-above"),window.removeEventListener("scroll",d,{capture:!0}),window.removeEventListener("resize",d),document.removeEventListener("keydown",l),document.removeEventListener("pointerdown",c),i=!1,R===f&&(R=null),a.setAttribute("aria-expanded","false"),o?.(e,a))}function E(){i?f():u()}j&&e.addEventListener("toggle",b=>{b.newState==="closed"&&i&&f()});let h=b=>{b.preventDefault(),E()};return r&&(a.addEventListener("click",h),a.setAttribute("aria-expanded","false")),{open:u,close:f,toggle:E,reposition:m,get isOpen(){return i},destroy(){f(),r&&a.removeEventListener("click",h),e.remove()}}}var Z=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelector(":scope > delta-title"),t=(e?.textContent??"").trim();e?.remove();let n=this.getAttribute("show-icon")!=="false",o=document.createElement("div");o.append(...this.childNodes);let s=document.createElement("button");if(s.type="button",s.className="hint-trigger",n){let r=document.createElement("span");r.className="hint-marker",r.textContent="\u{1F4A1} ",s.append(r)}s.append(t||v("hint","Hint")),this.append(s),L(s,o)}};function xe(){customElements.define("delta-hint",class extends Z{})}var O=null;function We(){if(O)return O;let a=document.getElementById("delta-toc");try{O=a?JSON.parse(a.textContent||"[]"):[]}catch{O=[]}return O}var ee=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=parseInt(this.getAttribute("depth")??"2",10),t=this.getAttribute("scope")==="project",n=We().filter(l=>l.level-1<=e&&(t||!l.file));if(n.length===0)return;let o=document.createElement("nav");o.className="toc";let s=this.querySelector(":scope > delta-title"),r=s?s.innerHTML:v("contents","Contents");o.setAttribute("aria-label",r);let i=document.createElement("div");i.className="toc-title",i.innerHTML=r,o.append(i);let m=document.createElement("ol");m.className="toc-list";let d=[{level:n[0].level,ol:m}];for(let l of n){for(;d.length>1&&l.level<d[d.length-1].level;)d.pop();let c=d[d.length-1];if(l.level>c.level){let h=c.ol.lastElementChild,b=document.createElement("ol");b.className="toc-sub",(h??c.ol).append(b),d.push({level:l.level,ol:b}),c=d[d.length-1]}let u=document.createElement("li");u.className="toc-item";let f=document.createElement("a");if(f.className="toc-link",f.href=l.file?`${l.file}#${l.id}`:`#${l.id}`,l.num){let h=document.createElement("span");h.className="toc-num",h.textContent=l.num,f.append(h," ")}let E=document.createElement("span");E.className="toc-text",E.innerHTML=l.title,f.append(E),f.addEventListener("click",h=>{if(l.file)return;if(window.Delta?.deck?.goToId(l.id)){h.preventDefault();return}let b=document.getElementById(l.id);b&&(h.preventDefault(),b.scrollIntoView({block:"start",behavior:"smooth"}),b.classList.add("is-xref-target"),b.addEventListener("animationend",()=>b.classList.remove("is-xref-target"),{once:!0}))}),u.append(f),c.ol.append(u)}o.append(m),this.replaceChildren(o)}};function Le(){customElements.define("delta-toc",class extends ee{})}var te=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelector(":scope > delta-title"),t=(e?.textContent??"").trim()||v("contents","Contents"),n=e?[...e.childNodes]:null;e?.remove();let o=()=>n?ze(document.createElement("span"),n):t,s=document.createElement("button");s.type="button",s.className="floating-fab",s.setAttribute("aria-label",t);let r=document.createElement("span");r.className="floating-icon",r.setAttribute("aria-hidden","true"),r.textContent="\u2630",s.append(r,o());let i=document.createElement("div");i.className="floating-panel";let m=document.createElement("div");m.className="floating-hd";let d=document.createElement("span");d.className="floating-title",d.append(o());let l=document.createElement("button");l.type="button",l.className="floating-x",l.setAttribute("aria-label",v("close","Close")),l.textContent="\xD7",m.append(d,l);let c=document.createElement("div");c.className="floating-body",c.append(...this.childNodes),i.append(m,c),this.append(s);let u=L(s,i,{gap:12});l.addEventListener("click",()=>u.close()),c.addEventListener("click",f=>{f.target.closest("a")&&u.close()})}};function ze(a,e){for(let t of e)a.append(t.cloneNode(!0));return a}function ke(){customElements.define("delta-floating",class extends te{})}var Xe='<svg class="ext-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"/></svg>',ne=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("to");if(!e)return;let t=document.createElement("a");for(t.className="ext-link",t.href=e,t.target="_blank",t.rel="noopener noreferrer";this.firstChild;)t.appendChild(this.firstChild);this.appendChild(t),t.insertAdjacentHTML("beforeend",Xe)}};function Ne(){customElements.define("delta-link",class extends ne{})}var Ge='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>';function Ce(a,{to:e,num:t,kind:n,href:o}){let s=`${v(n,n.charAt(0).toUpperCase()+n.slice(1))} ${t}`,r=document.createElement("div");r.className="xref-pop";let i=document.createElement("div");i.className="xref-pop-head";let m=document.createElement("span");m.className="xref-pop-label",m.textContent=s;let d=document.createElement("button");d.type="button",d.className="xref-go",d.title=s,d.setAttribute("aria-label",s),d.innerHTML=Ge,i.append(m,d);let l=document.createElement("div");l.className="xref-pop-body",r.append(i,l);let c=!1,u=L(a,r,{onOpen:()=>{if(c)return;c=!0;let f=[...document.querySelectorAll("template[data-delta-pop]")].find(h=>h.dataset.deltaPop===e);if(!f)return;let E=f.content.cloneNode(!0);for(let h of E.querySelectorAll("[id]"))h.removeAttribute("id");for(let h of E.querySelectorAll("[collapsed], [collapsible]"))h.removeAttribute("collapsed"),h.removeAttribute("collapsible");l.append(E)}});d.addEventListener("click",f=>{if(f.preventDefault(),u.close(),window.Delta?.deck?.goToId(e))return;if(o){location.href=o;return}let E=document.getElementById(e);E&&(E.scrollIntoView({block:"center",behavior:"smooth"}),E.classList.add("is-xref-target"),E.addEventListener("animationend",()=>E.classList.remove("is-xref-target"),{once:!0}))})}var ae=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("to")??"",t=this.getAttribute("data-target-num"),n=this.getAttribute("data-target-tag"),o=this.getAttribute("data-target-href");if(!n||!t)return;let s=(this.textContent??"").trim().length>0,r=document.createElement("button");r.type="button",r.className="xref",s?r.append(...this.childNodes):r.textContent=`${v(n,n.charAt(0).toUpperCase()+n.slice(1))} ${t}`,this.replaceChildren(r),Ce(r,{to:e,num:t,kind:n,href:o})}};function Ae(){for(let a of document.querySelectorAll(".katex [data-delta-ref-to]")){let{deltaRefTo:e,deltaRefNum:t,deltaRefTag:n,deltaRefHref:o}=a.dataset;!e||!t||!n||(a.classList.add("math-xref"),a.setAttribute("role","link"),a.tabIndex=0,a.addEventListener("keydown",s=>{(s.key==="Enter"||s.key===" ")&&(s.preventDefault(),a.click())}),Ce(a,{to:e,num:t,kind:n,href:o}))}}function Te(){customElements.define("delta-ref",class extends ae{})}var oe=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelectorAll(":scope > delta-paper");if(e.length===0)return;let t=document.createElement("section");t.className="notes";let n=this.querySelector(":scope > delta-title"),o=document.createElement("h4");o.innerHTML=n?n.innerHTML:v("references","References"),t.append(o);let s=document.createElement("ol");for(let r of e){let i=document.createElement("li");r.id&&(i.id=r.id),i.append(F(r)),s.append(i)}t.append(s),this.replaceChildren(t)}};function Me(){customElements.define("delta-bibliography",class extends oe{})}var se=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=(this.getAttribute("data-cite-nums")??"").split(",").filter(Boolean),t=(this.getAttribute("data-cite-ids")??"").split(",").filter(Boolean),n=this.getAttribute("data-cite-file");if(e.length===0){this.classList.add("cite-missing");return}let o=document.createElement("span");o.className="cite",o.append("["),e.forEach((m,d)=>{d>0&&o.append(", ");let l=document.createElement("a");l.textContent=m,o.append(l)}),o.append("]"),this.replaceChildren(o);let s=document.createElement("div");s.className="cite-pop";let r=!1,i=L(o,s,{onOpen:()=>{r||(r=!0,t.forEach((m,d)=>{let l=document.createElement("div");l.className="cite-pop-item";let c=document.createElement("a");c.className="cite-pop-num",c.href=n?`${n}#${m}`:`#${m}`,c.textContent=`[${e[d]}]`,c.addEventListener("click",h=>{i.close(),!window.Delta?.deck?.goToId(m)&&(n||(h.preventDefault(),B(m)))});let u=document.createElement("span");u.className="cite-pop-text";let E=[...document.querySelectorAll("template[data-delta-pop]")].find(h=>h.dataset.deltaPop===m)?.content.querySelector("delta-paper");E&&u.append(F(E)),l.append(c,u),s.append(l)}))}})}};function we(){customElements.define("delta-cite",class extends se{})}var re=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.textContent??"",t=document.createElement("pre");t.className="code-src";let n=document.createElement("code");for(;this.firstChild;)n.append(this.firstChild);t.append(n);let o=document.createElement("div");if(o.className="code-body",this.getAttribute("lines")!=="false"){let d=e.replace(/\n$/,"").split(`
-`).length,l=document.createElement("span");l.className="code-gutter",l.setAttribute("aria-hidden","true"),l.textContent=Array.from({length:d},(c,u)=>String(u+1)).join(`
-`),o.append(l)}o.append(t);let s=document.createElement("div");s.className="code-head";let r=this.getAttribute("lang"),i=document.createElement("span");i.className="code-lang",i.textContent=(r||v("code","Code")).toUpperCase();let m=document.createElement("button");if(m.type="button",m.className="code-copy",m.textContent=v("copy","Copy"),m.addEventListener("click",()=>{navigator.clipboard?.writeText(e).then(()=>{m.textContent=v("copied","Copied"),m.classList.add("is-copied"),setTimeout(()=>{m.textContent=v("copy","Copy"),m.classList.remove("is-copied")},1400)})}),s.append(i,m),this.append(s,o),this.getAttribute("num")){let d=this.getAttribute("num"),l=document.createElement("div");l.classList.add("code-cap");let c=document.createElement("span");c.className="lbl";let u=v("code","code".charAt(0).toUpperCase()+"code".slice(1));c.textContent=u+(d?` ${d}`:""),l.prepend(c," "),this.append(l)}T(this,s)}};function Re(){customElements.define("delta-code",re)}var P={ordered:!1,marker:"bullet"},ie={1:{ordered:!0,marker:"decimal"},number:{ordered:!0,marker:"decimal"},numbers:{ordered:!0,marker:"decimal"},numbered:{ordered:!0,marker:"decimal"},decimal:{ordered:!0,marker:"decimal"},a:{ordered:!0,marker:"alpha"},alpha:{ordered:!0,marker:"alpha"},alphabetical:{ordered:!0,marker:"alpha"},A:{ordered:!0,marker:"alpha-upper"},"alpha-upper":{ordered:!0,marker:"alpha-upper"},i:{ordered:!0,marker:"roman"},roman:{ordered:!0,marker:"roman"},I:{ordered:!0,marker:"roman-upper"},"roman-upper":{ordered:!0,marker:"roman-upper"},bullet:P,disc:P,dot:P,dash:{ordered:!1,marker:"dash"},none:{ordered:!1,marker:"none"}};function Ye(a){if(a.getAttribute("numbered")==="true")return ie.number;let e=(a.getAttribute("marker")??"").trim();return e?ie[e]??ie[e.toLowerCase()]??P:P}var le=class extends HTMLElement{connectedCallback(){this.dataset.deltaReady||(this.dataset.deltaReady="1",this._render())}_render(){let e=Ye(this),t=document.createElement(e.ordered?"ol":"ul");if(t.className="delta-list",t.dataset.marker=e.marker,e.ordered){let n=parseInt(this.getAttribute("start")??"",10);Number.isFinite(n)&&(t.style.counterReset=`delta-item ${n-1}`,t.setAttribute("start",String(n)))}this.querySelectorAll(":scope > delta-item").forEach(n=>{let o=document.createElement("li");o.className="delta-list-item";for(let s of["reveal","reveal-order"]){let r=n.getAttribute(s);r!==null&&o.setAttribute(s,r)}o.append(...n.childNodes),t.append(o)}),this.replaceChildren(t)}};function He(){customElements.define("delta-list",le)}function Se(a,e,t,n,o){let s=e.getAttribute("align");o&&s&&(n[t]=s),s||(s=n[t]),s==="right"?a.classList.add("num"):s==="center"&&(a.style.textAlign="center"),e.getAttribute("mono")==="true"&&a.classList.add("mono")}var ce=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("delta-table");let e=this.querySelector(":scope > delta-title"),t=this.querySelector(":scope > delta-caption"),n=this.getAttribute("num"),o=null;if(e||t||n){if(o=document.createElement("div"),o.className="table-head",e||n){let c=document.createElement("span");c.className="table-lbl",c.textContent=v("table","Table")+(n?` ${n}`:""),o.append(c)}if(e){let c=document.createElement("span");c.className="table-title",c.append(...e.childNodes),o.append(c)}if(t){let c=document.createElement("span");c.className="table-cap",c.append(...t.childNodes),o.append(c)}}let s=document.createElement("table");s.className="t";let r=[],i=this.querySelector(":scope > delta-header");if(i){let c=document.createElement("thead"),u=document.createElement("tr");i.querySelectorAll(":scope > delta-column").forEach((f,E)=>{let h=document.createElement("th");Se(h,f,E,r,!0),h.append(...f.childNodes),u.append(h)}),c.append(u),s.append(c)}let m=document.createElement("tbody");this.querySelectorAll(":scope > delta-row").forEach(c=>{let u=document.createElement("tr");c.querySelectorAll(":scope > delta-column").forEach((f,E)=>{let h=document.createElement("td");Se(h,f,E,r,!1),h.append(...f.childNodes),u.append(h)}),m.append(u)}),s.append(m);let d=document.createElement("div");d.className="table-wrap";let l=this.getAttribute("max-height");l&&(d.style.maxHeight=l,d.style.overflowY="auto"),d.append(s),this.replaceChildren(...o?[o]:[],d)}};function Ie(){customElements.define("delta-table",ce)}var Je=/^\d*\.?\d+(fr)?$/,de=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("gap");e&&(this.style.gap=e);for(let t of this.querySelectorAll(":scope > delta-column")){let n=t.getAttribute("width");if(!n)continue;let o=Je.test(n.trim())?`${parseFloat(n)} 1 0`:`0 1 ${n}`;t.style.setProperty("--col-flex",o)}}};function qe(){customElements.define("delta-columns",de)}var $e={keywords:"Keywords",msc:"Mathematics Subject Classification",received:"Received",revised:"Revised",accepted:"Accepted",submitted:"Submitted",date:"Date",acknowledgements:"Acknowledgements",funding:"Funding"},Qe=new Set(["acknowledgements","funding"]),me=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=document.createElement("div");e.className="abstract-label",e.textContent=v("abstract","Abstract");let t=document.createElement("div");t.className="abstract-body",t.append(...this.childNodes),this.append(e,t)}},pe=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady||(this.dataset.deltaReady="1",this.closest("delta-slide")))return;let e=this.tagName.slice(6).toLowerCase(),t=Qe.has(e);this.classList.add(t?"fm-block":"fm-line");let n=document.createElement("span");n.className="fm-label",n.textContent=v(e,$e[e]??e),this.prepend(n,t?" ":": ")}};function Oe(){customElements.define("delta-abstract",class extends me{});for(let a of Object.keys($e))customElements.define(`delta-${a}`,class extends pe{})}var Ze=new Set(["red","orange","yellow","lime","green","teal","sky","blue","indigo","purple","pink","slate"]),et={danger:"red",warning:"orange",tip:"green",note:"blue"},ue=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("color")?.trim()||et[this.getAttribute("type")?.trim().toLowerCase()??""];e&&(Ze.has(e.toLowerCase())?this.setAttribute("data-accent",e.toLowerCase()):this.style.setProperty("--delta-accent",e));let t=this.querySelector(":scope > delta-title"),n=null;t&&(n=document.createElement("div"),n.className="box-heading",n.append(...t.childNodes),t.remove());let o=document.createElement("div");o.className="box-body",o.append(...this.childNodes),n&&this.append(n),this.append(o)}};function Pe(){customElements.define("delta-box",ue)}function Be(){be(),he(),ge(),ve(),Ee(),ye(),xe(),Le(),ke(),Ne(),Te(),Me(),we(),Re(),He(),Ie(),qe(),Oe(),Pe()}function Fe(){let a=document.documentElement;if(a.dataset.type!=="presentation")return null;let e=[...document.querySelectorAll("delta-slide")];if(e.length===0)return null;a.classList.add("deck-js"),document.querySelector("delta-progress")&&a.classList.add("deck-progress-on");let t=0,n=0,o=0,s=[],r=p=>Math.max(0,Math.min(e.length-1,p)),i=p=>[...p.querySelectorAll('[reveal="true"]')].map((g,y)=>({el:g,order:g.hasAttribute("reveal-order")?Number(g.getAttribute("reveal-order")):y})).sort((g,y)=>g.order-y.order).map(g=>g.el),m=e.map(i),d=(p,g)=>m[p].forEach((y,N)=>y.classList.toggle("is-revealed",N<g)),l=()=>{let p=(t+1)/e.length;a.style.setProperty("--deck-progress-prev",String(o)),a.style.setProperty("--deck-progress",String(p)),o=p},c=(p,g)=>{e[t]?.classList.remove("is-active"),t=r(p),n=g?m[t].length:0,d(t,n),l(),e[t].classList.add("is-active");for(let y of s)y(t,e.length)},u=()=>{n<m[t].length?d(t,++n):t<e.length-1&&c(t+1,!1)},f=()=>{n>0?d(t,--n):t>0&&c(t-1,!0)},E=p=>c(p,!1);document.addEventListener("keydown",p=>{let g=p.target;if(!(g&&(g.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(g.tagName)))&&!(p.metaKey||p.ctrlKey||p.altKey))switch(p.key){case"ArrowRight":case"ArrowDown":case"PageDown":case" ":p.preventDefault(),u();break;case"ArrowLeft":case"ArrowUp":case"PageUp":p.preventDefault(),f();break;case"Home":p.preventDefault(),E(0);break;case"End":p.preventDefault(),E(e.length-1);break}});let h=(p,g,y,N)=>{let C=document.createElement("button");return C.type="button",C.className=`deck-nav ${p}`,C.textContent=g,C.setAttribute("aria-label",y),C.addEventListener("click",N),C},b=document.createElement("div");b.className="deck-controls",b.append(h("deck-prev","\u2039",v("prevSlide","Previous slide"),f),h("deck-next","\u203A",v("nextSlide","Next slide"),u)),document.body.append(b);let k=0,H=0;document.addEventListener("touchstart",p=>{k=p.touches[0].clientX,H=p.touches[0].clientY},{passive:!0}),document.addEventListener("touchend",p=>{let g=p.changedTouches[0].clientX-k,y=p.changedTouches[0].clientY-H;Math.abs(g)>50&&Math.abs(g)>Math.abs(y)*1.5&&(g<0?u:f)()},{passive:!0});let M=p=>document.querySelector(`delta-slide[cover="true"] ${p}`)?.textContent?.trim()??"",S=(p,g)=>{let y=document.createElement("span");return y.className=p,y.textContent=g,y},x=M("delta-author"),w=M("delta-affiliation"),I=[...x?[S("tb-author",x)]:[],...w?[S("tb-affiliation",w)]:[]];if(I.length){let p=document.createElement("div");p.className="deck-topbar eyebrow",I.forEach((g,y)=>{y>0&&p.append(" \xB7 "),p.append(g)}),document.body.append(p),s.push(g=>p.classList.toggle("topbar-hidden",e[g].matches('[cover="true"], [divider="true"]')))}return c(0,!1),{get index(){return t},get total(){return e.length},go:E,next:u,prev:f,goToId(p){let g=document.getElementById(p);if(!g)return!1;let y=g.closest("delta-slide")??g.querySelector("delta-slide"),N=y?e.indexOf(y):-1;return N<0?!1:(E(N),!0)},onChange(p){s.push(p),p(t,e.length)}}}Be();Ae();var tt=Fe();window.Delta={popover:L,t:v,deck:tt};var _e=()=>{location.hash.length>1&&B(decodeURIComponent(location.hash.slice(1)))};_e();window.addEventListener("hashchange",_e);})();
+"use strict";(()=>{var F=null;function pt(){if(F)return F;let n=document.getElementById("delta-i18n");try{F=n?JSON.parse(n.textContent||"{}"):{}}catch{F={}}return F}function p(n,e){return pt()[n]??e??n}var U=null;function Q(){if(U)return U;let n=document.getElementById("delta-review");try{let e=n?JSON.parse(n.textContent||"{}"):{};U={team:e.team??[],items:e.items??[]}}catch{U={team:[],items:[]}}return U}function Re(n){if(n)return Q().team.find(e=>e.id===n)}function D(n){return Re(n)?.color}function N(n){if(!n)return null;let e=document.createElement("span");e.className="who";let t=Re(n);if(!t)return e.classList.add("who-free"),e.textContent=n,e;e.setAttribute("data-accent",t.color),e.title=t.kind==="agent"?`${t.name} \xB7 ${p("agent","agent")}`:t.name;let s=document.createElement("i");s.className="who-dot",s.setAttribute("aria-hidden","true");let a=document.createElement("span");if(a.className="who-name",a.textContent=t.name,e.append(s,a),t.kind==="agent"){let o=document.createElement("b");o.className="who-badge",o.textContent=p("agent","agent"),e.append(o)}return e}var G="delta:review",P={get annotations(){return document.documentElement.dataset.review!=="off"},setAnnotations(n){n?delete document.documentElement.dataset.review:document.documentElement.dataset.review="off",document.dispatchEvent(new CustomEvent(G))},get changes(){let n=document.documentElement.dataset.changes;return n==="final"||n==="original"?n:"markup"},setChanges(n){n==="markup"?delete document.documentElement.dataset.changes:document.documentElement.dataset.changes=n,document.dispatchEvent(new CustomEvent(G))}};function K(n){let e=document.getElementById(n);e&&(e.scrollIntoView({block:"center",behavior:"smooth"}),e.classList.add("is-xref-target"),e.addEventListener("animationend",()=>e.classList.remove("is-xref-target"),{once:!0}))}function X(n){let e=document.createDocumentFragment(),t=o=>n.querySelector(`:scope > delta-${o}`),s=["author","title","journal","year"].map(t).filter(o=>o!==null);s.forEach((o,c)=>{c>0&&e.append(". ");let l=document.createElement("span");l.className=`paper-${o.tagName.toLowerCase().replace("delta-","")}`;for(let r of o.childNodes)l.append(r.cloneNode(!0));e.append(l)}),s.length&&e.append(".");let a=t("link")??t("url");return a&&(e.append(" "),e.append(a.cloneNode(!0))),e}function j(n,e){let t=n.getAttribute("collapsed")==="true";if(!t&&n.getAttribute("collapsible")!=="true")return;let s=document.createElement("div");for(s.className="collapse-body";e.nextSibling;)s.append(e.nextSibling);n.append(s),e.classList.add("collapse-toggle"),e.setAttribute("role","button"),e.tabIndex=0;let a=c=>{n.classList.toggle("is-collapsed",c),e.setAttribute("aria-expanded",String(!c))};a(t);let o=()=>a(!n.classList.contains("is-collapsed"));e.addEventListener("click",o),e.addEventListener("keydown",c=>{(c.key==="Enter"||c.key===" ")&&(c.preventDefault(),o())})}function B(n,e){let t=n.getAttribute("status"),s=n.getAttribute("by"),a=n.getAttribute("verified-by");if(!t&&!s&&!a)return;t&&(n.dataset.status=t);let o=document.createElement("span");if(o.className="status-pill",t){o.dataset.status=t;let r=document.createElement("span");r.className="status-label",r.textContent=p(t,t),o.append(r)}let c=N(s);c&&o.append(c);let l=N(a);if(l){let r=document.createElement("span");r.className="status-check",r.title=p("verifiedBy","verified by"),r.textContent="\u2713",o.append(r,l)}if(e)e.append(" ",o);else{let r=document.createElement("div");r.className="status-bar",r.append(o),n.prepend(r)}}var Se={"delta-chapter":{level:1,cls:"chapter-title"},"delta-section":{level:2,cls:"section"},"delta-subsection":{level:3,cls:"sub"},"delta-subsubsection":{level:4,cls:"subsub"}},Z=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelector(":scope > delta-title");if(!e)return;if(document.documentElement.dataset.type==="presentation"){let c=document.createElement("delta-slide");c.setAttribute("divider","true"),B(this,e),c.appendChild(e),this.prepend(c);return}let t=Se[this.tagName.toLowerCase()]??{level:2,cls:"section"},s=document.createElement(`h${t.level}`);s.className=t.cls;let a=this.getAttribute("num");if(a){let c=document.createElement("span");c.className="num",c.textContent=a,s.append(c," ")}s.append(...e.childNodes),e.replaceWith(s),B(this,s);let o=this.querySelector(":scope > delta-meta");if(o){let c=o.querySelectorAll(":scope > delta-meta-item");if(c.length){let l=document.createElement("div");l.classList.add("box-meta"),Array.from(c).forEach(r=>{let i=document.createElement("span");i.className="box-meta-item";let d=document.createElement("span");d.className="k",d.textContent=r.getAttribute("key")??"";let m=document.createElement("span");m.innerHTML=r.innerHTML,m.className="v",i.append(d),i.append(m),l.append(i),o.replaceWith(l)})}}j(this,s)}};function He(){for(let n of Object.keys(Se))customElements.define(n,class extends Z{})}var ee=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelector(":scope > delta-title"),t=document.createElement("div");t.className="slide-body";for(let s of[...this.childNodes])s!==e&&t.append(s);if(e){let s=document.createElement("h2");s.className="slide-title",s.append(...e.childNodes),e.replaceWith(s);let a=document.createElement("div");a.className="slide-rule";let o=document.createElement("span");o.className="slide-rule-fill",a.append(o),s.after(a)}this.append(t)}};function $e(){customElements.define("delta-slide",ee)}var ut=["theorem","proposition","lemma","corollary","conjecture","definition","example","claim","observation","exercise","problem","proof","solution","remark"],ft=new Set(["theorem","proposition","lemma","corollary","conjecture","definition","example","claim","observation","exercise","problem","remark"]),ht=new Set(["proof","solution"]),te=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.tagName.toLowerCase().replace(/^delta-/,""),t=this.getAttribute("num"),s=p(e,e.charAt(0).toUpperCase()+e.slice(1)),a=this.querySelector(":scope > delta-title");if(ht.has(e)){let l=document.createElement("span"),r=this.getAttribute("of"),i=this.getAttribute("data-target-tag"),d=this.getAttribute("data-target-num");if(i&&r&&d){let g=document.createElement("delta-ref");g.setAttribute("to",r),g.setAttribute("data-target-num",d),g.setAttribute("data-target-tag",i),l.append(" "),l.append(g)}l.className="proof-lead",l.prepend(s),a&&(l.append(" (",...a.childNodes,")"),a.remove()),l.append("."),this.prepend(l," "),B(this,l);let m=document.createElement("span");m.className="proof-qed",m.textContent="\u25A1",this.append(m),j(this,l);return}if(!ft.has(e))return;this.classList.add("box"),e==="example"&&this.classList.add("example");let o=document.createElement("span");if(o.className="box-tag",o.textContent=s+(t?` ${t}`:""),a){let l=document.createElement("span");l.className="box-tag-title",l.append(...a.childNodes),a.remove(),o.append(" ",l)}this.prepend(o),B(this,o);let c=this.querySelector(":scope > delta-meta");if(c){let l=c.querySelectorAll(":scope > delta-meta-item");if(l.length){let r=document.createElement("div");r.className="box-meta";for(let i of l){let d=i.getAttribute("key"),m=i.innerHTML.trim();if(d&&m){let g=document.createElement("span");g.className="box-meta-item",g.innerHTML=`<span class="k">${d}</span><span class='v'> ${m}</span>`,r.appendChild(g)}}c.remove(),this.append(r)}}j(this,o)}};function Ie(){for(let n of ut)customElements.define(`delta-${n}`,class extends te{})}var ne=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady=="1")return;this.dataset.deltaReady="1";let e=this.querySelector(":scope > delta-meta");if(e){let t=e.querySelectorAll(":scope > delta-meta-item");if(t.length){let s=document.createElement("div");s.classList.add("box-meta"),Array.from(t).forEach(a=>{let o=document.createElement("span");o.className="box-meta-item";let c=document.createElement("span");c.className="k",c.textContent=a.getAttribute("key")??"";let l=document.createElement("span");l.innerHTML=a.innerHTML,l.className="v",o.append(c),o.append(l),s.append(o)}),e.replaceWith(s)}}}};function qe(){customElements.define("delta-document",class extends ne{})}var se=class extends HTMLElement{connectedCallback(){this.dataset.deltaReady||(this.dataset.deltaReady="1",this.classList.add("sidenote"))}};function Pe(){customElements.define("delta-sidenote",class extends se{})}function V(n,e,t,s="video-cap"){let a=n.querySelector(":scope > delta-caption");if(!a)return;a.classList.add(s);let o=document.createElement("span");o.className="lbl";let c=p(e,e.charAt(0).toUpperCase()+e.slice(1));o.textContent=c+(t?` ${t}`:""),a.prepend(o," ")}function Y(n,e){let t=document.createElement("div");t.className="video-frame",t.append(e),n.prepend(t)}function gt(n){if(n=(n||"").trim(),/^[\w-]{11}$/.test(n))return n;try{let e=new URL(n);if(e.hostname==="youtu.be")return e.pathname.slice(1,12);if(e.searchParams.has("v"))return e.searchParams.get("v");let t=e.pathname.match(/\/(?:embed|shorts)\/([\w-]{11})/);if(t)return t[1]}catch{}return""}var ae=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("video");let e=gt(this.getAttribute("src"));if(!e){console.warn("delta-youtube: no valid video ID found in src",this.getAttribute("src"));return}if(location.protocol==="file:"){let t=document.createElement("a");t.className="yt-facade video-media",t.href=`https://www.youtube.com/watch?v=${e}`,t.target="_blank",t.rel="noopener",t.setAttribute("aria-label","Watch on YouTube");let s=document.createElement("img");s.src=`https://i.ytimg.com/vi/${e}/hqdefault.jpg`,s.alt="",s.loading="lazy";let a=document.createElement("span");a.className="yt-play",a.setAttribute("aria-hidden","true"),t.append(s,a),Y(this,t)}else{let t=document.createElement("iframe");t.src=`https://www.youtube.com/embed/${e}`,t.allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",t.allowFullscreen=!0,t.className="video-media",t.loading="lazy",Y(this,t)}V(this,"video",this.getAttribute("num"))}},oe=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("video");let e=this.getAttribute("src");if(!e){let s=document.createElement("div");s.className="video-missing",s.textContent="No video source.",this.prepend(s);return}let t=document.createElement("video");t.src=e,t.controls=!0,t.className="video-media";for(let s of["poster","loop","muted","autoplay","playsinline"])this.hasAttribute(s)&&t.setAttribute(s,this.getAttribute(s)??"");Y(this,t),V(this,"video",this.getAttribute("num"))}},ie=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("video");let e=this.getAttribute("src");if(!e){let s=document.createElement("div");s.className="video-missing",s.textContent="No audio source.",this.prepend(s);return}let t=document.createElement("audio");t.src=e,t.controls=!0,t.className="audio-media",this.hasAttribute("loop")&&(t.loop=!0),Y(this,t),V(this,"audio",this.getAttribute("num"))}},re=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("figure");let e=this.getAttribute("src");if(e){let t=document.createElement("div");t.className="figure-frame";let s=document.createElement("img");s.src=e;let a=this.getAttribute("alt");a&&(s.alt=a),t.append(s),this.prepend(t)}else{let t=document.createElement("div");t.className="video-missing",t.textContent="Image not found.",this.prepend(t)}V(this,"figure",this.getAttribute("num"),"figure-cap")}},ce=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady=="1")return;this.dataset.deltaReady="1",this.classList.add("interactive");let e=this.querySelector(":scope > delta-caption"),t=document.createElement("div");t.className="interactive-frame";for(let s of[...this.childNodes])s!==e&&t.append(s);this.prepend(t),V(this,"interactive",this.getAttribute("num"),"interactive-cap")}};function Be(){customElements.define("delta-youtube",class extends ae{}),customElements.define("delta-video",class extends oe{}),customElements.define("delta-audio",class extends ie{}),customElements.define("delta-figure",class extends re{}),customElements.define("delta-interactive",class extends ce{})}var J=typeof HTMLElement<"u"&&"popover"in HTMLElement.prototype,O=8,de=12,_=null;function L(n,e,t={}){let{onOpen:s,onClose:a,gap:o=10,triggerClick:c=!0}=t;e.classList.add("delta-pop"),J&&e.setAttribute("popover","manual"),e.parentElement!==document.body&&document.body.appendChild(e),n.setAttribute("aria-haspopup","dialog");let l=!1;function r(){let y=n.getBoundingClientRect(),S=document.documentElement.clientWidth,I=document.documentElement.clientHeight,A=I-O-(y.bottom+o),H=y.top-o-O;e.style.maxHeight="";let w=e.getBoundingClientRect(),$=w.height>A&&H>A,q=$?H:A;w.height>q&&(e.style.maxHeight=`${Math.max(0,Math.floor(q))}px`,w=e.getBoundingClientRect()),e.classList.toggle("is-above",$);let b=$?y.top-o-w.height:y.bottom+o,E=Math.min(Math.max(O,b),Math.max(O,I-w.height-O)),x=Math.min(Math.max(O,y.left),Math.max(O,S-w.width-O));e.style.top=`${Math.round(E)}px`,e.style.left=`${Math.round(x)}px`;let T=Math.max(de,w.width-de),h=Math.min(Math.max(de,y.left+y.width/2-x),T);e.style.setProperty("--arrow-x",`${Math.round(h)}px`)}let i=()=>r(),d=y=>{y.key==="Escape"&&v()},m=y=>{let S=y.target;!e.contains(S)&&!n.contains(S)&&v()};function g(){l||(_&&_!==v&&_(),s?.(e,n),J?e.showPopover():e.classList.add("is-open"),r(),window.addEventListener("scroll",i,{capture:!0,passive:!0}),window.addEventListener("resize",i),document.addEventListener("keydown",d),setTimeout(()=>document.addEventListener("pointerdown",m),0),l=!0,_=v,n.setAttribute("aria-expanded","true"))}function v(){l&&(J?e.matches(":popover-open")&&e.hidePopover():e.classList.remove("is-open"),e.classList.remove("is-above"),window.removeEventListener("scroll",i,{capture:!0}),window.removeEventListener("resize",i),document.removeEventListener("keydown",d),document.removeEventListener("pointerdown",m),l=!1,_===v&&(_=null),n.setAttribute("aria-expanded","false"),a?.(e,n))}function u(){l?v():g()}J&&e.addEventListener("toggle",y=>{y.newState==="closed"&&l&&v()});let f=y=>{y.preventDefault(),u()};return c&&(n.addEventListener("click",f),n.setAttribute("aria-expanded","false")),{open:g,close:v,toggle:u,reposition:r,get isOpen(){return l},destroy(){v(),c&&n.removeEventListener("click",f),e.remove()}}}var le=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelector(":scope > delta-title"),t=(e?.textContent??"").trim();e?.remove();let s=this.getAttribute("show-icon")!=="false",a=document.createElement("div");a.append(...this.childNodes);let o=document.createElement("button");if(o.type="button",o.className="hint-trigger",s){let c=document.createElement("span");c.className="hint-marker",c.textContent="\u{1F4A1} ",o.append(c)}o.append(t||p("hint","Hint")),this.append(o),L(o,a)}};function Oe(){customElements.define("delta-hint",class extends le{})}var W=null;function vt(){if(W)return W;let n=document.getElementById("delta-toc");try{W=n?JSON.parse(n.textContent||"[]"):[]}catch{W=[]}return W}var me=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=parseInt(this.getAttribute("depth")??"2",10),t=this.getAttribute("scope")==="project",s=vt().filter(d=>d.level-1<=e&&(t||!d.file));if(s.length===0)return;let a=document.createElement("nav");a.className="toc";let o=this.querySelector(":scope > delta-title"),c=o?o.innerHTML:p("contents","Contents");a.setAttribute("aria-label",c);let l=document.createElement("div");l.className="toc-title",l.innerHTML=c,a.append(l);let r=document.createElement("ol");r.className="toc-list";let i=[{level:s[0].level,ol:r}];for(let d of s){for(;i.length>1&&d.level<i[i.length-1].level;)i.pop();let m=i[i.length-1];if(d.level>m.level){let f=m.ol.lastElementChild,y=document.createElement("ol");y.className="toc-sub",(f??m.ol).append(y),i.push({level:d.level,ol:y}),m=i[i.length-1]}let g=document.createElement("li");g.className="toc-item";let v=document.createElement("a");if(v.className="toc-link",v.href=d.file?`${d.file}#${d.id}`:`#${d.id}`,d.num){let f=document.createElement("span");f.className="toc-num",f.textContent=d.num,v.append(f," ")}let u=document.createElement("span");u.className="toc-text",u.innerHTML=d.title,v.append(u),v.addEventListener("click",f=>{if(d.file)return;if(window.Delta?.deck?.goToId(d.id)){f.preventDefault();return}let y=document.getElementById(d.id);y&&(f.preventDefault(),y.scrollIntoView({block:"start",behavior:"smooth"}),y.classList.add("is-xref-target"),y.addEventListener("animationend",()=>y.classList.remove("is-xref-target"),{once:!0}))}),g.append(v),m.ol.append(g)}a.append(r),this.replaceChildren(a)}};function De(){customElements.define("delta-toc",class extends me{})}var pe=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelector(":scope > delta-title"),t=(e?.textContent??"").trim()||p("contents","Contents"),s=e?[...e.childNodes]:null;e?.remove();let a=()=>s?bt(document.createElement("span"),s):t,o=document.createElement("button");o.type="button",o.className="floating-fab",o.setAttribute("aria-label",t);let c=document.createElement("span");c.className="floating-icon",c.setAttribute("aria-hidden","true"),c.textContent="\u2630",o.append(c,a());let l=document.createElement("div");l.className="floating-panel";let r=document.createElement("div");r.className="floating-hd";let i=document.createElement("span");i.className="floating-title",i.append(a());let d=document.createElement("button");d.type="button",d.className="floating-x",d.setAttribute("aria-label",p("close","Close")),d.textContent="\xD7",r.append(i,d);let m=document.createElement("div");m.className="floating-body",m.append(...this.childNodes),l.append(r,m),this.append(o);let g=L(o,l,{gap:12});d.addEventListener("click",()=>g.close()),m.addEventListener("click",v=>{v.target.closest("a")&&g.close()})}};function bt(n,e){for(let t of e)n.append(t.cloneNode(!0));return n}function je(){customElements.define("delta-floating",class extends pe{})}var Et='<svg class="ext-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"/></svg>',ue=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("to");if(!e)return;let t=document.createElement("a");for(t.className="ext-link",t.href=e,t.target="_blank",t.rel="noopener noreferrer";this.firstChild;)t.appendChild(this.firstChild);this.appendChild(t),t.insertAdjacentHTML("beforeend",Et)}};function Ke(){customElements.define("delta-link",class extends ue{})}var yt='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>';function _e(n,{to:e,num:t,kind:s,href:a}){let o=`${p(s,s.charAt(0).toUpperCase()+s.slice(1))} ${t}`,c=document.createElement("div");c.className="xref-pop";let l=document.createElement("div");l.className="xref-pop-head";let r=document.createElement("span");r.className="xref-pop-label",r.textContent=o;let i=document.createElement("button");i.type="button",i.className="xref-go",i.title=o,i.setAttribute("aria-label",o),i.innerHTML=yt,l.append(r,i);let d=document.createElement("div");d.className="xref-pop-body",c.append(l,d);let m=!1,g=L(n,c,{onOpen:()=>{if(m)return;m=!0;let v=[...document.querySelectorAll("template[data-delta-pop]")].find(f=>f.dataset.deltaPop===e);if(!v)return;let u=v.content.cloneNode(!0);for(let f of u.querySelectorAll("[id]"))f.removeAttribute("id");for(let f of u.querySelectorAll("[collapsed], [collapsible]"))f.removeAttribute("collapsed"),f.removeAttribute("collapsible");d.append(u)}});i.addEventListener("click",v=>{if(v.preventDefault(),g.close(),window.Delta?.deck?.goToId(e))return;if(a){location.href=a;return}let u=document.getElementById(e);u&&(u.scrollIntoView({block:"center",behavior:"smooth"}),u.classList.add("is-xref-target"),u.addEventListener("animationend",()=>u.classList.remove("is-xref-target"),{once:!0}))})}var fe=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("to")??"",t=this.getAttribute("data-target-num"),s=this.getAttribute("data-target-tag"),a=this.getAttribute("data-target-href");if(!s||!t)return;let o=(this.textContent??"").trim().length>0,c=document.createElement("button");c.type="button",c.className="xref",o?c.append(...this.childNodes):c.textContent=`${p(s,s.charAt(0).toUpperCase()+s.slice(1))} ${t}`,this.replaceChildren(c),_e(c,{to:e,num:t,kind:s,href:a})}};function Fe(){for(let n of document.querySelectorAll(".katex [data-delta-ref-to]")){let{deltaRefTo:e,deltaRefNum:t,deltaRefTag:s,deltaRefHref:a}=n.dataset;!e||!t||!s||(n.classList.add("math-xref"),n.setAttribute("role","link"),n.tabIndex=0,n.addEventListener("keydown",o=>{(o.key==="Enter"||o.key===" ")&&(o.preventDefault(),n.click())}),_e(n,{to:e,num:t,kind:s,href:a}))}}function Ue(){customElements.define("delta-ref",class extends fe{})}var he=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelectorAll(":scope > delta-paper");if(e.length===0)return;let t=document.createElement("section");t.className="notes";let s=this.querySelector(":scope > delta-title"),a=document.createElement("h4");a.innerHTML=s?s.innerHTML:p("references","References"),t.append(a);let o=document.createElement("ol");for(let c of e){let l=document.createElement("li");c.id&&(l.id=c.id),l.append(X(c)),o.append(l)}t.append(o),this.replaceChildren(t)}};function Ve(){customElements.define("delta-bibliography",class extends he{})}var ge=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=(this.getAttribute("data-cite-nums")??"").split(",").filter(Boolean),t=(this.getAttribute("data-cite-ids")??"").split(",").filter(Boolean),s=this.getAttribute("data-cite-file");if(e.length===0){this.classList.add("cite-missing");return}let a=document.createElement("span");a.className="cite",a.append("["),e.forEach((r,i)=>{i>0&&a.append(", ");let d=document.createElement("a");d.textContent=r,a.append(d)}),a.append("]"),this.replaceChildren(a);let o=document.createElement("div");o.className="cite-pop";let c=!1,l=L(a,o,{onOpen:()=>{c||(c=!0,t.forEach((r,i)=>{let d=document.createElement("div");d.className="cite-pop-item";let m=document.createElement("a");m.className="cite-pop-num",m.href=s?`${s}#${r}`:`#${r}`,m.textContent=`[${e[i]}]`,m.addEventListener("click",f=>{l.close(),!window.Delta?.deck?.goToId(r)&&(s||(f.preventDefault(),K(r)))});let g=document.createElement("span");g.className="cite-pop-text";let u=[...document.querySelectorAll("template[data-delta-pop]")].find(f=>f.dataset.deltaPop===r)?.content.querySelector("delta-paper");u&&g.append(X(u)),d.append(m,g),o.append(d)}))}})}};function We(){customElements.define("delta-cite",class extends ge{})}var ve=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.textContent??"",t=document.createElement("pre");t.className="code-src";let s=document.createElement("code");for(;this.firstChild;)s.append(this.firstChild);t.append(s);let a=document.createElement("div");if(a.className="code-body",this.getAttribute("lines")!=="false"){let i=e.replace(/\n$/,"").split(`
+`).length,d=document.createElement("span");d.className="code-gutter",d.setAttribute("aria-hidden","true"),d.textContent=Array.from({length:i},(m,g)=>String(g+1)).join(`
+`),a.append(d)}a.append(t);let o=document.createElement("div");o.className="code-head";let c=this.getAttribute("lang"),l=document.createElement("span");l.className="code-lang",l.textContent=(c||p("code","Code")).toUpperCase();let r=document.createElement("button");if(r.type="button",r.className="code-copy",r.textContent=p("copy","Copy"),r.addEventListener("click",()=>{navigator.clipboard?.writeText(e).then(()=>{r.textContent=p("copied","Copied"),r.classList.add("is-copied"),setTimeout(()=>{r.textContent=p("copy","Copy"),r.classList.remove("is-copied")},1400)})}),o.append(l,r),this.append(o,a),this.getAttribute("num")){let i=this.getAttribute("num"),d=document.createElement("div");d.classList.add("code-cap");let m=document.createElement("span");m.className="lbl";let g=p("code","code".charAt(0).toUpperCase()+"code".slice(1));m.textContent=g+(i?` ${i}`:""),d.prepend(m," "),this.append(d)}j(this,o)}};function ze(){customElements.define("delta-code",ve)}var z={ordered:!1,marker:"bullet"},be={1:{ordered:!0,marker:"decimal"},number:{ordered:!0,marker:"decimal"},numbers:{ordered:!0,marker:"decimal"},numbered:{ordered:!0,marker:"decimal"},decimal:{ordered:!0,marker:"decimal"},a:{ordered:!0,marker:"alpha"},alpha:{ordered:!0,marker:"alpha"},alphabetical:{ordered:!0,marker:"alpha"},A:{ordered:!0,marker:"alpha-upper"},"alpha-upper":{ordered:!0,marker:"alpha-upper"},i:{ordered:!0,marker:"roman"},roman:{ordered:!0,marker:"roman"},I:{ordered:!0,marker:"roman-upper"},"roman-upper":{ordered:!0,marker:"roman-upper"},bullet:z,disc:z,dot:z,dash:{ordered:!1,marker:"dash"},none:{ordered:!1,marker:"none"}};function xt(n){if(n.getAttribute("numbered")==="true")return be.number;let e=(n.getAttribute("marker")??"").trim();return e?be[e]??be[e.toLowerCase()]??z:z}var Ee=class extends HTMLElement{connectedCallback(){this.dataset.deltaReady||(this.dataset.deltaReady="1",this._render())}_render(){let e=xt(this),t=document.createElement(e.ordered?"ol":"ul");if(t.className="delta-list",t.dataset.marker=e.marker,e.ordered){let s=parseInt(this.getAttribute("start")??"",10);Number.isFinite(s)&&(t.style.counterReset=`delta-item ${s-1}`,t.setAttribute("start",String(s)))}this.querySelectorAll(":scope > delta-item").forEach(s=>{let a=document.createElement("li");a.className="delta-list-item";for(let o of["reveal","reveal-order"]){let c=s.getAttribute(o);c!==null&&a.setAttribute(o,c)}a.append(...s.childNodes),t.append(a)}),this.replaceChildren(t)}};function Ge(){customElements.define("delta-list",Ee)}function Xe(n,e,t,s,a){let o=e.getAttribute("align");a&&o&&(s[t]=o),o||(o=s[t]),o==="right"?n.classList.add("num"):o==="center"&&(n.style.textAlign="center"),e.getAttribute("mono")==="true"&&n.classList.add("mono")}var ye=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("delta-table");let e=this.querySelector(":scope > delta-title"),t=this.querySelector(":scope > delta-caption"),s=this.getAttribute("num"),a=null;if(e||t||s){if(a=document.createElement("div"),a.className="table-head",e||s){let m=document.createElement("span");m.className="table-lbl",m.textContent=p("table","Table")+(s?` ${s}`:""),a.append(m)}if(e){let m=document.createElement("span");m.className="table-title",m.append(...e.childNodes),a.append(m)}if(t){let m=document.createElement("span");m.className="table-cap",m.append(...t.childNodes),a.append(m)}}let o=document.createElement("table");o.className="t";let c=[],l=this.querySelector(":scope > delta-header");if(l){let m=document.createElement("thead"),g=document.createElement("tr");l.querySelectorAll(":scope > delta-column").forEach((v,u)=>{let f=document.createElement("th");Xe(f,v,u,c,!0),f.append(...v.childNodes),g.append(f)}),m.append(g),o.append(m)}let r=document.createElement("tbody");this.querySelectorAll(":scope > delta-row").forEach(m=>{let g=document.createElement("tr");m.querySelectorAll(":scope > delta-column").forEach((v,u)=>{let f=document.createElement("td");Xe(f,v,u,c,!1),f.append(...v.childNodes),g.append(f)}),r.append(g)}),o.append(r);let i=document.createElement("div");i.className="table-wrap";let d=this.getAttribute("max-height");d&&(i.style.maxHeight=d,i.style.overflowY="auto"),i.append(o),this.replaceChildren(...a?[a]:[],i)}};function Ye(){customElements.define("delta-table",ye)}var Ct=/^\d*\.?\d+(fr)?$/,xe=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("gap");e&&(this.style.gap=e);for(let t of this.querySelectorAll(":scope > delta-column")){let s=t.getAttribute("width");if(!s)continue;let a=Ct.test(s.trim())?`${parseFloat(s)} 1 0`:`0 1 ${s}`;t.style.setProperty("--col-flex",a)}}};function Je(){customElements.define("delta-columns",xe)}var Qe={keywords:"Keywords",msc:"Mathematics Subject Classification",received:"Received",revised:"Revised",accepted:"Accepted",submitted:"Submitted",date:"Date",acknowledgements:"Acknowledgements",funding:"Funding"},Nt=new Set(["acknowledgements","funding"]),Ce=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=document.createElement("div");e.className="abstract-label",e.textContent=p("abstract","Abstract");let t=document.createElement("div");t.className="abstract-body",t.append(...this.childNodes),this.append(e,t)}},Ne=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady||(this.dataset.deltaReady="1",this.closest("delta-slide")))return;let e=this.tagName.slice(6).toLowerCase(),t=Nt.has(e);this.classList.add(t?"fm-block":"fm-line");let s=document.createElement("span");s.className="fm-label",s.textContent=p(e,Qe[e]??e),this.prepend(s,t?" ":": ")}};function Ze(){customElements.define("delta-abstract",class extends Ce{});for(let n of Object.keys(Qe))customElements.define(`delta-${n}`,class extends Ne{})}var wt=new Set(["red","orange","yellow","lime","green","teal","sky","blue","indigo","purple","pink","slate"]),Lt={danger:"red",warning:"orange",tip:"green",note:"blue"},we=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("color")?.trim()||Lt[this.getAttribute("type")?.trim().toLowerCase()??""];e&&(wt.has(e.toLowerCase())?this.setAttribute("data-accent",e.toLowerCase()):this.style.setProperty("--delta-accent",e));let t=this.querySelector(":scope > delta-title"),s=null;t&&(s=document.createElement("div"),s.className="box-heading",s.append(...t.childNodes),t.remove());let a=document.createElement("div");a.className="box-body",a.append(...this.childNodes),s&&this.append(s),this.append(a)}};function et(){customElements.define("delta-box",we)}var Le=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("by"),t=this.getAttribute("status")??"open",s=this.getAttribute("num"),a=D(e),o=[...this.querySelectorAll(":scope > delta-reply")];for(let d of o)d.remove();let c=kt(this,o,{by:e,status:t,date:this.getAttribute("date")});if(a&&c.setAttribute("data-accent",a),this.closest(".delta-pop")){this.parentElement?.classList.contains("xref-pop-body")?(c.classList.add("note-static"),this.replaceChildren(c)):this.classList.add("note-hidden");return}let l=`${p("comment","Comment")}${s?` ${s}`:""}`,r=document.createElement("button");r.type="button",r.className="note-marker",r.textContent=s??"\u2022",r.title=l,r.setAttribute("aria-label",l),a&&r.setAttribute("data-accent",a),t==="resolved"&&r.classList.add("is-resolved"),r.addEventListener("click",d=>d.stopPropagation()),r.addEventListener("keydown",d=>d.stopPropagation()),this.replaceChildren(r),L(r,c);let i=this.getAttribute("on");if(i){let d=document.getElementById(i);if(d&&!d.contains(this)){let m=d.querySelector(":scope > .box-tag, :scope > h1, :scope > h2, :scope > h3, :scope > h4, :scope > .proof-lead");m?m.append(" ",this):d.after(this)}}}};function kt(n,e,t){let s=document.createElement("div");s.className="note-pop";let a=document.createElement("div");a.className="note-head";let o=N(t.by);if(o&&a.append(o),t.date){let r=document.createElement("span");r.className="note-date",r.textContent=t.date,a.append(r)}let c=document.createElement("span");c.className="note-status",c.dataset.status=t.status,c.textContent=p(t.status,t.status),a.append(c);let l=document.createElement("div");if(l.className="note-body",l.append(...n.childNodes),s.append(a,l),e.length){let r=document.createElement("div");r.className="note-replies";for(let i of e){let d=document.createElement("div");d.className="note-reply";let m=document.createElement("div");m.className="note-reply-head";let g=N(i.getAttribute("by"));g&&m.append(g);let v=i.getAttribute("date");if(v){let f=document.createElement("span");f.className="note-date",f.textContent=v,m.append(f)}let u=document.createElement("div");u.className="note-reply-body",u.append(...i.childNodes),d.append(m,u),r.append(d)}s.append(r)}return s}function tt(){customElements.define("delta-comment",class extends Le{})}var nt={open:"\u2610",doing:"\u25D0",done:"\u2611"},ke=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("status")??"open",t=this.getAttribute("priority")??"normal",s=this.getAttribute("num"),a=this.getAttribute("for"),o=this.getAttribute("by"),c=this.getAttribute("due");this.classList.add("todo"),this.dataset.status=e,this.dataset.priority=t;let l=D(a)??D(o);l&&this.setAttribute("data-accent",l);let r=document.createElement("span");r.className="todo-state",r.setAttribute("aria-hidden","true"),r.textContent=nt[e]??nt.open;let i=document.createElement("div");if(i.className="todo-text",s){let u=document.createElement("span");u.className="todo-num",u.textContent=`${p("todo","Task")} ${s}`,i.append(u," ")}i.append(...this.childNodes),this.setAttribute("aria-label",`${p("todo","Task")}${s?` ${s}`:""}: ${p(e,e)}`);let d=document.createElement("div");d.className="todo-meta";let m=N(a);if(m){let u=document.createElement("span");u.className="todo-for",u.append(`${p("for","for")} `,m),d.append(u)}let g=N(o);if(g&&o!==a){let u=document.createElement("span");u.className="todo-by",u.append(`${p("by","by")} `,g),d.append(u)}if(c){let u=document.createElement("span");u.className="todo-due",u.textContent=`${p("due","Due")} ${c}`,d.append(u)}if(t!=="normal"){let u=document.createElement("span");u.className="todo-prio",u.dataset.priority=t,u.textContent=p(t,t),d.append(u)}this.replaceChildren(r,i),d.childElementCount&&this.append(d);let v=this.getAttribute("on");if(v){let u=document.getElementById(v);u&&!u.contains(this)&&(u.querySelector(":scope > h1, :scope > h2, :scope > h3, :scope > h4")??u).after(this)}}};function st(){customElements.define("delta-todo",class extends ke{})}var Ae=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",B(this,null);let e=this.getAttribute("note");if(e){let t=document.createElement("span");t.className="status-note",t.textContent=e,this.querySelector(":scope > .status-bar")?.append(t)}}};function at(){customElements.define("delta-draft",class extends Ae{})}var Te=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("by"),t=this.getAttribute("kind")??"insert",s=this.getAttribute("num"),a=D(e);this.classList.add("chg"),this.dataset.kind=t,this.getAttribute("block")==="true"&&this.classList.add("chg-block"),a&&this.setAttribute("data-accent",a);let o=[...this.querySelectorAll(":scope > delta-old")],c=[...this.querySelectorAll(":scope > delta-new")];if(o.length===0&&c.length===0){let f=document.createElement("delta-new");f.append(...this.childNodes),this.append(f),c=[f]}for(let f of o)f.classList.add("chg-del");for(let f of c)f.classList.add("chg-ins");let l=`${p("change","Change")}${s?` ${s}`:""} \xB7 ${p(t,t)}`,r=document.createElement("button");r.type="button",r.className="chg-marker",r.textContent=s??"\u0394",r.title=l,r.setAttribute("aria-label",l),r.addEventListener("click",f=>f.stopPropagation()),r.addEventListener("keydown",f=>f.stopPropagation());let i=document.createElement("div");i.className="chg-pop",a&&i.setAttribute("data-accent",a);let d=document.createElement("div");d.className="chg-pop-head";let m=N(e);m&&d.append(m);let g=this.getAttribute("date");if(g){let f=document.createElement("span");f.className="chg-date",f.textContent=g,d.append(f)}let v=document.createElement("span");v.className="chg-kind",v.dataset.kind=t,v.textContent=p(t,t),d.append(v),i.append(d);let u=this.getAttribute("note");if(u){let f=document.createElement("div");f.className="chg-note",f.textContent=u,i.append(f)}this.prepend(r),L(r,i)}};function ot(){customElements.define("delta-change",class extends Te{})}var At=["comment","todo","change","status"],Tt={comment:"annotations",todo:"tasks",change:"changes",status:"blocks"},Mt={comment:"Comments",todo:"Tasks",change:"Changes",status:"Blocks"},rt={comment:"C",todo:"T",change:"\u0394",status:""},Rt=["markup","final","original"],Me=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=Q(),t=this.getAttribute("scope")==="project",s=e.items.filter(h=>t||!h.file),a=this.querySelector(":scope > delta-title"),o=a?a.innerHTML:p("reviewPanel","Review"),c=document.createElement("section");c.className="review",c.setAttribute("aria-label",a?.textContent?.trim()||p("reviewPanel","Review"));let l=document.createElement("div");l.className="review-hd";let r=document.createElement("span");r.className="review-title",r.innerHTML=o;let i=document.createElement("button");i.type="button",i.className="review-copy",i.textContent=p("copyText","Copy as text"),l.append(r,i);let d=document.createElement("div");d.className="review-summary";let m=(h,C)=>{let M=document.createElement("span");M.className="review-stat";let k=document.createElement("b");k.textContent=String(h),M.append(k,` ${C}`),d.append(M)};m(s.filter(h=>h.kind==="comment"&&h.status==="open").length,p("openComments","open comments")),m(s.filter(h=>h.kind==="todo"&&h.status!=="done").length,p("openTasks","open tasks")),m(s.filter(h=>h.kind==="change").length,p("pendingChanges","pending changes"));let g=new Map;for(let h of s)h.kind==="status"&&g.set(h.status,(g.get(h.status)??0)+1);for(let[h,C]of g)m(C,p(h,h));let v=document.createElement("div");v.className="review-controls";let u=document.createElement("button");u.type="button",u.className="review-switch",u.textContent=p("annotations","Annotations"),u.addEventListener("click",()=>P.setAnnotations(!P.annotations));let f=document.createElement("div");f.className="review-seg",f.setAttribute("role","group");let y=document.createElement("span");y.className="review-seg-label",y.textContent=p("changes","Changes"),f.append(y);let S=Rt.map(h=>{let C=document.createElement("button");return C.type="button",C.dataset.mode=h,C.textContent=p(h,h),C.addEventListener("click",()=>P.setChanges(h)),f.append(C),C});v.append(u,f);let I=()=>{u.setAttribute("aria-pressed",String(P.annotations));for(let h of S)h.classList.toggle("is-active",h.dataset.mode===P.changes)};I(),document.addEventListener(G,I);let A=document.createElement("div");A.className="review-filters";let H=new Set,w=new Set,$=new Set,q=new Set;for(let h of s){for(let C of[h.by,h.for,h.verifiedBy])C&&$.add(C);q.add(h.status)}let b=(h,C,M,k)=>{let R=document.createElement("button");R.type="button",R.className=`review-filter ${h}`,R.dataset[h==="review-filter-member"?"member":"status"]=k,R.append(C),R.addEventListener("click",()=>{M.has(k)?M.delete(k):M.add(k),R.classList.toggle("is-active",M.has(k)),T()}),A.append(R)};for(let h of $)b("review-filter-member",N(h)??h,H,h);for(let h of q)b("review-filter-status",p(h,h),w,h);let E=document.createElement("div");E.className="review-list";let x=()=>s.filter(h=>(H.size===0||[h.by,h.for,h.verifiedBy].some(C=>C&&H.has(C)))&&(w.size===0||w.has(h.status))),T=()=>{E.replaceChildren();let h=x();if(h.length===0){let C=document.createElement("p");C.className="review-empty",C.textContent=p("nothingToReview","Nothing to review"),E.append(C);return}for(let C of At){let M=h.filter(R=>R.kind===C);if(M.length===0)continue;let k=document.createElement("div");k.className="review-group-title",k.textContent=p(Tt[C],Mt[C]),E.append(k);for(let R of M)E.append(St(R))}};T(),i.addEventListener("click",()=>{let h=x().map(Ht).join(`
+`);navigator.clipboard?.writeText(h).then(()=>{i.textContent=p("copied","Copied"),i.classList.add("is-copied"),setTimeout(()=>{i.textContent=p("copyText","Copy as text"),i.classList.remove("is-copied")},1400)})}),c.append(l,d,v),A.childElementCount&&c.append(A),c.append(E),this.replaceChildren(c)}};function St(n){let e=document.createElement("div");e.className="review-item",e.dataset.kind=n.kind,e.dataset.status=n.status;let t=document.createElement("div");t.className="review-item-hd";let s=document.createElement("a");s.className="review-jump",s.href=n.file?`${n.file}#${n.id}`:`#${n.id}`;let a=document.createElement("span");a.className="review-num",a.textContent=n.kind==="status"?`${p(n.tag,n.tag)}${n.num?` ${n.num}`:""}`:`${rt[n.kind]}${n.num??""}`,s.append(a),it(s,n),t.append(s);let o=document.createElement("span");if(o.className="status-pill",o.dataset.status=n.status,o.textContent=p(n.status,n.status),t.append(o),n.kind==="change"&&n.changeKind){let i=document.createElement("span");i.className="status-pill",i.textContent=p(n.changeKind,n.changeKind),t.append(i)}if(n.kind==="todo"&&n.priority&&n.priority!=="normal"){let i=document.createElement("span");i.className="status-pill review-prio",i.dataset.priority=n.priority,i.textContent=p(n.priority,n.priority),t.append(i)}let c=N(n.by);c&&t.append(c);let l=N(n.for);if(l){let i=document.createElement("span");i.className="review-for",i.append(`${p("for","for")} `,l),t.append(i)}let r=N(n.verifiedBy);if(r){let i=document.createElement("span");i.className="review-for",i.append("\u2713 ",r),t.append(i)}if(n.date){let i=document.createElement("span");i.className="review-date",i.textContent=n.date,t.append(i)}if(n.due){let i=document.createElement("span");i.className="review-date",i.textContent=`${p("due","Due")} ${n.due}`,t.append(i)}if(e.append(t),n.kind==="status"){if(n.html){let i=document.createElement("div");i.className="review-text review-block-title",i.innerHTML=n.html,e.append(i)}}else{let i=document.createElement("div");i.className="review-text",i.innerHTML=n.html,e.append(i)}if(n.note){let i=document.createElement("div");i.className="review-note",i.textContent=n.note,e.append(i)}for(let i of n.replies??[]){let d=document.createElement("div");d.className="review-reply";let m=N(i.by);m&&d.append(m," ");let g=document.createElement("span");g.innerHTML=i.html,d.append(g),e.append(d)}if(n.heading){let i=document.createElement("a");i.className="review-loc",i.href=n.file?`${n.file}#${n.heading.id}`:`#${n.heading.id}`,i.innerHTML=`\xA7${n.heading.num?` ${n.heading.num}`:""} ${n.heading.title}`,it(i,{...n,id:n.heading.id}),e.append(i)}return e}function it(n,e){n.addEventListener("click",t=>{e.file||(t.preventDefault(),!window.Delta?.deck?.goToId(e.id)&&K(e.id))})}function Ht(n){let e=n.kind==="status"?"":`${rt[n.kind]}${n.num??""} `,t=[n.by&&`${p("by","by")} ${n.by}`,n.for&&`${p("for","for")} ${n.for}`].filter(Boolean).join(", "),s=n.heading?` (\xA7${n.heading.num||""})`:"",a=[`${e}[${p(n.status,n.status)}]${t?` ${t}`:""}: ${n.text}${s}`];n.note&&a.push(`    ${p("note","Note")}: ${n.note}`);for(let o of n.replies??[])a.push(`    \u21B3 ${o.by??"?"}: ${o.text}`);return a.join(`
+`)}function ct(){customElements.define("delta-review",class extends Me{})}function dt(){qe(),He(),$e(),Ie(),Pe(),Be(),Oe(),De(),je(),Ke(),Ue(),Ve(),We(),ze(),Ge(),Ye(),Je(),Ze(),et(),tt(),st(),at(),ot(),ct()}function lt(){let n=document.documentElement;if(n.dataset.type!=="presentation")return null;let e=[...document.querySelectorAll("delta-slide")];if(e.length===0)return null;n.classList.add("deck-js"),document.querySelector("delta-progress")&&n.classList.add("deck-progress-on");let t=0,s=0,a=0,o=[],c=b=>Math.max(0,Math.min(e.length-1,b)),l=b=>[...b.querySelectorAll('[reveal="true"]')].map((E,x)=>({el:E,order:E.hasAttribute("reveal-order")?Number(E.getAttribute("reveal-order")):x})).sort((E,x)=>E.order-x.order).map(E=>E.el),r=e.map(l),i=(b,E)=>r[b].forEach((x,T)=>x.classList.toggle("is-revealed",T<E)),d=()=>{let b=(t+1)/e.length;n.style.setProperty("--deck-progress-prev",String(a)),n.style.setProperty("--deck-progress",String(b)),a=b},m=(b,E)=>{e[t]?.classList.remove("is-active"),t=c(b),s=E?r[t].length:0,i(t,s),d(),e[t].classList.add("is-active");for(let x of o)x(t,e.length)},g=()=>{s<r[t].length?i(t,++s):t<e.length-1&&m(t+1,!1)},v=()=>{s>0?i(t,--s):t>0&&m(t-1,!0)},u=b=>m(b,!1);document.addEventListener("keydown",b=>{let E=b.target;if(!(E&&(E.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(E.tagName)))&&!(b.metaKey||b.ctrlKey||b.altKey))switch(b.key){case"ArrowRight":case"ArrowDown":case"PageDown":case" ":b.preventDefault(),g();break;case"ArrowLeft":case"ArrowUp":case"PageUp":b.preventDefault(),v();break;case"Home":b.preventDefault(),u(0);break;case"End":b.preventDefault(),u(e.length-1);break}});let f=(b,E,x,T)=>{let h=document.createElement("button");return h.type="button",h.className=`deck-nav ${b}`,h.textContent=E,h.setAttribute("aria-label",x),h.addEventListener("click",T),h},y=document.createElement("div");y.className="deck-controls",y.append(f("deck-prev","\u2039",p("prevSlide","Previous slide"),v),f("deck-next","\u203A",p("nextSlide","Next slide"),g)),document.body.append(y);let S=0,I=0;document.addEventListener("touchstart",b=>{S=b.touches[0].clientX,I=b.touches[0].clientY},{passive:!0}),document.addEventListener("touchend",b=>{let E=b.changedTouches[0].clientX-S,x=b.changedTouches[0].clientY-I;Math.abs(E)>50&&Math.abs(E)>Math.abs(x)*1.5&&(E<0?g:v)()},{passive:!0});let A=b=>document.querySelector(`delta-slide[cover="true"] ${b}`)?.textContent?.trim()??"",H=(b,E)=>{let x=document.createElement("span");return x.className=b,x.textContent=E,x},w=A("delta-author"),$=A("delta-affiliation"),q=[...w?[H("tb-author",w)]:[],...$?[H("tb-affiliation",$)]:[]];if(q.length){let b=document.createElement("div");b.className="deck-topbar eyebrow",q.forEach((E,x)=>{x>0&&b.append(" \xB7 "),b.append(E)}),document.body.append(b),o.push(E=>b.classList.toggle("topbar-hidden",e[E].matches('[cover="true"], [divider="true"]')))}return m(0,!1),{get index(){return t},get total(){return e.length},go:u,next:g,prev:v,goToId(b){let E=document.getElementById(b);if(!E)return!1;let x=E.closest("delta-slide")??E.querySelector("delta-slide"),T=x?e.indexOf(x):-1;return T<0?!1:(u(T),!0)},onChange(b){o.push(b),b(t,e.length)}}}dt();Fe();var $t=lt();window.Delta={popover:L,t:p,deck:$t,review:P};var mt=()=>{location.hash.length>1&&K(decodeURIComponent(location.hash.slice(1)))};mt();window.addEventListener("hashchange",mt);})();
 </script>
 
 </body>

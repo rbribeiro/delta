@@ -49,6 +49,12 @@ export const ENVIRONMENTS: Record<string, EnvironmentSpec> = {
   interactive: { counter: "interactive", prefixWith: "section" },
   code: { counter: "code", prefixWith: "section" },
 
+  // Collaboration items (<comment>, <todo>, <change>): one document/project-wide counter
+  // each, no section prefix, never reset — "Comment 3" stays "Comment 3" wherever it sits.
+  comment: { counter: "comment" },
+  todo: { counter: "todo" },
+  change: { counter: "change" },
+
 };
 
 /**

@@ -122,6 +122,10 @@ delta build artigo.dlt -o artigo.html
           <ref to="apresentacoes">Apresentações</ref>.
         </item>
         <item>
+          Escrever a várias mãos, com pessoas ou agentes: <ref to="colaboracao">Colaboração</ref>,
+          anotações, tarefas, alterações rastreadas e o painel de revisão.
+        </item>
+        <item>
           O código e o rastreador de problemas ficam no
           <link to="https://github.com/rbribeiro/delta">repositório do projeto</link>.
         </item>

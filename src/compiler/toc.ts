@@ -16,16 +16,35 @@ import type { CompileContext, TocEntry } from "./context";
  * book-wide list (each entry tagged with its home output), so a project ToC can list
  * the whole work and link cross-file.
  */
-const LEVEL: Record<string, number> = {
+export const HEADING_LEVEL: Record<string, number> = {
   chapter: 1,
   section: 2,
   subsection: 3,
   subsubsection: 4,
 };
+const LEVEL = HEADING_LEVEL;
 
 /** Mutable slug counter, threaded so auto-ids stay unique across a project's files. */
-interface SlugState {
+export interface SlugState {
   auto: number;
+}
+
+/**
+ * Returns the heading's `id`, assigning a title-derived slug (recorded in `used`) when it
+ * has none — so a `#slug` link and the rendered anchor agree. Shared by the ToC and the
+ * review pass (which needs an anchor for "where is this item?" without a `<toc>`).
+ */
+export function ensureHeadingId(el: ElementNode, used: Set<string>, state: SlugState): string {
+  let id = el.attrs.id;
+  if (!id) {
+    const titleEl = el.children.find(
+      (c): c is ElementNode => c.type === "element" && c.tag === "title",
+    );
+    id = uniqueSlug(slugify(titleEl ? textContent(titleEl) : "") || `section-${++state.auto}`, used);
+    el.attrs.id = id;
+  }
+  used.add(id);
+  return id;
 }
 
 export function buildToc(doc: ElementNode, ctx: CompileContext): void {
@@ -87,12 +106,7 @@ function collectHeadings(
       (c): c is ElementNode => c.type === "element" && c.tag === "title",
     );
 
-    let id = el.attrs.id;
-    if (!id) {
-      id = uniqueSlug(slugify(titleEl ? textContent(titleEl) : "") || `section-${++state.auto}`, used);
-      el.attrs.id = id;
-    }
-    used.add(id);
+    const id = ensureHeadingId(el, used, state);
 
     out.push({
       level,
@@ -118,7 +132,7 @@ function hasProjectToc(doc: ElementNode): boolean {
 }
 
 /** GitHub-style slug: lowercase, non-alphanumerics → hyphens, trimmed. */
-function slugify(text: string): string {
+export function slugify(text: string): string {
   return text
     .toLowerCase()
     .trim()
@@ -127,7 +141,7 @@ function slugify(text: string): string {
 }
 
 /** Ensure uniqueness by suffixing `-2`, `-3`, … and record the result in `used`. */
-function uniqueSlug(base: string, used: Set<string>): string {
+export function uniqueSlug(base: string, used: Set<string>): string {
   if (!used.has(base)) return base;
   let n = 2;
   while (used.has(`${base}-${n}`)) n++;

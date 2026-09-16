@@ -17,6 +17,7 @@ inputs = [
   "layout.dlt",         # referência: prosa e layout
   "apresentacoes.dlt",  # referência: apresentações
   "projetos.dlt",       # referência: projetos multi-arquivo
+  "colaboracao.dlt",    # referência: colaboração (anotações, tarefas, alterações, revisão)
   "temas.dlt",          # referência: temas e pacotes
 ]
 

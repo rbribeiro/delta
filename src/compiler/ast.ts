@@ -66,6 +66,12 @@ export function* elements(root: ElementNode): Generator<ElementNode> {
   }
 }
 
+/** True when any element in the tree rooted at `root` has the given tag (one scan). */
+export function hasTag(root: ElementNode, tag: string): boolean {
+  for (const el of elements(root)) if (el.tag === tag) return true;
+  return false;
+}
+
 /**
  * Look for an element with a given id in the tree rooted at `root`. Returns the element if found, null if not found, or undefined if multiple elements with the same id are found.
  * 

@@ -1,5 +1,5 @@
 import { basename, dirname } from "node:path";
-import { elements, textContent, type ElementNode, type Node } from "./ast";
+import { elements, hasTag, textContent, type ElementNode, type Node } from "./ast";
 import type { CompileContext } from "./context";
 import { katexCss } from "./katex-css";
 import { resolveLang, stringsFor } from "./strings";
@@ -47,6 +47,8 @@ export function emit(
   const templates = renderTemplates(doc, ctx, globalById);
   // Heading tree for <delta-toc>, shipped as an inert JSON island.
   const toc = renderTocIsland(ctx);
+  // Collaboration data (<team> + the items a <review> panel lists), same shape.
+  const review = renderReviewIsland(doc, ctx);
 
   // The head is assembled after the templates/ToC island, because on the project
   // path those can carry math rendered in *another* file (a cross-file snapshot,
@@ -95,7 +97,7 @@ ${head}
 </head>
 <body>
 ${body}
-${templates}${toc}<script type="application/json" id="delta-i18n">${i18n}</script>
+${templates}${toc}${review}<script type="application/json" id="delta-i18n">${i18n}</script>
 <script>
 ${RUNTIME_JS}
 </script>
@@ -172,6 +174,66 @@ function renderTocIsland(ctx: CompileContext): string {
   }));
   const json = JSON.stringify(data).replace(/</g, "\\u003c");
   return `<script type="application/json" id="delta-toc">${json}</script>\n`;
+}
+
+/**
+ * Builds the inert `<script type="application/json" id="delta-review">` island: the `<team>`
+ * members (the runtime colors/badges every `by`/`for` chip from them) and, only when the
+ * document carries a `<review>` panel, the collected collaboration items with their bodies
+ * serialized (so math survives, like ToC titles). Shipped only where it is read: a document
+ * with a panel, or one whose own collaboration items need the team for their author chips.
+ * A plain document — or a project file that merely shares the team — stays byte-identical.
+ */
+function renderReviewIsland(doc: ElementNode, ctx: CompileContext): string {
+  const hasPanel = hasTag(doc, "review");
+  const ownItems = ctx.review.some((i) => !i.file);
+  if (!hasPanel && !(ctx.team.size > 0 && ownItems)) return "";
+
+  const ser = (nodes: Node[]): string => nodes.map(serialize).join("");
+  const data: Record<string, unknown> = { team: [...ctx.team.values()] };
+  if (hasPanel) {
+    // A project-wide panel may carry bodies/titles with math rendered in another file.
+    ctx.mathUsed ||= ctx.review.some(
+      (i) =>
+        containsMath(i.body) ||
+        (i.replies ?? []).some((r) => containsMath(r.body)) ||
+        (i.heading ? containsMath(i.heading.title) : false),
+    );
+    data.items = ctx.review.map((i) =>
+      compact({
+        kind: i.kind,
+        id: i.id,
+        tag: i.tag,
+        num: i.num,
+        status: i.status,
+        by: i.by,
+        for: i.for,
+        verifiedBy: i.verifiedBy,
+        date: i.date,
+        due: i.due,
+        priority: i.priority,
+        changeKind: i.changeKind,
+        note: i.note,
+        on: i.on,
+        text: i.text,
+        html: ser(i.body),
+        replies: i.replies?.map((r) => compact({ by: r.by, date: r.date, text: r.text, html: ser(r.body) })),
+        heading: i.heading
+          ? { level: i.heading.level, num: i.heading.num, id: i.heading.id, title: ser(i.heading.title) }
+          : undefined,
+        file: i.file,
+      }),
+    );
+  }
+  const json = JSON.stringify(data).replace(/</g, "\\u003c");
+  return `<script type="application/json" id="delta-review">${json}</script>\n`;
+}
+
+/** Drops undefined-valued keys so the island JSON stays small. */
+function compact<T extends Record<string, unknown>>(obj: T): Partial<T> {
+  const out: Partial<T> = {};
+  for (const [k, v] of Object.entries(obj)) if (v !== undefined) (out as Record<string, unknown>)[k] = v;
+  return out;
 }
 
 /** True when any node in the tree is pre-rendered math (a RawNode stamped by renderMath). */

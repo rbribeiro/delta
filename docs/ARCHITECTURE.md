@@ -233,7 +233,8 @@ author theme), so the output stays self-contained. How packs generalize into dis
 
 ```
 src/
-  cli.ts                       executable entry point (argv → compile → write)
+  cli.ts                       executable entry point (argv → compile → write; `review` subcommand)
+  review-report.ts             `delta review` text/JSON formatting (pure)
   compiler/
     index.ts                   the pipeline orchestrator — start here
     preprocess.ts              escape <,>,& inside math/raw regions (pre-parse)
@@ -247,13 +248,17 @@ src/
     references.ts              <ref to> → num+kind; marks targets for snapshotting
     bibliography.ts            load .ref papers; number <cite>; fill <bibliography>
     toc.ts                     heading tree + auto-slug ids (single + project)
+    team.ts                    <team>/<member> → ctx.team (collaborators; node removed)
+    collab.ts                  comment/todo/change/status vocabulary: defaults + warnings
+    review.ts                  collects comments/tasks/changes/status blocks → ctx.review
+    final.ts                   --final: strip marks, accept changes (the clean publication)
     figures.ts                 <figure src> images → data: URIs
     theme.ts                   <document theme> author CSS → ctx.userCss
     imports.ts                 <import> custom-element packs → ctx.imports
     strings.ts                 i18n table (en, pt, …) + lang resolvers
     project.ts                 multi-file projects (shared registry/numbering)
     config.ts                  project.toml parsing (smol-toml)
-    emit.ts                    AST → standalone HTML
+    emit.ts                    AST → standalone HTML (+ the #delta-toc / #delta-review islands)
     katex-css.ts               KaTeX CSS with data: fonts (offline math)
   runtime/
     index.ts                   registers the custom elements (defineComponents)
@@ -261,18 +266,21 @@ src/
     i18n.ts                    runtime t(key): reads the #delta-i18n island
     elements/                  one <delta-*> custom element per file (browser chrome)
                                (section, environment, ref, toc, floating, hint, cite,
-                                bibliography, sidenote, media, link; shared.ts helpers)
+                                bibliography, sidenote, media, link; shared.ts helpers;
+                                collab.ts substrate + comment, todo, change, draft, review)
   styles/
     base.css                   @layer delta.base — tokens + page grid + primitives
     components/*.css            @layer delta.components — one file per component
                                (structure, theorems, math, sidenote, columns, link,
                                 reference, hint, figure, bibliography, toc, collapse,
-                                popover, floating, tweaks); tweaks is CSS-staged
+                                popover, floating, collab, comment, todo, status, change,
+                                review, tweaks); tweaks is CSS-staged
     themes/<type>.css          @layer delta.theme — per-document-type token overrides
   generated/assets.ts          GENERATED, git-ignored (RUNTIME_JS + CORE_CSS + THEMES)
 scripts/build.ts               bundles runtime → assets.ts, and CLI → dist/cli.js
 examples/hello.dlt             the single-file reference example
 examples/project/              the multi-file project example (project.toml + chapters)
+examples/collab.dlt            the collaboration example (team, comments, tasks, changes, review)
 test/                          one suite per pass (parse, numbering, references, toc, …)
 ```
 

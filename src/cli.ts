@@ -7,17 +7,20 @@ import { compileProject, type ProjectResult } from "./compiler/project";
 import type { Diagnostic } from "./compiler/context";
 import { scaffoldFiles } from "./scaffold";
 import { installPackages } from "./install";
+import { filterReview, formatReviewText, reviewJson, type ReviewData, type ReviewFilter } from "./review-report";
 
 /** The CLI source entry point.
  * It parses command-line arguments, loads a project config if requested, and calls the compiler. It reports diagnostics and writes outputs to disk. It exits with a non-zero code if there were any errors, unless `--watch` is set (then it keeps running and rebuilds on change).
  */
 
 function usage(): never {
-  console.error("usage: delta build <file.dlt> [-o out.html] [--watch]");
-  console.error("       delta build <a.dlt> <b.dlt> ... [-o out-dir] [--watch]   # multi-file project");
-  console.error("       delta build <project.toml> [-o out-dir] [--watch]        # project file");
+  console.error("usage: delta build <file.dlt> [-o out.html] [--watch] [--final]");
+  console.error("       delta build <a.dlt> <b.dlt> ... [-o out-dir] [--watch] [--final]   # multi-file project");
+  console.error("       delta build <project.toml> [-o out-dir] [--watch] [--final]        # project file");
+  console.error("       delta review <file.dlt | project.toml> [--json] [--status s] [--for id] [--by id] [--kind k]");
   console.error("       delta create <project|package> <name>                    # scaffold a project/package");
   console.error("       delta install <pkg> [<pkg>...] [--project <file>]        # npm install + add to project.toml");
+  console.error("  --final  strips every collaboration mark (comments, tasks, changes, status, team): the clean publication");
   process.exit(1);
 }
 
@@ -34,6 +37,8 @@ interface BuildOptions {
   projectFile?: string;
   inputs: string[];
   output?: string;
+  /** `--final`: the clean publication build (collaboration marks stripped). */
+  final?: boolean;
 }
 
 /** Outcome of one build pass: whether it succeeded and which user files it read. */
@@ -62,7 +67,8 @@ function writeProject(result: ProjectResult): boolean {
  * still watches the right files for the next save.
  */
 function buildOnce(opts: BuildOptions): BuildOutcome {
-  const { projectFile, inputs, output } = opts;
+  const { projectFile, inputs, output, final } = opts;
+  const compileOpts = { final: final ?? false };
   // Files we always want to watch even if the compile fails before recording them.
   const entry = [...inputs, ...(projectFile ? [projectFile] : [])].map((p) => resolve(p));
 
@@ -71,21 +77,21 @@ function buildOnce(opts: BuildOptions): BuildOutcome {
     for (const d of diagnostics) report(d);
     if (!config) return { ok: false, deps: entry };
     if (output) config.outDir = resolve(output); // -o overrides the toml's `out`
-    const result = compileProject(config);
+    const result = compileProject(config, compileOpts);
     const ok = writeProject(result);
     return { ok, deps: [...new Set([...entry, ...result.deps])] };
   }
 
   // Several .dlt inputs compile as one project (shared numbering, cross-file refs).
   if (inputs.length > 1) {
-    const result = compileProject({ inputs, outDir: output ?? "." });
+    const result = compileProject({ inputs, outDir: output ?? "." }, compileOpts);
     const ok = writeProject(result);
     return { ok, deps: [...new Set([...entry, ...result.deps])] };
   }
 
   // Single .dlt file: output defaults to the input with a .html extension.
   const input = inputs[0];
-  const result = compileFile(input);
+  const result = compileFile(input, compileOpts);
   for (const d of result.diagnostics) report(d);
   const deps = [...new Set([...entry, ...result.deps])];
   if (result.html === undefined) return { ok: false, deps };
@@ -165,12 +171,14 @@ function buildMain(args: string[]): void {
   let output: string | undefined;
   let projectFile: string | undefined;
   let watchMode = false;
+  let final = false;
   const inputs: string[] = [];
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
     if (arg === "-o" || arg === "--output") output = args[++i] ?? usage();
     else if (arg === "--project") projectFile = args[++i] ?? usage();
     else if (arg === "--watch" || arg === "-w") watchMode = true;
+    else if (arg === "--final") final = true;
     else if (arg.startsWith("-")) usage();
     else inputs.push(arg);
   }
@@ -179,12 +187,59 @@ function buildMain(args: string[]): void {
   if (!projectFile && inputs.length === 1 && inputs[0].endsWith(".toml")) projectFile = inputs[0];
   if (!projectFile && inputs.length === 0) usage();
 
-  const opts: BuildOptions = { projectFile, inputs, output };
+  const opts: BuildOptions = { projectFile, inputs, output, final };
   if (watchMode) {
     runWatch(opts);
     return;
   }
   process.exit(buildOnce(opts).ok ? 0 : 1);
+}
+
+/**
+ * `delta review <file.dlt | project.toml> [--json] [--status s] [--for id] [--by id] [--kind k]` —
+ * prints the paper's collaboration state (comments, tasks, changes, status blocks) as text or
+ * JSON on stdout; diagnostics go to stderr. The agent-facing view: no browser needed.
+ */
+function reviewMain(args: string[]): void {
+  let json = false;
+  const filter: ReviewFilter = {};
+  const inputs: string[] = [];
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (arg === "--json") json = true;
+    else if (arg === "--status") filter.status = args[++i] ?? usage();
+    else if (arg === "--for") filter.for = args[++i] ?? usage();
+    else if (arg === "--by") filter.by = args[++i] ?? usage();
+    else if (arg === "--kind") filter.kind = args[++i] ?? usage();
+    else if (arg.startsWith("-")) usage();
+    else inputs.push(arg);
+  }
+  if (inputs.length === 0) usage();
+
+  let data: ReviewData | undefined;
+  let diagnostics: Diagnostic[];
+  if (inputs.length === 1 && inputs[0].endsWith(".toml")) {
+    const loaded = loadProjectConfig(inputs[0]);
+    for (const d of loaded.diagnostics) report(d);
+    if (!loaded.config) process.exit(1);
+    const result = compileProject(loaded.config);
+    diagnostics = result.diagnostics;
+    data = result.review;
+  } else if (inputs.length > 1) {
+    const result = compileProject({ inputs, outDir: "." });
+    diagnostics = result.diagnostics;
+    data = result.review;
+  } else {
+    const result = compileFile(inputs[0]);
+    diagnostics = result.diagnostics;
+    data = result.review;
+  }
+  for (const d of diagnostics) report(d);
+  if (!data || hasError(diagnostics)) process.exit(1);
+
+  const items = filterReview(data.items, filter);
+  process.stdout.write(json ? JSON.stringify(reviewJson(data, items), null, 2) + "\n" : formatReviewText(data, items));
+  process.exit(0);
 }
 
 /** `delta create <project|package> <name>` — scaffold a starter directory (never clobbers). */
@@ -238,6 +293,8 @@ function main(): void {
   switch (args.shift()) {
     case "build":
       return buildMain(args);
+    case "review":
+      return reviewMain(args);
     case "create":
       return createMain(args);
     case "install":

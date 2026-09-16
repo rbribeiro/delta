@@ -55,6 +55,8 @@
     "example": "tsx src/cli.ts build examples/hello.dlt -o out.html",
     "preexample:project": "npm run assets",
     "example:project": "tsx src/cli.ts build examples/project/project.toml",
+    "preexample:collab": "npm run assets",
+    "example:collab": "tsx src/cli.ts build examples/collab.dlt -o examples/collab.html",
     "prepack": "npm run build",
     "prepublishOnly": "npm run typecheck && npm test"
   },
