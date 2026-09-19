@@ -1,0 +1,109 @@
+/* theme.css do explorador do pipeline. Tudo escopado a delta-pipeline-explorer e feito de
+   tokens --delta-*, para herdar o acento, o modo escuro e a tipografia da página. */
+
+delta-pipeline-explorer { display: block; text-align: left; font-family: var(--delta-sans); font-size: 0.9rem; color: var(--delta-ink); }
+delta-pipeline-explorer .px { outline: none; }
+delta-pipeline-explorer .px:focus-visible { box-shadow: 0 0 0 2px var(--delta-accent-soft); border-radius: var(--delta-radius); }
+
+/* a linha do tempo */
+delta-pipeline-explorer .px-track { overflow-x: auto; overflow-y: hidden; padding: 0.3rem 0 0.2rem; border-bottom: 1px solid var(--delta-rule-soft, var(--delta-rule)); }
+delta-pipeline-explorer .px-track-inner { position: relative; min-width: 480px; padding: 0.2rem 0.5rem 2.1rem; }
+delta-pipeline-explorer .px-labels { position: relative; height: 15px; margin-bottom: 0.35rem; }
+delta-pipeline-explorer .px-phase-label {
+  position: absolute; top: 0; left: 0; line-height: 15px; font-size: 0.66rem; font-weight: 700;
+  letter-spacing: var(--delta-tracking-cap, 0.08em); text-transform: uppercase; white-space: nowrap;
+  color: var(--delta-ink-soft, var(--delta-ink));
+}
+delta-pipeline-explorer .px-gate-label { text-transform: none; letter-spacing: 0; font-weight: 500; color: var(--delta-warn, #c8891a); }
+delta-pipeline-explorer .px-line, delta-pipeline-explorer .px-fill {
+  position: absolute; left: 0.5rem; right: 0.5rem; height: 3px; border-radius: 2px;
+  background: var(--delta-rule, rgba(0,0,0,0.15)); pointer-events: none;
+}
+delta-pipeline-explorer .px-fill { right: auto; width: 0; background: var(--delta-accent); transition: width var(--delta-dur, 200ms) var(--delta-ease, ease); }
+delta-pipeline-explorer .px-phases { position: relative; display: flex; align-items: stretch; }
+delta-pipeline-explorer .px-phase { flex: 1 1 0; min-width: 0; border-left: 1px solid var(--delta-rule-soft, var(--delta-rule)); }
+delta-pipeline-explorer .px-phase.is-alt { background: color-mix(in srgb, var(--delta-accent) 6%, transparent); }
+delta-pipeline-explorer .px-groups { display: flex; justify-content: space-evenly; align-items: center; height: 1.6rem; padding: 0 2px; }
+delta-pipeline-explorer .px-group { display: flex; gap: 2px; align-items: center; }
+delta-pipeline-explorer .px-dot {
+  width: 9px; height: 9px; padding: 0; border-radius: 50%; border: 2px solid var(--delta-accent);
+  background: var(--delta-paper); cursor: pointer; box-shadow: none; position: relative;
+  transition: transform var(--delta-dur-fast, 120ms) var(--delta-ease, ease);
+}
+delta-pipeline-explorer .px-dot::after { content: ""; position: absolute; inset: -5px; } /* área de clique maior que o ponto */
+delta-pipeline-explorer .px-dot.is-all { border-radius: 1px; transform: rotate(45deg); width: 8px; height: 8px; }
+delta-pipeline-explorer .px-dot.is-done { background: var(--delta-accent); }
+delta-pipeline-explorer .px-dot.is-current { background: var(--delta-accent-ink); border-color: var(--delta-accent-ink); transform: scale(1.6); box-shadow: 0 0 0 3px var(--delta-accent-soft); z-index: 1; }
+delta-pipeline-explorer .px-dot.is-all.is-current { transform: rotate(45deg) scale(1.6); }
+delta-pipeline-explorer .px-dot:hover { transform: scale(1.4); }
+delta-pipeline-explorer .px-dot.is-all:hover { transform: rotate(45deg) scale(1.4); }
+delta-pipeline-explorer .px-gate { display: flex; align-items: center; width: 0; overflow: visible; position: relative; z-index: 1; }
+delta-pipeline-explorer .px-gate-bar { display: block; width: 3px; height: 1.1rem; margin-left: -1px; background: var(--delta-warn, #c8891a); border-radius: 2px; }
+delta-pipeline-explorer .px-marker { position: absolute; left: 0; pointer-events: none; }
+delta-pipeline-explorer .px-marker-caret { position: absolute; left: -5px; top: 0; width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 6px solid var(--delta-accent-ink); }
+delta-pipeline-explorer .px-marker-label {
+  position: absolute; top: 6px; left: 0; white-space: nowrap; translate: -50% 0;
+  font-family: var(--delta-mono); font-size: 0.72rem; font-weight: 600; color: var(--delta-paper);
+  background: var(--delta-accent-ink); padding: 0.1rem 0.5rem; border-radius: var(--delta-radius-pill, 999px);
+}
+delta-pipeline-explorer .px-jump { font-size: 0.78rem; padding: 0.2rem 0.4rem; max-width: 16rem; margin-left: auto; }
+
+/* cabeçalho */
+delta-pipeline-explorer .px-head { padding: 0.9rem 0 0.6rem; }
+delta-pipeline-explorer .px-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.6rem; margin-bottom: 0.6rem; }
+delta-pipeline-explorer .px-pos { font-family: var(--delta-mono); font-size: 0.8rem; color: var(--delta-ink-soft, var(--delta-ink)); min-width: 5ch; text-align: center; white-space: nowrap; }
+delta-pipeline-explorer .px-step-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem; margin-bottom: 0.3rem; }
+delta-pipeline-explorer .px-kind { font-size: 0.74rem; text-transform: uppercase; letter-spacing: var(--delta-tracking-cap, 0.08em); color: var(--delta-ink-soft, var(--delta-ink)); }
+delta-pipeline-explorer .px-step-name { font-family: var(--delta-mono); font-size: 1.05rem; font-weight: 600; color: var(--delta-accent-ink); }
+delta-pipeline-explorer .px-phase-tag { font-size: 0.74rem; color: var(--delta-mute, var(--delta-ink-soft)); }
+delta-pipeline-explorer .px-what { margin: 0 0 0.4rem; line-height: 1.45; }
+delta-pipeline-explorer .px-changes { margin: 0; font-size: 0.82rem; display: flex; flex-wrap: wrap; gap: 0.35rem 0.6rem; align-items: baseline; }
+delta-pipeline-explorer .px-chip { background: var(--delta-accent-soft); color: var(--delta-ink); padding: 0.1rem 0.5rem; border-radius: var(--delta-radius-pill, 999px); }
+delta-pipeline-explorer .px-muted { color: var(--delta-ink-soft, var(--delta-ink)); }
+delta-pipeline-explorer .px-note { font-size: 0.8rem; margin: 0 0 0.6rem; }
+
+/* abas */
+delta-pipeline-explorer .px-tabbar { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.4rem; border-bottom: 1px solid var(--delta-rule-soft, var(--delta-rule)); padding-bottom: 0.4rem; }
+delta-pipeline-explorer .px-tabs { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+delta-pipeline-explorer .px-files .px-tab { font-family: var(--delta-mono); }
+delta-pipeline-explorer .px-tab { font-size: 0.8rem; padding: 0.2rem 0.6rem; position: relative; }
+delta-pipeline-explorer .px-tab.is-current { background: var(--delta-surface-2); color: var(--delta-accent-ink); font-weight: 600; }
+delta-pipeline-explorer .px-tab.is-dirty::after {
+  content: ""; position: absolute; top: 0.25rem; right: 0.25rem; width: 0.4rem; height: 0.4rem;
+  border-radius: 50%; background: var(--delta-accent);
+}
+
+/* painel */
+delta-pipeline-explorer .px-panel { padding-top: 0.7rem; max-height: 32rem; overflow: auto; }
+delta-pipeline-explorer .px-h { font-size: 0.78rem; text-transform: uppercase; letter-spacing: var(--delta-tracking-cap, 0.08em); margin: 0.9rem 0 0.3rem; display: flex; gap: 0.4rem; align-items: center; }
+delta-pipeline-explorer .px-h:first-of-type { margin-top: 0.2rem; }
+delta-pipeline-explorer .px-dot { width: 0.45rem; height: 0.45rem; border-radius: 50%; background: var(--delta-accent); display: inline-block; }
+
+/* árvore */
+delta-pipeline-explorer .px-tree { font-family: var(--delta-mono); font-size: 0.78rem; line-height: 1.55; }
+delta-pipeline-explorer .px-node { padding-left: calc(var(--depth, 0) * 1.2rem); white-space: nowrap; border-radius: var(--delta-radius-sm, 4px); }
+delta-pipeline-explorer .px-node.is-added { background: color-mix(in srgb, var(--delta-ok, #2a8a4a) 16%, transparent); }
+delta-pipeline-explorer .px-node.is-changed { background: color-mix(in srgb, var(--delta-warn, #c8891a) 16%, transparent); }
+delta-pipeline-explorer .px-tag { color: var(--delta-accent-ink); }
+delta-pipeline-explorer .px-attr-k { color: var(--delta-ink-soft, var(--delta-ink)); }
+delta-pipeline-explorer .px-attr-v { color: var(--delta-ink); }
+delta-pipeline-explorer .px-attr.is-added { background: color-mix(in srgb, var(--delta-ok, #2a8a4a) 22%, transparent); border-radius: 3px; padding: 0 0.15rem; }
+delta-pipeline-explorer .px-attr.is-changed { background: color-mix(in srgb, var(--delta-warn, #c8891a) 24%, transparent); border-radius: 3px; padding: 0 0.15rem; }
+delta-pipeline-explorer .px-attr.is-removed { text-decoration: line-through; color: var(--delta-mute, var(--delta-ink-soft)); }
+delta-pipeline-explorer .px-text { color: var(--delta-ink-soft, var(--delta-ink)); font-style: italic; }
+delta-pipeline-explorer .px-raw { background: var(--delta-surface-2); color: var(--delta-accent-ink); padding: 0 0.35rem; border-radius: var(--delta-radius-pill, 999px); font-size: 0.72rem; }
+
+/* pares chave/valor */
+delta-pipeline-explorer .px-kv { border-collapse: collapse; width: 100%; font-size: 0.8rem; }
+delta-pipeline-explorer .px-kv th, delta-pipeline-explorer .px-kv td { text-align: left; vertical-align: top; padding: 0.25rem 0.5rem; border-bottom: 1px solid var(--delta-rule-soft, var(--delta-rule)); }
+delta-pipeline-explorer .px-kv th { font-weight: 500; white-space: nowrap; width: 1%; }
+delta-pipeline-explorer .px-kv tr.is-changed { background: color-mix(in srgb, var(--delta-accent) 12%, transparent); }
+delta-pipeline-explorer .px-kv tr.is-empty { color: var(--delta-mute, var(--delta-ink-soft)); }
+delta-pipeline-explorer .px-json { white-space: pre; display: block; font-size: 0.78rem; }
+delta-pipeline-explorer .px-src { font-family: var(--delta-mono); font-size: 0.78rem; line-height: 1.5; margin: 0; white-space: pre; }
+delta-pipeline-explorer code { font-family: var(--delta-mono); }
+
+@media (max-width: 640px) {
+  delta-pipeline-explorer .px-panel { max-height: 24rem; }
+  delta-pipeline-explorer .px-node { white-space: normal; }
+}

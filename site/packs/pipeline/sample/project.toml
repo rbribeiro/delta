@@ -1,0 +1,9 @@
+# The two-file sample the docs' pipeline explorer is generated from (scripts/trace.ts).
+# Deliberately tiny: every snapshot must fit on screen. Two files, so that numbering
+# continuing across files and a cross-file <ref> are both visible.
+inputs = ["cap1.dlt", "cap2.dlt"]
+out = "out"
+
+[document]
+lang = "pt-BR"
+theme-accent = "green"

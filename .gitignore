@@ -3,6 +3,7 @@ dist/
 out.html
 examples/project/out/
 src/generated/
+site/packs/pipeline/dist/
 *.tsbuildinfo
 .DS_Store
 CLAUDE.md

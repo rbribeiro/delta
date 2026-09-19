@@ -1,0 +1,40 @@
+{
+  "phases": {
+    "load": "Ler cada arquivo de entrada e transformá-lo em uma árvore só. Se qualquer arquivo tiver erro ao fim desta fase, a compilação para aqui.",
+    "collab": "Validar o vocabulário de colaboração, agora que a equipe de todos os arquivos é conhecida.",
+    "bibliography": "Carregar a base de artigos e numerar as citações no projeto inteiro, antes da numeração, para que os <paper> citados passem pelos passos seguintes.",
+    "numbering": "Atribuir números no estilo LaTeX a partir da tabela de ambientes. Um único estado de contadores atravessa os arquivos, na ordem.",
+    "render": "Resolver tudo o que depende do registro e embutir todos os recursos.",
+    "emit": "Serializar cada árvore em um HTML autônomo."
+  },
+  "steps": {
+    "resolvePackages": "Os pacotes do project.toml são lidos uma vez e guardados nos imports do projeto; cada saída os embute.",
+    "readSource": "Lê o .dlt do disco (a menos que o texto já tenha sido passado) e registra o arquivo para o --watch.",
+    "parse": "O preprocessador escapa < > & dentro de matemática e das tags cruas; depois o XML estrito vira a árvore genérica.",
+    "resolveIncludes": "Cada <include> é substituído pelo conteúdo do arquivo incluído (recursivo, com detecção de ciclo; arquivo ausente é erro).",
+    "applyDocumentDefaults": "A tabela [document] do project.toml preenche o que faltar no <document>; depois o lang é lido para ctx.lang.",
+    "finalizeReview": "Só com --final: remove comentários, tarefas e equipe e aceita as alterações, antes da numeração, para que nada removido consuma um contador.",
+    "collectTeam": "O <team> vira o mapa de membros compartilhado e o nó é removido: os dados viajam na ilha de revisão.",
+    "expandAnimated": "Só em apresentações: animated=\"true\" vira reveal=\"true\" em cada filho.",
+    "expandCover": "Só em apresentações: <cover> vira <slide cover=\"true\">.",
+    "resolveCollab": "Vocabulário de comment/todo/change/status: escreve padrões, avisa sobre valores desconhecidos e confere by/for contra a equipe.",
+    "summarizeFinal": "Só com --final: um único aviso com o que a compilação final deixou pendente.",
+    "loadBibliography": "Os <paper> e o arquivo .ref vão para o mapa de artigos compartilhado; o <bibliography> é esvaziado (o título fica).",
+    "numberCitations": "Cada <cite> é numerado pela ordem de primeira aparição no projeto; os ids citados entram em referencedIds.",
+    "fillProjectBibliography": "O primeiro <bibliography> (na ordem dos inputs) recebe os artigos citados; os demais avisam e ficam vazios.",
+    "numberDocument": "Escreve attrs.num em cada tag numerada e registra todo id no registro compartilhado. Os contadores continuam de um arquivo para o outro.",
+    "buildIdMaps": "Dois mapas do projeto inteiro: id → nó (para as prévias) e id → arquivo de saída (para os links entre arquivos).",
+    "renderMath": "$…$ e as tags de matemática viram HTML do KaTeX (um RawNode); \\ref{} dentro da fórmula resolve contra o registro. Liga mathUsed.",
+    "highlightCode": "<code lang> vira HTML destacado (um RawNode). Depois da matemática, que pula a tag crua code.",
+    "buildProjectToc": "A árvore de títulos vira ctx.toc (títulos sem id ganham um slug); do livro inteiro quando há um <toc scope=\"project\">.",
+    "buildProjectReview": "Comentários, tarefas, alterações e blocos com status viram ctx.review, cada um com o título mais próximo.",
+    "resolveReferences": "<ref to> (e solution/proof of) recebem data-target-num e data-target-tag do registro; os alvos entram em referencedIds.",
+    "annotateCrossFileRefs": "Uma referência resolvida cujo alvo mora em outra saída ganha data-target-href=\"arquivo#id\".",
+    "annotateCrossFileCites": "Um <cite> resolvido, num arquivo que não é o da lista de referências, ganha data-cite-file.",
+    "inlineFigures": "As imagens de <figure src> viram data: URIs (a saída precisa funcionar offline).",
+    "resolveTheme": "theme, theme-accent e theme-mode do <document> vão para ctx.userCss / builtinCss / themeAccent / themeMode.",
+    "resolveImports": "Primeiro os pacotes do projeto, depois os <import> do arquivo, vão para ctx.imports (JS depois do runtime, CSS antes do tema do autor).",
+    "resolveLineBreaks": "Uma linha em branco na prosa vira uma quebra (<br><br>). Por último, para que os outros passos vejam o texto original.",
+    "emit": "Renomeia as tags para <delta-*>, embute CSS, runtime e pacotes, serializa cada alvo de referencedIds (buscado em globalById) num <template> e grava as ilhas JSON. A árvore não muda: veja a aba Saída."
+  }
+}

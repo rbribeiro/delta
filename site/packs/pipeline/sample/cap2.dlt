@@ -1,0 +1,11 @@
+<document>
+  <title>Capítulo 2</title>
+  <section id="sec:identidades">
+    <title>Identidades</title>
+    Pelo <ref to="thm:pitagoras"/>, vale $c^2 = a^2 + b^2$ (veja \eqref{eq:pitagoras}).
+    <lemma id="lem:quadrado">
+      <title>Quadrado da soma</title>
+      $(a+b)^2 = a^2 + 2ab + b^2$
+    </lemma>
+  </section>
+</document>

@@ -19,6 +19,8 @@ inputs = [
   "projetos.dlt",       # referência: projetos multi-arquivo
   "colaboracao.dlt",    # referência: colaboração (anotações, tarefas, alterações, revisão)
   "temas.dlt",          # referência: temas e pacotes
+  "compilador.dlt",     # contribuir: por dentro do compilador (com o explorador do pipeline)
+  "contribuir.dlt",     # contribuir: ambiente, anatomia de um passo, como acrescentar um
 ]
 
 # A saída de um projeto é achatada pelo nome-base: cada <arquivo>.dlt vira

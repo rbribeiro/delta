@@ -1,0 +1,5 @@
+{
+  "js": "dist/index.js",
+  "css": "theme.css",
+  "tags": ["pipeline-explorer"]
+}

@@ -97,7 +97,9 @@ delta build artigo.dlt -o artigo.html
           <box color="slate">
             <title>Feito para ser estendido</title>
             Um ambiente numerado novo é uma linha de tabela; uma tag interativa é
-            um pacote. Veja <ref to="temas">Temas e pacotes</ref>.
+            um pacote (<ref to="temas">Temas e pacotes</ref>); e o compilador é um
+            pipeline declarado numa tabela, com um explorador para quem quer mexer
+            nele (<ref to="compilador">Por dentro do compilador</ref>).
           </box>
         </column>
       </columns>
@@ -124,6 +126,11 @@ delta build artigo.dlt -o artigo.html
         <item>
           Escrever a várias mãos, com pessoas ou agentes: <ref to="colaboracao">Colaboração</ref>,
           anotações, tarefas, alterações rastreadas e o painel de revisão.
+        </item>
+        <item>
+          Para quem quer mexer no compilador: <ref to="compilador">Por dentro do compilador</ref>,
+          com o pipeline passo a passo, e <ref to="contribuir">Contribuir com o compilador</ref>,
+          do ambiente ao pull request.
         </item>
         <item>
           O código e o rastreador de problemas ficam no

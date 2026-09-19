@@ -1,0 +1,400 @@
+<document id="p-compilador" theme="tema.css">
+  <title>Por dentro do compilador · Delta</title>
+  <import src="packs/pipeline"/>
+
+  <floating>
+    <title>Navegação</title>
+    <toc scope="project" depth="1"/>
+  </floating>
+
+  <section id="compilador">
+    <eyebrow>Contribuir</eyebrow>
+    <title>Por dentro do compilador</title>
+    <intro>
+      O que acontece entre o <c>.dlt</c> que você escreve e o HTML que abre no navegador.
+      Esta página lê o compilador de ponta a ponta: as duas regras que explicam todas as
+      decisões, as três estruturas que tudo usa, o pipeline passo a passo (com um explorador
+      que mostra a árvore e o contexto mudando a cada passo), e como a numeração atravessa os
+      arquivos de um projeto. É a leitura para quem quer contribuir na parte do compilador.
+    </intro>
+
+    <toc/>
+
+    <subsection id="sobre-duas-regras">
+      <title>As duas regras</title>
+
+      Quase toda escolha do compilador decorre de duas regras. Guarde as duas antes de ler
+      qualquer código.
+
+      <box type="note">
+        <title>1. O compilador resolve dados; o navegador desenha</title>
+        O compilador calcula o que precisa de conhecimento global: o número do teorema, o
+        alvo de uma referência, a árvore do sumário, o HTML do KaTeX. Ele entrega isso como
+        <b>atributos</b> nas tags e como <b>ilhas</b> de JSON. Ele nunca desenha nada: não
+        existe um <c>h2</c> nem um "Teorema 1.1" na saída. Cada tag é renomeada para
+        <c>delta-*</c> e um custom element do runtime, no navegador, monta o visual.
+      </box>
+
+      <box type="note">
+        <title>2. A saída não referencia nada externo</title>
+        Nenhum <c>link</c>, nenhuma URL, nenhum <c>fetch</c>. Fontes e imagens vão como
+        <c>data:</c> URIs; CSS e o runtime vão como texto. Um arquivo aberto de <c>file://</c>
+        não consegue buscar nem os irmãos, então tudo o que a página precisa (até uma cópia
+        do teorema de outro capítulo, para a prévia da referência) é embutido na compilação.
+        Um teste (<c>test/emit.test.ts</c>) vigia essa invariante.
+      </box>
+
+      Repare no que a regra 1 proíbe: um passo do compilador que "monta o cabeçalho do
+      teorema" está no lugar errado. O compilador escreve <c>num="1.1"</c>; quem escreve
+      "Teorema 1.1" é o elemento <c>delta-theorem</c>, no navegador, com a tradução certa
+      para o <c>lang</c> do documento.
+    </subsection>
+
+    <subsection id="sobre-tres-conceitos">
+      <title>As três estruturas</title>
+
+      Todo passo do compilador é uma variação de "percorrer a árvore, ler e escrever o
+      contexto". Os três tipos abaixo são o vocabulário inteiro.
+
+      <b>A árvore genérica</b> (<c>src/compiler/ast.ts</c>). Há exatamente três tipos de nó,
+      e nenhuma subclasse por tag: um teorema é um <c>ElementNode</c> cuja <c>tag</c> é
+      <c>"theorem"</c>, nada mais.
+
+      <code lang="typescript" numbered="false">
+interface ElementNode { type: "element"; tag: string; attrs: Record<string, string>; children: Node[]; pos?: Position }
+interface TextNode    { type: "text"; text: string }
+interface RawNode     { type: "raw"; html: string; kind?: "math" }   // HTML já pronto (KaTeX, código destacado); nunca é escapado
+      </code>
+
+      Os passos ramificam pela <c>tag</c> e escrevem o resultado <b>de volta nos
+      atributos</b>: a numeração escreve <c>attrs.num</c>, a resolução de referências escreve
+      <c>attrs["data-target-num"]</c>. Os atributos são o quadro-negro: sobrevivem do passo
+      que os calculou até o emissor, que os copia tal e qual para a tag <c>delta-*</c>.
+      <c>elements(root)</c> percorre a árvore em profundidade e <c>textContent(node)</c>
+      achata um nó em texto (um <c>RawNode</c> vira vazio, o que é importante para títulos com
+      matemática).
+
+      <b>O contexto compartilhado</b> (<c>src/compiler/context.ts</c>). Um único objeto
+      mutável, o <c>CompileContext</c>, é criado por arquivo e passado a todo passo. Os passos
+      não se chamam entre si e não têm estado global: comunicam-se <b>só</b> por esse objeto
+      e pelos atributos dos nós. Um passo escreve um campo, um passo posterior lê. Por isso a
+      ordem dos passos é estrutural: não dá para resolver uma referência contra um registro
+      que ainda não foi preenchido. Os campos, quem escreve cada um e quem lê, estão na tabela
+      em <ref to="sobre-contexto">O contexto, campo a campo</ref>.
+
+      <b>A tabela de ambientes</b> (<c>src/compiler/environments.ts</c>). Toda a numeração é
+      dado, não código. Cada tag numerada tem um contador e, opcionalmente, um contador que a
+      prefixa:
+
+      <code lang="typescript" numbered="false">
+theorem:  { counter: "theorem",  prefixWith: "section" },   // "1.2" = seção 1, teorema 2
+equation: { counter: "equation", prefixWith: "section" },
+equations:{ counter: "equation", prefixWith: "section" },   // compartilha o contador de equation
+code:     { counter: "code",     prefixWith: "section" },
+
+COUNTER_RESETS = { chapter: ["section"], section: ["subsection", "theorem", "equation", …], subsection: ["subsubsection"] }
+      </code>
+
+      O passo de numeração é um motor genérico sobre essa tabela: não tem um <c>if</c> por
+      ambiente. Um ambiente novo é uma linha aqui, mais o nome traduzido em
+      <c>strings.ts</c> e a tag no runtime.
+    </subsection>
+
+    <subsection id="sobre-pipeline">
+      <title>O pipeline, passo a passo</title>
+
+      A ordem em que as coisas acontecem <b>é</b> a arquitetura, e ela mora num lugar só:
+      a tabela <c>PIPELINE</c> em <c>src/compiler/pipeline.ts</c>. Uma compilação é uma lista
+      de arquivos que compartilham um estado, executada por um único motor
+      (<c>runPipeline</c>). Um arquivo sozinho é um projeto de um arquivo só; as funções
+      <c>compileSource</c>, <c>compileFile</c> e <c>compileProject</c> apenas montam essa
+      lista e chamam o motor.
+
+      A tabela é uma lista de <b>fases</b>, e cada fase uma lista de <b>passos</b>. Um passo é
+      <b>por arquivo</b> (roda em cada arquivo, na ordem dos <c>inputs</c>, antes de o próximo
+      passo começar em qualquer arquivo) ou <b>do projeto inteiro</b> (roda uma vez). Assim um
+      passo por arquivo pode contar com tudo o que os passos anteriores fizeram em
+      <b>todos</b> os arquivos, e é por isso que a equipe declarada no capítulo 1 vale para o
+      <c>by</c> de um comentário no capítulo 3.
+
+      <code lang="typescript" numbered="false">
+{
+  name: "numbering",
+  what: "Assign LaTeX-style numbers from the environments table; one counter state runs through the files in order.",
+  steps: [
+    { name: "numberDocument", what: "…", each: perFile((doc, ctx, s) => { numberDocument(doc, ctx, s.numbering); }) },
+    { name: "buildIdMaps",    what: "…", all:  (files, s) => buildIdMaps(parsed(files), s.globalById, s.idToFile) },
+  ],
+}
+      </code>
+
+      As seis fases:
+
+      <list marker="number">
+        <item>
+          <b>load</b>: ler cada arquivo e transformá-lo numa árvore só (pré-processador, XML,
+          <c>include</c>, os padrões do <c>project.toml</c>, o <c>--final</c>, a equipe, o
+          açúcar das apresentações). Se ao fim desta fase qualquer arquivo tiver um
+          <b>erro</b>, a compilação para: é o único ponto de parada do pipeline.
+        </item>
+        <item>
+          <b>collab</b>: validar o vocabulário de colaboração, agora que a equipe de todos os
+          arquivos é conhecida.
+        </item>
+        <item>
+          <b>bibliography</b>: carregar os artigos e numerar as citações no projeto inteiro.
+          Vem antes da numeração de propósito: os <c>paper</c> citados são inseridos na
+          árvore e passam pelos passos seguintes como qualquer nó.
+        </item>
+        <item>
+          <b>numbering</b>: os números, a partir da tabela de ambientes, com um único estado
+          de contadores atravessando os arquivos; e os dois mapas do projeto inteiro, id → nó
+          e id → arquivo de saída.
+        </item>
+        <item>
+          <b>render</b>: tudo o que depende do registro (matemática, referências, sumário,
+          revisão) e tudo o que precisa ser embutido (figuras, tema, pacotes).
+        </item>
+        <item><b>emit</b>: cada árvore vira um HTML autônomo.</item>
+      </list>
+
+      O explorador abaixo foi gerado <b>rodando o compilador de verdade</b> sobre um projeto
+      de dois arquivos (<c>site/packs/pipeline/sample/</c>), com o gancho <c>trace</c> que o
+      motor oferece: a cada passo, e a cada arquivo de um passo por arquivo, ele tira um
+      instantâneo da árvore, do contexto do arquivo e do estado compartilhado. O que você vê é
+      o que o compilador fez; se um passo mudar, o explorador muda junto na próxima
+      <c>npm run docs</c>. Navegue com os botões, clicando num ponto da linha do tempo, escolhendo um passo
+      pelo nome, ou com as setas do teclado. Na linha, um passo por arquivo é um par de
+      pontos (um por capítulo) e um passo do projeto inteiro é um losango; a barra depois
+      de <c>load</c> é o único ponto em que a compilação pode parar. O que mudou em relação ao passo anterior fica destacado.
+
+      <interactive id="int:pipeline">
+        <caption>
+          O pipeline sobre um projeto de dois capítulos. Aba <b>Árvore</b>: a AST do arquivo
+          escolhido; <b>Contexto</b>: o <c>CompileContext</c> desse arquivo; <b>Compartilhado</b>:
+          contadores, registro e os mapas <c>globalById</c>/<c>idToFile</c>, comuns aos dois;
+          <b>Saída</b>: o que <c>emit</c> escreveu no HTML (templates, ilhas); <b>Fonte</b>: o
+          <c>.dlt</c> original.
+        </caption>
+        <pipeline-explorer/>
+      </interactive>
+
+      Cinco paradas valem a visita:
+
+      <list marker="number">
+        <item>
+          <b>Depois de <c>parse</c></b>, em <c>cap1.dlt</c>: a árvore crua. Compare com a aba
+          Fonte. Não há número em lugar nenhum, e o <c>$a &lt; b$</c> ainda é texto.
+        </item>
+        <item>
+          <b>Depois de <c>numberDocument</c></b>, primeiro em <c>cap1.dlt</c>, depois em
+          <c>cap2.dlt</c>: na aba Compartilhado, os contadores continuam de um arquivo para o
+          outro (a seção do capítulo 2 é a 2, não a 1), e o registro cresce com os ids dos
+          dois arquivos. Repare em <c>theorem</c> voltando a zero quando a seção 2 começa: é o
+          <c>COUNTER_RESETS</c> agindo.
+        </item>
+        <item>
+          <b>Depois de <c>renderMath</c></b>: um nó de texto virou três (texto, <c>⟨KaTeX⟩</c>,
+          texto) e <c>mathUsed</c> ligou no contexto. A partir daqui não existe mais LaTeX na
+          árvore, só HTML pronto.
+        </item>
+        <item>
+          <b>Depois de <c>resolveReferences</c> e de <c>annotateCrossFileRefs</c></b>, em
+          <c>cap2.dlt</c>: o <c>ref</c> ganhou <c>data-target-num</c> e
+          <c>data-target-tag</c> do registro, e depois <c>data-target-href="cap1.html#…"</c>,
+          porque o alvo mora em outro arquivo de saída. O id entrou em <c>referencedIds</c>:
+          é a lista do que o emissor vai copiar para as prévias.
+        </item>
+        <item>
+          <b>Depois de <c>emit</c></b>: nada muda na árvore, e é por isso que a aba
+          <b>Saída</b> existe. Em <c>cap2.dlt</c>, ela mostra o <c>template</c> com a cópia do
+          teorema de <c>cap1.dlt</c>, serializado a partir de <c>globalById</c>: a prévia da
+          referência vem daí, sem buscar nada. Compare com a aba Compartilhado depois de
+          <c>buildIdMaps</c>, onde esse mapa nasce.
+        </item>
+      </list>
+
+      <box type="tip">
+        <title>Como ler um passo</title>
+        Escolha um passo na linha do tempo e olhe primeiro a linha "Mudou". Ela é calculada pela
+        diferença entre o instantâneo anterior e este: diz em que abas mexer. Um passo que não
+        mudou nada para aquele arquivo diz isso também, e isso é informação: <c>expandCover</c>
+        não faz nada num artigo.
+      </box>
+    </subsection>
+
+    <subsection id="sobre-contexto">
+      <title>O contexto, campo a campo</title>
+
+      A tabela abaixo é o contrato entre os passos: cada campo do <c>CompileContext</c>, quem o
+      escreve e quem o lê. Um passo novo entra nela ou lendo um campo que já existe, ou
+      acrescentando um campo seu. Toda leitura tem de vir <b>depois</b> da escrita na ordem do
+      pipeline; a tabela é a prova de que a ordem está certa.
+
+      <table numbered="false">
+        <header>
+          <column>Campo</column>
+          <column>Escrito por</column>
+          <column>Lido por</column>
+        </header>
+        <row><column mono="true">file</column><column><c>createContext</c>; trocado temporariamente por <c>withFile</c> ao entrar num arquivo incluído</column><column>todo <c>error</c>/<c>warn</c>; a base dos caminhos relativos (include, figuras, tema, pacotes, bibliografia); o título padrão no emit</column></row>
+        <row><column mono="true">outName</column><column><c>runPipeline</c></column><column><c>renderMath</c> e <c>annotateCrossFile*</c> (links entre arquivos); sumário e revisão do projeto</column></row>
+        <row><column mono="true">diagnostics</column><column><c>error</c>/<c>warn</c>, em qualquer passo</column><column>a CLI</column></row>
+        <row><column mono="true">registry</column><column><c>numberDocument</c> (compartilhado no projeto)</column><column><c>resolveReferences</c>, <c>renderMath</c> (<c>\ref{}</c>), sumário e revisão (para não repetir slugs)</column></row>
+        <row><column mono="true">referencedIds</column><column><c>resolveReferences</c>, <c>numberCitations</c>, <c>renderMath</c></column><column><c>emit</c>: um <c>template</c> por id</column></row>
+        <row><column mono="true">toc</column><column><c>buildProjectToc</c></column><column><c>emit</c>: a ilha <c>#delta-toc</c></column></row>
+        <row><column mono="true">mathUsed</column><column><c>renderMath</c>; também <c>emit</c>, quando uma cópia ou um título vindo de outro arquivo traz matemática</column><column><c>emit</c>: embutir ou não o CSS do KaTeX (cerca de 1 MB com as fontes)</column></row>
+        <row><column mono="true">lang</column><column><c>applyDocumentDefaults</c></column><column><c>emit</c> (a ilha de i18n e o <c>html lang</c>); <c>buildProjectReview</c> (rótulos)</column></row>
+        <row><column mono="true">userCss, builtinCss, themeAccent, themeMode</column><column><c>resolveTheme</c></column><column><c>emit</c></column></row>
+        <row><column mono="true">imports</column><column><c>resolveImports</c> (pacotes do projeto primeiro)</column><column><c>emit</c>: JS depois do runtime, CSS antes do tema do autor</column></row>
+        <row><column mono="true">papers</column><column><c>loadBibliography</c> (compartilhado)</column><column><c>numberCitations</c>, <c>fillProjectBibliography</c>, sumário e revisão (slugs)</column></row>
+        <row><column mono="true">citedPapers</column><column><c>numberCitations</c> (compartilhado)</column><column><c>fillProjectBibliography</c></column></row>
+        <row><column mono="true">team</column><column><c>collectTeam</c> (compartilhado)</column><column><c>resolveCollab</c>; <c>emit</c>: a ilha <c>#delta-review</c></column></row>
+        <row><column mono="true">review</column><column><c>buildProjectReview</c></column><column><c>emit</c>: a ilha <c>#delta-review</c>; a CLI (<c>delta review</c>)</column></row>
+        <row><column mono="true">final</column><column>as funções de entrada (a flag <c>--final</c>)</column><column><c>finalizeReview</c>, <c>summarizeFinal</c></column></row>
+        <row><column mono="true">deps</column><column><c>addDep</c>, em todo passo que lê um arquivo do autor</column><column>a CLI: é o conjunto que o <c>--watch</c> vigia</column></row>
+      </table>
+
+      Quatro desses campos (<c>registry</c>, <c>papers</c>, <c>citedPapers</c>, <c>team</c>) são
+      <b>compartilhados</b>: num projeto, o contexto de cada arquivo aponta para <b>o mesmo</b>
+      <c>Map</c>. É assim que uma referência no capítulo 2 encontra um teorema do capítulo 1:
+      não há cópia nem sincronização, é um único registro. Já <c>referencedIds</c>,
+      <c>toc</c>, <c>review</c> e <c>mathUsed</c> ficam por arquivo, porque cada saída só
+      embute o que ela mesma referencia.
+
+      O que é do projeto e não de um arquivo mora no <c>Shared</c> (<c>pipeline.ts</c>): além
+      dos quatro mapas acima, o estado dos contadores (<c>numbering</c>), os mapas
+      <c>globalById</c> e <c>idToFile</c>, o arquivo que renderiza a bibliografia
+      (<c>bibOut</c>), e um contexto do próprio projeto (<c>project</c>), onde ficam os pacotes
+      do <c>project.toml</c> e os diagnósticos que não são de arquivo nenhum.
+    </subsection>
+
+    <subsection id="sobre-numeracao-entre-arquivos">
+      <title>A numeração entre arquivos</title>
+
+      <c>numberDocument</c> recebe um <c>NumberingState</c>: dois dicionários, <c>counters</c>
+      (o valor de cada contador) e <c>display</c> (o texto exibido da última vez, como
+      <c>"2.3"</c>). O motor cria um só e o passa a cada arquivo na ordem dos <c>inputs</c>.
+      Como o estado é mutado no lugar, o capítulo 2 começa onde o 1 parou. É tudo o que
+      "numeração contínua" significa; não há passo de sincronização.
+
+      Para cada tag que está na tabela de ambientes, o algoritmo é:
+
+      <list marker="number">
+        <item>
+          Se o autor escreveu <c>num="…"</c>, usa o valor como está; se for um inteiro,
+          reposiciona o contador nele.
+        </item>
+        <item>Senão, se <c>numbered</c> não for <c>"false"</c>, incrementa o contador.</item>
+        <item>
+          O prefixo entra só quando <c>prefixWith</c> existe <b>e</b> aquele contador é maior
+          que zero. Por isso o primeiro teorema de um documento sem seções é "1", não "0.1". O
+          prefixo vem de <c>display</c>, não de <c>counters</c>, para que "2.3.1" encadeie o
+          texto já montado.
+        </item>
+        <item>
+          Os contadores em <c>COUNTER_RESETS[contador]</c> voltam a zero. Isto acontece
+          <b>mesmo</b> quando a seção é <c>numbered="false"</c> ou tem <c>num</c> explícito:
+          uma seção nova é uma seção nova.
+        </item>
+      </list>
+
+      Todo elemento com <c>id</c> (numerado ou não) entra no registro como
+      <c>{ tag, num }</c>; um id repetido no projeto é um aviso e a primeira ocorrência vence.
+      Descendentes de <c>comment</c>, <c>todo</c> e <c>old</c> não são visitados, para que uma
+      equação citada dentro de um comentário não desloque a numeração entre a compilação de
+      revisão e a <c>--final</c>.
+
+      <box type="warning">
+        <title>A ordem dos inputs numera o livro</title>
+        Numeração, ordem das citações e a escolha de qual <c>bibliography</c> renderiza a
+        lista dependem da ordem em <c>inputs</c>. Reordene o <c>project.toml</c> e os números
+        mudam.
+      </box>
+    </subsection>
+
+    <subsection id="sobre-emit">
+      <title>O que sai: o HTML</title>
+
+      <c>emit</c> faz duas coisas. <c>serialize</c> renomeia cada tag <c>x</c> para
+      <c>delta-x</c>, copia os atributos tal e qual, escapa os nós de texto e copia os
+      <c>RawNode</c> sem escapar (é a única fronteira de confiança: só o KaTeX e o destacador
+      de código produzem um). E monta o documento em volta, sempre nesta ordem:
+
+      <list marker="dash">
+        <item>
+          No <c>head</c>: o CSS do núcleo (tokens, grade, componentes), o tema embutido se
+          houver (<c>theme="impatech"</c>), a camada do tipo de documento, o CSS do KaTeX
+          <b>só se</b> <c>mathUsed</c>, o CSS de cada pacote, e por último, sem <c>@layer</c>,
+          o CSS do autor, que assim vence tudo.
+        </item>
+        <item>
+          No <c>body</c>: a árvore serializada; um <c>template data-delta-pop="id"</c> por id
+          em <c>referencedIds</c>, com a cópia do alvo (para seções e capítulos, só o título);
+          as ilhas <c>#delta-toc</c>, <c>#delta-review</c> e <c>#delta-i18n</c>; o runtime; e o
+          JS de cada pacote, depois do runtime, para que <c>window.Delta</c> exista.
+        </item>
+      </list>
+
+      Num projeto, o <c>template</c> de um alvo que mora em outro arquivo é tirado de
+      <c>globalById</c>: uma <b>cópia</b> viaja para cada saída que o referencia. É o preço da
+      regra 2, e é barato. Só o salto (o clique) cruza arquivos, via
+      <c>data-target-href</c>.
+    </subsection>
+
+    <subsection id="sobre-diagnosticos">
+      <title>Diagnósticos, não exceções</title>
+
+      Um erro do autor nunca é uma exceção. O passo registra um <c>Diagnostic</c> com
+      <c>error(ctx, mensagem, el.pos)</c> ou <c>warn(ctx, …)</c> e segue. A diferença é
+      política: um <b>erro</b> significa "não produza saída", um <b>aviso</b> significa "algo
+      está estranho, mas a página serve". Uma imagem ausente é aviso; um <c>include</c> ausente
+      é erro, porque conteúdo faltando é como um <c>\input</c> perdido no LaTeX.
+
+      O motor consulta os erros uma vez, ao fim da fase <c>load</c>. Um arquivo que não abre
+      ou não é XML válido fica sem árvore e os passos seguintes da fase o pulam; um
+      <c>include</c> quebrado é um erro no contexto daquele arquivo. Em ambos os casos a
+      compilação para ali, e a CLI imprime tudo com arquivo, linha e coluna. Reserve
+      <c>throw</c> para estados realmente inesperados do próprio compilador.
+    </subsection>
+
+    <subsection id="sobre-onde-ler">
+      <title>Onde ler</title>
+
+      Comece por <c>pipeline.ts</c>; a tabela é o mapa. Depois <c>ast.ts</c> e
+      <c>context.ts</c>. Cada passo é um arquivo pequeno, quase todos com menos de 200
+      linhas.
+
+      <table numbered="false">
+        <header>
+          <column>Arquivo</column>
+          <column>Papel</column>
+        </header>
+        <row><column mono="true">pipeline.ts</column><column>a tabela de fases e passos, o motor <c>runPipeline</c>, o estado <c>Shared</c>, o gancho <c>trace</c></column></row>
+        <row><column mono="true">index.ts, project.ts</column><column>as funções de entrada: um arquivo, um projeto (ambas finas)</column></row>
+        <row><column mono="true">ast.ts, context.ts</column><column>a árvore e o contexto; os ajudantes <c>elements</c>, <c>textContent</c>, <c>hasTag</c>, <c>titleOf</c></column></row>
+        <row><column mono="true">environments.ts</column><column>a tabela de numeração</column></row>
+        <row><column mono="true">preprocess.ts, parse.ts</column><column>o texto vira XML válido, o XML vira árvore</column></row>
+        <row><column mono="true">include.ts, files.ts</column><column><c>include</c> (recursivo, com ciclo); ler arquivos do autor com <c>addDep</c> e <c>withFile</c></column></row>
+        <row><column mono="true">document.ts, config.ts</column><column>os padrões do <c>[document]</c> e o <c>lang</c>; a leitura do <c>project.toml</c></column></row>
+        <row><column mono="true">team.ts, collab.ts, review.ts, final.ts</column><column>a colaboração: equipe, vocabulário, coleta para o painel, a compilação <c>--final</c></column></row>
+        <row><column mono="true">animated.ts, cover.ts</column><column>o açúcar das apresentações</column></row>
+        <row><column mono="true">bibliography.ts</column><column>artigos, citações e a lista de referências</column></row>
+        <row><column mono="true">numbering.ts, crossfile.ts</column><column>os números; os mapas e as anotações entre arquivos</column></row>
+        <row><column mono="true">math.ts, code.ts</column><column>KaTeX e destaque de código, em tempo de compilação</column></row>
+        <row><column mono="true">references.ts, toc.ts</column><column>referências cruzadas; o sumário e os slugs</column></row>
+        <row><column mono="true">figures.ts, theme.ts, imports.ts</column><column>o que é embutido: imagens, tema, pacotes</column></row>
+        <row><column mono="true">linebreaks.ts, strings.ts</column><column>quebras de linha na prosa; a tabela de i18n</column></row>
+        <row><column mono="true">emit.ts, katex-css.ts</column><column>o HTML final; o CSS do KaTeX com fontes embutidas</column></row>
+      </table>
+
+      A mesma história, em inglês e mais curta, está em <c>docs/ARCHITECTURE.md</c> no
+      repositório. O passo seguinte é <ref to="contribuir">Contribuir com o compilador</ref>:
+      o ambiente, a anatomia de um passo e como acrescentar um.
+    </subsection>
+  </section>
+
+  <footer>
+    Feito com ❤️ em Delta no IMPA Tech.
+  </footer>
+</document>
