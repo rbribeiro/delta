@@ -1,4 +1,5 @@
 import type { ElementNode, Node } from "./ast";
+import type { CompileContext } from "./context";
 import { RAW_TAGS } from "./preprocess";
 
 /**
@@ -12,18 +13,18 @@ const BLANK_RUN = /\n[^\S\n]*\n\s*/g;
 const NONSPACE = /\S/;
 
 /**
- * Rewrites prose `TextNode`s so a blank line in the source becomes a single `<br>`
- * in the output (a tight line break, no paragraph gap). A *single* newline is left
+ * Rewrites prose `TextNode`s so a blank line in the source becomes a line break
+ * (`<br><br>`) in the output. A *single* newline is left
  * untouched — the browser collapses it to a space — so source soft-wrapping is
  * unaffected. Runs of multiple blank lines collapse to one break. Text inside
  * RAW_TAGS elements (math, code, inline `<c>`) is never touched.
  *
- * `RawNode`s carry the literal `<br>`; the emitter writes them verbatim, so no
+ * `RawNode`s carry the literal `<br><br>`; the emitter writes them verbatim, so no
  * emitter or runtime change is needed.
  *
  * @param doc - the root AST node to transform (mutated in place)
  */
-export function resolveLineBreaks(doc: ElementNode): void {
+export function resolveLineBreaks(doc: ElementNode, _ctx: CompileContext): void {
   walk(doc);
 }
 

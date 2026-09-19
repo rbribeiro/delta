@@ -119,20 +119,21 @@ export interface ReviewData {
 
 export interface CompileContext {
   file: string;
-  /** Output basename for this file (e.g. "chapter1.html"); set only on the project path. */
+  /** Output basename for this file (e.g. "chapter1.html"), set by the pipeline runner for every build. */
   outName?: string;
   diagnostics: Diagnostic[];
   /** id → numbering info; written by numbering, read by the reference pass. 
    * Uses Map that is more efficient than Record<string, LabelEntry> for large documents with many labels.
   */
   registry: Map<string, LabelEntry>;
-  /** Target ids that a `<ref>` (or other element that references another one) resolved to; emit snapshots each into a `<template>`. 
-   * So custom elements can use them at runtime as, for instance, pop-overs.
-  */
+  /** Target ids something in this file points at: a `<ref>`/`<solution of>`/`<proof of>` (references.ts),
+   *  a `<cite>` (bibliography.ts) or a `\ref{}` inside math (math.ts). Emit snapshots each into a
+   *  `<template>` so the runtime can show a pop-over without fetching. */
   referencedIds: Set<string>;
   /** Heading tree for the table of contents; built by `buildToc`, emit ships it as a JSON island. */
   toc: TocEntry[];
-  /** Set by the math pass; gates inlining KaTeX CSS (~1 MB with embedded fonts). */
+  /** Set by the math pass, and by emit when a snapshot, ToC title or review item carries math rendered
+   *  in another file; gates inlining KaTeX CSS (~1 MB with embedded fonts). */
   mathUsed: boolean;
   /** Document `lang` (raw author value, default "en"); drives i18n and `<html lang>`. */
   lang: string;

@@ -1,7 +1,7 @@
-import { readFileSync } from "node:fs";
 import { basename, dirname, resolve } from "node:path";
 import type { ElementNode } from "./ast";
-import { addDep, warn, type CompileContext } from "./context";
+import { warn, type CompileContext } from "./context";
+import { isRemote, readUserFile } from "./files";
 import { BUILTIN_THEMES } from "../generated/assets";
 
 /**
@@ -63,7 +63,7 @@ export function resolveTheme(doc: ElementNode, ctx: CompileContext): void {
 
   if (!themeAttr) return;
 
-  if (/^[a-z]+:\/\//i.test(themeAttr)) {
+  if (isRemote(themeAttr)) {
     warn(ctx, `theme must be a local path, not a URL: ${themeAttr}`, doc.pos);
     return;
   }
@@ -91,7 +91,7 @@ export function resolveTheme(doc: ElementNode, ctx: CompileContext): void {
   let css: string;
   const themePath = resolve(dirname(ctx.file), themeAttr);
   try {
-    css = readFileSync(themePath, "utf8");
+    css = readUserFile(ctx, themePath);
   } catch {
     // `theme="impatech.css"` is the likeliest near-miss: name-shaped but for the
     // extension, so it took the path branch and missed.
@@ -102,7 +102,6 @@ export function resolveTheme(doc: ElementNode, ctx: CompileContext): void {
     warn(ctx, `theme file not found: ${themeAttr}${didYouMean}`, doc.pos);
     return;
   }
-  addDep(ctx, themePath);
 
   if (EXTERNAL_REF.test(css)) {
     warn(ctx, `theme '${themeAttr}' references an external resource; output may not work offline`, doc.pos);

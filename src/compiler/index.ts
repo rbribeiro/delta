@@ -1,31 +1,12 @@
-import { readFileSync } from "node:fs";
-import { addDep, createContext, error, hasErrors, type CompileContext, type Diagnostic, type ReviewData } from "./context";
-import { emit } from "./emit";
-import { inlineFigures } from "./figures";
-import { resolveIncludes } from "./include";
-import { expandAnimated } from "./animated";
-import { expandCover } from "./cover";
-import { renderMath } from "./math";
-import { highlightCode } from "./code";
-import { numberDocument } from "./numbering";
-import { parse } from "./parse";
-import { preprocess } from "./preprocess";
-import { resolveReferences } from "./references";
-import { resolveTheme } from "./theme";
-import { buildToc } from "./toc";
-import { resolveImports } from "./imports";
-import { resolveLineBreaks } from "./linebreaks";
-import { loadBibliography, resolveCitations } from "./bibliography";
-import { collectTeam } from "./team";
-import { resolveCollab } from "./collab";
-import { finalizeReview } from "./final";
-import { buildReview } from "./review";
+import { createContext, type CompileContext, type Diagnostic, type ReviewData } from "./context";
+import { createShared, outNameFor, runPipeline, type CompileOptions, type FileUnit } from "./pipeline";
 
-/** Per-build switches (the CLI flags), shared by the single-file and project paths. */
-export interface CompileOptions {
-  /** Strip every collaboration mark (comments, tasks, changes, status, team) — the clean publication. */
-  final?: boolean;
-}
+export type { CompileOptions, TraceEvent } from "./pipeline";
+
+/**
+ * The single-file entry points. Both are thin: a single file is a project of one file, and the
+ * whole order of operations lives in `pipeline.ts` — read that next.
+ */
 
 export interface CompileResult {
   html?: string; // Only present if compilation succeeded.
@@ -37,68 +18,38 @@ export interface CompileResult {
 }
 
 /**
- * Compile a source string in the Delta XML dialect to HTML. 
- * It follows the pipeline: preprocess → parse → includes → team → collab → bibliography → citations →
- * number → math → references → toc → inline figures → resolve theme → imports → emit. Pass order is
- * load-bearing — includes merge first so everything downstream sees one tree, the collaboration
- * passes write the defaults numbering/emit key off, the bibliography splices cited papers
- * 
- * @param source - the source string in the Delta XML dialect to compile
- * @param ctx - the compile context
- * @returns - the compiled HTML string, or undefined if compilation failed (hasErrors(ctx) is true)
+ * Compiles a source string in the Delta XML dialect to HTML, using (and filling) the given
+ * context. Returns the HTML, or undefined when compilation failed (`hasErrors(ctx)` is then true).
  */
-export function compileSource(source: string, ctx: CompileContext): string | undefined {
-  const doc = parse(preprocess(source), ctx);
-  if (!doc || hasErrors(ctx)) return undefined;
-  resolveIncludes(doc, ctx); // splice <include> files into one tree (before numbering)
-  if (hasErrors(ctx)) return undefined; // a missing/cyclic include fails the build
-  // Parse and processes successfully, but may have non-fatal diagnostics. Continue to emit, but report
-  finalizeReview(doc, ctx); // --final only: strip comments/tasks/team, accept changes (before bib + numbering)
-  collectTeam(doc, ctx); // <team> → ctx.team (the node is removed; data ships in the review island)
-  resolveCollab(doc, ctx); // comment/todo/change/status vocab: defaults + warnings, `by` vs the team
-  ctx.lang = doc.attrs.lang ?? "en"; // drives i18n + <html lang>; read by emit and later passes
-  expandAnimated(doc); // presentation only: animated="true" → reveal="true" on children
-  expandCover(doc); // presentation only: <cover> → <slide cover="true">
-  // Bibliography runs before numbering so the cited papers it splices flow through the
-  // normal passes (numbering skips them; math then renders any math in their fields).
-  loadBibliography(doc, ctx); // build the paper registry; empty the <bibliography>
-  resolveCitations(doc, ctx); // number <cite>; fill <bibliography> with cited papers
-  // Numbering must run before math, since math needs the registry to resolve labels.
-  numberDocument(doc, ctx);
-  renderMath(doc, ctx);
-  highlightCode(doc, ctx); // highlight <code> blocks (after math; math skips the code raw-tag)
-  resolveReferences(doc, ctx); // resolve <ref to>; mark targets for snapshotting
-  buildToc(doc, ctx); // collect the heading tree (+ auto-slug ids) if a <toc> is present
-  buildReview(doc, ctx); // collect comments/tasks/changes/status blocks (+ their nearest heading)
-  inlineFigures(doc, ctx); // read figure images and embed them as data: URIs
-  resolveTheme(doc, ctx); // read <document theme> CSS; emit inlines it last
-  resolveImports(doc,ctx); // inline <import> packs (themes are inlined before the author theme, JS after the runtime)
-  resolveLineBreaks(doc); // blank lines in prose become a single <br> (after every other pass)
-  return emit(doc, ctx);
+export function compileSource(source: string, ctx: CompileContext, options: CompileOptions = {}): string | undefined {
+  return runOne({ ctx, outName: outNameFor(ctx.file), source, doc: null }, options);
 }
 
-/**
- * Reads a source file in the Delta XML dialect, compiles it to HTML, and returns the result along with any diagnostics.
- * 
- * @param path - the path to the source file to compile
- * @returns - CompileResult with the compiled HTML string (if successful) and any diagnostics (errors/warnings)
- */
+/** Reads a `.dlt` file, compiles it, and returns the HTML along with diagnostics, deps and the review state. */
 export function compileFile(path: string, options: CompileOptions = {}): CompileResult {
   const ctx = createContext(path);
   ctx.final = options.final ?? false;
-  let source: string;
-  try {
-    source = readFileSync(path, "utf8");
-  } catch (e) {
-    error(ctx, e instanceof Error ? e.message : String(e));
-    return { diagnostics: ctx.diagnostics, deps: [...ctx.deps] };
-  }
-  addDep(ctx, path);
-  const html = compileSource(source, ctx);
+  const html = runOne({ ctx, outName: outNameFor(path), doc: null }, options);
   return {
     html,
     diagnostics: ctx.diagnostics,
     deps: [...ctx.deps],
     review: { team: [...ctx.team.values()], items: ctx.review },
   };
+}
+
+/** Runs the pipeline for one file whose context lends its own maps as the shared state. */
+function runOne(unit: FileUnit, options: CompileOptions): string | undefined {
+  const { ctx } = unit;
+  const shared = createShared({
+    registry: ctx.registry,
+    papers: ctx.papers,
+    citedPapers: ctx.citedPapers,
+    team: ctx.team,
+    final: ctx.final,
+    project: createContext(ctx.file),
+  });
+  const ok = runPipeline([unit], shared, options);
+  ctx.diagnostics.push(...shared.project.diagnostics); // the --final summary lands on the caller's ctx
+  return ok ? unit.html : undefined;
 }

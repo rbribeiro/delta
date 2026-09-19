@@ -1,4 +1,4 @@
-import { elements, textContent, type ElementNode } from "./ast";
+import { elements, hasTag, textContent, titleOf, type ElementNode } from "./ast";
 import type { CompileContext, TocEntry } from "./context";
 
 /**
@@ -37,9 +37,7 @@ export interface SlugState {
 export function ensureHeadingId(el: ElementNode, used: Set<string>, state: SlugState): string {
   let id = el.attrs.id;
   if (!id) {
-    const titleEl = el.children.find(
-      (c): c is ElementNode => c.type === "element" && c.tag === "title",
-    );
+    const titleEl = titleOf(el);
     id = uniqueSlug(slugify(titleEl ? textContent(titleEl) : "") || `section-${++state.auto}`, used);
     el.attrs.id = id;
   }
@@ -48,7 +46,7 @@ export function ensureHeadingId(el: ElementNode, used: Set<string>, state: SlugS
 }
 
 export function buildToc(doc: ElementNode, ctx: CompileContext): void {
-  if (!hasToc(doc)) return;
+  if (!hasTag(doc, "toc")) return;
   // Existing ids (author + numbered + paper keys) so generated slugs never collide.
   const used = new Set<string>([...ctx.registry.keys(), ...ctx.papers.keys()]);
   ctx.toc = collectHeadings(doc, used, { auto: 0 });
@@ -65,7 +63,7 @@ export function buildToc(doc: ElementNode, ctx: CompileContext): void {
 export function buildProjectToc(
   files: { ctx: CompileContext; doc: ElementNode; outName: string }[],
 ): void {
-  if (!files.some((f) => hasProjectToc(f.doc))) {
+  if (!files.some((f) => hasTag(f.doc, "toc", { scope: "project" }))) {
     for (const f of files) buildToc(f.doc, f.ctx);
     return;
   }
@@ -79,7 +77,7 @@ export function buildProjectToc(
   for (const f of files) list.push(...collectHeadings(f.doc, used, state, f.outName));
 
   for (const f of files) {
-    if (!hasToc(f.doc)) continue;
+    if (!hasTag(f.doc, "toc")) continue;
     // Blank the file field for this file's own entries so the runtime keeps them
     // in-page; the rest stay tagged for cross-file links.
     f.ctx.toc = list.map((e) => (e.file === f.outName ? { ...e, file: undefined } : e));
@@ -102,10 +100,7 @@ function collectHeadings(
     const level = LEVEL[el.tag];
     if (level === undefined) continue;
 
-    const titleEl = el.children.find(
-      (c): c is ElementNode => c.type === "element" && c.tag === "title",
-    );
-
+    const titleEl = titleOf(el);
     const id = ensureHeadingId(el, used, state);
 
     out.push({
@@ -119,20 +114,8 @@ function collectHeadings(
   return out;
 }
 
-/** True when the document declares any `<toc>` (regardless of scope). */
-function hasToc(doc: ElementNode): boolean {
-  for (const el of elements(doc)) if (el.tag === "toc") return true;
-  return false;
-}
-
-/** True when the document declares a `<toc scope="project">`. */
-function hasProjectToc(doc: ElementNode): boolean {
-  for (const el of elements(doc)) if (el.tag === "toc" && el.attrs.scope === "project") return true;
-  return false;
-}
-
 /** GitHub-style slug: lowercase, non-alphanumerics → hyphens, trimmed. */
-export function slugify(text: string): string {
+function slugify(text: string): string {
   return text
     .toLowerCase()
     .trim()

@@ -66,10 +66,21 @@ export function* elements(root: ElementNode): Generator<ElementNode> {
   }
 }
 
-/** True when any element in the tree rooted at `root` has the given tag (one scan). */
-export function hasTag(root: ElementNode, tag: string): boolean {
-  for (const el of elements(root)) if (el.tag === tag) return true;
+/**
+ * True when any element in the tree rooted at `root` has the given tag (one scan), optionally
+ * with the given attribute values too: `hasTag(doc, "toc", { scope: "project" })`.
+ */
+export function hasTag(root: ElementNode, tag: string, attrs?: Record<string, string>): boolean {
+  for (const el of elements(root)) {
+    if (el.tag !== tag) continue;
+    if (!attrs || Object.entries(attrs).every(([k, v]) => el.attrs[k] === v)) return true;
+  }
   return false;
+}
+
+/** The element's first `<title>` child, if it has one. */
+export function titleOf(el: ElementNode): ElementNode | undefined {
+  return el.children.find((c): c is ElementNode => c.type === "element" && c.tag === "title");
 }
 
 /**

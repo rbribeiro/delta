@@ -1,7 +1,7 @@
-import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { elements, type ElementNode } from "./ast";
-import { addDep, warn, type CompileContext } from "./context";
+import { elements, hasTag, titleOf, type ElementNode } from "./ast";
+import { warn, type CompileContext } from "./context";
+import { isRemote, readUserFile, withFile } from "./files";
 import { parse } from "./parse";
 import { preprocess } from "./preprocess";
 
@@ -20,7 +20,7 @@ export function loadBibliography(doc: ElementNode, ctx: CompileContext): void {
     if (bib.attrs.src) loadRefFile(bib.attrs.src, ctx, bib);
     // Database consumed (papers are registered); keep only an optional <title> so the
     // author's custom heading survives. resolveCitations re-adds the cited papers after it.
-    const title = bib.children.find((c) => c.type === "element" && c.tag === "title");
+    const title = titleOf(bib);
     bib.children = title ? [title] : [];
   }
 }
@@ -88,6 +88,31 @@ export function fillBibliography(doc: ElementNode, ctx: CompileContext): void {
     );
 }
 
+/**
+ * The project-wide fill: a work renders at most one references list, in the first file (input
+ * order) that declares a `<bibliography>`. Extra ones warn and stay empty; citations with no
+ * bibliography anywhere warn once. Returns the output name of the file that renders the list,
+ * so cites in other files can link to it. With a single file this is exactly `fillBibliography`.
+ */
+export function fillProjectBibliography(
+  files: { ctx: CompileContext; doc: ElementNode; outName: string }[],
+): string | undefined {
+  const bibFiles = files.filter((f) => hasTag(f.doc, "bibliography"));
+  const bibFile = bibFiles[0];
+  if (bibFile) {
+    fillBibliography(bibFile.doc, bibFile.ctx);
+    for (const extra of bibFiles.slice(1)) {
+      warn(extra.ctx, "multiple <bibliography> elements in the project; only the first renders the references list");
+    }
+    return bibFile.outName;
+  }
+  const first = files[0];
+  if (first && first.ctx.citedPapers.length > 0) {
+    warn(first.ctx, "citations present but no <bibliography> element to render them");
+  }
+  return undefined;
+}
+
 /** Register one `<paper>` in `ctx.papers`; warn on a missing or duplicate id. */
 function addPaper(el: ElementNode, ctx: CompileContext): void {
   const id = el.attrs.id;
@@ -104,29 +129,26 @@ function addPaper(el: ElementNode, ctx: CompileContext): void {
 
 /** Read+parse a `.ref` file (relative to the doc) and register its `<paper>` entries. */
 function loadRefFile(src: string, ctx: CompileContext, bib: ElementNode): void {
-  if (/^[a-z]+:\/\//i.test(src)) {
+  if (isRemote(src)) {
     warn(ctx, `bibliography src must be a local path, not a URL: ${src}`, bib.pos);
     return;
   }
   const abs = resolve(dirname(ctx.file), src);
   let text: string;
   try {
-    text = readFileSync(abs, "utf8");
+    text = readUserFile(ctx, abs);
   } catch {
     warn(ctx, `bibliography file not found: ${src}`, bib.pos);
     return;
   }
-  addDep(ctx, abs);
-  // Diagnostics from the .ref point at the .ref (mirrors include.ts's file swap).
-  const prevFile = ctx.file;
-  ctx.file = abs;
-  const root = parse(preprocess(text), ctx);
-  if (root) {
+  // Diagnostics from the .ref point at the .ref.
+  withFile(ctx, abs, () => {
+    const root = parse(preprocess(text), ctx);
+    if (!root) return;
     for (const el of elements(root)) {
       if (el.tag === "paper") addPaper(el, ctx);
     }
-  }
-  ctx.file = prevFile;
+  });
 }
 
 /** Merge `paper` (one id) and `papers` (comma/space list) into an ordered, deduped id list. */

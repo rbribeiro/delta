@@ -1,4 +1,4 @@
-import { textContent, type ElementNode, type Node } from "./ast";
+import { elements, hasTag, textContent, titleOf, type ElementNode, type Node } from "./ast";
 import { warn, type CompileContext, type ReviewHeading, type ReviewItem, type ReviewReply } from "./context";
 import { RAW_TAGS } from "./preprocess";
 import { resolveLang, stringsFor } from "./strings";
@@ -30,7 +30,7 @@ export function buildReview(doc: ElementNode, ctx: CompileContext): void {
 export function buildProjectReview(
   files: { ctx: CompileContext; doc: ElementNode; outName: string }[],
 ): ReviewItem[] {
-  if (!files.some((f) => hasProjectReview(f.doc))) {
+  if (!files.some((f) => hasTag(f.doc, "review", { scope: "project" }))) {
     for (const f of files) buildReview(f.doc, f.ctx);
     return files.flatMap((f) => f.ctx.review.map((i) => ({ ...i, file: f.outName })));
   }
@@ -48,19 +48,8 @@ export function buildProjectReview(
 /** Every id in play: registry + papers + any id on any node (incl. ones numbering skipped). */
 function usedIds(doc: ElementNode, ctx: CompileContext): Set<string> {
   const used = new Set<string>([...ctx.registry.keys(), ...ctx.papers.keys()]);
-  const walk = (el: ElementNode): void => {
-    if (el.attrs.id) used.add(el.attrs.id);
-    for (const c of el.children) if (c.type === "element") walk(c);
-  };
-  walk(doc);
+  for (const el of elements(doc)) if (el.attrs.id) used.add(el.attrs.id);
   return used;
-}
-
-function hasProjectReview(doc: ElementNode): boolean {
-  const walk = (el: ElementNode): boolean =>
-    (el.tag === "review" && el.attrs.scope === "project") ||
-    el.children.some((c) => c.type === "element" && walk(c));
-  return walk(doc);
 }
 
 /** A heading on the walk stack; its id is materialized only if an item needs it. */
@@ -85,9 +74,7 @@ function collectReview(
     const top = stack[stack.length - 1];
     if (!top) return undefined;
     const id = ensureHeadingId(top.el, used, state);
-    const titleEl = top.el.children.find(
-      (c): c is ElementNode => c.type === "element" && c.tag === "title",
-    );
+    const titleEl = titleOf(top.el);
     return { level: top.level, num: top.el.attrs.num ?? "", id, title: titleEl ? titleEl.children : [] };
   };
 
@@ -173,9 +160,7 @@ function collectReview(
         const by = el.attrs.by;
         const verifiedBy = el.attrs["verified-by"];
         if (status === undefined && by === undefined && verifiedBy === undefined) break;
-        const titleEl = el.children.find(
-          (c): c is ElementNode => c.type === "element" && c.tag === "title",
-        );
+        const titleEl = titleOf(el);
         const name = `${label(el.tag)}${el.attrs.num ? ` ${el.attrs.num}` : ""}`;
         const titleText = titleEl ? plain(titleEl.children) : "";
         const excerpt = titleEl ? "" : shorten(plain(el.children), 160);
@@ -222,7 +207,7 @@ function collectReview(
  * read back from KaTeX's TeX annotation as `$…$` / `$$…$$`, a `<ref>` becomes its target's
  * localized label ("Lemma 2.1", straight from the registry), whitespace collapses.
  */
-export function plainText(nodes: Node[], ctx: CompileContext, label: (tag: string) => string): string {
+function plainText(nodes: Node[], ctx: CompileContext, label: (tag: string) => string): string {
   let out = "";
   for (const n of nodes) {
     if (n.type === "text") out += n.text;

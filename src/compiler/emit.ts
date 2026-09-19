@@ -1,6 +1,7 @@
 import { basename, dirname } from "node:path";
-import { elements, hasTag, textContent, type ElementNode, type Node } from "./ast";
+import { elements, hasTag, textContent, titleOf, type ElementNode, type Node } from "./ast";
 import type { CompileContext } from "./context";
+import { escapeHtml } from "./preprocess";
 import { katexCss } from "./katex-css";
 import { resolveLang, stringsFor } from "./strings";
 import { CORE_CSS, RUNTIME_JS, THEMES } from "../generated/assets";
@@ -25,9 +26,7 @@ export function emit(
   ctx: CompileContext,
   globalById?: Map<string, ElementNode>,
 ): string {
-  const titleEl = doc.children.find(
-    (c): c is ElementNode => c.type === "element" && c.tag === "title",
-  );
+  const titleEl = titleOf(doc);
   const title = titleEl ? textContent(titleEl).trim() : basename(ctx.file).replace(/\.dlt$/, "");
 
   // `type` selects the @layer delta.theme overrides (article is the default).
@@ -57,7 +56,7 @@ export function emit(
   const head = [
     `<meta charset="utf-8">`,
     `<meta name="viewport" content="width=device-width, initial-scale=1">`,
-    `<title>${escapeText(title)}</title>`,
+    `<title>${escapeHtml(title)}</title>`,
     `<style>\n${CORE_CSS}\n</style>`,
     // Built-in named theme (<document theme="impatech">): tokens only, in its own
     // @layer delta.builtin. That layer sits above the base tokens but below the
@@ -143,7 +142,7 @@ function renderTemplates(
       // the template holds only the title
       let snapshot = node;
       if (CONTAINER_TAGS.has(node.tag)) {
-        const titleEl = node.children.find( (c): c is ElementNode => c.type === "element" && c.tag === "title");
+        const titleEl = titleOf(node);
         snapshot = {type: "element", tag: node.tag, attrs: node.attrs, children: titleEl ? [titleEl] : []};
       }
       // A cross-file target may carry math this file didn't render itself.
@@ -248,7 +247,7 @@ function containsMath(nodes: Node[]): boolean {
 function serialize(node: Node): string {
   switch (node.type) {
     case "text":
-      return escapeText(node.text);
+      return escapeHtml(node.text);
     case "raw":
       return node.html;
     case "element": {
@@ -262,10 +261,6 @@ function serialize(node: Node): string {
   }
 }
 
-function escapeText(s: string): string {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
 function escapeAttr(s: string): string {
-  return escapeText(s).replace(/"/g, "&quot;");
+  return escapeHtml(s).replace(/"/g, "&quot;");
 }

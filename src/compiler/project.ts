@@ -1,40 +1,9 @@
-import { readFileSync } from "node:fs";
-import { basename, dirname, join } from "node:path";
-import { elements, type ElementNode } from "./ast";
-import { loadBibliography, numberCitations, fillBibliography } from "./bibliography";
+import { join } from "node:path";
 import type { ProjectConfig } from "./config";
-import {
-  addDep,
-  createContext,
-  error,
-  hasErrors,
-  warn,
-  type CompileContext,
-  type Diagnostic,
-  type LabelEntry,
-  type ReviewData,
-  type TeamMember,
-} from "./context";
-import { emit } from "./emit";
-import { inlineFigures } from "./figures";
-import { resolveImports, resolvePack } from "./imports";
-import { resolveIncludes } from "./include";
-import { expandAnimated } from "./animated";
-import { expandCover } from "./cover";
-import { renderMath } from "./math";
-import { highlightCode } from "./code";
-import { resolveLineBreaks } from "./linebreaks";
-import { freshNumbering, numberDocument } from "./numbering";
-import { parse } from "./parse";
-import { preprocess } from "./preprocess";
-import { resolveReferences, REF_TAGS } from "./references";
-import { resolveTheme } from "./theme";
-import { buildProjectToc } from "./toc";
-import { collectTeam } from "./team";
-import { resolveCollab } from "./collab";
-import { describeFinal, finalizeReview, sumFinal, type FinalStats } from "./final";
-import { buildProjectReview } from "./review";
-import type { CompileOptions } from "./index";
+import { createContext, hasErrors, type Diagnostic, type ReviewData } from "./context";
+import { createShared, outNameFor, runPipeline, type CompileOptions, type FileUnit } from "./pipeline";
+
+export { outNameFor } from "./pipeline";
 
 export interface ProjectResult {
   /** One per input, in declaration order; written verbatim by the CLI. */
@@ -46,32 +15,16 @@ export interface ProjectResult {
   review?: ReviewData;
 }
 
-/** Flat output name for an input: `chapters/01.dlt` → `01.html`. */
-export function outNameFor(input: string): string {
-  return basename(input).replace(/\.dlt$/, "") + ".html";
-}
-
 /**
- * Compiles a set of `.dlt` files as one project: many inputs → many standalone
- * HTML outputs that share numbering and one registry, so a `<ref>`/`<cite>` in any
- * file resolves to a target in any other and ships a copy of it into that output
- * (no fetch). It runs the same passes as `compileSource`, but threaded across
- * files: numbering continues file-to-file, the registry/papers/cited list are
- * shared, and emit is deferred until every file is fully processed so cross-file
- * snapshots carry rendered math.
+ * Compiles a set of `.dlt` files as one project: many inputs → many standalone HTML outputs
+ * that share numbering and one registry, so a `<ref>`/`<cite>` in any file resolves to a
+ * target in any other and ships a copy of it into that output (no fetch). The order of
+ * operations is the `PIPELINE` table in `pipeline.ts`; this function only sets up the shared
+ * state, one context per file (so diagnostics stay attributed), and collects the results.
  */
 export function compileProject(config: ProjectConfig, options: CompileOptions = {}): ProjectResult {
-  // Shared across the project. `referencedIds` stays per file (each output only
-  // snapshots what it itself references).
-  const registry = new Map<string, LabelEntry>();
-  const papers = new Map<string, ElementNode>();
-  const citedPapers: string[] = [];
-  const team = new Map<string, TeamMember>(); // <team> declared once (or identically) anywhere
-
-  const projectDiags: Diagnostic[] = [];
-  const ctxs: CompileContext[] = [];
-  const gather = (): Diagnostic[] => [...projectDiags, ...ctxs.flatMap((c) => c.diagnostics)];
-  const collectDeps = (): string[] => [...new Set(ctxs.flatMap((c) => [...c.deps]))];
+  const project = createContext(config.root ?? config.inputs[0] ?? config.outDir);
+  const shared = createShared({ final: options.final ?? false, config, project });
 
   // Flat layout: outputs collide if two inputs share a basename.
   const seen = new Map<string, string>();
@@ -79,7 +32,7 @@ export function compileProject(config: ProjectConfig, options: CompileOptions = 
     const out = outNameFor(input);
     const prev = seen.get(out);
     if (prev) {
-      projectDiags.push({
+      project.diagnostics.push({
         severity: "error",
         message: `duplicate output "${out}" from ${input} and ${prev}`,
         file: input,
@@ -87,193 +40,23 @@ export function compileProject(config: ProjectConfig, options: CompileOptions = 
     }
     seen.set(out, input);
   }
-  if (projectDiags.some((d) => d.severity === "error")) return { outputs: [], diagnostics: gather(), deps: collectDeps() };
+  if (hasErrors(project)) return { outputs: [], diagnostics: project.diagnostics, deps: [] };
 
-  // Project-wide packages (project.toml `packages`): resolve once into one ctx, then inject the
-  // resolved entries into every file's ctx.imports below. pkgCtx joins `ctxs` so its diagnostics
-  // and --watch deps gather and a failed resolve trips the `ctxs.some(hasErrors)` bail after Phase 1.
-  const pkgCtx = createContext(config.root ?? config.outDir);
-  ctxs.push(pkgCtx);
-  if (config.packages?.length) {
-    const base = config.root ?? dirname(config.inputs[0] ?? config.outDir);
-    const seen = new Set<string>();
-    for (const spec of config.packages) resolvePack(spec, base, pkgCtx, seen);
-  }
-
-  // Phase 1 — read, parse, splice includes. Each file gets its own ctx (with the
-  // shared registries swapped in) so diagnostics stay attributed to it.
-  const files: { ctx: CompileContext; doc: ElementNode; outName: string }[] = [];
-  const finalStats: FinalStats[] = [];
-  for (const input of config.inputs) {
-    const ctx = createContext(input);
-    ctx.registry = registry;
-    ctx.papers = papers;
-    ctx.citedPapers = citedPapers;
-    ctx.team = team;
-    ctx.final = options.final ?? false;
-    ctx.outName = outNameFor(input);
-    ctxs.push(ctx);
-
-    let source: string;
-    try {
-      source = readFileSync(input, "utf8");
-    } catch (e) {
-      error(ctx, e instanceof Error ? e.message : String(e));
-      continue;
-    }
-    addDep(ctx, input);
-    const doc = parse(preprocess(source), ctx);
-    if (!doc) continue;
-    resolveIncludes(doc, ctx);
-    // Project-wide `[document]` defaults, applied here (right after the merge) so every downstream
-    // pass — including the type-gated presentation sugar below and the lang read — sees them.
-    applyDocumentDefaults(doc, config.document);
-    finalStats.push(finalizeReview(doc, ctx, false)); // --final only; one project-wide summary below
-    collectTeam(doc, ctx); // into the shared map; the node is removed
-    expandAnimated(doc); // presentation only: animated="true" → reveal="true" on children
-    expandCover(doc); // presentation only: <cover> → <slide cover="true">
-    ctx.lang = doc.attrs.lang ?? "en";
-    files.push({ ctx, doc, outName: ctx.outName });
-  }
-  // A missing file, parse error, or bad include fails the whole project.
-  if (ctxs.some(hasErrors)) return { outputs: [], diagnostics: gather(), deps: collectDeps() };
-
-  // Collaboration vocabulary, once the whole team is known (a `by` in chapter 1 may name a
-  // member declared in the intro). Writes the defaults numbering/emit key off.
-  for (const f of files) resolveCollab(f.doc, f.ctx);
-  if (options.final) {
-    const msg = describeFinal(sumFinal(finalStats));
-    if (msg) projectDiags.push({ severity: "warning", message: msg, file: config.root ?? config.inputs[0] });
-  }
-
-  // Phase 2 — bibliography & citations, project-wide. Papers from every file load
-  // into the shared registry; cites number across files in first-appearance order.
-  for (const f of files) loadBibliography(f.doc, f.ctx);
-  for (const f of files) numberCitations(f.doc, f.ctx);
-
-  // The project has at most one rendered references list: the first file (in order)
-  // that declares a <bibliography>. Extras stay empty and warn.
-  const bibFiles = files.filter((f) => hasBibliography(f.doc));
-  const bibFile = bibFiles[0];
-  if (bibFile) {
-    fillBibliography(bibFile.doc, bibFile.ctx);
-    for (const extra of bibFiles.slice(1)) {
-      warn(
-        extra.ctx,
-        "multiple <bibliography> elements in the project; only the first renders the references list",
-      );
-    }
-  } else if (citedPapers.length > 0) {
-    warn(files[0].ctx, "citations present but no <bibliography> element in the project to render them");
-  }
-
-  // Phase 3 — shared numbering: one counter state threaded through the files in
-  // order, into the one shared registry.
-  const numState = freshNumbering();
-  for (const f of files) numberDocument(f.doc, f.ctx, numState);
-
-  // After numbering + bib fill, node identities are stable (later passes only
-  // mutate in place), so build the project-wide id maps once.
-  // TODO: check if it is better to add an outputFile to the interfaces
-  // together with getElementById method so we have only one compilation method.
-  const globalById = new Map<string, ElementNode>();
-  const idToFile = new Map<string, string>(); // id → home output name
-  for (const f of files) {
-    for (const el of elements(f.doc)) {
-      const id = el.attrs.id;
-      if (id && !globalById.has(id)) {
-        globalById.set(id, el);
-        idToFile.set(id, f.outName);
-      }
-    }
-  }
-  const bibOut = bibFile?.outName;
-
-  // Phase 4 — the rest of the per-file pipeline. Math runs for *every* file first,
-  // before the ToC (which captures rendered heading titles) and before any emit below
-  // (so a cross-file snapshot carries rendered math). `idToFile` lets an in-math
-  // \ref bake its cross-file href (a rendered RawNode is out of reach for
-  // annotateCrossFileRefs below).
-  for (const f of files) renderMath(f.doc, f.ctx, idToFile);
-
-  // Highlights code blocks in every file, after math (which skips the code raw-tag) and before the ToC (which captures rendered heading titles).
-  for (const f of files) highlightCode(f.doc, f.ctx);
-
-  // One book-wide ToC across the files (when a <toc scope="project"> asks for it),
-  // else per-file tocs — replaces the single-file buildToc call.
-  buildProjectToc(files);
-  // One project-wide review list (when a <review scope="project"> asks for it), else per-file;
-  // the fully tagged list goes to the CLI either way.
-  const projectReview = buildProjectReview(files);
-
-  for (const f of files) {
-    resolveReferences(f.doc, f.ctx);
-    annotateCrossFileRefs(f.doc, f.outName, idToFile);
-    if (bibOut && bibOut !== f.outName) annotateCrossFileCites(f.doc, bibOut);
-    inlineFigures(f.doc, f.ctx);
-    resolveTheme(f.doc, f.ctx);
-    // Project packages first (so they inline before the file's own <import>s, which dedup against them).
-    f.ctx.imports.push(...pkgCtx.imports);
-    resolveImports(f.doc, f.ctx);
-    resolveLineBreaks(f.doc); // blank lines in prose become a single <br> (after every other pass)
-  }
-
-  // Phase 5 — emit. `globalById` spans every file, so cross-file targets snapshot in.
-  const outputs = files.map((f) => ({
-    path: join(config.outDir, f.outName),
-    html: emit(f.doc, f.ctx, globalById),
+  const files: FileUnit[] = config.inputs.map((input) => ({
+    ctx: createContext(input),
+    outName: outNameFor(input),
+    doc: null,
   }));
+  const ok = runPipeline(files, shared, options);
+
+  const ctxs = [project, ...files.map((f) => f.ctx)];
+  const diagnostics = ctxs.flatMap((c) => c.diagnostics);
+  const deps = [...new Set(ctxs.flatMap((c) => [...c.deps]))];
+  if (!ok) return { outputs: [], diagnostics, deps };
   return {
-    outputs,
-    diagnostics: gather(),
-    deps: collectDeps(),
-    review: { team: [...team.values()], items: projectReview },
+    outputs: files.map((f) => ({ path: join(config.outDir, f.outName), html: f.html! })),
+    diagnostics,
+    deps,
+    review: { team: [...shared.team.values()], items: shared.reviewItems },
   };
-}
-
-function hasBibliography(doc: ElementNode): boolean {
-  for (const el of elements(doc)) if (el.tag === "bibliography") return true;
-  return false;
-}
-
-/**
- * Fills project-wide `<document>` defaults onto a file, but only where the file didn't set the
- * attribute itself — so a per-document attribute overrides the project default. Keys are the exact
- * `<document>` attribute names (`type`/`theme`/`theme-accent`/`theme-mode`/`lang`); `theme` is
- * already an absolute path (`config.ts` resolved it against the toml), so the per-doc `resolveTheme`
- * consumes it unchanged. A no-op when the project declares no `[document]` table.
- */
-function applyDocumentDefaults(doc: ElementNode, defaults?: Record<string, string>): void {
-  if (!defaults) return;
-  for (const [attr, val] of Object.entries(defaults)) {
-    if (doc.attrs[attr] === undefined) doc.attrs[attr] = val;
-  }
-}
-
-/**
- * For a resolved `<ref>`/`<solution>`/`<proof>` whose target lives in another
- * output, records `data-target-href="<file>#<id>"` so the runtime navigates there
- * instead of doing an in-page scroll. Same-file refs are left alone.
- */
-function annotateCrossFileRefs(
-  doc: ElementNode,
-  outName: string,
-  idToFile: Map<string, string>,
-): void {
-  for (const el of elements(doc)) {
-    if (!REF_TAGS.has(el.tag)) continue;
-    if (el.attrs["data-target-num"] === undefined) continue; // unresolved: leave bare
-    const to = el.tag === "ref" ? el.attrs.to : el.attrs.of;
-    const home = to ? idToFile.get(to) : undefined;
-    if (home && home !== outName) el.attrs["data-target-href"] = `${home}#${to}`;
-  }
-}
-
-/** Records the references list's output on each resolved `<cite>` in another file. */
-function annotateCrossFileCites(doc: ElementNode, bibOut: string): void {
-  for (const el of elements(doc)) {
-    if (el.tag !== "cite") continue;
-    if (el.attrs["data-cite-nums"] === undefined) continue; // unresolved: leave inert
-    el.attrs["data-cite-file"] = bibOut;
-  }
 }

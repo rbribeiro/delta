@@ -59,9 +59,10 @@ export const ENVIRONMENTS: Record<string, EnvironmentSpec> = {
 
 /**
  * Counters that are reset when the parent counter (key) increments. For example, when a new section starts, the subsection counter is reset to 0.
+ * Keys and values are *counter* names (the `counter` field above), not tag names: `equation` covers both `<equation>` and `<equations>`.
  */
 export const COUNTER_RESETS: Record<string, string[]> = {
   chapter: ["section"],
-  section: ["subsection", "subsubsection", "theorem", "proposition", "lemma", "corollary", "conjecture", "definition", "example", "claim", "observation", "exercise", "problem", "equation", "equations", "figure", "video", "youtube", "audio", "remark", "table", "interactive"],
+  section: ["subsection", "subsubsection", "theorem", "proposition", "lemma", "corollary", "conjecture", "definition", "example", "claim", "observation", "exercise", "problem", "equation", "figure", "video", "audio", "remark", "table", "interactive", "code"],
   subsection: ["subsubsection"],
 };

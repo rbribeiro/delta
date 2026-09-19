@@ -1,4 +1,5 @@
 import type { ElementNode } from "./ast";
+import type { CompileContext } from "./context";
 
 /**
  * Presentation cover. `<cover>` (a direct child of `<document>`) is the deck's front
@@ -8,7 +9,7 @@ import type { ElementNode } from "./ast";
  * tag). Presentation-only and top-level only — no tree walk. `resolveIncludes` runs
  * before this, so an included cover is already a direct child by now.
  */
-export function expandCover(doc: ElementNode): void {
+export function expandCover(doc: ElementNode, _ctx: CompileContext): void {
   if (doc.attrs.type !== "presentation") return;
   for (const child of doc.children) {
     if (child.type === "element" && child.tag === "cover") {

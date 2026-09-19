@@ -15,11 +15,10 @@ import { RAW_TAGS } from "./preprocess";
  * `buildReview` (review.ts), which runs after numbering so items carry their numbers.
  */
 
-export const COMMENT_STATUS = new Set(["open", "resolved"]);
-export const TODO_STATUS = new Set(["open", "doing", "done"]);
-export const PRIORITY = new Set(["high", "normal", "low"]);
-export const BLOCK_STATUS = new Set(["draft", "sketch", "review", "verified"]);
-export const CHANGE_KINDS = new Set(["insert", "delete", "replace"]);
+const COMMENT_STATUS = new Set(["open", "resolved"]);
+const TODO_STATUS = new Set(["open", "doing", "done"]);
+const PRIORITY = new Set(["high", "normal", "low"]);
+const BLOCK_STATUS = new Set(["draft", "sketch", "review", "verified"]);
 
 /** Tags that are collaboration items themselves (their `status` vocab is their own). */
 export const COLLAB_TAGS = new Set(["comment", "todo", "change"]);
@@ -30,7 +29,7 @@ const COLLAB_PARTS = new Set(["reply", "old", "new", "team", "member", "review"]
  * Block-level tags: a `<change>` wrapping one of these (directly, or inside its
  * `<old>`/`<new>`) is a block change and renders as such (`block="true"`).
  */
-export const BLOCK_TAGS = new Set([
+const BLOCK_TAGS = new Set([
   "chapter", "section", "subsection", "subsubsection",
   "theorem", "proposition", "lemma", "corollary", "conjecture", "definition", "example",
   "claim", "observation", "remark", "exercise", "problem", "proof", "solution",
@@ -39,7 +38,7 @@ export const BLOCK_TAGS = new Set([
 ]);
 
 /** Warn when `id` names nobody in `<team>` (a no-op without a team — `by` is then free text). */
-export function checkMember(ctx: CompileContext, id: string | undefined, pos: Position | undefined, attr: string): void {
+function checkMember(ctx: CompileContext, id: string | undefined, pos: Position | undefined, attr: string): void {
   if (!id || ctx.team.size === 0) return;
   if (!ctx.team.has(id)) warn(ctx, `${attr}="${id}" is not a <member> of the <team>`, pos);
 }

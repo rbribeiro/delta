@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { dirname, extname, resolve } from "node:path";
 import { elements, type ElementNode } from "./ast";
 import { addDep, warn, type CompileContext } from "./context";
+import { isRemote } from "./files";
 
 
 const MIME: Record<string, string> = {
@@ -33,7 +34,7 @@ export function inlineFigures(doc: ElementNode, ctx: CompileContext): void {
     const src = el.attrs.src;
     if (!src || src.startsWith("data:")) continue;
 
-    if (/^[a-z]+:\/\//i.test(src)) {
+    if (isRemote(src)) {
       warn(ctx, `figure src must be a local path, not a URL: ${src}`, el.pos);
       delete el.attrs.src;
       continue;
