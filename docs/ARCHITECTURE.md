@@ -1,289 +1,177 @@
 # Architecture
 
-This document explains how the Delta compiler is put together: the pipeline, the
-three concepts everything is built on, and the compile-time/runtime split that
-makes the output work offline. If you want to *add* a feature, read this first,
-then [CONTRIBUTING.md](CONTRIBUTING.md).
+This document explains how the Delta compiler is put together: the two rules, the three
+structures everything is built on, the pipeline (declared as data in one file), and the
+compile-time/runtime split that makes the output work offline. If you want to *add* a
+feature, read this first, then [CONTRIBUTING.md](CONTRIBUTING.md). The same story, longer
+and in Portuguese, with an interactive step-by-step explorer, is the site page
+[site/compilador.dlt](../site/compilador.dlt) (published as `docs/compilador.html`).
 
-## The guiding principle
+## The two rules
 
-Delta does work **at compile time** so the browser ships finished markup. Numbering,
-cross-references, math rendering and asset inlining all happen in the compiler. The
-output is a single `.html` file that opens straight from `file://` with no network,
-no `fetch`, and no external resources — math, fonts, styles and behavior are all
-inlined.
+1. **The compiler resolves data; the runtime draws chrome.** Numbering, cross-references,
+   the table of contents, KaTeX rendering and asset inlining all happen in the compiler,
+   which ships the results as attributes on `<delta-*>` tags and as JSON islands. It never
+   emits a `<h2>` or a "Theorem 1.2" header: it emits `<delta-theorem num="1.2">` and a custom
+   element in the browser draws the header, localized.
+2. **The output references nothing external.** No `<link>`, no URL, no `fetch`. Fonts and
+   images are `data:` URIs; CSS and the runtime are inlined text. A file opened from
+   `file://` cannot fetch its siblings, so even a cross-file reference target is *copied*
+   into the referencing output. `test/emit.test.ts` guards this invariant.
 
-This split shows up everywhere, so internalize it early:
+## The three structures
 
-- **The compiler resolves *data*.** It computes the number `1.2`, renders LaTeX to
-  KaTeX HTML, records which ids exist — and ships those as attributes and
-  pre-rendered content on `<delta-*>` tags.
-- **The runtime renders *chrome*.** Inlined custom elements read that data in the
-  browser and build the visible parts: headers, collapse toggles, pop-overs.
+### A deliberately generic AST ([ast.ts](../src/compiler/ast.ts))
 
-The compiler never emits a `<h2>` or a "Theorem 1.2" header. It emits
-`<delta-section num="1.2">` and lets the browser draw it.
+Three node types, nothing else: `ElementNode` (any tag, keyed by the `tag` string, with an
+`attrs` bag and `children`), `TextNode`, and `RawNode` (pre-rendered HTML the emitter copies
+verbatim; only KaTeX and the code highlighter produce one). There are no per-feature
+subclasses. Passes branch on `tag` and **write results back into `attrs`** (numbering writes
+`num`; references write `data-target-num`). `elements()`, `textContent()`, `hasTag()` and
+`titleOf()` are the helpers passes use to walk and read the tree.
 
-## The two entry points
+### The shared context ([context.ts](../src/compiler/context.ts))
 
-- **[src/cli.ts](../src/cli.ts)** is the *executable*. It parses `argv`, reads the
-  file, calls the compiler, writes the output, prints diagnostics. No compilation
-  logic lives here.
-- **[src/compiler/index.ts](../src/compiler/index.ts)** is the *orchestrator* — the
-  heart of the project. `compileSource()` is the entire pipeline in a few lines and
-  is the best map of the codebase:
+One mutable `CompileContext` per file, threaded through every pass. Passes never call each
+other and share no globals: they communicate **only** through this object and through node
+attrs. It carries `diagnostics`, `registry` (id → `{tag, num}`), `referencedIds`, `toc`,
+`mathUsed`, `lang`, the theme fields, `imports`, `papers`, `citedPapers`, `team`, `review`,
+`final` and `deps`. The who-writes / who-reads matrix is in the site page; the rule it proves
+is that every read comes *after* its write in pipeline order. In a project, four of those
+maps (`registry`, `papers`, `citedPapers`, `team`) are the **same instance** in every file's
+context; the rest of the project-wide state (`numbering`, `globalById`, `idToFile`, `bibOut`,
+the project's own context) lives in `Shared` (see below).
 
-  ```ts
-  const doc = parse(preprocess(source), ctx);   // text → AST
-  if (!doc || hasErrors(ctx)) return undefined;  // bail on malformed XML
-  resolveIncludes(doc, ctx);                      // splice <include> files into one tree
-  loadBibliography(doc, ctx);                     // build the paper registry
-  resolveCitations(doc, ctx);                     // number <cite>; fill <bibliography>
-  numberDocument(doc, ctx);                       // annotate the AST + registry
-  renderMath(doc, ctx);                           // replace math with rendered HTML
-  resolveReferences(doc, ctx);                    // <ref to> → num+kind; mark snapshots
-  buildToc(doc, ctx);                             // collect the heading tree (if a <toc>)
-  inlineFigures(doc, ctx);                        // <figure src> images → data: URIs
-  resolveTheme(doc, ctx);                         // <document theme> CSS → ctx.userCss
-  resolveImports(doc, ctx);                       // <import> packs → ctx.imports
-  return emit(doc, ctx);                          // AST → standalone HTML
-  ```
+### The data-driven environments table ([environments.ts](../src/compiler/environments.ts))
 
-**Pass order is load-bearing.** Includes merge first so everything downstream sees one
-tree; the bibliography splices cited papers before numbering/math process them;
-numbering fills the registry that references and the TOC read; the emitter always runs
-last. Don't reorder without understanding the dependencies. The full ordered table
-(with each pass's `CompileContext` reads/writes) is Appendix A of
-[COMPILER_BOOK.md](COMPILER_BOOK.md).
+All LaTeX-style numbering is data. Each numbered tag maps to a `counter` and an optional
+`prefixWith` counter (`theorem` → `"1.2"`: section 1, theorem 2; the prefix is skipped while
+the parent counter is still 0). Each theorem-like environment has its own counter;
+`equation`/`equations` share one, as do `video`/`youtube`. `COUNTER_RESETS` says which
+counters restart when a parent increments; its keys and values are counter names. The
+numbering pass is a generic engine over this table, so adding an environment is one row
+(plus its label in `strings.ts` and its tag in the runtime).
 
-## The pipeline, stage by stage
+## The pipeline ([pipeline.ts](../src/compiler/pipeline.ts))
 
-We'll trace this fragment of [examples/hello.dlt](../examples/hello.dlt):
+**The order things happen in is the architecture, and it lives in one place**: the `PIPELINE`
+table, a list of phases, each a list of steps. A compilation is a list of `FileUnit`s that
+share one `Shared` state, run by `runPipeline`. **A single file is a project of one file**:
+`compileSource`, `compileFile` ([index.ts](../src/compiler/index.ts)) and `compileProject`
+([project.ts](../src/compiler/project.ts)) only build that list and call the runner.
 
-```xml
-<theorem id="thm:pyth">
-  <title>Pythagorean Theorem</title>
-  For a right triangle... $a^2 + b^2 = c^2$
-  <equation id="eq:pyth">a^2 + b^2 = c^2</equation>
-</theorem>
-```
+A step is either `each` (runs on every file, in input order, before the next step starts on
+any file) or `all` (runs once, project-wide). Pass-major order is what lets a per-file step
+rely on everything earlier steps did in *every* file. The step name is the function it calls.
 
-The five stages below are the spine — the ones our fragment touches. The full pipeline
-threads more passes between `parse` and `emit` (in order: `resolveIncludes`,
-`loadBibliography`, `resolveCitations`, numbering, math, `resolveReferences`, `buildToc`,
-`inlineFigures`, `resolveTheme`, `resolveImports`), each following the same "read the
-context, write the tree" contract. Appendix A of [COMPILER_BOOK.md](COMPILER_BOOK.md) has
-the complete ordered list with every pass's `CompileContext` reads and writes.
+| Phase | Steps (in order) | Notes |
+|---|---|---|
+| `load` | `resolvePackages`ᵃ, `readSource`, `parse`, `resolveIncludes`, `applyDocumentDefaults`, `finalizeReview`, `collectTeam`, `expandAnimated`, `expandCover` | **bails** after this phase if any context has an error |
+| `collab` | `resolveCollab`, `summarizeFinal`ᵃ | runs once every file's team is known |
+| `bibliography` | `loadBibliography`, `numberCitations`, `fillProjectBibliography`ᵃ | before numbering, so spliced `<paper>` nodes flow through later passes |
+| `numbering` | `numberDocument`, `buildIdMaps`ᵃ | one `NumberingState` runs through the files in order |
+| `render` | `renderMath`, `highlightCode`, `buildProjectToc`ᵃ, `buildProjectReview`ᵃ, `resolveReferences`, `annotateCrossFileRefs`, `annotateCrossFileCites`, `inlineFigures`, `resolveTheme`, `resolveImports`, `resolveLineBreaks` | everything that needs the registry, then everything inlined |
+| `emit` | `emit` | one standalone HTML per file |
 
-### 1. `preprocess` — string → string ([preprocess.ts](../src/compiler/preprocess.ts))
+ᵃ project-wide (`all`); the rest are per file (`each`). `test/pipeline.test.ts` pins this list
+literally, asserts that a single-file build and a project-of-one build produce identical
+HTML, and exercises the trace hook.
 
-Runs on raw text *before* XML parsing. Authors need to write `<`, `>` and `&` freely
-inside math and code, but those characters break XML. This stage finds math regions
-(`$…$`, `$$…$$`) and `RAW_TAGS` (`m`, `math`, `equation`, `equations`, `code`,
-`codeblock`) and entity-escapes those characters **only inside them** — the rest of
-the document is untouched. `\$` is preserved as a literal-dollar marker.
+Each step has a one-line `what`. A `(doc, ctx)` pass becomes a step through the `perFile`
+adapter; a step that needs project state receives `shared` as a third argument.
 
-This is why `$a < b$` is legal in a strict-XML file: by the time the parser sees it,
-it reads `$a &lt; b$`. The parser unescapes it again, so later passes see `a < b`.
+**The trace hook.** `CompileOptions.trace` is called after every file of an `each` step
+(with `file`) and after every step, with the *live* `files` and `shared`. It costs nothing
+when absent. `scripts/trace.ts` uses it to compile a two-file sample and snapshot the tree,
+the context and the shared state after every step; that data drives the site's pipeline
+explorer, so the docs never drift from the code.
 
-### 2. `parse` — string → AST ([parse.ts](../src/compiler/parse.ts))
+### Diagnostics, not exceptions
 
-[saxes](https://www.npmjs.com/package/saxes) walks the XML and builds a generic tree.
-Our fragment becomes:
-
-```
-ElementNode { tag: "theorem", attrs: {id: "thm:pyth"}, pos: {...}, children: [
-  ElementNode { tag: "title", children: [TextNode "Pythagorean Theorem"] },
-  TextNode "For a right triangle... $a^2 + b^2 = c^2$",
-  ElementNode { tag: "equation", attrs: {id: "eq:pyth"},
-                children: [TextNode "a^2 + b^2 = c^2"] }
-]}
-```
-
-Every tag is the *same* `ElementNode` shape — `theorem`, `title` and `equation`
-differ only by the `tag` string. Malformed XML produces an error diagnostic and a
-`null` document, so the pipeline bails before annotating anything.
-
-### 3. `numberDocument` — mutates AST + ctx ([numbering.ts](../src/compiler/numbering.ts))
-
-Walks the tree consulting the [environments table](../src/compiler/environments.ts).
-`theorem` uses the `theorem` counter prefixed by `section`, so it writes
-`attrs.num = "1.1"`. `equation` likewise gets `"1.1"`. Both ids are recorded:
-
-```
-ctx.registry = {
-  "thm:pyth" → { tag: "theorem",  num: "1.1" },
-  "eq:pyth"  → { tag: "equation", num: "1.1" },
-}
-```
-
-That registry is the seam for everything cross-referential that comes later — refs,
-TOC, citations all read it.
-
-### 4. `renderMath` — mutates AST + ctx ([math.ts](../src/compiler/math.ts))
-
-Finds `$…$` inside text nodes and the content of math tags, runs KaTeX
-`renderToString`, and replaces each with a `RawNode` holding the rendered HTML. Sets
-`ctx.mathUsed = true`. After this stage **no LaTeX source survives** — only HTML.
-KaTeX errors are warnings (with the source text emitted as fallback), not build
-failures.
-
-### 5. `emit` — AST → HTML string ([emit.ts](../src/compiler/emit.ts))
-
-Two jobs:
-
-1. `serialize()` renames every tag `x` → `delta-x`, writing attributes verbatim.
-   `RawNode`s (KaTeX HTML) are copied without escaping; `TextNode`s are escaped.
-   The theorem becomes `<delta-theorem id="thm:pyth" num="1.1">…</delta-theorem>`.
-2. The body is wrapped in a document `<head>` with the inlined `CORE_CSS`
-   (base layer + components), then the per-type theme layer chosen by
-   `<document type="…">` (`THEMES[type]`, default `article`), then
-   conditionally the KaTeX CSS (only when `ctx.mathUsed`, since it's ~1 MB with
-   embedded fonts), and the runtime IIFE at the end of `<body>`.
-
-The output contains **no rendered numbers or headers** — only data-bearing tags.
-
-### 6. The browser — runtime, not part of the compiler ([src/runtime/elements/](../src/runtime/elements/))
-
-When the page loads, the custom elements upgrade. `DeltaEnvironment` reads
-`getAttribute("num")` → `"1.1"`, finds the `<delta-title>` child, and prepends a
-`<header>` reading "Theorem 1.1 (Pythagorean Theorem).". The compiler supplied the
-data; the browser drew the chrome.
-
-## The three central concepts
-
-### 1. A deliberately generic AST ([ast.ts](../src/compiler/ast.ts))
-
-Three node types, nothing else:
-
-- **`ElementNode`** — any tag, keyed by the `tag` string. Passes branch on `tag` and
-  **write results back into `attrs`** (numbering writes `attrs.num`).
-- **`TextNode`** — plain text (escaped on emit).
-- **`RawNode`** — pre-rendered HTML, e.g. KaTeX output (copied verbatim on emit).
-
-There are no per-feature subclasses. Adding a tag never means adding a node type —
-it's configuration plus, optionally, a renderer. `elements()` and `textContent()`
-are the helpers passes use to walk and read the tree.
-
-### 2. The shared context ([context.ts](../src/compiler/context.ts))
-
-One mutable `CompileContext` is created per compile and threaded through every pass.
-Passes communicate **only** through it and through `node.attrs` — there is no other
-shared state. It carries:
-
-- `diagnostics` — errors and warnings, each with a source position.
-- `registry` — `Map<id, {tag, num}>`, written by numbering, read by reference-style
-  passes. This is the mechanism for cross-element knowledge.
-- `mathUsed` — set by the math pass; the emitter uses it to decide whether to inline
-  KaTeX CSS.
-
-When you add a cross-cutting pass, you extend this interface (e.g. add `templates`
-for pop-over snapshots) rather than inventing a new channel.
-
-### 3. The data-driven environments table ([environments.ts](../src/compiler/environments.ts))
-
-All LaTeX-style numbering is **data, not code**. Each numbered tag maps to:
-
-- `counter` — which counter it increments. The whole theorem family (`theorem`,
-  `lemma`, `corollary`, `proposition`, `conjecture`, `definition`) shares the
-  `theorem` counter, exactly like `\newtheorem{lemma}[theorem]` in LaTeX.
-- `prefixWith` — the counter whose current value is prepended (`"1.2"` = section 1,
-  theorem 2), skipped while that parent counter is still 0.
-
-`COUNTER_RESETS` says which counters restart when a parent increments (a new section
-resets theorem and equation counters). The numbering pass just iterates this table —
-it contains no per-environment logic, so adding an environment is one row.
+An author mistake is never a `throw`. A pass records `error(ctx, msg, el.pos)` or
+`warn(ctx, …)` and continues. An error means "produce no output"; a warning means "the page
+is still usable". The runner checks for errors once, after `load`; the CLI prints everything
+with file, line and column.
 
 ## The compile-time / runtime split in detail
 
 The runtime ([src/runtime/](../src/runtime/)) is bundled **separately** from the CLI.
-[scripts/build.ts](../scripts/build.ts) uses esbuild to bundle `src/runtime/index.ts`
-into a minified IIFE string and, together with the stylesheets, writes them as
-constants into `src/generated/assets.ts`: `RUNTIME_JS`, `CORE_CSS` (`base.css` plus
-every `components/*.css`, concatenated) and `THEMES` (each `themes/<type>.css` keyed
-by file name). The emitter imports them and inlines `CORE_CSS` followed by the theme
-layer for the document's `type`.
+[scripts/build.ts](../scripts/build.ts) uses esbuild to bundle `src/runtime/index.ts` into a
+minified IIFE string and, together with the stylesheets, writes them as constants into
+`src/generated/assets.ts` (`RUNTIME_JS`, `CORE_CSS`, `THEMES`, `BUILTIN_THEMES`). That file is
+generated and git-ignored; every relevant npm script regenerates it first. The build is
+documented in [BUILDING.md](BUILDING.md).
 
-**`src/generated/assets.ts` is generated and git-ignored.** It must exist before any
-typecheck, test or compile, because the emitter imports from it. Every relevant npm
-script has a pre-hook that regenerates it (`npm run assets`); only direct `tsx` or
-`vitest` invocations on a fresh checkout need it run manually. The build steps, scripts
-and artifacts are documented in full in [BUILDING.md](BUILDING.md).
+`emit` assembles, in this order: core CSS, the built-in named theme, the per-type theme, the
+KaTeX CSS (only when `mathUsed`), each pack's CSS, the author's theme (last, unlayered);
+then the serialized body, one `<template data-delta-pop="id">` per referenced id (a copy of
+the target; for containers only the title), the `#delta-toc`, `#delta-review` and
+`#delta-i18n` islands, the runtime, and each pack's JS after it (so `window.Delta` exists).
 
-Two mechanisms keep the output offline:
-
-- **KaTeX assets** ([katex-css.ts](../src/compiler/katex-css.ts)) — KaTeX's stylesheet
-  is inlined with its woff2 fonts embedded as `data:` URIs and the woff/ttf fallbacks
-  stripped. This is what makes math render from `file://`.
-- **Pop-over snapshots** — `resolveReferences` records which ids are referenced, and
-  `emit` (`renderTemplates`) snapshots each into a `<template data-delta-pop="id">` so the
-  runtime clones them locally instead of fetching across files. On the multi-file project
-  path a project-wide `globalById` lets a cross-file target's copy ship into each output.
-
-The `test/emit.test.ts` "references no external resources" test guards this invariant.
-Keep it passing.
-
-The same inlining seam is how Delta is **extended**: `<import>` custom-element packs are
-read at compile time and inlined onto `ctx.imports` (JS after the runtime, CSS before the
-author theme), so the output stays self-contained. How packs generalize into distributable
-**packages** (npm + `project.toml`, runtime-only, core kept monolithic) is the subject of
-[PACKAGES.md](PACKAGES.md).
+Two mechanisms keep the output offline: [katex-css.ts](../src/compiler/katex-css.ts) inlines
+KaTeX's stylesheet with its woff2 fonts as `data:` URIs, and the pop-over snapshots ship a
+copy of every referenced target (from the project-wide `globalById` when the target lives in
+another output). The same inlining seam is how Delta is **extended**: `<import>` packs and
+`project.toml` packages are read at compile time and inlined ([PACKAGES.md](PACKAGES.md),
+[AUTHORING_PACKAGES.md](AUTHORING_PACKAGES.md)).
 
 ## File map
 
 ```
 src/
-  cli.ts                       executable entry point (argv → compile → write; `review` subcommand)
+  cli.ts                       executable entry point (argv → compile → write; review/create/install subcommands)
   review-report.ts             `delta review` text/JSON formatting (pure)
+  scaffold.ts, install.ts      `delta create`, `delta install`
   compiler/
-    index.ts                   the pipeline orchestrator — start here
-    preprocess.ts              escape <,>,& inside math/raw regions (pre-parse)
+    pipeline.ts                THE pipeline: phases/steps table, runPipeline, Shared, the trace hook — start here
+    index.ts, project.ts       the entry points (compileSource/compileFile; compileProject), both thin
+    ast.ts                     ElementNode / TextNode / RawNode + elements, textContent, hasTag, titleOf
+    context.ts                 CompileContext: diagnostics, registry, flags; createContext, error, warn
+    environments.ts            the numbering data table (ENVIRONMENTS, COUNTER_RESETS)
+    preprocess.ts              escape < > & inside math/raw regions (pre-parse); escapeHtml
     parse.ts                   strict XML → generic AST (saxes)
-    ast.ts                     ElementNode / TextNode / RawNode + walk helpers
-    context.ts                 CompileContext: diagnostics, registry, flags
+    files.ts                   isRemote, readUserFile (+addDep), withFile (diagnostics attributed to another file)
     include.ts                 splice <include> files into one tree (cycle detection)
-    environments.ts            the numbering data table
-    numbering.ts               assigns num attrs, fills the registry
-    math.ts                    compile-time KaTeX
-    references.ts              <ref to> → num+kind; marks targets for snapshotting
-    bibliography.ts            load .ref papers; number <cite>; fill <bibliography>
-    toc.ts                     heading tree + auto-slug ids (single + project)
-    team.ts                    <team>/<member> → ctx.team (collaborators; node removed)
-    collab.ts                  comment/todo/change/status vocabulary: defaults + warnings
-    review.ts                  collects comments/tasks/changes/status blocks → ctx.review
-    final.ts                   --final: strip marks, accept changes (the clean publication)
-    figures.ts                 <figure src> images → data: URIs
-    theme.ts                   <document theme> author CSS → ctx.userCss
-    imports.ts                 <import> custom-element packs → ctx.imports
-    strings.ts                 i18n table (en, pt, …) + lang resolvers
-    project.ts                 multi-file projects (shared registry/numbering)
+    document.ts                project.toml [document] defaults onto <document>; ctx.lang
     config.ts                  project.toml parsing (smol-toml)
-    emit.ts                    AST → standalone HTML (+ the #delta-toc / #delta-review islands)
+    final.ts                   --final: strip marks, accept changes (the clean publication)
+    team.ts                    <team>/<member> → ctx.team (node removed)
+    collab.ts                  comment/todo/change/status vocabulary: defaults + warnings
+    animated.ts, cover.ts      presentation sugar (animated → reveal; <cover> → <slide>)
+    bibliography.ts            load .ref papers; number <cite>; fill the (first) <bibliography>
+    numbering.ts               assigns num attrs, fills the registry; NumberingState
+    crossfile.ts               buildIdMaps (globalById/idToFile); cross-file href annotations
+    math.ts                    compile-time KaTeX (+ \ref{} inside math)
+    code.ts                    compile-time highlight.js for <code lang>
+    toc.ts                     heading tree + auto-slug ids (single + project)
+    review.ts                  collects comments/tasks/changes/status blocks → ctx.review
+    references.ts              <ref to> → data-target-num/tag; marks targets for snapshotting
+    figures.ts                 <figure src> images → data: URIs
+    theme.ts                   <document theme / theme-accent / theme-mode> → ctx
+    imports.ts                 <import> packs and project packages → ctx.imports
+    linebreaks.ts              blank lines in prose → <br><br>
+    strings.ts                 i18n table (en, pt, …) + lang resolvers
+    emit.ts                    AST → standalone HTML (+ templates and the JSON islands)
     katex-css.ts               KaTeX CSS with data: fonts (offline math)
   runtime/
-    index.ts                   registers the custom elements (defineComponents)
-    utils.ts                   the shared Delta.popover controller
-    i18n.ts                    runtime t(key): reads the #delta-i18n island
+    index.ts                   registers the custom elements; window.Delta
+    deck.ts                    the presentation controller
+    utils.ts, i18n.ts          the shared popover controller; t(key) from the #delta-i18n island
     elements/                  one <delta-*> custom element per file (browser chrome)
-                               (section, environment, ref, toc, floating, hint, cite,
-                                bibliography, sidenote, media, link; shared.ts helpers;
-                                collab.ts substrate + comment, todo, change, draft, review)
   styles/
     base.css                   @layer delta.base — tokens + page grid + primitives
-    components/*.css            @layer delta.components — one file per component
-                               (structure, theorems, math, sidenote, columns, link,
-                                reference, hint, figure, bibliography, toc, collapse,
-                                popover, floating, collab, comment, todo, status, change,
-                                review, tweaks); tweaks is CSS-staged
-    themes/<type>.css          @layer delta.theme — per-document-type token overrides
-  generated/assets.ts          GENERATED, git-ignored (RUNTIME_JS + CORE_CSS + THEMES)
+    components/*.css           @layer delta.components — one file per component
+    themes/<type>.css          @layer delta.theme — per-document-type overrides
+    builtin/<name>.css         @layer delta.builtin — named themes (theme="impatech")
+  generated/assets.ts          GENERATED, git-ignored (RUNTIME_JS + CORE_CSS + THEMES + BUILTIN_THEMES)
 scripts/build.ts               bundles runtime → assets.ts, and CLI → dist/cli.js
-examples/hello.dlt             the single-file reference example
-examples/project/              the multi-file project example (project.toml + chapters)
-examples/collab.dlt            the collaboration example (team, comments, tasks, changes, review)
-test/                          one suite per pass (parse, numbering, references, toc, …)
+scripts/trace.ts               compiles the explorer's sample with the trace hook → site/packs/pipeline/dist/index.js
+site/                          the documentation site, written in Delta (pt-BR); compiled into docs/
+site/packs/pipeline/           the pipeline explorer pack (element.js, theme.css, descriptions.json, sample/)
+examples/                      hello.dlt (single file), project/ (multi-file), collab.dlt, slides.dlt
+test/                          one suite per pass; helpers.ts (compile/parsed/numbered); pipeline.test.ts
 ```
 
 The single most important file to internalize is
-[src/compiler/index.ts](../src/compiler/index.ts): the order things happen in *is*
+[src/compiler/pipeline.ts](../src/compiler/pipeline.ts): the order things happen in *is*
 the architecture.

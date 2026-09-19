@@ -52,6 +52,9 @@ documented in [BUILDING.md](BUILDING.md).
 - Diagnostics, not exceptions: report problems with `error(ctx, msg, pos)` /
   `warn(ctx, msg, pos)` so the CLI can print them with source positions. Reserve
   thrown errors for genuinely unexpected states.
+- Every pass is `(doc, ctx) => void` in its own file under `src/compiler/`, registered as one
+  row of the `PIPELINE` table. A pass that reads one of the author's files goes through
+  `readUserFile` (records the dependency for `--watch`) and refuses URLs with `isRemote`.
 - The output must reference **no external resources**. If a feature pulls in an
   asset (an image, a font), inline it as a `data:` URI. The
   `test/emit.test.ts` "references no external resources" test enforces this.
@@ -124,14 +127,16 @@ The flow is always: **extend `ctx` → write the pass → wire it into the orche
    text with the number (e.g. "Theorem 1.1") and add `X` to `referencedIds`. If not
    found, `warn(ctx, …, el.pos)`.
 
-3. **Wire it into the pipeline** ([index.ts](../src/compiler/index.ts)) — after
-   `numberDocument` (it needs the registry populated) and before `emit`:
+3. **Wire it into the pipeline** ([pipeline.ts](../src/compiler/pipeline.ts)) — add a step
+   to the `PIPELINE` table in the right phase: after `numberDocument` (it needs the registry
+   populated) and before `emit`. The step name is the function name:
    ```ts
-   numberDocument(doc, ctx);
-   renderMath(doc, ctx);
-   resolveReferences(doc, ctx);
-   return emit(doc, ctx);
+   { name: "resolveReferences", what: "<ref to> → data-target-num/tag from the registry", each: perFile(resolveReferences) },
    ```
+   A step that needs project-wide state gets it as a third argument
+   (`perFile((doc, ctx, shared) => …)`); one that runs once over all files uses `all`.
+   `test/pipeline.test.ts` lists the steps literally, so update that list too — the order is
+   a decision, and that list is where it is recorded.
 
 4. **Teach the emitter** ([emit.ts](../src/compiler/emit.ts)) — when `serialize()`
    reaches an element whose `id` is in `ctx.referencedIds`, also store its serialized
@@ -148,6 +153,11 @@ The flow is always: **extend `ctx` → write the pass → wire it into the orche
    the template is emitted. The existing "no external resources" test keeps the
    offline guarantee honest.
 
+7. **See it in the explorer** — `npm run docs` regenerates the site; your step appears in
+   the pipeline explorer on `docs/compilador.html`, with the attributes it wrote highlighted.
+   Give it a Portuguese description in `site/packs/pipeline/descriptions.json` (the generator
+   warns when one is missing).
+
 Every later cross-cutting feature is a variation on these six steps. A second worked
 example is the collaboration family ([review.ts](../src/compiler/review.ts) +
 [collab.ts](../src/compiler/collab.ts), design in [COLLABORATION.md](COLLABORATION.md)):
@@ -162,7 +172,8 @@ all for publication.
 Collapsible sections (ROADMAP item 8) need **no compiler changes at all**. Any
 attribute on a `.dlt` tag flows through to the `<delta-*>` output verbatim, so the
 compiler already passes `collapsible="true"` and `collapsed="true"` along — and this
-is the canonical example of the shape, now shipped.
+is the canonical example of the shape, now shipped. The Portuguese tutorial for this shape
+is [TUTORIAL_COMPONENTES.md](TUTORIAL_COMPONENTES.md).
 
 The pattern: a small helper in [shared.ts](../src/runtime/elements/shared.ts) reads
 `getAttribute("collapsible")`, wires a click/keydown handler on the element's existing
@@ -182,12 +193,15 @@ knowledge the browser doesn't already have.
 
 Tests live in [test/](../test/) and mirror the passes. Patterns to follow:
 
-- **Pass tests** drive the pipeline directly: `preprocess` → `parse` → the pass under
-  test, then assert on the resulting AST (`num` attributes, registry entries) or on
-  diagnostics. See [test/numbering.test.ts](../test/numbering.test.ts).
-- **Emitter tests** call `compileSource` and assert on the HTML string — including the
-  invariant that it references no external resources. See
+- **Pass tests** drive one pass by hand: `parsed(src)` or `numbered(src)` from
+  [test/helpers.ts](../test/helpers.ts) give you a tree and a context, you call the pass,
+  then assert on the resulting AST (`num` attributes, registry entries) or on diagnostics.
+  See [test/numbering.test.ts](../test/numbering.test.ts).
+- **Emitter tests** call `compile(src)` (the whole pipeline) and assert on the HTML string —
+  including the invariant that it references no external resources. See
   [test/emit.test.ts](../test/emit.test.ts).
+- **Architecture tests** live in [test/pipeline.test.ts](../test/pipeline.test.ts): the step
+  order, "a single file equals a project of one file", and the trace hook.
 
 When you add a pass, add a matching test file. When you add a numbered environment,
 add a numbering case.
