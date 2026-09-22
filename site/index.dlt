@@ -1,152 +1,432 @@
-<document id="p-inicio" theme="tema.css">
+<document id="p-inicio" theme="inicio.css">
+  <title>Delta · apresentações, artigos e livros interativos</title>
 
-  <floating>
-    <title>Navegação</title>
-    <toc scope="project" depth="1"/>
-  </floating>
+  <!-- A página inicial é um .dlt como as outras, mas com tema próprio (inicio.css) e
+       um pacote de duas tags (packs/inicio): <go>, um link comum na mesma aba, e <h>,
+       um título de verdade. Todo o resto são tags do Delta ou tags inertes (hero, band,
+       card...) que o compilador deixa passar e o tema estiliza. -->
+  <import src="packs/inicio"/>
 
-  <section id="inicio">
-    <eyebrow>Uma linguagem de marcação para quem escreve matemática</eyebrow>
-    <title>Artigos podem ser melhores.</title>
-    <intro>
-      O PDF congelou o artigo científico na forma que ele tinha no papel. A web já
-      tem tudo de que um texto matemático precisa, só faltava uma linguagem que
-      fosse tão confortável quanto o LaTeX! <em>Delta</em> compila um arquivo <c>.dlt</c>
-      num único HTML que é distribuível e que funciona offline.
-    </intro>
+  <!-- A mesma equipe de colaboracao.dlt: num projeto a equipe é uma só. -->
+  <team>
+    <member id="rodrigo" name="Rodrigo Ribeiro" kind="human" color="blue"/>
+    <member id="claude" name="Claude" kind="agent" color="purple"/>
+  </team>
 
-    <box type="note">
-      <title>Esta documentação foi feita em Delta</title>
-      Cada página deste site é um arquivo <c>.dlt</c> compilado pelo próprio Delta.
-      O sumário no canto, os blocos de código, as caixas como esta e os teoremas de
-      exemplo não são imitações: são a linguagem se documentando. Os fontes estão em
-      <c>site/</c>, no repositório.
-    </box>
+  <nav>
+    <wrap>
+      <go to="index.html" class="brand">Delta</go>
+      <go to="documentacao.html">Documentação</go>
+      <go to="comecar.html" class="hide-sm">Começar</go>
+      <go to="#exemplos" class="hide-sm">Exemplos</go>
+      <link to="https://github.com/rbribeiro/delta">GitHub</link>
+    </wrap>
+  </nav>
 
-    <subsection id="inicio-instalar">
-      <title>Comece em três linhas</title>
+  <section id="inicio" numbered="false">
+    <title>Início</title>
 
-      <code lang="bash" numbered="false">
+    <hero>
+      <wrap>
+        <hero-copy>
+          <kicker>Uma linguagem de marcação para quem escreve ciência</kicker>
+          <h level="1">Apresentações, artigos e livros podem ser <em>melhores</em> e mais <em>dinâmicos</em>!</h>
+          <lede>
+            Delta é uma linguagem inspirada no LaTeX e escrita em XML. Um arquivo
+            <c>.dlt</c> compila num único HTML: matemática, numeração e referências
+            resolvidas antes de publicar; leitura interativa, offline, em qualquer
+            tela. E simples o bastante para escrever a quatro mãos com um agente.
+          </lede>
+          <actions>
+            <go to="comecar.html" class="btn primary">Começar</go>
+            <go to="documentacao.html" class="btn">Ver a documentação</go>
+          </actions>
+          <install-line>Instale com <c>npm install -g delta-lang</c> (Node 20 ou mais novo).</install-line>
+        </hero-copy>
+
+        <showcase>
+          <code lang="xml" numbered="false" lines="false">
+Em $\mathbb{R}^n$, ser compacto é o mesmo que
+ser fechado e limitado:
+
+<theorem id="thm:heine-borel">
+  <title>Heine–Borel</title>
+  <equation id="eq:heine-borel">
+    K \text{ compacto} \iff K \text{ fechado e limitado}
+  </equation>
+</theorem>
+
+Por <ref to="thm:heine-borel"/>, toda bola fechada
+é compacta.
+          </code>
+          <preview>
+            Em $\mathbb{R}^n$, ser compacto é o mesmo que ser fechado e limitado:
+
+            <theorem id="thm:heine-borel">
+              <title>Heine–Borel</title>
+              <equation id="eq:heine-borel">
+                K \text{ compacto} \iff K \text{ fechado e limitado}
+              </equation>
+            </theorem>
+
+            Por <ref to="thm:heine-borel"/>, toda bola fechada é compacta.
+          </preview>
+        </showcase>
+      </wrap>
+    </hero>
+
+    <band id="formatos" tone="soft">
+      <wrap>
+        <band-head>
+          <kicker>Três formatos, uma linguagem</kicker>
+          <h level="2">O mesmo fonte vira artigo, apresentação ou livro</h>
+          <lede>
+            Troque o <c>type</c> do documento e as mesmas tags (teoremas, equações,
+            referências, figuras) se rearranjam para o formato. Os três exemplos abaixo
+            estão compilados e abrem em uma nova aba.
+          </lede>
+        </band-head>
+        <grid>
+          <card accent="true">
+            <c>type="article"</c>
+            <h level="3">Artigo</h>
+            <p>
+              Resumo, teoremas numerados, demonstrações que dobram, tabelas e
+              bibliografia. Cada referência abre uma prévia do alvo sem sair da página,
+              e as marcas de revisão ficam no próprio texto.
+            </p>
+            <link to="exemplos/artigo.html">Abrir o artigo de exemplo</link>
+          </card>
+          <card accent="true">
+            <c>type="presentation"</c>
+            <h level="3">Apresentação</h>
+            <p>
+              Capa, slides de transição por seção, revelação por etapas e barra de
+              progresso. Navega por teclado, toque ou clique, ainda num único HTML que
+              funciona sem internet.
+            </p>
+            <link to="exemplos/apresentacao.html">Abrir a apresentação de exemplo</link>
+          </card>
+          <card accent="true">
+            <c>type="book"</c>
+            <h level="3">Livro</h>
+            <p>
+              Um capítulo por arquivo e uma numeração só: teoremas, equações e citações
+              de um capítulo se referenciam no outro, e o sumário do projeto inteiro
+              acompanha o leitor.
+            </p>
+            <link to="exemplos/livro/cap1.html">Abrir o livro de exemplo</link>
+          </card>
+        </grid>
+      </wrap>
+    </band>
+
+    <band id="recursos">
+      <wrap>
+        <band-head>
+          <kicker>Por que Delta</kicker>
+          <h level="2">O conforto do LaTeX, o alcance da web</h>
+          <lede>
+            O compilador resolve tudo o que precisa de conhecimento global; o navegador
+            do leitor só desenha. O resultado é rápido, previsível e continua abrindo
+            daqui a dez anos.
+          </lede>
+        </band-head>
+        <grid>
+          <card n="01">
+            <h level="3">Matemática como no LaTeX</h>
+            <p>
+              <c>$…$</c> na frase, <c><equation></c> numerada, <c><equations></c>
+              alinhadas, <c>\eqref</c> dentro da fórmula. O KaTeX roda na compilação;
+              o leitor recebe HTML pronto.
+            </p>
+          </card>
+          <card n="02">
+            <h level="3">Numeração e referências automáticas</h>
+            <p>
+              Teoremas, equações, figuras e seções se numeram sozinhos. Um
+              <c><ref></c> monta o texto do link, mostra uma prévia do alvo e funciona
+              entre arquivos de um projeto.
+            </p>
+          </card>
+          <card n="03">
+            <h level="3">Um arquivo, e só</h>
+            <p>
+              A saída não referencia nada externo: fontes, fórmulas e imagens vão
+              dentro do HTML. Abre de um pendrive, num avião, sem servidor e sem
+              instalar nada do lado do leitor.
+            </p>
+          </card>
+          <card n="04">
+            <h level="3">Interativo por natureza</h>
+            <p>
+              Dicas que abrem ao clique, demonstrações que dobram, sumário flutuante,
+              slides com revelação por etapas. Coisas que o papel não faz.
+            </p>
+          </card>
+          <card n="05">
+            <h level="3">Escrita a várias mãos</h>
+            <p>
+              Anotações, tarefas, alterações rastreadas e estado de revisão vivem no
+              fonte, ao lado do texto a que se referem. <c>delta build --final</c>
+              publica a versão limpa.
+            </p>
+          </card>
+          <card n="06">
+            <h level="3">Feito para agentes</h>
+            <p>
+              XML estrito e um vocabulário pequeno e fixo, fácil de escrever e de
+              procurar com <c>grep</c>. <c>delta review --json</c> conta o estado da
+              revisão sem abrir um navegador.
+            </p>
+          </card>
+        </grid>
+      </wrap>
+    </band>
+
+    <band id="exemplos" tone="soft">
+      <wrap>
+        <band-head>
+          <kicker>Veja o código, veja o resultado</kicker>
+          <h level="2">Cada exemplo abaixo está compilado nesta página</h>
+          <lede>
+            Esta página também é um arquivo <c>.dlt</c>. O que aparece à direita não é
+            uma imagem: é o Delta renderizando o que está à esquerda.
+          </lede>
+        </band-head>
+
+        <demo>
+          <demo-head>
+            <h level="3">Matemática numerada, referências que funcionam</h>
+            <p>Uma definição, um bloco alinhado e uma referência dentro da própria fórmula.</p>
+          </demo-head>
+          <showcase>
+            <code lang="xml" numbered="false" lines="false">
+<definition id="def:norma">
+  <title>Norma euclidiana</title>
+  Para $x \in \mathbb{R}^n$,
+  <equation id="eq:norma">
+    \lVert x \rVert = \sqrt{x_1^2 + \cdots + x_n^2}.
+  </equation>
+</definition>
+
+<equations id="eq:triangular">
+  \lVert x + y \rVert^2 &= \lVert x \rVert^2
+      + 2\langle x, y \rangle + \lVert y \rVert^2 \\
+  &\le \bigl(\lVert x \rVert + \lVert y \rVert\bigr)^2
+</equations>
+
+A primeira linha de <ref to="eq:triangular"/> expande a
+norma de <ref to="def:norma"/>. Dentro da fórmula a
+referência também funciona:
+$\lVert x \rVert^2 \stackrel{\eqref{eq:norma}}{=} x_1^2 + \cdots + x_n^2$.
+            </code>
+            <preview>
+              <definition id="def:norma">
+                <title>Norma euclidiana</title>
+                Para $x \in \mathbb{R}^n$,
+                <equation id="eq:norma">
+                  \lVert x \rVert = \sqrt{x_1^2 + \cdots + x_n^2}.
+                </equation>
+              </definition>
+
+              <equations id="eq:triangular">
+                \lVert x + y \rVert^2 &= \lVert x \rVert^2
+                    + 2\langle x, y \rangle + \lVert y \rVert^2 \\
+                &\le \bigl(\lVert x \rVert + \lVert y \rVert\bigr)^2
+              </equations>
+
+              A primeira linha de <ref to="eq:triangular"/> expande a norma de
+              <ref to="def:norma"/>. Dentro da fórmula a referência também funciona:
+              $\lVert x \rVert^2 \stackrel{\eqref{eq:norma}}{=} x_1^2 + \cdots + x_n^2$.
+            </preview>
+          </showcase>
+        </demo>
+
+        <demo>
+          <demo-head>
+            <h level="3">Revisão dentro do texto</h>
+            <p>
+              Uma alteração proposta por um agente, uma anotação com resposta e uma
+              tarefa. Clique no marcador para abrir a conversa. O painel de revisão
+              alterna entre marcação, texto final e original
+              (<go to="colaboracao.html">como funciona a colaboração</go>).
+            </p>
+          </demo-head>
+          <showcase>
+            <code lang="xml" numbered="false" lines="false">
+Como $f(K)$ é compacto, existe $M$ com
+<change by="claude" date="2026-09-12"
+        note="a desigualdade estava invertida">
+  <old>$|f(x)| > M$</old><new>$|f(x)| \le M$</new>
+</change>
+para todo $x \in K$.<comment by="rodrigo" date="2026-09-12">
+  Vale citar o lema da imagem compacta aqui?
+  <reply by="claude" date="2026-09-13">
+    Vale: o leitor deste capítulo ainda não o viu.
+  </reply>
+</comment>
+
+<todo for="claude" by="rodrigo" priority="high" due="2026-09-20">
+  Citar o lema da imagem compacta na demonstração.
+</todo>
+            </code>
+            <preview>
+              Como $f(K)$ é compacto, existe $M$ com
+              <change id="home-ch1" by="claude" date="2026-09-12" note="a desigualdade estava invertida"><old>$|f(x)| > M$</old><new>$|f(x)| \le M$</new></change>
+              para todo $x \in K$.<comment id="home-c1" by="rodrigo" date="2026-09-12">
+                Vale citar o lema da imagem compacta aqui?
+                <reply by="claude" date="2026-09-13">Vale: o leitor deste capítulo ainda não o viu.</reply>
+              </comment>
+
+              <todo id="home-t1" for="claude" by="rodrigo" priority="high" due="2026-09-20">
+                Citar o lema da imagem compacta na demonstração.
+              </todo>
+            </preview>
+          </showcase>
+        </demo>
+
+        <demo>
+          <demo-head>
+            <h level="3">Um slide</h>
+            <p>
+              Num documento com <c>type="presentation"</c>, cada <c><slide></c> ocupa a
+              tela e a lista abaixo aparece um item por vez, a cada avanço
+              (<link to="exemplos/apresentacao.html">veja na apresentação de exemplo</link>).
+            </p>
+          </demo-head>
+          <showcase>
+            <code lang="xml" numbered="false" lines="false">
+<slide>
+  <title>Três consequências da compacidade</title>
+  Se $K \subset \mathbb{R}^n$ é compacto, então:
+  <list animated="true">
+    <item>$K$ é fechado e limitado;</item>
+    <item>toda sequência em $K$ tem subsequência
+      convergente;</item>
+    <item>toda função contínua em $K$ é limitada
+      e atinge o máximo.</item>
+  </list>
+</slide>
+            </code>
+            <preview kind="slide">
+              <slide>
+                <title>Três consequências da compacidade</title>
+                Se $K \subset \mathbb{R}^n$ é compacto, então:
+                <list animated="true">
+                  <item>$K$ é fechado e limitado;</item>
+                  <item>toda sequência em $K$ tem subsequência convergente;</item>
+                  <item>toda função contínua em $K$ é limitada e atinge o máximo.</item>
+                </list>
+              </slide>
+            </preview>
+          </showcase>
+        </demo>
+      </wrap>
+    </band>
+
+    <band id="agentes">
+      <wrap>
+        <grid cols="2">
+          <band-head>
+            <kicker>Escrever com um agente</kicker>
+            <h level="2">O fonte é o meio de colaboração</h>
+            <lede>
+              Um agente escreve direto no <c>.dlt</c>, e toda contribuição dele fica
+              visível como tal. Você decide no painel de revisão; nada é aceito em
+              silêncio.
+            </lede>
+            <list>
+              <item>Declare-o em <c><team></c> com <c>kind="agent"</c>; ele assina tudo com <c>by</c>.</item>
+              <item>Mudanças em texto existente vão dentro de <c><change></c>, nunca por substituição.</item>
+              <item>Demonstrações novas nascem como <c>status="sketch"</c>; quem confere marca <c>verified</c>.</item>
+              <item>Dúvidas viram <c><comment></c>; pedidos de trabalho viram <c><todo for="…"></c>.</item>
+            </list>
+            <go to="colaboracao.html" class="more">Colaboração, em detalhe</go>
+          </band-head>
+          <code lang="bash" numbered="false">
+# o que falta, em texto ou JSON, sem abrir o navegador
+delta review artigo.dlt --status open --for claude
+delta review artigo.dlt --json
+
+# a publicação limpa, sem nenhuma marca de revisão
+delta build artigo.dlt --final -o artigo.html
+          </code>
+        </grid>
+      </wrap>
+    </band>
+
+    <band id="publico" tone="soft">
+      <wrap>
+        <band-head>
+          <kicker>Para quem</kicker>
+          <h level="2">Professores, estudantes e pesquisadores</h>
+        </band-head>
+        <grid>
+          <card>
+            <h level="3">Professores</h>
+            <p>
+              Notas de aula viram um livro navegável, com exercícios que escondem a
+              solução; a mesma fonte, com <c>type="presentation"</c>, vira os slides da
+              aula. Um HTML por capítulo, e o aluno não instala nada.
+            </p>
+          </card>
+          <card>
+            <h level="3">Estudantes</h>
+            <p>
+              Uma marcação que se aprende numa tarde, sem preâmbulo. Quem quiser ir
+              além estende a linguagem: um elemento novo é um pacote de um arquivo
+              JavaScript, e o compilador é um pipeline declarado numa tabela.
+            </p>
+          </card>
+          <card>
+            <h level="3">Pesquisadores</h>
+            <p>
+              Artigos interativos que funcionam offline e envelhecem bem. Coautores e
+              agentes trabalham no mesmo fonte, com cada mudança rastreada, e
+              <c>--final</c> publica a versão limpa.
+            </p>
+          </card>
+        </grid>
+      </wrap>
+    </band>
+
+    <band id="instalar" tone="dark">
+      <wrap>
+        <grid cols="2">
+          <band-head>
+            <kicker>Comece agora</kicker>
+            <h level="2">Duas linhas até o primeiro documento</h>
+            <lede>
+              O guia de primeiros passos leva do zero a um HTML aberto no navegador em
+              alguns minutos. Delta está em beta: publicado no npm e utilizável, mas a
+              marcação ainda muda antes da versão 1.0.
+            </lede>
+            <actions>
+              <go to="comecar.html" class="btn primary">Primeiros passos</go>
+              <go to="documentacao.html" class="btn">Documentação</go>
+            </actions>
+          </band-head>
+          <code lang="bash" numbered="false">
 npm install -g delta-lang
 delta build artigo.dlt -o artigo.html
-      </code>
 
-      O guia completo está em <ref to="comecar">Primeiros passos</ref>, e a
-      referência da linguagem começa em <ref to="estrutura">Estrutura</ref>.
-    </subsection>
-
-    <subsection id="inicio-exemplo">
-      <title>Como se escreve</title>
-
-      Se você conhece LaTeX, já sabe quase tudo. A diferença é que a marcação é
-      XML, e que o resultado é uma página, não um documento estático.
-
-      <code lang="xml" numbered="false">
-<section id="sec:compacidade">
-  <title>Compacidade</title>
-
-  Um espaço é compacto quando toda cobertura aberta admite
-  subcobertura finita, em $\mathbb{R}^n$, isso equivale a ser
-  fechado e limitado.
-
-  <theorem id="thm:heine">
-    <title>Heine-Borel</title>
-    <equation id="eq:heine">K \text{ compacto} \iff K
-      \text{ fechado e limitado}</equation>
-  </theorem>
-
-  Como afirma <ref to="thm:heine"/>, a caracterização é completa.
-</section>
-      </code>
-
-      Repare no que você <b>não</b> escreveu: nenhum número. O teorema vira
-      "Teorema 1.1", a equação vira "(1.1)", e a referência no fim monta sozinha o
-      texto do link. Insira outro teorema acima e tudo se renumera.
-    </subsection>
-
-    <subsection id="inicio-principios">
-      <title>O que orienta o projeto</title>
-
-      <columns>
-        <column>
-          <box type="note">
-            <title>Um arquivo, e só</title>
-            A saída é um HTML que não referencia nada externo. As fontes, a
-            matemática e as imagens vão dentro dele. Abre de um pendrive, num
-            avião, daqui a dez anos.
-          </box>
-        </column>
-        <column>
-          <box type="tip">
-            <title>O trabalho é da compilação</title>
-            Numeração, referências e fórmulas são resolvidas antes de publicar. O
-            navegador do leitor não calcula nada, só desenha. O que deixa o resultado rápido e confiável.
-          </box>
-        </column>
-      </columns>
-
-      <columns>
-        <column>
-          <box color="purple">
-            <title>Interativo por natureza</title>
-            Uma referência mostra o alvo numa prévia, sem sair da página. Um
-            exercício esconde a solução. Coisas que o papel não faz.
-          </box>
-        </column>
-        <column>
-          <box color="slate">
-            <title>Feito para ser estendido</title>
-            Um ambiente numerado novo é uma linha de tabela; uma tag interativa é
-            um pacote (<ref to="temas">Temas e pacotes</ref>); e o compilador é um
-            pipeline declarado numa tabela, com um explorador para quem quer mexer
-            nele (<ref to="compilador">Por dentro do compilador</ref>).
-          </box>
-        </column>
-      </columns>
-    </subsection>
-
-    <subsection id="inicio-onde">
-      <title>Por onde seguir</title>
-
-      <list>
-        <item>
-          <ref to="comecar">Primeiros passos</ref>: instalar, escrever e compilar
-          o primeiro documento.
-        </item>
-        <item>
-          A referência da linguagem: <ref to="estrutura">Estrutura</ref>,
-          <ref to="matematica">Matemática</ref>, <ref to="ambientes">Ambientes</ref>,
-          <ref to="referencias">Referências e citações</ref>,
-          <ref to="midia">Mídia</ref>, <ref to="layout">Prosa e layout</ref>.
-        </item>
-        <item>
-          Trabalhos maiores: <ref to="projetos">Projetos multi-arquivo</ref> e
-          <ref to="apresentacoes">Apresentações</ref>.
-        </item>
-        <item>
-          Escrever a várias mãos, com pessoas ou agentes: <ref to="colaboracao">Colaboração</ref>,
-          anotações, tarefas, alterações rastreadas e o painel de revisão.
-        </item>
-        <item>
-          Para quem quer mexer no compilador: <ref to="compilador">Por dentro do compilador</ref>,
-          com o pipeline passo a passo, e <ref to="contribuir">Contribuir com o compilador</ref>,
-          do ambiente ao pull request.
-        </item>
-        <item>
-          O código e o rastreador de problemas ficam no
-          <link to="https://github.com/rbribeiro/delta">repositório do projeto</link>.
-        </item>
-      </list>
-
-      <box type="warning">
-        <title>Delta está em beta</title>
-        A linguagem é utilizável e já está publicada no npm, mas ainda muda. Espere
-        ajustes na marcação e no resultado antes da versão 1.0.
-      </box>
-    </subsection>
+# recompila a cada alteração
+delta build artigo.dlt -o artigo.html --watch
+          </code>
+        </grid>
+      </wrap>
+    </band>
   </section>
 
   <footer>
-    Feito com ❤️ em Delta no IMPA Tech.
+    <wrap>
+      <p>Feito com ❤️ em Delta no IMPA Tech. Esta página também é um <c>.dlt</c>: <c>site/index.dlt</c>.</p>
+      <footer-links>
+        <go to="documentacao.html">Documentação</go>
+        <link to="https://github.com/rbribeiro/delta">GitHub</link>
+        <link to="https://www.npmjs.com/package/delta-lang">npm</link>
+      </footer-links>
+    </wrap>
   </footer>
 </document>

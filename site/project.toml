@@ -5,9 +5,15 @@
 #
 # A saída vai direto para docs/, que é o diretório que o GitHub Pages publica.
 # Por isso os HTMLs gerados são versionados junto com os fontes.
+#
+# Os exemplos ao vivo (site/exemplos/) NÃO fazem parte deste projeto: um projeto
+# compartilha numeração e sumário, e um artigo, uma apresentação e um livro de
+# exemplo precisam de numeração própria. `npm run docs:exemplos` os compila à parte,
+# para docs/exemplos/.
 
 inputs = [
-  "index.dlt",          # início
+  "index.dlt",          # página inicial (landing): tema próprio, inicio.css
+  "documentacao.dlt",   # documentação: o ponto de entrada da referência
   "comecar.dlt",        # primeiros passos
   "estrutura.dlt",      # referência: estrutura do documento
   "matematica.dlt",     # referência: matemática

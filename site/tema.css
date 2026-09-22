@@ -60,11 +60,11 @@ delta-subsection[id^="tag-"] > h3 {
   letter-spacing: -0.01em;
 }
 
-/* O guia de início e a página inicial são narrativos: sem réguas de catálogo. */
+/* O guia de início e a página de documentação são narrativos: sem réguas de catálogo. */
 delta-subsection[id^="passo-"] > .sub,
 delta-subsection[id^="passo-"] > h3,
-delta-subsection[id^="inicio-"] > .sub,
-delta-subsection[id^="inicio-"] > h3 {
+delta-subsection[id^="doc-"] > .sub,
+delta-subsection[id^="doc-"] > h3 {
   border-top: 0;
   padding-top: 0;
   margin-top: 2.4rem;
@@ -91,13 +91,13 @@ delta-code {
   margin-block: 1.6rem;
 }
 
-/* ── Colunas de destaque da página inicial ─────────────────────────────────
+/* ── Colunas de destaque da página de documentação ────────────────────────
    As caixas em duas colunas devem ter a mesma altura e não espremer o texto. */
-#inicio-principios delta-columns {
+#doc-principios delta-columns {
   align-items: stretch;
   margin-block: 1.2rem;
 }
-#inicio-principios delta-box {
+#doc-principios delta-box {
   height: 100%;
 }
 

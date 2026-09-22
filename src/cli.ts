@@ -97,6 +97,7 @@ function buildOnce(opts: BuildOptions): BuildOutcome {
   if (result.html === undefined) return { ok: false, deps };
 
   const outPath = output ?? input.replace(/\.dlt$/, "") + ".html";
+  mkdirSync(dirname(outPath), { recursive: true }); // `-o dir/that/does/not/exist.html` is fine, as in writeProject
   writeFileSync(outPath, result.html);
   console.error(`${input} → ${outPath}`);
   return { ok: true, deps };
