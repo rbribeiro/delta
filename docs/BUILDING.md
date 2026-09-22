@@ -92,7 +92,9 @@ So `npm publish` ships only `dist/`, and an installed `delta` command runs the b
 | `example` | `tsx src/cli.ts build examples/hello.dlt -o out.html` | compile the single-file example |
 | `example:project` | `tsx src/cli.ts build examples/project/project.toml` | compile the multi-file project example |
 | `trace` | `tsx scripts/trace.ts` | regenerate the pipeline explorer's data (`site/packs/pipeline/dist/index.js`) |
-| `docs` | `tsx src/cli.ts build site/project.toml` | compile the site (`site/` → `docs/`); `predocs` runs `assets` and `trace` first |
+| `docs` | `npm run docs:site && npm run docs:exemplos` | build the whole published site; `predocs` runs `assets` and `trace` first |
+| `docs:site` | `tsx src/cli.ts build site/project.toml` | compile the site project (`site/*.dlt` → `docs/*.html`) |
+| `docs:exemplos` | three `tsx src/cli.ts build …` calls | compile the live examples (`site/exemplos/` → `docs/exemplos/`): the book project, the article, the presentation; `predocs:exemplos` runs `assets` first |
 
 **Pre-hooks regenerate the assets for you.** `predev`, `pretest`, `pretypecheck`,
 `preexample` and `preexample:project` all run `npm run assets` first, so the generated

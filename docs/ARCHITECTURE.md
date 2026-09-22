@@ -168,6 +168,10 @@ scripts/build.ts               bundles runtime → assets.ts, and CLI → dist/c
 scripts/trace.ts               compiles the explorer's sample with the trace hook → site/packs/pipeline/dist/index.js
 site/                          the documentation site, written in Delta (pt-BR); compiled into docs/
 site/packs/pipeline/           the pipeline explorer pack (element.js, theme.css, descriptions.json, sample/)
+site/inicio.css                the landing page's theme (site/index.dlt); every other page shares site/tema.css
+site/packs/inicio/             the landing page's pack: <go> (a same-tab link) and <h> (a real heading element)
+site/exemplos/                 the live examples linked from the landing page (article, presentation, book project);
+                               built by `npm run docs:exemplos` into docs/exemplos/, outside the site project
 examples/                      hello.dlt (single file), project/ (multi-file), collab.dlt, slides.dlt
 test/                          one suite per pass; helpers.ts (compile/parsed/numbered); pipeline.test.ts
 ```

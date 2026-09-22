@@ -1,0 +1,13 @@
+# Um livro de exemplo em Delta, ligado da página inicial do site: dois capítulos, um
+# arquivo cada, e uma numeração só. Teoremas e equações de um capítulo são citados no
+# outro, e o sumário do projeto inteiro acompanha o leitor.
+#
+#   delta build project.toml        # daqui
+#   npm run docs:exemplos           # da raiz do repositório, junto com os outros exemplos
+inputs = ["cap1.dlt", "cap2.dlt"]
+out = "../../../docs/exemplos/livro"
+
+[document]
+lang         = "pt-BR"
+type         = "book"
+theme-accent = "indigo"

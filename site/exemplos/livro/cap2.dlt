@@ -1,0 +1,67 @@
+<document>
+  <title>Análise na reta</title>
+
+  <floating>
+    <title>Sumário</title>
+    <toc scope="project"/>
+  </floating>
+
+  <chapter id="cap:series">
+    <title>Séries</title>
+
+    <section id="sec:somas-parciais">
+      <title>Somas parciais</title>
+
+      <definition id="def:serie">
+        <title>Série convergente</title>
+        A série $\sum_{n \ge 1} a_n$ converge quando a sequência das somas parciais
+        $s_N = \sum_{n=1}^{N} a_n$ converge, no sentido de <ref to="def:limite"/>; o
+        limite é a soma da série.
+      </definition>
+
+      <theorem id="thm:termo-geral">
+        <title>Teste do termo geral</title>
+        Se $\sum a_n$ converge, então $a_n \to 0$.
+      </theorem>
+      <proof of="thm:termo-geral" collapsible="true">
+        $a_n = s_n - s_{n-1}$, e as duas parcelas tendem à soma $s$ da série; logo
+        $a_n \to s - s = 0$.
+      </proof>
+    </section>
+
+    <section id="sec:positivas">
+      <title>Séries de termos positivos</title>
+
+      <theorem id="thm:positivas">
+        <title>Critério de limitação</title>
+        Uma série de termos não negativos converge se, e somente se, suas somas parciais
+        são limitadas.
+      </theorem>
+      <proof of="thm:positivas" collapsible="true">
+        As somas parciais formam uma sequência crescente; o resultado é
+        <ref to="thm:monotona"/>, do capítulo anterior.
+      </proof>
+
+      <equations id="eq:harmonica">
+        \sum_{n=1}^{\infty} \frac{1}{n} &= \infty, \\
+        \sum_{n=1}^{\infty} \frac{1}{n^2} &= \frac{\pi^2}{6}.
+      </equations>
+
+      A primeira linha de <ref to="eq:harmonica"/> é a série harmônica; a segunda é o
+      problema de Basileia, resolvido por Euler <cite paper="euler"/>. Uma referência a
+      outro capítulo, como <ref to="thm:monotona"/> ou <ref to="eq:euler"/>, abre a prévia
+      aqui mesmo e, ao clicar, leva ao lugar certo do outro arquivo.
+
+      <exercise id="exr:comparacao">
+        Use <ref to="thm:positivas"/> para mostrar que $\sum 1/(n^2 + n)$ converge, e
+        calcule a soma.
+      </exercise>
+      <solution collapsible="true" collapsed="true">
+        $1/(n^2 + n) = 1/n - 1/(n+1)$, então $s_N = 1 - 1/(N+1) \le 1$: as somas parciais
+        são limitadas, e a soma é $1$.
+      </solution>
+    </section>
+  </chapter>
+
+  <bibliography src="refs.ref"/>
+</document>
