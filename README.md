@@ -14,6 +14,7 @@ compile time, so nothing is fetched at runtime.
 
 ```bash
 npm i -g delta-lang
+delta --version                      # check the install (`delta --help` lists every command)
 delta build doc.dlt -o doc.html      # then open doc.html in any browser
 delta build doc.dlt -o doc.html --watch   # rebuild on every change
 ```
@@ -75,7 +76,9 @@ site in `docs/` (`npm run docs`). [docs/index.html](docs/index.html) is the land
 `site/packs/inicio/`); the documentation proper starts at
 [docs/documentacao.html](docs/documentacao.html). Or read the sources directly —
 [site/comecar.dlt](site/comecar.dlt) is the getting-started guide and the tag reference
-begins at [site/estrutura.dlt](site/estrutura.dlt). The live examples linked from the
+begins at [site/estrutura.dlt](site/estrutura.dlt). The CLI reference is
+[site/cli.dlt](site/cli.dlt), and [site/api.dlt](site/api.dlt) documents the `window.Delta`
+runtime API for package authors, with a live pop-over demo. The live examples linked from the
 landing page (an article with review marks, a presentation, a two-chapter book) are in
 [site/exemplos/](site/exemplos/) and are published under `docs/exemplos/`.
 

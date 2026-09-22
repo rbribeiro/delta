@@ -115,6 +115,10 @@ delta build artigo.dlt -o artigo.html
           o primeiro documento.
         </item>
         <item>
+          <ref to="cli">Linha de comando</ref>: cada comando e opção do
+          <c>delta</c>, e os códigos de saída.
+        </item>
+        <item>
           A referência da linguagem: <ref to="estrutura">Estrutura</ref>,
           <ref to="matematica">Matemática</ref>, <ref to="ambientes">Ambientes</ref>,
           <ref to="referencias">Referências e citações</ref>,
@@ -127,6 +131,10 @@ delta build artigo.dlt -o artigo.html
         <item>
           Escrever a várias mãos, com pessoas ou agentes: <ref to="colaboracao">Colaboração</ref>,
           anotações, tarefas, alterações rastreadas e o painel de revisão.
+        </item>
+        <item>
+          Estender o Delta: <ref to="temas">Temas e pacotes</ref>, os dois caminhos,
+          e a <ref to="api">API do runtime</ref> que um pacote usa no navegador.
         </item>
         <item>
           Para quem quer mexer no compilador: <ref to="compilador">Por dentro do compilador</ref>,

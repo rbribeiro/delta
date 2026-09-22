@@ -156,8 +156,10 @@ meu-pacote/
       </code>
 
       O script registra elementos customizados do navegador, e o Delta expõe
-      <c>window.Delta</c> com utilidades: <c>popover</c>, <c>t</c> para textos
-      traduzidos e <c>deck</c> para apresentações.
+      <c>window.Delta</c> com quatro utilidades: <c>popover</c>, o balão ancorado
+      compartilhado; <c>t</c>, para textos traduzidos; <c>deck</c>, para
+      apresentações; e <c>review</c>, os interruptores de revisão. Cada uma está
+      descrita, com um exemplo ao vivo, em <ref to="api">API do runtime</ref>.
 
       <code lang="bash" numbered="false">
 delta create package meu-pacote

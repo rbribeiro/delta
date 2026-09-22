@@ -15,6 +15,7 @@ inputs = [
   "index.dlt",          # página inicial (landing): tema próprio, inicio.css
   "documentacao.dlt",   # documentação: o ponto de entrada da referência
   "comecar.dlt",        # primeiros passos
+  "cli.dlt",            # referência: linha de comando (comandos, opções, códigos de saída)
   "estrutura.dlt",      # referência: estrutura do documento
   "matematica.dlt",     # referência: matemática
   "ambientes.dlt",      # referência: ambientes numerados
@@ -25,7 +26,8 @@ inputs = [
   "projetos.dlt",       # referência: projetos multi-arquivo
   "colaboracao.dlt",    # referência: colaboração (anotações, tarefas, alterações, revisão)
   "temas.dlt",          # referência: temas e pacotes
-  "compilador.dlt",     # contribuir: por dentro do compilador (com o explorador do pipeline)
+  "api.dlt",            # referência: API do runtime (window.Delta) para quem escreve pacotes
+  "compilador.dlt",    # contribuir: por dentro do compilador (com o explorador do pipeline)
   "contribuir.dlt",     # contribuir: ambiente, anatomia de um passo, como acrescentar um
 ]
 

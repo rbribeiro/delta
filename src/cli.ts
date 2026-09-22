@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { type FSWatcher, existsSync, mkdirSync, readdirSync, watch, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { basename, dirname, join, resolve } from "node:path";
 import { compileFile } from "./compiler/index";
 import { loadProjectConfig } from "./compiler/config";
@@ -11,17 +12,43 @@ import { filterReview, formatReviewText, reviewJson, type ReviewData, type Revie
 
 /** The CLI source entry point.
  * It parses command-line arguments, loads a project config if requested, and calls the compiler. It reports diagnostics and writes outputs to disk. It exits with a non-zero code if there were any errors, unless `--watch` is set (then it keeps running and rebuilds on change).
+ * `--version`/`-v` and `--help`/`-h` print to stdout and exit 0; every usage error prints the same banner to stderr and exits 1.
  */
 
+// The version is read from package.json at runtime, so it is never out of sync. `../package.json`
+// resolves from src/cli.ts (tsx), from dist/cli.js (the esbuild bundle) and from the installed
+// layout (node_modules/delta-lang/dist/cli.js): npm ships the root package.json alongside dist/.
+const require = createRequire(import.meta.url);
+const VERSION: string = require("../package.json").version;
+
+const HELP = [
+  "usage: delta build <file.dlt> [-o out.html] [--watch] [--final]",
+  "       delta build <a.dlt> <b.dlt> ... [-o out-dir] [--watch] [--final]   # multi-file project",
+  "       delta build <project.toml> [-o out-dir] [--watch] [--final]        # project file",
+  "       delta review <file.dlt | project.toml> [--json] [--status s] [--for id] [--by id] [--kind k]",
+  "       delta create <project|package> <name>                    # scaffold a project/package",
+  "       delta install <pkg> [<pkg>...] [--project <file>]        # npm install + add to project.toml",
+  "       delta --version | -v                                     # print the version",
+  "       delta --help | -h                                        # print this help",
+  "  --final  strips every collaboration mark (comments, tasks, changes, status, team): the clean publication",
+].join("\n");
+
+/** A usage error: the banner on stderr, exit 1. */
 function usage(): never {
-  console.error("usage: delta build <file.dlt> [-o out.html] [--watch] [--final]");
-  console.error("       delta build <a.dlt> <b.dlt> ... [-o out-dir] [--watch] [--final]   # multi-file project");
-  console.error("       delta build <project.toml> [-o out-dir] [--watch] [--final]        # project file");
-  console.error("       delta review <file.dlt | project.toml> [--json] [--status s] [--for id] [--by id] [--kind k]");
-  console.error("       delta create <project|package> <name>                    # scaffold a project/package");
-  console.error("       delta install <pkg> [<pkg>...] [--project <file>]        # npm install + add to project.toml");
-  console.error("  --final  strips every collaboration mark (comments, tasks, changes, status, team): the clean publication");
+  console.error(HELP);
   process.exit(1);
+}
+
+/** `--help` / `-h`: the banner on stdout, exit 0. */
+function help(): never {
+  console.log(HELP);
+  process.exit(0);
+}
+
+/** `--version` / `-v`: the bare version number on stdout (script-friendly), exit 0. */
+function version(): never {
+  console.log(VERSION);
+  process.exit(0);
 }
 
 function report(d: Diagnostic): void {
@@ -291,6 +318,9 @@ function installMain(args: string[]): void {
 
 function main(): void {
   const args = process.argv.slice(2);
+  // `--help` anywhere on the line, so `delta build --help` works without touching every subcommand's loop.
+  if (args.includes("--help") || args.includes("-h")) help();
+  if (args[0] === "--version" || args[0] === "-v") version();
   switch (args.shift()) {
     case "build":
       return buildMain(args);

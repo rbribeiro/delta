@@ -420,7 +420,7 @@ delta build artigo.dlt -o artigo.html --watch
 
   <footer>
     <wrap>
-      <p>Feito com ❤️ em Delta no IMPA Tech. Esta página também é um <c>.dlt</c>: <c>site/index.dlt</c>.</p>
+      <p>Feito com ❤️ em Delta no IMPA Tech. </p>
       <footer-links>
         <go to="documentacao.html">Documentação</go>
         <link to="https://github.com/rbribeiro/delta">GitHub</link>

@@ -1,0 +1,423 @@
+<document id="p-api" theme="tema.css">
+  <title>API do runtime · Delta</title>
+  <import src="packs/termo"/>
+
+  <floating>
+    <title>Navegação</title>
+    <toc scope="project" depth="1"/>
+  </floating>
+
+  <section id="api">
+    <eyebrow>Referência</eyebrow>
+    <title>API do runtime</title>
+    <intro>
+      O que um pacote encontra pronto no navegador: quando o seu script roda, e os
+      quatro membros de <c>window.Delta</c>, o balão compartilhado em especial. É a
+      referência para quem escreve um pacote; o que um pacote é, e como se importa,
+      está em <ref to="temas">Temas e pacotes</ref>.
+    </intro>
+
+    <toc/>
+
+    <subsection id="sobre-quando">
+      <title>Quando o seu script roda</title>
+
+      O compilador embute tudo num único HTML, nesta ordem: o CSS do Delta, o tema
+      embutido, o tema do tipo de documento, o CSS do KaTeX (se houver matemática),
+      <b>o CSS do seu pacote</b> e, por último, o tema do autor. Depois vem o corpo do
+      documento, os trechos que as prévias das referências usam e três ilhas de dados
+      (sumário, revisão e textos traduzidos). Só então, no fim do <c><body></c>, o
+      runtime do Delta e, logo depois dele, <b>o script de cada pacote</b>, na ordem
+      das dependências.
+
+      Quatro consequências:
+
+      <list marker="number">
+        <item>
+          <b><c>window.Delta</c> já existe na primeira linha do seu script.</b> Não
+          há evento de "pronto" para esperar, nem <c>DOMContentLoaded</c>: o objeto é
+          um global comum, síncrono.
+        </item>
+        <item>
+          <b>A árvore inteira já foi lida.</b> Dentro do <c>connectedCallback</c> do
+          seu elemento, <c>this.children</c> e <c>this.getAttribute(...)</c> estão
+          completos.
+        </item>
+        <item>
+          <b>O <c>connectedCallback</c> pode disparar mais de uma vez</b>, quando um
+          elemento é movido no DOM. Proteja-o com <c>this.dataset.deltaReady</c>, como
+          todos os elementos do Delta fazem.
+        </item>
+        <item>
+          <b>O seu CSS vem antes do tema do autor</b>, que pode sobrescrevê-lo. Não há
+          shadow DOM: prenda cada seletor à sua tag ou a uma classe sua.
+        </item>
+      </list>
+
+      O compilador renomeia a tag do autor: quem escreve <c><termo></c> recebe
+      <c><delta-termo></c> no HTML, e é esse nome que o pacote registra.
+    </subsection>
+
+    <subsection id="sobre-window-delta">
+      <title>O objeto window.Delta</title>
+
+      <table numbered="false">
+        <header>
+          <column>Membro</column>
+          <column>Tipo</column>
+          <column>Para quê</column>
+        </header>
+        <row>
+          <column mono="true">Delta.popover</column>
+          <column mono="true">(trigger, content, options?) => Popover</column>
+          <column>O balão ancorado compartilhado: prévias, definições, menus</column>
+        </row>
+        <row>
+          <column mono="true">Delta.t</column>
+          <column mono="true">(chave, padrão?) => string</column>
+          <column>Um texto de interface no idioma do documento</column>
+        </row>
+        <row>
+          <column mono="true">Delta.deck</column>
+          <column mono="true">Deck | null</column>
+          <column>A apresentação: posição e navegação entre slides</column>
+        </row>
+        <row>
+          <column mono="true">Delta.review</column>
+          <column mono="true">objeto</column>
+          <column>Os dois interruptores de revisão do documento</column>
+        </row>
+      </table>
+
+      É esse o contrato: o que está nesta tabela é estável entre versões. Tudo o
+      mais que o runtime tem por dentro pode mudar sem aviso.
+    </subsection>
+
+    <subsection id="api-popover">
+      <title>Delta.popover</title>
+
+      Todo balão do Delta passa por aqui: a prévia de uma <c><ref></c>, a lista de
+      uma <c><cite></c>, o texto de um <c><hint></c>, o painel de um
+      <c><floating></c>, o fio de um comentário. Você entrega dois elementos, o
+      <i>gatilho</i> e o <i>conteúdo</i>, e recebe um controle:
+
+      <code lang="javascript" numbered="false">
+const pop = Delta.popover(trigger, content, options);
+      </code>
+
+      Experimente aqui mesmo: esta página importa um pacote de poucas linhas que
+      define <c><termo></c>. Clique em
+      <termo def="Elemento HTML registrado com customElements.define, com um hífen no nome. É a base de todo elemento do Delta e de todo pacote.">elemento customizado</termo>
+      ou em
+      <termo def="Camada do navegador desenhada acima de todo o resto da página, imune ao overflow e às transformações dos ancestrais. O Delta a usa pela Popover API quando ela existe.">top layer</termo>
+      para ver o balão; Esc ou um clique fora fecham.
+
+      O que o controle faz por você: posiciona o conteúdo sob o gatilho, ou acima
+      quando não há espaço embaixo; limita a altura ao lado com mais espaço (um
+      conteúdo rolável rola por dentro); mantém o balão dentro da tela nos dois
+      eixos; aponta a seta para o gatilho; reposiciona ao rolar ou redimensionar;
+      fecha com Esc ou clique fora; e garante que só um balão fique aberto de cada
+      vez. Usa a Popover API do navegador quando ela existe e um <c>position: fixed</c>
+      quando não.
+
+      <table numbered="false">
+        <header>
+          <column>Opção</column>
+          <column>Padrão</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">onOpen(content, trigger)</column>
+          <column>nenhum</column>
+          <column>Roda logo antes de mostrar. Monte ou atualize o conteúdo aqui, e não na criação: o balão de uma referência que ninguém clica nunca é montado.</column>
+        </row>
+        <row>
+          <column mono="true">onClose(content, trigger)</column>
+          <column>nenhum</column>
+          <column>Roda logo depois de fechar.</column>
+        </row>
+        <row>
+          <column mono="true">gap</column>
+          <column mono="true">10</column>
+          <column>Distância em pixels entre o gatilho e o balão (o espaço da seta).</column>
+        </row>
+        <row>
+          <column mono="true">triggerClick</column>
+          <column mono="true">true</column>
+          <column>Liga o clique no gatilho ao abrir e fechar. Desligue para abrir por conta própria, com o controle devolvido.</column>
+        </row>
+      </table>
+
+      O controle devolvido:
+
+      <table numbered="false">
+        <header>
+          <column>Membro</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">open(), close(), toggle()</column>
+          <column>Abrem e fecham por programa, por exemplo num botão dentro do balão ou numa tecla.</column>
+        </row>
+        <row>
+          <column mono="true">isOpen</column>
+          <column>Se está aberto agora.</column>
+        </row>
+        <row>
+          <column mono="true">reposition()</column>
+          <column>Refaz a ancoragem. Chame depois de mudar o tamanho do conteúdo com o balão aberto.</column>
+        </row>
+        <row>
+          <column mono="true">destroy()</column>
+          <column>Desliga todos os ouvintes e remove o conteúdo do DOM. Para elementos que saem da página.</column>
+        </row>
+      </table>
+
+      <box type="warning">
+        <title>O que a chamada muda nos seus elementos</title>
+        Já na chamada, antes de qualquer abertura, o controlador: acrescenta a
+        classe <c>delta-pop</c> ao conteúdo (é ela que dá o fundo, a borda, a sombra
+        e a seta); <b>move o conteúdo para o fim do <c><body></c></b>, porque a
+        posição é relativa à janela; marca o gatilho com <c>aria-haspopup="dialog"</c>
+        e, com <c>triggerClick</c>, mantém o <c>aria-expanded</c> dele. A consequência
+        prática: um seletor como <c>delta-termo .termo-pop</c> nunca casa, porque o
+        balão não é mais descendente da sua tag. Estilize-o por uma classe com o
+        prefixo do seu pacote.
+      </box>
+
+      O pacote desta página, na íntegra (<c>site/packs/termo/index.js</c> no
+      repositório). Repare no <c>onOpen</c> montando o conteúdo só na primeira
+      abertura, e no controle devolvido servindo ao teclado:
+
+      <code lang="javascript">
+customElements.define(
+  "delta-termo",
+  class extends HTMLElement {
+    connectedCallback() {
+      if (this.dataset.deltaReady) return; // pode disparar de novo se o nó for movido
+      this.dataset.deltaReady = "1";
+      const def = this.getAttribute("def");
+      if (!def) return;
+      this.tabIndex = 0; // alcançável pelo teclado
+      this.setAttribute("role", "button");
+
+      // O balão. Delta.popover o move para o <body>: estilize-o pela classe.
+      const card = document.createElement("div");
+      card.className = "termo-pop";
+
+      const pop = Delta.popover(this, card, {
+        onOpen: (content) => {
+          if (content.childElementCount) return; // monta uma vez, na primeira abertura
+          const label = document.createElement("span");
+          label.className = "termo-pop-label";
+          label.textContent = Delta.t("termo", "Definição");
+          const term = document.createElement("strong");
+          term.textContent = this.textContent;
+          const text = document.createElement("p");
+          text.textContent = def;
+          content.append(label, term, text);
+        },
+      });
+
+      // Enter ou espaço abrem e fecham, como o clique.
+      this.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          pop.toggle();
+        }
+      });
+    }
+  },
+);
+      </code>
+
+      E a folha de estilo (<c>theme.css</c>), só com variáveis <c>--delta-*</c>, para
+      seguir o tema, a cor de destaque e o modo escuro do documento:
+
+      <code lang="css">
+delta-termo {
+  border-bottom: 1px dotted var(--delta-accent);
+  cursor: help;
+}
+delta-termo:focus-visible {
+  outline: 2px solid var(--delta-accent);
+  outline-offset: 2px;
+}
+
+/* O balão. Fundo, borda, sombra e seta vêm da classe delta-pop; aqui, só o miolo. */
+.termo-pop {
+  font-family: var(--delta-sans);
+}
+.termo-pop-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.75em;
+  font-weight: var(--delta-weight-strong);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--delta-accent);
+}
+.termo-pop p {
+  margin: 4px 0 0;
+  color: var(--delta-ink-soft);
+}
+      </code>
+
+      Para um modelo mais completo, o <c><ref></c> do próprio Delta
+      (<c>src/runtime/elements/ref.ts</c>) monta a prévia a partir de um
+      <c><template></c> embutido pelo compilador e tem um botão que fecha o balão e
+      salta ao alvo.
+    </subsection>
+
+    <subsection id="api-t">
+      <title>Delta.t</title>
+
+      <code lang="javascript" numbered="false">
+Delta.t("termo", "Definição")   // o texto traduzido, ou "Definição"
+      </code>
+
+      Devolve o texto de interface registrado para a chave no idioma do documento;
+      o padrão, quando a chave não existe; ou a própria chave, quando nem o padrão
+      foi dado. O compilador resolve os textos do <c>lang</c> do documento e os
+      embute numa ilha JSON (<c>#delta-i18n</c>), que o runtime lê uma única vez. Não
+      há busca na rede.
+
+      Um pacote não acrescenta chaves à tabela: ela é fixa na compilação. Por isso,
+      passe sempre um padrão, e trate-o como o texto que de fato aparecerá. O que
+      <c>t</c> compra é reaproveitar os textos que o Delta já traduz (os nomes dos
+      ambientes, os rótulos do painel de revisão), que ficam em
+      <c>src/compiler/strings.ts</c>.
+    </subsection>
+
+    <subsection id="api-deck">
+      <title>Delta.deck</title>
+
+      É <c>null</c> em qualquer documento que não seja uma apresentação com ao menos
+      um slide; teste antes de usar. Numa apresentação, é o controlador de slides:
+
+      <table numbered="false">
+        <header>
+          <column>Membro</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">index, total</column>
+          <column>O slide ativo (a partir de zero) e a quantidade de slides.</column>
+        </row>
+        <row>
+          <column mono="true">next(), prev()</column>
+          <column>Avançam e voltam como as setas do teclado: primeiro cada fragmento marcado com <c>reveal="true"</c>, depois o slide.</column>
+        </row>
+        <row>
+          <column mono="true">go(i)</column>
+          <column>Salta para o slide <c>i</c> (limitado ao intervalo), com os fragmentos recolhidos.</column>
+        </row>
+        <row>
+          <column mono="true">goToId(id)</column>
+          <column>Vai ao slide que contém o elemento de <c>id</c> dado (ou, para uma seção, ao slide divisório dela). Devolve <c>false</c> se o id não está em slide nenhum.</column>
+        </row>
+        <row>
+          <column mono="true">onChange(cb)</column>
+          <column>Chama <c>cb(index, total)</c> a cada troca de slide, e uma vez de imediato, com a posição atual.</column>
+        </row>
+      </table>
+
+      Um contador de slides:
+
+      <code lang="javascript" numbered="false">
+const deck = Delta.deck;
+if (deck) {
+  const counter = document.body.appendChild(document.createElement("div"));
+  counter.className = "meu-contador";
+  deck.onChange((i, n) => { counter.textContent = `${i + 1} / ${n}`; });
+}
+      </code>
+
+      É com <c>goToId</c> que uma <c><ref></c> clicada numa apresentação leva ao
+      slide certo em vez de rolar a página. Veja <ref to="apresentacoes">Apresentações</ref>.
+    </subsection>
+
+    <subsection id="api-review">
+      <title>Delta.review</title>
+
+      Os dois interruptores que o painel de revisão controla, para o documento
+      inteiro:
+
+      <table numbered="false">
+        <header>
+          <column>Membro</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">annotations</column>
+          <column>Se as anotações (comentários, tarefas, estados, marcas de alteração) estão visíveis. Só leitura.</column>
+        </row>
+        <row>
+          <column mono="true">setAnnotations(on)</column>
+          <column>Mostra ou esconde todas de uma vez.</column>
+        </row>
+        <row>
+          <column mono="true">changes</column>
+          <column>Como as <c><change></c> aparecem: <c>"markup"</c> (os dois lados), <c>"final"</c> (só o novo) ou <c>"original"</c> (só o antigo). Só leitura.</column>
+        </row>
+        <row>
+          <column mono="true">setChanges(mode)</column>
+          <column>Troca o modo.</column>
+        </row>
+      </table>
+
+      Cada mudança dispara o evento <c>delta:review</c> em <c>document</c>, sem dados
+      anexos; releia os dois membros no ouvinte. É assim que o painel de revisão
+      mantém os próprios botões em dia:
+
+      <code lang="javascript" numbered="false">
+document.addEventListener("delta:review", () => {
+  meuBotao.hidden = !Delta.review.annotations;
+});
+      </code>
+
+      Os interruptores vivem em dois atributos do <c><html></c>, e o CSS do Delta
+      os lê: <c>data-review="off"</c> esconde as anotações e <c>data-changes</c>
+      guarda o modo. Um pacote pode usar os mesmos ganchos nos seus seletores. A
+      marcação de revisão está em <ref to="colaboracao">Colaboração</ref>.
+    </subsection>
+
+    <subsection id="sobre-contrato">
+      <title>O que não é contrato</title>
+
+      <list>
+        <item>
+          <b>Os auxiliares internos do runtime</b>, como os que montam a prévia de uma
+          referência ou o chip de um membro da equipe, não estão em
+          <c>window.Delta</c> e podem mudar a qualquer momento.
+        </item>
+        <item>
+          <b>A numeração não tem API.</b> O compilador escreve o atributo <c>num</c>
+          em cada elemento numerado, e cada elemento lê o próprio com
+          <c>getAttribute("num")</c>. Um pacote faz o mesmo com os seus atributos, e
+          não cria numeração nova (<ref to="temas">Temas e pacotes</ref>).
+        </item>
+        <item>
+          <b>O sistema de design é CSS</b>, não JavaScript: as variáveis
+          <c>--delta-*</c> e as classes compartilhadas (<c>btn</c>, <c>kbd</c>,
+          <c>delta-pop</c>) estão em <c>src/styles/base.css</c>.
+        </item>
+      </list>
+
+      <box type="note">
+        <title>Estilo, tamanho e publicação</title>
+        As regras para publicar um pacote no npm, o limite de tamanho, a proibição
+        de recursos externos e a tabela das variáveis estão em
+        <b>AUTHORING_PACKAGES.md</b>, no repositório (em inglês). O tutorial do zero
+        é o <b>TUTORIAL_COMPONENTES.md</b>. Para começar com o esqueleto pronto:
+        <code lang="bash" numbered="false">
+delta create package meu-pacote
+        </code>
+      </box>
+    </subsection>
+  </section>
+
+  <footer>
+    Feito com ❤️ em Delta no IMPA Tech.
+  </footer>
+</document>
