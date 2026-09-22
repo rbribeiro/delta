@@ -38,7 +38,7 @@ out = "../docs"
 [document]
 lang         = "pt-BR"     # resolveLang reduz para o bloco "pt" de strings.ts
 type         = "article"
-theme-accent = "green"
+theme-accent = "orange"
 
 # `theme` NÃO é declarado aqui de propósito. O config resolve um tema de projeto
 # para caminho absoluto, e o emit serializa os atributos do <document> verbatim.

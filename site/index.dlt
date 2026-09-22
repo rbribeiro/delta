@@ -29,13 +29,12 @@
     <hero>
       <wrap>
         <hero-copy>
-          <kicker>Uma linguagem de marcação para quem escreve ciência</kicker>
+          <kicker>Produza documentos dinâmicos e interativos!</kicker>
           <h level="1">Apresentações, artigos e livros podem ser <em>melhores</em> e mais <em>dinâmicos</em>!</h>
           <lede>
-            Delta é uma linguagem inspirada no LaTeX e escrita em XML. Um arquivo
-            <c>.dlt</c> compila num único HTML: matemática, numeração e referências
-            resolvidas antes de publicar; leitura interativa, offline, em qualquer
-            tela. E simples o bastante para escrever a quatro mãos com um agente.
+          A leitura acadêmica não precisa ser engessada em arquivos estáticos. O <em>Delta</em> é uma linguagem desenvolvida no <link to="https://impatech.edu.br/">IMPA Tech</link> que transforma artigos, livros e apresentações em publicações dinâmicas, feitas para o leitor interagir com o conteúdo.
+
+          O resultado é um único arquivo que se adapta automaticamente a qualquer tela, garantindo uma leitura fluida no celular, sem necessidade de dar zoom. O documento final é leve e funciona em qualquer navegador, inclusive offline. Além disso, o Delta é <em>agent-friendly</em> para que você possa escrever a quatro mãos com um agente de inteligência artificial.
           </lede>
           <actions>
             <go to="comecar.html" class="btn primary">Começar</go>
@@ -161,7 +160,7 @@ Por <ref to="thm:heine-borel"/>, toda bola fechada
             <h level="3">Interativo por natureza</h>
             <p>
               Dicas que abrem ao clique, demonstrações que dobram, sumário flutuante,
-              slides com revelação por etapas. Coisas que o papel não faz.
+              slides com revelação por etapas. Coisas que o PDF não faz pelo leitor.
             </p>
           </card>
           <card n="05">
