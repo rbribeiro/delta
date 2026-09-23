@@ -1,0 +1,193 @@
+/* review.css — <review>: the review & planning panel (DeltaReview,
+   runtime/elements/review.ts). A `.toc`-like card: header (+ "Copy as text"), the
+   `.review-stat` summary chips, the two switches (`.review-switch` annotations on/off,
+   `.review-seg` change view), `.review-filter` chips (members, statuses) and the
+   `.review-item` rows grouped by kind. Reuses `.status-pill` (status.css) and `.who`
+   (collab.css). Sheds its card chrome inside a <floating> panel. Hidden in print
+   (collab.css). Tokens via var(--delta-*). */
+
+@layer delta.components {
+
+delta-review { display: block; }
+
+.review {
+  margin: var(--delta-block-gap) 0;
+  padding: 16px 20px 12px;
+  border: var(--delta-hairline) solid var(--delta-rule-soft);
+  border-radius: var(--delta-radius-lg);
+  background: var(--delta-surface-1);
+  font-family: var(--delta-sans);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--delta-ink-soft);
+}
+
+.review-hd {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.review-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--delta-tracking-cap);
+  text-transform: uppercase;
+  color: var(--delta-mute);
+}
+
+/* Small pill buttons: the copy action, the switches, the filters. */
+.review-copy,
+.review-switch,
+.review-seg button,
+.review-filter {
+  appearance: none;
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1;
+  padding: 5px 10px;
+  border-radius: var(--delta-radius-pill);
+  border: var(--delta-hairline) solid var(--delta-rule);
+  background: var(--delta-paper);
+  color: var(--delta-ink-soft);
+  cursor: pointer;
+  transition: background var(--delta-dur-fast) var(--delta-ease),
+              color var(--delta-dur-fast) var(--delta-ease),
+              border-color var(--delta-dur-fast) var(--delta-ease);
+}
+.review-copy:hover,
+.review-switch:hover,
+.review-seg button:hover,
+.review-filter:hover { border-color: var(--delta-accent-ink); color: var(--delta-accent-ink); }
+.review-copy.is-copied { color: var(--delta-ok); border-color: var(--delta-ok); }
+.review-switch[aria-pressed="true"],
+.review-seg button.is-active,
+.review-filter.is-active {
+  background: var(--delta-accent-soft);
+  border-color: var(--delta-accent-ink);
+  color: var(--delta-accent-ink);
+}
+.review-switch::before {
+  content: "";
+  display: inline-block;
+  width: 7px; height: 7px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--delta-rule);
+  vertical-align: 1px;
+}
+.review-switch[aria-pressed="true"]::before { background: var(--delta-accent-ink); }
+
+.review-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.review-stat {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: var(--delta-radius-pill);
+  background: var(--delta-surface-2);
+  font-size: 11.5px;
+}
+.review-stat b { font-weight: 700; color: var(--delta-ink); font-variant-numeric: tabular-nums; }
+
+.review-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: var(--delta-hairline) solid var(--delta-rule-soft);
+}
+.review-seg { display: inline-flex; align-items: center; gap: 4px; }
+.review-seg-label {
+  margin-right: 4px;
+  font-size: 10.5px;
+  letter-spacing: var(--delta-tracking-cap);
+  text-transform: uppercase;
+  color: var(--delta-mute);
+}
+
+.review-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.review-filter .who { font-size: 11px; }
+
+.review-group-title {
+  margin: 12px 0 4px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: var(--delta-tracking-cap);
+  text-transform: uppercase;
+  color: var(--delta-mute);
+}
+.review-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 0;
+  border-top: var(--delta-hairline) solid var(--delta-rule-soft);
+}
+.review-item-hd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--delta-mute);
+}
+.review-jump { text-decoration: none; }
+.review-num {
+  font-weight: 700;
+  color: var(--delta-accent-ink);
+  font-variant-numeric: tabular-nums;
+}
+.review-jump:hover .review-num { text-decoration: underline; }
+.review-for { display: inline-flex; align-items: center; gap: 4px; }
+.review-date { font-variant-numeric: tabular-nums; }
+.review-prio[data-priority="high"] { color: var(--delta-warn); border-color: color-mix(in oklab, var(--delta-warn) 50%, transparent); }
+
+.review-text {
+  font-family: var(--delta-serif);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--delta-ink);
+}
+.review-text delta-old { text-decoration: line-through; color: var(--delta-mute); }
+.review-text delta-new { background: var(--delta-accent-soft); border-radius: 2px; }
+.review-block-title { font-style: italic; }
+.review-note { font-style: italic; font-size: 12.5px; }
+.review-reply {
+  padding-left: 10px;
+  border-left: 2px solid var(--delta-rule-soft);
+  font-family: var(--delta-serif);
+  font-size: 13.5px;
+  color: var(--delta-ink-soft);
+}
+.review-loc {
+  font-size: 11.5px;
+  color: var(--delta-mute);
+  text-decoration: none;
+}
+.review-loc:hover { color: var(--delta-accent-ink); }
+.review-empty { margin: 8px 0 0; font-style: italic; color: var(--delta-mute); }
+
+/* Inside a <floating> panel: drop the card chrome, the panel already frames it. */
+.floating-body .review {
+  margin: 0;
+  padding: 6px 0 0;
+  border: 0;
+  background: none;
+}
+
+}

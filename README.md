@@ -14,6 +14,7 @@ compile time, so nothing is fetched at runtime.
 
 ```bash
 npm i -g delta-lang
+delta --version                      # check the install (`delta --help` lists every command)
 delta build doc.dlt -o doc.html      # then open doc.html in any browser
 delta build doc.dlt -o doc.html --watch   # rebuild on every change
 ```
@@ -63,31 +64,43 @@ node dist/cli.js build mydoc.dlt -o mydoc.html
 
 ## Status
 
-Beta: the core pipeline (preprocess → parse → number → math → emit) works end-to-end.
+Beta: the whole pipeline (declared in `src/compiler/pipeline.ts`) works end-to-end.
 See [ROADMAP.md](ROADMAP.md) for what's done and what's next.
 
 ## Documentation
 
 **For writing documents** — the user-facing docs are in **Portuguese**, and they are
 written in Delta itself: the sources are in [site/](site/) and compile to the published
-site in `docs/` (`npm run docs`). Start at [docs/index.html](docs/index.html), or read
-the sources directly — [site/comecar.dlt](site/comecar.dlt) is the getting-started guide
-and the tag reference begins at [site/estrutura.dlt](site/estrutura.dlt).
+site in `docs/` (`npm run docs`). [docs/index.html](docs/index.html) is the landing page
+(a `.dlt` with its own theme, `site/inicio.css`, and a two-tag pack in
+`site/packs/inicio/`); the documentation proper starts at
+[docs/documentacao.html](docs/documentacao.html). Or read the sources directly —
+[site/comecar.dlt](site/comecar.dlt) is the getting-started guide and the tag reference
+begins at [site/estrutura.dlt](site/estrutura.dlt). The CLI reference is
+[site/cli.dlt](site/cli.dlt), and [site/api.dlt](site/api.dlt) documents the `window.Delta`
+runtime API for package authors, with a live pop-over demo. The live examples linked from the
+landing page (an article with review marks, a presentation, a two-chapter book) are in
+[site/exemplos/](site/exemplos/) and are published under `docs/exemplos/`.
 
 - **[docs/TUTORIAL_COMPONENTES.md](docs/TUTORIAL_COMPONENTES.md)** (pt-BR) — building a
   custom component end to end, the entry point to the package system.
 
 **For working on the compiler** (English):
 
-- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** — how the compiler works: the
-  pipeline traced end-to-end, the three core concepts (AST, context, environments
-  table), and the compile-time/runtime split. Start here to understand the repo.
+- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** — how the compiler works: the two
+  rules, the three core structures (AST, context, environments table), the pipeline
+  declared as data, and the compile-time/runtime split. Start here to understand the repo.
 - **[docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)** — how to add features: the dev
   workflow and the three shapes every feature takes, each with a worked example.
-- **[docs/COMPILER_BOOK.md](docs/COMPILER_BOOK.md)** — the deep field guide: a
-  chapter-by-chapter walk through every compiler pass and the context it threads.
+- **In Portuguese, on the site:** [site/compilador.dlt](site/compilador.dlt) ("Por dentro do
+  compilador": the in-depth walk-through with an interactive, generated-from-the-compiler
+  pipeline explorer) and [site/contribuir.dlt](site/contribuir.dlt) ("Contribuir com o
+  compilador": environment, anatomy of a pass, adding one end to end).
 - **[docs/BUILDING.md](docs/BUILDING.md)** — the build: the generated assets, the CLI
   bundle, and every npm script.
+- **[docs/COLLABORATION.md](docs/COLLABORATION.md)** — writing a paper with several hands
+  (humans and AI agents): comments, tasks, tracked changes, status marks, the review panel,
+  `--final` and `delta review`; includes a guide for agents that annotate a `.dlt`.
 - **[docs/PACKAGES.md](docs/PACKAGES.md)** and
   **[docs/AUTHORING_PACKAGES.md](docs/AUTHORING_PACKAGES.md)** — the package system:
   its design, and the reference for authoring one.

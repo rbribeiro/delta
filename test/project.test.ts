@@ -338,3 +338,76 @@ describe("project table of contents", () => {
     expect(out(r, "intro.html")).not.toContain('id="delta-toc"');
   });
 });
+
+describe("project-wide review", () => {
+  function scratch(files: Record<string, string>): string[] {
+    const dir = mkdtempSync(join(tmpdir(), "delta-review-"));
+    mkdirSync(dir, { recursive: true });
+    for (const [name, src] of Object.entries(files)) writeFileSync(join(dir, name), src);
+    return Object.keys(files).map((n) => join(dir, n));
+  }
+  function reviewIsland(html: string): { team: unknown[]; items?: Record<string, unknown>[] } | undefined {
+    const m = html.match(/<script type="application\/json" id="delta-review">([\s\S]*?)<\/script>/);
+    return m ? JSON.parse(m[1]) : undefined;
+  }
+  const inputs = scratch({
+    "intro.dlt": `<document>
+      <team><member id="ai" name="Claude" kind="agent" color="purple"/></team>
+      <review scope="project"/>
+      <section id="intro"><title>Intro</title>x<comment id="c-intro" by="ai">note</comment></section>
+    </document>`,
+    "ch.dlt": `<document>
+      <team><member id="ai" name="Claude" kind="agent" color="purple"/></team>
+      <section id="ch"><title>Chapter</title>
+        <todo id="t-ch" for="ai">task</todo>
+        <lemma id="lem" status="sketch" by="ai">y</lemma>
+      </section>
+    </document>`,
+  });
+
+  it("lists every file's items in the panel's island, tagging the ones from other files", () => {
+    const r = compileProject({ inputs, outDir: "out" });
+    expect(r.diagnostics.filter((d) => d.severity === "error")).toHaveLength(0);
+    const intro = reviewIsland(out(r, "intro.html"));
+    expect(intro?.team).toHaveLength(1);
+    const items = intro?.items ?? [];
+    expect(items.map((i) => [i.id, i.file])).toEqual([
+      ["c-intro", undefined],
+      ["t-ch", "ch.html"],
+      ["lem", "ch.html"],
+    ]);
+    expect(items[2]).toMatchObject({ kind: "status", tag: "lemma", num: "2.1", status: "sketch" });
+    // the chapter has no <review>: its island carries the (shared) team only
+    const ch = reviewIsland(out(r, "ch.html"));
+    expect(ch?.team).toHaveLength(1);
+    expect(ch?.items).toBeUndefined();
+  });
+
+  it("hands the CLI the fully tagged list", () => {
+    const r = compileProject({ inputs, outDir: "out" });
+    expect(r.review?.items.map((i) => [i.id, i.file])).toEqual([
+      ["c-intro", "intro.html"],
+      ["t-ch", "ch.html"],
+      ["lem", "ch.html"],
+    ]);
+    expect(r.review?.team.map((m) => m.id)).toEqual(["ai"]);
+  });
+
+  it("accepts an identical <team> re-declared per file silently", () => {
+    const r = compileProject({ inputs, outDir: "out" });
+    expect(r.diagnostics.filter((d) => d.message.includes("duplicate <member"))).toHaveLength(0);
+  });
+
+  it("strips everything project-wide with --final and warns once", () => {
+    const r = compileProject({ inputs, outDir: "out" }, { final: true });
+    for (const o of r.outputs) {
+      expect(o.html).not.toContain("<delta-comment");
+      expect(o.html).not.toContain("<delta-todo");
+      expect(o.html).not.toContain('id="delta-review"');
+      expect(o.html).not.toMatch(/<delta-lemma[^>]*status=/);
+    }
+    const finals = r.diagnostics.filter((d) => d.message.startsWith("final build"));
+    expect(finals).toHaveLength(1);
+    expect(finals[0].message).toBe("final build: 1 open comment, 1 open task, 1 block not verified");
+  });
+});

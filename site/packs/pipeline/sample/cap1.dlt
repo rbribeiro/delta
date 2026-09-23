@@ -1,0 +1,12 @@
+<document>
+  <title>Capítulo 1</title>
+  <toc scope="project"/>
+  <section id="sec:triangulos">
+    <title>Triângulos retângulos</title>
+    Seja $a < b$. Então:
+    <theorem id="thm:pitagoras">
+      <title>Pitágoras</title>
+      <equation id="eq:pitagoras">a^2 + b^2 = c^2</equation>
+    </theorem>
+  </section>
+</document>

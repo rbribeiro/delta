@@ -1,6 +1,7 @@
 import { basename, dirname } from "node:path";
-import { elements, textContent, type ElementNode, type Node } from "./ast";
+import { elements, hasTag, textContent, titleOf, type ElementNode, type Node } from "./ast";
 import type { CompileContext } from "./context";
+import { escapeHtml } from "./preprocess";
 import { katexCss } from "./katex-css";
 import { resolveLang, stringsFor } from "./strings";
 import { CORE_CSS, RUNTIME_JS, THEMES } from "../generated/assets";
@@ -25,9 +26,7 @@ export function emit(
   ctx: CompileContext,
   globalById?: Map<string, ElementNode>,
 ): string {
-  const titleEl = doc.children.find(
-    (c): c is ElementNode => c.type === "element" && c.tag === "title",
-  );
+  const titleEl = titleOf(doc);
   const title = titleEl ? textContent(titleEl).trim() : basename(ctx.file).replace(/\.dlt$/, "");
 
   // `type` selects the @layer delta.theme overrides (article is the default).
@@ -47,6 +46,8 @@ export function emit(
   const templates = renderTemplates(doc, ctx, globalById);
   // Heading tree for <delta-toc>, shipped as an inert JSON island.
   const toc = renderTocIsland(ctx);
+  // Collaboration data (<team> + the items a <review> panel lists), same shape.
+  const review = renderReviewIsland(doc, ctx);
 
   // The head is assembled after the templates/ToC island, because on the project
   // path those can carry math rendered in *another* file (a cross-file snapshot,
@@ -55,7 +56,7 @@ export function emit(
   const head = [
     `<meta charset="utf-8">`,
     `<meta name="viewport" content="width=device-width, initial-scale=1">`,
-    `<title>${escapeText(title)}</title>`,
+    `<title>${escapeHtml(title)}</title>`,
     `<style>\n${CORE_CSS}\n</style>`,
     // Built-in named theme (<document theme="impatech">): tokens only, in its own
     // @layer delta.builtin. That layer sits above the base tokens but below the
@@ -95,7 +96,7 @@ ${head}
 </head>
 <body>
 ${body}
-${templates}${toc}<script type="application/json" id="delta-i18n">${i18n}</script>
+${templates}${toc}${review}<script type="application/json" id="delta-i18n">${i18n}</script>
 <script>
 ${RUNTIME_JS}
 </script>
@@ -141,7 +142,7 @@ function renderTemplates(
       // the template holds only the title
       let snapshot = node;
       if (CONTAINER_TAGS.has(node.tag)) {
-        const titleEl = node.children.find( (c): c is ElementNode => c.type === "element" && c.tag === "title");
+        const titleEl = titleOf(node);
         snapshot = {type: "element", tag: node.tag, attrs: node.attrs, children: titleEl ? [titleEl] : []};
       }
       // A cross-file target may carry math this file didn't render itself.
@@ -174,6 +175,66 @@ function renderTocIsland(ctx: CompileContext): string {
   return `<script type="application/json" id="delta-toc">${json}</script>\n`;
 }
 
+/**
+ * Builds the inert `<script type="application/json" id="delta-review">` island: the `<team>`
+ * members (the runtime colors/badges every `by`/`for` chip from them) and, only when the
+ * document carries a `<review>` panel, the collected collaboration items with their bodies
+ * serialized (so math survives, like ToC titles). Shipped only where it is read: a document
+ * with a panel, or one whose own collaboration items need the team for their author chips.
+ * A plain document — or a project file that merely shares the team — stays byte-identical.
+ */
+function renderReviewIsland(doc: ElementNode, ctx: CompileContext): string {
+  const hasPanel = hasTag(doc, "review");
+  const ownItems = ctx.review.some((i) => !i.file);
+  if (!hasPanel && !(ctx.team.size > 0 && ownItems)) return "";
+
+  const ser = (nodes: Node[]): string => nodes.map(serialize).join("");
+  const data: Record<string, unknown> = { team: [...ctx.team.values()] };
+  if (hasPanel) {
+    // A project-wide panel may carry bodies/titles with math rendered in another file.
+    ctx.mathUsed ||= ctx.review.some(
+      (i) =>
+        containsMath(i.body) ||
+        (i.replies ?? []).some((r) => containsMath(r.body)) ||
+        (i.heading ? containsMath(i.heading.title) : false),
+    );
+    data.items = ctx.review.map((i) =>
+      compact({
+        kind: i.kind,
+        id: i.id,
+        tag: i.tag,
+        num: i.num,
+        status: i.status,
+        by: i.by,
+        for: i.for,
+        verifiedBy: i.verifiedBy,
+        date: i.date,
+        due: i.due,
+        priority: i.priority,
+        changeKind: i.changeKind,
+        note: i.note,
+        on: i.on,
+        text: i.text,
+        html: ser(i.body),
+        replies: i.replies?.map((r) => compact({ by: r.by, date: r.date, text: r.text, html: ser(r.body) })),
+        heading: i.heading
+          ? { level: i.heading.level, num: i.heading.num, id: i.heading.id, title: ser(i.heading.title) }
+          : undefined,
+        file: i.file,
+      }),
+    );
+  }
+  const json = JSON.stringify(data).replace(/</g, "\\u003c");
+  return `<script type="application/json" id="delta-review">${json}</script>\n`;
+}
+
+/** Drops undefined-valued keys so the island JSON stays small. */
+function compact<T extends Record<string, unknown>>(obj: T): Partial<T> {
+  const out: Partial<T> = {};
+  for (const [k, v] of Object.entries(obj)) if (v !== undefined) (out as Record<string, unknown>)[k] = v;
+  return out;
+}
+
 /** True when any node in the tree is pre-rendered math (a RawNode stamped by renderMath). */
 function containsMath(nodes: Node[]): boolean {
   return nodes.some(
@@ -186,7 +247,7 @@ function containsMath(nodes: Node[]): boolean {
 function serialize(node: Node): string {
   switch (node.type) {
     case "text":
-      return escapeText(node.text);
+      return escapeHtml(node.text);
     case "raw":
       return node.html;
     case "element": {
@@ -200,10 +261,6 @@ function serialize(node: Node): string {
   }
 }
 
-function escapeText(s: string): string {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
 function escapeAttr(s: string): string {
-  return escapeText(s).replace(/"/g, "&quot;");
+  return escapeHtml(s).replace(/"/g, "&quot;");
 }

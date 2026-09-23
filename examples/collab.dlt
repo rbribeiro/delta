@@ -1,0 +1,92 @@
+<document lang="en" type="article" theme-accent="teal">
+  <title>Collaboration in Delta</title>
+
+  <team>
+    <member id="rodrigo" name="Rodrigo Ribeiro" kind="human" color="blue"/>
+    <member id="claude" name="Claude" kind="agent" color="purple"/>
+  </team>
+
+  <floating>
+    <title>Review</title>
+    <review/>
+  </floating>
+
+  <abstract>
+    A small paper written by a human and an agent together. Every mark the two left in
+    it — comments, tasks, tracked changes, status — lives in this very file; the compiled
+    page shows them in place, and <c>delta build --final</c> strips them all.
+  </abstract>
+
+  <section id="sec-setup">
+    <title>Setup</title>
+
+    Let $K \subset \mathbb{R}^n$ be compact and $f \colon K \to \mathbb{R}$ continuous.
+    <comment id="c-domain" by="rodrigo" date="2026-09-10" status="resolved">
+      Do we need $n \ge 1$ stated? <reply by="claude" date="2026-09-10">No: $n = 0$ is a point, and the statement is trivially true there.</reply>
+    </comment>
+
+    <lemma id="lem-image" status="verified" by="claude" verified-by="rodrigo">
+      <title>Continuous image of a compact set</title>
+      $f(K)$ is compact.
+    </lemma>
+    <proof of="lem-image" status="verified" by="claude" verified-by="rodrigo">
+      Take an open cover of $f(K)$; its preimages cover $K$, extract a finite subcover.
+    </proof>
+  </section>
+
+  <section id="sec-main">
+    <title>The main result</title>
+
+    <theorem id="thm-bounded" status="review" by="claude">
+      <title>Extreme value theorem</title>
+      $f$ is bounded and attains its maximum and minimum on $K$.
+    </theorem>
+    <comment on="thm-bounded" by="rodrigo" date="2026-09-12">
+      Title says "extreme value" but we only prove boundedness below. Either prove the
+      attainment or rename.
+    </comment>
+
+    <proof of="thm-bounded" status="sketch" by="claude">
+      By <ref to="lem-image"/>, $f(K)$ is compact, hence closed and bounded. So there is
+      $M$ with <change id="ch-sign" by="claude" date="2026-09-12" note="the inequality was reversed"><old>$|f(x)| > M$</old><new>$|f(x)| \le M$</new></change>
+      for every $x \in K$.<comment id="c-attain" by="claude" date="2026-09-12">
+        Attainment: $\sup f(K) \in f(K)$ because $f(K)$ is closed. I have not written this
+        step out yet.
+      </comment>
+      <change by="rodrigo" date="2026-09-13"><old>This completes the proof.</old></change>
+    </proof>
+
+    <todo id="t-attain" for="claude" by="rodrigo" status="open" priority="high" due="2026-09-20">
+      Write out the attainment step in the proof of <ref to="thm-bounded"/> (closedness of $f(K)$).
+    </todo>
+    <todo id="t-title" for="rodrigo" status="doing">
+      Decide between renaming <ref to="thm-bounded"/> and keeping the full statement.
+    </todo>
+    <todo id="t-lemma" for="claude" status="done">
+      Prove <ref to="lem-image"/>.
+    </todo>
+
+    <change id="ch-corollary" by="claude" date="2026-09-13" note="a corollary the applications section will cite">
+      <new>
+        <corollary id="cor-sup">
+          $\sup_K f$ and $\inf_K f$ are finite.
+        </corollary>
+      </new>
+    </change>
+  </section>
+
+  <section id="sec-applications" status="draft" by="claude">
+    <title>Applications</title>
+
+    <draft by="claude" note="only a direction so far; the examples are missing">
+      The theorem gives a uniform bound for any continuous function on a closed interval,
+      which is the basic ingredient of Riemann integrability.
+    </draft>
+  </section>
+
+  <section id="sec-review" numbered="false">
+    <title>Review panel</title>
+    The same panel the floating button opens, inline:
+    <review/>
+  </section>
+</document>

@@ -1,0 +1,460 @@
+/* inicio.css: o tema da página inicial do site (site/index.dlt).
+ *
+ * É uma folha de autor como tema.css: inlinada POR ÚLTIMO e SEM @layer, então vence o
+ * design system, a camada do tipo de documento e o CSS do KaTeX. Duas regras valem
+ * aqui como lá:
+ *
+ *   1. Re-valorar tokens `--delta-*` em vez de fixar cores, para que o acento e o modo
+ *      escuro continuem funcionando (a faixa escura do fim é só uma troca de tokens).
+ *   2. Nenhum seletor solto (`a`, `button`, `h2`, `svg`, `span`): tudo é preso a
+ *      `#p-inicio`, a uma tag `delta-*` da página ou a uma classe do autor. Um `a`
+ *      solto desarranjaria o sumário, as prévias e os botões do runtime.
+ *
+ * As tags da página (hero, band, card, preview...) não existem no Delta: o compilador
+ * as deixa passar como <delta-hero> etc., inertes, e todo o visual delas é daqui. A
+ * página não é um livro: corpo em sans, Newsreader só nos títulos de exibição e nas
+ * prévias, que precisam parecer exatamente um documento Delta.
+ */
+
+/* ── Página ───────────────────────────────────────────────────────────────── */
+html:has(#p-inicio) { scroll-behavior: smooth; }
+
+#p-inicio {
+  /* Sem medida de leitura nem faixa de notas de margem: a página é de faixas largas. */
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  --delta-col-gap: 0px;
+  --delta-margin-w: 0px;
+  font-family: var(--delta-sans);
+  font-variation-settings: normal;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--delta-ink);
+}
+
+/* O título do documento já nomeia a aba; no corpo a marca fica na barra. */
+#p-inicio > delta-title { display: none; }
+
+/* A única <section> existe para dar à navegação das outras páginas uma entrada
+   "Início". Aqui o h2 fica acessível, mas invisível. */
+#inicio { margin: 0; }
+#inicio > h2.section {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Tags de layout inertes: precisam de display, porque nascem inline. Sem #p-inicio de
+   propósito: com especificidade de tipo, as regras de grid/flex mais abaixo vencem. */
+:is(delta-nav, delta-wrap, delta-hero, delta-hero-copy, delta-kicker, delta-lede,
+  delta-actions, delta-install-line, delta-showcase, delta-preview, delta-band,
+  delta-band-head, delta-grid, delta-card, delta-demo, delta-demo-head, delta-footer,
+  delta-footer-links, delta-p, delta-h, delta-slide) {
+  display: block;
+}
+delta-go { display: inline; }
+
+delta-wrap {
+  max-width: 1160px;
+  margin-inline: auto;
+  padding-inline: clamp(16px, 4vw, 40px);
+}
+
+#p-inicio delta-p { margin: 0; }
+#p-inicio delta-p + delta-p { margin-top: 0.8em; }
+
+/* ── Texto de exibição ────────────────────────────────────────────────────── */
+delta-kicker {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--delta-accent-ink);
+  margin-bottom: 16px;
+}
+
+#p-inicio delta-h > :is(h1, h2, h3) {
+  font-family: var(--delta-serif);
+  font-weight: var(--delta-weight-display);
+  color: var(--delta-ink);
+  margin: 0;
+  text-wrap: balance;
+}
+#p-inicio delta-h > h1 {
+  font-size: clamp(38px, 4.9vw, 64px);
+  line-height: 1.04;
+  letter-spacing: -0.022em;
+  font-variation-settings: "opsz" 72;
+  margin-bottom: 24px;
+}
+#p-inicio delta-h > h2 {
+  font-size: clamp(28px, 3.4vw, 40px);
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  font-variation-settings: "opsz" 48;
+  margin-bottom: 12px;
+}
+#p-inicio delta-h > h3 {
+  font-family: var(--delta-sans);
+  font-weight: 600;
+  font-size: 17px;
+  line-height: 1.3;
+  letter-spacing: -0.005em;
+}
+
+/* No título de exibição, o <em> do Delta (itálico no acento) é o destaque certo, mas
+   ele nasce inline-block, o que impede a quebra de linha entre as palavras. */
+#p-inicio delta-h delta-em {
+  display: inline;
+  font-style: italic;
+  font-weight: inherit;
+  color: var(--delta-accent-ink);
+}
+
+delta-lede {
+  font-size: clamp(17px, 1.4vw, 20px);
+  line-height: 1.55;
+  color: var(--delta-ink-soft);
+  max-width: 34em;
+  text-wrap: pretty;
+}
+delta-lede delta-c, delta-card delta-c, delta-install-line delta-c, delta-demo-head delta-c {
+  font-size: 0.84em;
+}
+
+/* ── Botões e links de ação ───────────────────────────────────────────────── */
+delta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+#p-inicio a.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 12px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--delta-ink);
+  background: var(--delta-surface-1);
+  border: var(--delta-hairline) solid var(--delta-rule);
+}
+#p-inicio a.btn:hover { background: var(--delta-surface-2); }
+#p-inicio a.btn.primary {
+  color: var(--delta-paper);
+  background: var(--delta-accent-ink);
+  border-color: transparent;
+}
+#p-inicio a.btn.primary:hover { filter: brightness(1.08); }
+
+#p-inicio a.more {
+  display: inline-block;
+  margin-top: 22px;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--delta-accent-ink);
+  text-decoration: none;
+  border-bottom: 1.5px solid color-mix(in oklab, var(--delta-accent-ink) 35%, transparent);
+}
+#p-inicio a.more:hover { border-bottom-color: var(--delta-accent-ink); }
+#p-inicio a.more::after { content: " →"; }
+
+delta-install-line {
+  margin-top: 18px;
+  font-size: 14px;
+  color: var(--delta-mute);
+}
+
+/* ── Barra de navegação ───────────────────────────────────────────────────── */
+#p-inicio delta-nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: color-mix(in oklab, var(--delta-paper) 86%, transparent);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  backdrop-filter: blur(10px) saturate(140%);
+  border-bottom: var(--delta-hairline) solid var(--delta-rule-soft);
+}
+#p-inicio delta-nav delta-wrap {
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 2.5vw, 30px);
+  min-height: 60px;
+}
+#p-inicio delta-nav delta-go, #p-inicio delta-nav delta-link { display: inline; }
+#p-inicio delta-nav delta-go > a,
+#p-inicio delta-nav delta-link > a {
+  font-family: var(--delta-sans);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--delta-ink-soft);
+  text-decoration: none;
+  transition: color var(--delta-dur-fast) var(--delta-ease);
+}
+#p-inicio delta-nav delta-go > a:hover,
+#p-inicio delta-nav delta-link > a:hover { color: var(--delta-accent-ink); }
+#p-inicio delta-nav .ext-icon { width: 0.7em; height: 0.7em; opacity: 0.6; }
+
+#p-inicio delta-nav delta-go:has(> a.brand) { margin-right: auto; }
+#p-inicio delta-nav a.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--delta-serif);
+  font-weight: 600;
+  font-size: 21px;
+  letter-spacing: -0.01em;
+  color: var(--delta-ink);
+}
+#p-inicio delta-nav a.brand::before {
+  content: "";
+  width: 22px;
+  height: 22px;
+  background: no-repeat center / contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 121.01638 119.07436'%3E%3Cg transform='translate%28-66.387602,-169.0053%29'%3E%3Cg transform='matrix%289.8641218,0,0,9.8641218,-193.93581,-1118.8588%29'%3E%3Cpath fill='%23241f1c' d='m 35.593184,130.56687 h -1.523997 l -5.583759,12.02265 h 1.523997 z'/%3E%3Cpath fill='%23241f1c' d='m 33.498693,130.56044 h -1.523997 l -5.583759,12.02265 h 1.523997 z'/%3E%3Cpath fill='%236c5d53' d='m 30.473,142.5431 8.000454,0.0888 0.185821,-0.28313 -3.772654,-7.94577 -0.808268,1.84038 2.288392,5.37047 -5.500332,-0.0192 z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* ── Hero ─────────────────────────────────────────────────────────────────── */
+#p-inicio delta-hero {
+  padding-block: clamp(48px, 8vw, 104px) clamp(48px, 7vw, 88px);
+  background:
+    radial-gradient(60% 55% at 85% 0%, var(--delta-accent-soft) 0%, transparent 70%),
+    var(--delta-paper);
+}
+#p-inicio delta-hero delta-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: clamp(32px, 5vw, 72px);
+  align-items: start;
+}
+#p-inicio delta-hero delta-hero-copy { padding-top: clamp(0px, 2vw, 24px); }
+
+/* ── Código → resultado ───────────────────────────────────────────────────── */
+delta-showcase {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  align-items: start;
+}
+#p-inicio delta-hero delta-showcase {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+delta-showcase delta-code {
+  margin: 0;
+  font-size: 12.5px;
+}
+delta-showcase .code-head { padding: 8px 14px; }
+
+delta-preview {
+  position: relative;
+  background: var(--delta-surface-1);
+  border: var(--delta-hairline) solid var(--delta-rule);
+  border-radius: 12px;
+  padding: 44px 28px 26px;
+  box-shadow: var(--delta-shadow);
+  /* Daqui para dentro é um documento Delta: a prosa volta à serifa e à medida do core. */
+  font-family: var(--delta-serif);
+  font-variation-settings: var(--delta-font-variation);
+  font-size: 17px;
+  line-height: var(--delta-leading);
+  color: var(--delta-ink);
+}
+delta-preview::before {
+  content: "resultado";
+  position: absolute;
+  top: 13px;
+  left: 16px;
+  font-family: var(--delta-sans);
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--delta-mute);
+}
+delta-preview > :last-child { margin-bottom: 0; }
+delta-preview .box-body > :last-child { margin-bottom: 0; }
+
+/* A prévia de slide: um quadro 16:9 com a cara da capa de uma apresentação. */
+delta-preview[kind="slide"] {
+  /* 16:9 quando o conteúdo cabe; se não couber, o quadro cresce em vez de cortar. */
+  aspect-ratio: 16 / 9;
+  padding: 44px 8% 8%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: linear-gradient(165deg, var(--delta-accent-soft) 0%, var(--delta-surface-1) 62%);
+}
+delta-preview[kind="slide"]::before { content: "slide"; }
+delta-preview[kind="slide"] .slide-title {
+  font-family: var(--delta-serif);
+  font-weight: var(--delta-weight-display);
+  font-size: clamp(20px, 2vw, 27px);
+  line-height: 1.12;
+  letter-spacing: -0.012em;
+  margin: 0;
+  text-wrap: balance;
+}
+delta-preview[kind="slide"] .slide-rule {
+  display: block;
+  width: 2.4em;
+  height: 3px;
+  margin: 10px 0 12px;
+  border-radius: 2px;
+  background: var(--delta-accent-ink);
+}
+delta-preview[kind="slide"] .slide-rule-fill { display: none; }
+delta-preview[kind="slide"] .slide-body { font-size: clamp(14px, 1.25vw, 16.5px); line-height: 1.45; }
+delta-preview[kind="slide"] .slide-body delta-list { margin: 0.5em 0 0; }
+delta-preview[kind="slide"] .slide-body li + li { margin-top: 0.25em; }
+
+/* ── Faixas ───────────────────────────────────────────────────────────────── */
+delta-band {
+  padding-block: clamp(56px, 8vw, 96px);
+  scroll-margin-top: 60px;
+}
+delta-band[tone="soft"] { background: var(--delta-paper-edge); }
+delta-band[tone="dark"] {
+  /* O mesmo que [data-mode="dark"] faz em base.css, só nesta faixa: os componentes
+     leem papéis, então código, botões e <c> se recolorem sozinhos. */
+  --delta-paper: var(--delta-char-700);
+  --delta-paper-edge: var(--delta-char-600);
+  --delta-surface-1: var(--delta-char-600);
+  --delta-surface-2: var(--delta-char-400);
+  --delta-ink: var(--delta-char-50);
+  --delta-ink-soft: var(--delta-char-100);
+  --delta-mute: var(--delta-char-200);
+  --delta-rule: var(--delta-char-300);
+  --delta-rule-soft: var(--delta-char-400);
+  --delta-accent-ink: var(--delta-accent);
+  --delta-code-bg: var(--delta-char-500);
+  background: var(--delta-paper);
+  color: var(--delta-ink);
+}
+delta-band[tone="dark"] delta-code { box-shadow: none; border: var(--delta-hairline) solid var(--delta-char-400); }
+
+delta-band-head {
+  max-width: 44em;
+  margin-bottom: clamp(28px, 4vw, 44px);
+}
+delta-band-head delta-lede { font-size: 17px; }
+delta-band-head delta-list { margin: 18px 0 0; font-size: 15.5px; color: var(--delta-ink-soft); }
+delta-grid > delta-band-head { margin-bottom: 0; }
+
+/* ── Grades e cartões ─────────────────────────────────────────────────────── */
+delta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 20px;
+  align-items: stretch;
+}
+delta-grid[cols="2"] {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  gap: clamp(28px, 4vw, 56px);
+  align-items: center;
+}
+delta-grid[cols="2"] > delta-code { margin: 0; font-size: 13px; }
+
+delta-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 24px 24px 22px;
+  background: var(--delta-surface-1);
+  border: var(--delta-hairline) solid var(--delta-rule-soft);
+  border-radius: 14px;
+  box-shadow: var(--delta-shadow-sm);
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: var(--delta-ink-soft);
+}
+delta-card[accent="true"] { border-top: 3px solid var(--delta-accent-ink); }
+delta-card > delta-c {
+  align-self: flex-start;
+  font-size: 12px;
+  color: var(--delta-accent-ink);
+  background: var(--delta-accent-soft);
+  border-color: transparent;
+}
+delta-card[n]::before {
+  content: attr(n);
+  font-family: var(--delta-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--delta-mute);
+}
+delta-card > delta-link,
+delta-card > delta-go {
+  display: block;
+  margin-top: auto;
+  padding-top: 6px;
+  font-size: 14.5px;
+  font-weight: 600;
+}
+delta-card > delta-link > a { text-decoration: none; }
+delta-card > delta-link > a:hover { text-decoration: underline; }
+
+/* ── Demonstrações ────────────────────────────────────────────────────────── */
+delta-demo + delta-demo { margin-top: clamp(40px, 6vw, 64px); }
+delta-demo-head {
+  max-width: 44em;
+  margin-bottom: 18px;
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: var(--delta-ink-soft);
+}
+delta-demo-head delta-h { margin-bottom: 6px; }
+#p-inicio delta-demo-head a { color: var(--delta-accent-ink); }
+
+/* ── Rodapé ───────────────────────────────────────────────────────────────── */
+#p-inicio delta-footer {
+  padding: 34px 0 44px;
+  border-top: var(--delta-hairline) solid var(--delta-rule-soft);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--delta-mute);
+}
+#p-inicio delta-footer delta-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 32px;
+  justify-content: space-between;
+  align-items: center;
+}
+#p-inicio delta-footer delta-c { font-size: 0.86em; }
+delta-footer-links { display: flex; gap: 22px; }
+#p-inicio delta-footer delta-footer-links a {
+  color: var(--delta-ink-soft);
+  font-weight: 500;
+  text-decoration: none;
+}
+#p-inicio delta-footer delta-footer-links a:hover { color: var(--delta-accent-ink); }
+
+/* ── Telas menores ────────────────────────────────────────────────────────── */
+@media (max-width: 1000px) {
+  #p-inicio delta-hero delta-wrap { grid-template-columns: minmax(0, 1fr); }
+  #p-inicio delta-hero delta-hero-copy { padding-top: 0; }
+}
+@media (max-width: 900px) {
+  delta-showcase { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 640px) {
+  #p-inicio delta-nav a.hide-sm { display: none; }
+  #p-inicio delta-nav delta-go:has(> a.hide-sm) { display: none; }
+  #p-inicio delta-nav a.brand { font-size: 19px; }
+  delta-preview { padding: 40px 18px 20px; }
+  delta-showcase delta-code { font-size: 11.5px; }
+  delta-band-head delta-list { font-size: 15px; }
+  #p-inicio delta-footer delta-wrap { justify-content: flex-start; }
+}

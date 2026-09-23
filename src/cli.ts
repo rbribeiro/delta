@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { type FSWatcher, existsSync, mkdirSync, readdirSync, watch, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { basename, dirname, join, resolve } from "node:path";
 import { compileFile } from "./compiler/index";
 import { loadProjectConfig } from "./compiler/config";
@@ -7,18 +8,47 @@ import { compileProject, type ProjectResult } from "./compiler/project";
 import type { Diagnostic } from "./compiler/context";
 import { scaffoldFiles } from "./scaffold";
 import { installPackages } from "./install";
+import { filterReview, formatReviewText, reviewJson, type ReviewData, type ReviewFilter } from "./review-report";
 
 /** The CLI source entry point.
  * It parses command-line arguments, loads a project config if requested, and calls the compiler. It reports diagnostics and writes outputs to disk. It exits with a non-zero code if there were any errors, unless `--watch` is set (then it keeps running and rebuilds on change).
+ * `--version`/`-v` and `--help`/`-h` print to stdout and exit 0; every usage error prints the same banner to stderr and exits 1.
  */
 
+// The version is read from package.json at runtime, so it is never out of sync. `../package.json`
+// resolves from src/cli.ts (tsx), from dist/cli.js (the esbuild bundle) and from the installed
+// layout (node_modules/delta-lang/dist/cli.js): npm ships the root package.json alongside dist/.
+const require = createRequire(import.meta.url);
+const VERSION: string = require("../package.json").version;
+
+const HELP = [
+  "usage: delta build <file.dlt> [-o out.html] [--watch] [--final]",
+  "       delta build <a.dlt> <b.dlt> ... [-o out-dir] [--watch] [--final]   # multi-file project",
+  "       delta build <project.toml> [-o out-dir] [--watch] [--final]        # project file",
+  "       delta review <file.dlt | project.toml> [--json] [--status s] [--for id] [--by id] [--kind k]",
+  "       delta create <project|package> <name>                    # scaffold a project/package",
+  "       delta install <pkg> [<pkg>...] [--project <file>]        # npm install + add to project.toml",
+  "       delta --version | -v                                     # print the version",
+  "       delta --help | -h                                        # print this help",
+  "  --final  strips every collaboration mark (comments, tasks, changes, status, team): the clean publication",
+].join("\n");
+
+/** A usage error: the banner on stderr, exit 1. */
 function usage(): never {
-  console.error("usage: delta build <file.dlt> [-o out.html] [--watch]");
-  console.error("       delta build <a.dlt> <b.dlt> ... [-o out-dir] [--watch]   # multi-file project");
-  console.error("       delta build <project.toml> [-o out-dir] [--watch]        # project file");
-  console.error("       delta create <project|package> <name>                    # scaffold a project/package");
-  console.error("       delta install <pkg> [<pkg>...] [--project <file>]        # npm install + add to project.toml");
+  console.error(HELP);
   process.exit(1);
+}
+
+/** `--help` / `-h`: the banner on stdout, exit 0. */
+function help(): never {
+  console.log(HELP);
+  process.exit(0);
+}
+
+/** `--version` / `-v`: the bare version number on stdout (script-friendly), exit 0. */
+function version(): never {
+  console.log(VERSION);
+  process.exit(0);
 }
 
 function report(d: Diagnostic): void {
@@ -34,6 +64,8 @@ interface BuildOptions {
   projectFile?: string;
   inputs: string[];
   output?: string;
+  /** `--final`: the clean publication build (collaboration marks stripped). */
+  final?: boolean;
 }
 
 /** Outcome of one build pass: whether it succeeded and which user files it read. */
@@ -62,7 +94,8 @@ function writeProject(result: ProjectResult): boolean {
  * still watches the right files for the next save.
  */
 function buildOnce(opts: BuildOptions): BuildOutcome {
-  const { projectFile, inputs, output } = opts;
+  const { projectFile, inputs, output, final } = opts;
+  const compileOpts = { final: final ?? false };
   // Files we always want to watch even if the compile fails before recording them.
   const entry = [...inputs, ...(projectFile ? [projectFile] : [])].map((p) => resolve(p));
 
@@ -71,26 +104,27 @@ function buildOnce(opts: BuildOptions): BuildOutcome {
     for (const d of diagnostics) report(d);
     if (!config) return { ok: false, deps: entry };
     if (output) config.outDir = resolve(output); // -o overrides the toml's `out`
-    const result = compileProject(config);
+    const result = compileProject(config, compileOpts);
     const ok = writeProject(result);
     return { ok, deps: [...new Set([...entry, ...result.deps])] };
   }
 
   // Several .dlt inputs compile as one project (shared numbering, cross-file refs).
   if (inputs.length > 1) {
-    const result = compileProject({ inputs, outDir: output ?? "." });
+    const result = compileProject({ inputs, outDir: output ?? "." }, compileOpts);
     const ok = writeProject(result);
     return { ok, deps: [...new Set([...entry, ...result.deps])] };
   }
 
   // Single .dlt file: output defaults to the input with a .html extension.
   const input = inputs[0];
-  const result = compileFile(input);
+  const result = compileFile(input, compileOpts);
   for (const d of result.diagnostics) report(d);
   const deps = [...new Set([...entry, ...result.deps])];
   if (result.html === undefined) return { ok: false, deps };
 
   const outPath = output ?? input.replace(/\.dlt$/, "") + ".html";
+  mkdirSync(dirname(outPath), { recursive: true }); // `-o dir/that/does/not/exist.html` is fine, as in writeProject
   writeFileSync(outPath, result.html);
   console.error(`${input} → ${outPath}`);
   return { ok: true, deps };
@@ -165,12 +199,14 @@ function buildMain(args: string[]): void {
   let output: string | undefined;
   let projectFile: string | undefined;
   let watchMode = false;
+  let final = false;
   const inputs: string[] = [];
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
     if (arg === "-o" || arg === "--output") output = args[++i] ?? usage();
     else if (arg === "--project") projectFile = args[++i] ?? usage();
     else if (arg === "--watch" || arg === "-w") watchMode = true;
+    else if (arg === "--final") final = true;
     else if (arg.startsWith("-")) usage();
     else inputs.push(arg);
   }
@@ -179,12 +215,59 @@ function buildMain(args: string[]): void {
   if (!projectFile && inputs.length === 1 && inputs[0].endsWith(".toml")) projectFile = inputs[0];
   if (!projectFile && inputs.length === 0) usage();
 
-  const opts: BuildOptions = { projectFile, inputs, output };
+  const opts: BuildOptions = { projectFile, inputs, output, final };
   if (watchMode) {
     runWatch(opts);
     return;
   }
   process.exit(buildOnce(opts).ok ? 0 : 1);
+}
+
+/**
+ * `delta review <file.dlt | project.toml> [--json] [--status s] [--for id] [--by id] [--kind k]` —
+ * prints the paper's collaboration state (comments, tasks, changes, status blocks) as text or
+ * JSON on stdout; diagnostics go to stderr. The agent-facing view: no browser needed.
+ */
+function reviewMain(args: string[]): void {
+  let json = false;
+  const filter: ReviewFilter = {};
+  const inputs: string[] = [];
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (arg === "--json") json = true;
+    else if (arg === "--status") filter.status = args[++i] ?? usage();
+    else if (arg === "--for") filter.for = args[++i] ?? usage();
+    else if (arg === "--by") filter.by = args[++i] ?? usage();
+    else if (arg === "--kind") filter.kind = args[++i] ?? usage();
+    else if (arg.startsWith("-")) usage();
+    else inputs.push(arg);
+  }
+  if (inputs.length === 0) usage();
+
+  let data: ReviewData | undefined;
+  let diagnostics: Diagnostic[];
+  if (inputs.length === 1 && inputs[0].endsWith(".toml")) {
+    const loaded = loadProjectConfig(inputs[0]);
+    for (const d of loaded.diagnostics) report(d);
+    if (!loaded.config) process.exit(1);
+    const result = compileProject(loaded.config);
+    diagnostics = result.diagnostics;
+    data = result.review;
+  } else if (inputs.length > 1) {
+    const result = compileProject({ inputs, outDir: "." });
+    diagnostics = result.diagnostics;
+    data = result.review;
+  } else {
+    const result = compileFile(inputs[0]);
+    diagnostics = result.diagnostics;
+    data = result.review;
+  }
+  for (const d of diagnostics) report(d);
+  if (!data || hasError(diagnostics)) process.exit(1);
+
+  const items = filterReview(data.items, filter);
+  process.stdout.write(json ? JSON.stringify(reviewJson(data, items), null, 2) + "\n" : formatReviewText(data, items));
+  process.exit(0);
 }
 
 /** `delta create <project|package> <name>` — scaffold a starter directory (never clobbers). */
@@ -235,9 +318,14 @@ function installMain(args: string[]): void {
 
 function main(): void {
   const args = process.argv.slice(2);
+  // `--help` anywhere on the line, so `delta build --help` works without touching every subcommand's loop.
+  if (args.includes("--help") || args.includes("-h")) help();
+  if (args[0] === "--version" || args[0] === "-v") version();
   switch (args.shift()) {
     case "build":
       return buildMain(args);
+    case "review":
+      return reviewMain(args);
     case "create":
       return createMain(args);
     case "install":

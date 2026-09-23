@@ -5,10 +5,17 @@
 #
 # A saída vai direto para docs/, que é o diretório que o GitHub Pages publica.
 # Por isso os HTMLs gerados são versionados junto com os fontes.
+#
+# Os exemplos ao vivo (site/exemplos/) NÃO fazem parte deste projeto: um projeto
+# compartilha numeração e sumário, e um artigo, uma apresentação e um livro de
+# exemplo precisam de numeração própria. `npm run docs:exemplos` os compila à parte,
+# para docs/exemplos/.
 
 inputs = [
-  "index.dlt",          # início
+  "index.dlt",          # página inicial (landing): tema próprio, inicio.css
+  "documentacao.dlt",   # documentação: o ponto de entrada da referência
   "comecar.dlt",        # primeiros passos
+  "cli.dlt",            # referência: linha de comando (comandos, opções, códigos de saída)
   "estrutura.dlt",      # referência: estrutura do documento
   "matematica.dlt",     # referência: matemática
   "ambientes.dlt",      # referência: ambientes numerados
@@ -17,7 +24,11 @@ inputs = [
   "layout.dlt",         # referência: prosa e layout
   "apresentacoes.dlt",  # referência: apresentações
   "projetos.dlt",       # referência: projetos multi-arquivo
+  "colaboracao.dlt",    # referência: colaboração (anotações, tarefas, alterações, revisão)
   "temas.dlt",          # referência: temas e pacotes
+  "api.dlt",            # referência: API do runtime (window.Delta) para quem escreve pacotes
+  "compilador.dlt",    # contribuir: por dentro do compilador (com o explorador do pipeline)
+  "contribuir.dlt",     # contribuir: ambiente, anatomia de um passo, como acrescentar um
 ]
 
 # A saída de um projeto é achatada pelo nome-base: cada <arquivo>.dlt vira
@@ -29,7 +40,7 @@ out = "../docs"
 [document]
 lang         = "pt-BR"     # resolveLang reduz para o bloco "pt" de strings.ts
 type         = "article"
-theme-accent = "green"
+theme-accent = "orange"
 
 # `theme` NÃO é declarado aqui de propósito. O config resolve um tema de projeto
 # para caminho absoluto, e o emit serializa os atributos do <document> verbatim.

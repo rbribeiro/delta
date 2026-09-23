@@ -56,6 +56,15 @@ compiles, type-checks or tests. `buildAssets()` writes four constants:
 
 Because it is generated, never edit `src/generated/assets.ts` by hand and never commit it.
 
+### The explorer's data (`site/packs/pipeline/dist/index.js`)
+
+A second generated, git-ignored file. [scripts/trace.ts](../scripts/trace.ts) compiles the
+two-file sample in `site/packs/pipeline/sample/` with the pipeline's `trace` hook, snapshots
+the tree, the per-file context and the shared state after every step, and writes the data
+plus the hand-written `element.js` as one classic script. The site page `compilador.dlt`
+imports that pack, so the explorer is inlined into `docs/compilador.html` like any other
+pack. `npm run trace` regenerates it; `predocs` does so automatically.
+
 ## Step 2: the CLI bundle (`dist/cli.js`)
 
 `buildCli()` bundles [src/cli.ts](../src/cli.ts) into `dist/cli.js` with
@@ -82,6 +91,10 @@ So `npm publish` ships only `dist/`, and an installed `delta` command runs the b
 | `typecheck` | `tsc --noEmit` | type-check without emitting |
 | `example` | `tsx src/cli.ts build examples/hello.dlt -o out.html` | compile the single-file example |
 | `example:project` | `tsx src/cli.ts build examples/project/project.toml` | compile the multi-file project example |
+| `trace` | `tsx scripts/trace.ts` | regenerate the pipeline explorer's data (`site/packs/pipeline/dist/index.js`) |
+| `docs` | `npm run docs:site && npm run docs:exemplos` | build the whole published site; `predocs` runs `assets` and `trace` first |
+| `docs:site` | `tsx src/cli.ts build site/project.toml` | compile the site project (`site/*.dlt` → `docs/*.html`) |
+| `docs:exemplos` | three `tsx src/cli.ts build …` calls | compile the live examples (`site/exemplos/` → `docs/exemplos/`): the book project, the article, the presentation; `predocs:exemplos` runs `assets` first |
 
 **Pre-hooks regenerate the assets for you.** `predev`, `pretest`, `pretypecheck`,
 `preexample` and `preexample:project` all run `npm run assets` first, so the generated

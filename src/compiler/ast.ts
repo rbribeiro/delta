@@ -67,6 +67,23 @@ export function* elements(root: ElementNode): Generator<ElementNode> {
 }
 
 /**
+ * True when any element in the tree rooted at `root` has the given tag (one scan), optionally
+ * with the given attribute values too: `hasTag(doc, "toc", { scope: "project" })`.
+ */
+export function hasTag(root: ElementNode, tag: string, attrs?: Record<string, string>): boolean {
+  for (const el of elements(root)) {
+    if (el.tag !== tag) continue;
+    if (!attrs || Object.entries(attrs).every(([k, v]) => el.attrs[k] === v)) return true;
+  }
+  return false;
+}
+
+/** The element's first `<title>` child, if it has one. */
+export function titleOf(el: ElementNode): ElementNode | undefined {
+  return el.children.find((c): c is ElementNode => c.type === "element" && c.tag === "title");
+}
+
+/**
  * Look for an element with a given id in the tree rooted at `root`. Returns the element if found, null if not found, or undefined if multiple elements with the same id are found.
  * 
  * @param root - the root element to look for children with given id

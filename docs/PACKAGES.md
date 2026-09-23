@@ -164,6 +164,8 @@ Packages build against the runtime's public surface, exposed on `window.Delta`
 - `popover` — the shared pop-over controller (hovercards, ref previews).
 - `t(key, fallback?)` — localized strings from the `#delta-i18n` island.
 - `deck` — the presentation deck handle (or `null` off-deck).
+- `review` — the document-wide review switches (`setAnnotations(on)`, `setChanges(mode)`,
+  and the `annotations`/`changes` getters); see [COLLABORATION.md](COLLABORATION.md).
 
 This is the **stable, versioned API** for packs. Growing it is a deliberate decision;
 packs must not reach into runtime internals (anything not on `window.Delta`), because

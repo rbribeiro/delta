@@ -24,6 +24,15 @@ export function freshNumbering(): NumberingState {
  * @param state - the current numbering state, used to continue numbering across files
  * @returns the updated numbering state
  */
+/**
+ * Tags whose *descendants* are neither numbered nor registered: collaboration markup
+ * that a `--final` build removes (`comment`, `todo`) or rejects (`old`). An equation
+ * quoted inside a comment must not shift the paper's numbering between the review build
+ * and the final one. The element itself is still assigned/registered (comments and
+ * tasks carry their own counters).
+ */
+const OPAQUE = new Set(["comment", "todo", "old"]);
+
 export function numberDocument(
   doc: ElementNode,
   ctx: CompileContext,
@@ -70,7 +79,7 @@ export function numberDocument(
       const spec = ENVIRONMENTS[child.tag];
       if (spec) assign(child, spec);
       register(child);
-      visit(child);
+      if (!OPAQUE.has(child.tag)) visit(child);
     }
   };
 

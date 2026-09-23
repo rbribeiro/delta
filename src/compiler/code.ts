@@ -1,16 +1,10 @@
 import hljs from "highlight.js";
 import { textContent, type ElementNode, type Node, type Position } from "./ast";
 import { warn, type CompileContext } from "./context";
-import { RAW_TAGS } from "./preprocess";
+import { escapeHtml, RAW_TAGS } from "./preprocess";
 
 /** The highlighted display block. Inline `<c>` stays literal (styled by CSS only). */
 const CODE_TAG = "code";
-
-// Entities to be escaped in `<code>` blocks. We don't escape quotes because they are not allowed in `<code>` content.
-const ENTITIES: Record<string, string> = { "&": "&amp;", "<": "&lt;", ">": "&gt;" };
-function escapeHtml(s: string): string {
-  return s.replace(/[&<>]/g, (c) => ENTITIES[c]);
-}
 
 /**
  * Strips leading and trailing empty lines and dedents the code block by the minimum indentation of all non-empty lines. 

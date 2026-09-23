@@ -625,12 +625,14 @@ Se mudaram, seu CSS está construído sobre os tokens certos.
 
 ## 8. Próximos passos
 
-**`window.Delta`** é a API estável que o runtime expõe aos pacotes, com três membros:
-`Delta.popover(trigger, content)` (o controlador de balão compartilhado, usado por `<hint>` e
-`<cite>`), `Delta.t(chave, padrão)` (string de UI localizada para o `lang` do documento — use
-sempre isto em vez de cravar texto visível em português ou inglês) e `Delta.deck` (o handle da
-apresentação, ou `null` fora de um deck). A tabela completa está em
-[AUTHORING_PACKAGES.md](AUTHORING_PACKAGES.md).
+**`window.Delta`** é a API estável que o runtime expõe aos pacotes, com quatro membros:
+`Delta.popover(trigger, content, opções?)` (o controlador de balão compartilhado, usado por `<hint>`,
+`<ref>` e `<cite>`), `Delta.t(chave, padrão)` (string de UI localizada para o `lang` do documento — use
+sempre isto em vez de cravar texto visível em português ou inglês), `Delta.deck` (o handle da
+apresentação, ou `null` fora de um deck) e `Delta.review` (os interruptores de revisão do documento).
+A referência de cada um, com as opções do balão e um exemplo ao vivo, é a página
+*API do runtime* do site ([../site/api.dlt](../site/api.dlt), publicada como `docs/api.html`);
+a tabela em inglês está em [AUTHORING_PACKAGES.md](AUTHORING_PACKAGES.md).
 
 **Para publicar no npm**, não monte o esqueleto à mão:
 

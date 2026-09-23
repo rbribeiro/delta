@@ -49,7 +49,7 @@ describe("numbering", () => {
     expect(numOf(doc, "t4")).toBe("2.1.1"); // resets when the section changes
   });
 
-  it("counts example/claim/observation in the shared theorem family", () => {
+  it("numbers example/claim/observation on their own counters (each starts at 1)", () => {
     const { doc } = numbered(
       `<document><section id="s">
         <theorem id="a"/><example id="b"/><claim id="c"/><observation id="d"/>
@@ -115,5 +115,17 @@ describe("numbering", () => {
   it("does not number elements with numbered=false", () => {
     const { doc } = numbered(`<document><theorem id="a" numbered="false"/></document>`);
     expect(numOf(doc, "a")).toBeUndefined();
+  });
+
+  it("numbers <code> blocks per section, resetting like every other section-prefixed counter", () => {
+    const { doc } = numbered(
+      `<document>
+        <section id="s1"><code id="c1">a</code><code id="c2">b</code></section>
+        <section id="s2"><code id="c3">c</code></section>
+      </document>`,
+    );
+    expect(numOf(doc, "c1")).toBe("1.1");
+    expect(numOf(doc, "c2")).toBe("1.2");
+    expect(numOf(doc, "c3")).toBe("2.1"); // reset by the new section
   });
 });

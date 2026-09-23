@@ -1,0 +1,280 @@
+<document id="p-cli" theme="tema.css">
+  <title>Linha de comando · Delta</title>
+
+  <floating>
+    <title>Navegação</title>
+    <toc scope="project" depth="1"/>
+  </floating>
+
+  <section id="cli">
+    <eyebrow>Referência</eyebrow>
+    <title>Linha de comando</title>
+    <intro>
+      Tudo o que o comando <c>delta</c> faz: compilar, acompanhar alterações,
+      inspecionar o estado de revisão, criar projetos e pacotes, instalar pacotes.
+      Cada opção, o que ela produz e com que código o processo termina.
+    </intro>
+
+    <toc/>
+
+    <subsection id="sobre-comando">
+      <title>O comando</title>
+
+      A instalação global (<c>npm install -g delta-lang</c>) põe no caminho o comando
+      <c>delta</c> e um sinônimo mais curto, <c>dlt</c>, que faz exatamente o mesmo.
+      Dois sinalizadores valem em qualquer posição da linha:
+
+      <table numbered="false">
+        <header>
+          <column>Opção</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">--help, -h</column>
+          <column>Imprime o resumo de uso e termina com código 0. Funciona também depois de um subcomando: <c>delta build --help</c>.</column>
+        </row>
+        <row>
+          <column mono="true">--version, -v</column>
+          <column>Imprime só o número da versão instalada (por exemplo <c>0.3.0</c>) e termina com código 0.</column>
+        </row>
+      </table>
+
+      <code lang="bash" numbered="false">
+delta --version
+delta --help
+      </code>
+
+      Sem argumentos, ou com um comando desconhecido, o <c>delta</c> imprime o mesmo
+      resumo na saída de erro e termina com código 1: é assim que um script percebe
+      que chamou o comando errado.
+
+      Os diagnósticos da compilação vão sempre para a saída de erro (stderr), uma
+      linha por problema, no formato <c>severidade: mensagem (arquivo:linha:coluna)</c>.
+      Um <c>error</c> impede a escrita da saída; um <c>warning</c> não. A saída padrão
+      (stdout) fica reservada ao que é resultado, como o relatório de
+      <c>delta review</c>.
+
+      <box type="note">
+        <title>Rodando a partir do código-fonte</title>
+        No repositório do Delta, <c>npm run dev --</c> seguido dos mesmos argumentos
+        executa o CLI sem empacotá-lo antes:
+        <code lang="bash" numbered="false">
+npm run dev -- build artigo.dlt -o artigo.html
+npm run dev -- --version
+        </code>
+      </box>
+    </subsection>
+
+    <subsection id="cmd-build">
+      <title>delta build</title>
+
+      Compila um ou mais documentos para HTML. O que se passa na linha determina a
+      forma da saída:
+
+      <table numbered="false">
+        <header>
+          <column>Chamada</column>
+          <column>O que produz</column>
+        </header>
+        <row>
+          <column mono="true">delta build artigo.dlt</column>
+          <column>Um HTML ao lado do fonte, com o mesmo nome: <c>artigo.html</c>. Com <c>-o</c>, o arquivo que você indicar.</column>
+        </row>
+        <row>
+          <column mono="true">delta build cap1.dlt cap2.dlt</column>
+          <column>Vários arquivos compilados como um projeto: numeração e referências compartilhadas entre eles. Aqui <c>-o</c> é a pasta de saída (por padrão, a atual).</column>
+        </row>
+        <row>
+          <column mono="true">delta build project.toml</column>
+          <column>O projeto descrito no arquivo: entradas, pasta <c>out</c>, pacotes e padrões do <c><document></c>. Um <c>-o</c> sobrescreve o <c>out</c>.</column>
+        </row>
+      </table>
+
+      <table numbered="false">
+        <header>
+          <column>Opção</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">-o, --output &lt;caminho&gt;</column>
+          <column>O arquivo de saída (um fonte) ou a pasta de saída (vários fontes ou projeto). Pastas que não existem são criadas.</column>
+        </row>
+        <row>
+          <column mono="true">--project &lt;arquivo&gt;</column>
+          <column>Aponta o <c>project.toml</c> explicitamente. Um único argumento terminado em <c>.toml</c> já é reconhecido como projeto, então isto raramente é necessário.</column>
+        </row>
+        <row>
+          <column mono="true">-w, --watch</column>
+          <column>Compila e continua rodando, recompilando a cada alteração de qualquer arquivo lido: o fonte, os <c><include></c>, o tema, os pacotes importados, a bibliografia, as figuras e o próprio <c>project.toml</c>. Erros não derrubam o processo. Ctrl-C encerra.</column>
+        </row>
+        <row>
+          <column mono="true">--final</column>
+          <column>A versão limpa para publicar: remove comentários, tarefas, marcas de alteração (aceitando as alterações), estados e equipe, e avisa sobre o que ficou pendente. Veja <ref to="colaboracao">Colaboração</ref>.</column>
+        </row>
+      </table>
+
+      <code lang="bash" numbered="false">
+delta build artigo.dlt -o artigo.html
+delta build cap1.dlt cap2.dlt -o site
+delta build project.toml --watch
+delta build artigo.dlt --final -o artigo-final.html
+      </code>
+
+      <box type="tip">
+        <title>Deixe o compilador rodando enquanto escreve</title>
+        Com <c>--watch</c>, basta salvar e recarregar a página do navegador. O
+        processo sobrevive a erros de compilação: corrija o arquivo e a próxima
+        gravação recompila.
+      </box>
+    </subsection>
+
+    <subsection id="cmd-review">
+      <title>delta review</title>
+
+      Lê um documento ou projeto e imprime na saída padrão o estado da colaboração:
+      a equipe, um resumo e cada comentário, tarefa, alteração e bloco com estado.
+      É a visão para quem não vai abrir o navegador, em especial para um agente.
+
+      <code lang="bash" numbered="false">
+delta review artigo.dlt
+delta review project.toml --json
+delta review artigo.dlt --status open --for claude
+      </code>
+
+      <table numbered="false">
+        <header>
+          <column>Opção</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">--json</column>
+          <column>sem valor</column>
+          <column>O relatório como JSON, para outros programas lerem</column>
+        </row>
+        <row>
+          <column mono="true">--kind</column>
+          <column mono="true">comment, todo, change, status</column>
+          <column>Só um tipo de item</column>
+        </row>
+        <row>
+          <column mono="true">--status</column>
+          <column mono="true">open, resolved (comentários); open, doing, done (tarefas); draft, sketch, review, verified (blocos)</column>
+          <column>Só os itens nesse estado</column>
+        </row>
+        <row>
+          <column mono="true">--for</column>
+          <column mono="true">id de membro</column>
+          <column>Só o que foi dirigido a esse membro (<c>for="..."</c>)</column>
+        </row>
+        <row>
+          <column mono="true">--by</column>
+          <column mono="true">id de membro</column>
+          <column>Só o que esse membro escreveu (<c>by="..."</c>)</column>
+        </row>
+      </table>
+
+      Os filtros se combinam. A marcação que o relatório lê está em
+      <ref to="colaboracao">Colaboração</ref>. Se a compilação tiver erros, nada é
+      impresso e o código de saída é 1.
+    </subsection>
+
+    <subsection id="cmd-create">
+      <title>delta create</title>
+
+      Cria a pasta inicial de um projeto ou de um pacote, com os arquivos comentados
+      para você editar. Nunca sobrescreve: se a pasta existir e não estiver vazia, o
+      comando para com erro.
+
+      <code lang="bash" numbered="false">
+delta create project meu-livro
+delta create package meu-pacote
+      </code>
+
+      <table numbered="false">
+        <header>
+          <column>Tipo</column>
+          <column>O que cria</column>
+          <column>Próximo passo</column>
+        </header>
+        <row>
+          <column mono="true">project</column>
+          <column><c>project.toml</c> e <c>main.dlt</c></column>
+          <column><c>cd meu-livro && delta build project.toml</c></column>
+        </row>
+        <row>
+          <column mono="true">package</column>
+          <column><c>package.json</c>, <c>src/index.js</c>, <c>src/theme.css</c>, <c>test/smoke.mjs</c>, <c>README.md</c> e <c>.gitignore</c></column>
+          <column><c>cd meu-pacote && npm install && npm run build</c></column>
+        </row>
+      </table>
+
+      Projetos estão em <ref to="projetos">Projetos multi-arquivo</ref>; o que um
+      pacote pode fazer, em <ref to="temas">Temas e pacotes</ref> e na
+      <ref to="api">API do runtime</ref>.
+    </subsection>
+
+    <subsection id="cmd-install">
+      <title>delta install</title>
+
+      Instala um ou mais pacotes do npm no projeto e os registra na chave
+      <c>packages</c> do <c>project.toml</c>, que passa a aplicá-los a todos os
+      arquivos do projeto. O arquivo é editado preservando os comentários.
+
+      <code lang="bash" numbered="false">
+delta install delta-callout
+delta install delta-callout outro-pacote --project livro/project.toml
+      </code>
+
+      <table numbered="false">
+        <header>
+          <column>Opção</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">--project &lt;arquivo&gt;</column>
+          <column>Qual <c>project.toml</c> atualizar. Sem ela, o da pasta atual. Se não houver nenhum, o comando para com erro e sugere <c>delta create project</c>.</column>
+        </row>
+      </table>
+
+      O <c>npm install</c> roda na pasta do <c>project.toml</c>; anotar a dependência
+      num <c>package.json</c> fica a seu critério. Num documento avulso, sem projeto,
+      instale com o npm e use <c><import src="nome-do-pacote"/></c>.
+    </subsection>
+
+    <subsection id="sobre-saida">
+      <title>Códigos de saída</title>
+
+      <table numbered="false">
+        <header>
+          <column>Código</column>
+          <column>Quando</column>
+        </header>
+        <row>
+          <column mono="true">0</column>
+          <column>Compilação sem erros (avisos não contam), relatório de revisão impresso, pacote instalado, <c>--help</c>, <c>--version</c></column>
+        </row>
+        <row>
+          <column mono="true">1</column>
+          <column>Uso errado do comando, erro de compilação, revisão de um documento com erros, falha do <c>npm install</c></column>
+        </row>
+      </table>
+
+      Com <c>--watch</c> o processo não termina por conta própria, e um erro de
+      compilação não o encerra.
+
+      <box type="note">
+        <title>Para scripts e agentes</title>
+        Três coisas tornam o comando previsível para um programa: <c>--version</c>,
+        para confirmar qual Delta está instalado; <c>review --json</c>, para ler o
+        estado de revisão sem interpretar texto; e o código de saída, para saber se a
+        compilação passou. Diagnósticos ficam na saída de erro; o resultado, na saída
+        padrão.
+      </box>
+    </subsection>
+  </section>
+
+  <footer>
+    Feito com ❤️ em Delta no IMPA Tech.
+  </footer>
+</document>

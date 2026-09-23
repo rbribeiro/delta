@@ -4,6 +4,7 @@ import { basename, dirname, resolve } from "node:path";
 import type { ElementNode, Position } from "./ast";
 import { addDep, warn, error, type CompileContext, type ImportEntry } from "./context";
 import { EXTERNAL_REF } from "./theme";
+import { isRemote, readUserFile } from "./files";
 
 
 const JS_EXTERNAL_REF = /\bfetch\s*\(|\bimport\s*\(|https?:\/\//i;
@@ -84,7 +85,7 @@ export function resolvePack(
   seen: Set<string>,
   pos?: Position,
 ): void {
-  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(spec)) {
+  if (isRemote(spec)) {
     warn(ctx, `import src must be a local path or package name, not a URL: ${spec}`, pos);
     return;
   }
@@ -108,8 +109,7 @@ export function resolvePack(
   // Dependencies first, so a pack that `needs` another inlines after it.
   for (const need of manifest.needs ?? []) resolvePack(need, dir, ctx, seen, pos);
 
-  const js = readFileSync(jsPath, "utf8");
-  addDep(ctx, jsPath);
+  const js = readUserFile(ctx, jsPath);
   if (JS_EXTERNAL_REF.test(js)) {
     warn(ctx, `import '${spec}' references an external resource; output may not work offline`, pos);
   }
@@ -118,8 +118,7 @@ export function resolvePack(
   const cssPath = resolve(dir, cssRel);
   let css: string | undefined;
   if (existsSync(cssPath)) {
-    css = readFileSync(cssPath, "utf8");
-    addDep(ctx, cssPath);
+    css = readUserFile(ctx, cssPath);
     if (EXTERNAL_REF.test(css)) {
       warn(ctx, `import theme '${spec}/${cssRel}' references an external resource; output may not work offline`, pos);
     }

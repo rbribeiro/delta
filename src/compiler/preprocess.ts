@@ -11,7 +11,8 @@ export const RAW_TAGS = new Set(["m", "math", "equation", "equations", "code", "
 
 const ENTITIES: Record<string, string> = { "&": "&amp;", "<": "&lt;", ">": "&gt;" };
 
-function escapeRegion(s: string): string {
+/** Entity-escapes `&`, `<` and `>`. Shared by this pass, the code highlighter and the emitter. */
+export function escapeHtml(s: string): string {
   return s.replace(/[&<>]/g, (c) => ENTITIES[c]);
 }
 
@@ -35,7 +36,7 @@ export function preprocess(source: string): string {
         math = null;
         continue;
       }
-      out += escapeRegion(ch);
+      out += escapeHtml(ch);
       i++;
       continue;
     }
@@ -107,7 +108,7 @@ function copyMarkup(source: string, start: number): { text: string; end: number 
     const rest = source.slice(end);
     const match = closeTag.exec(rest);
     if (match) {
-      text += escapeRegion(rest.slice(0, match.index)) + match[0];
+      text += escapeHtml(rest.slice(0, match.index)) + match[0];
       return { text, end: end + match.index + match[0].length };
     }
   }

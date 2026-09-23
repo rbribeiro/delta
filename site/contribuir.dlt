@@ -1,0 +1,340 @@
+<document id="p-contribuir" theme="tema.css">
+  <title>Contribuir com o compilador · Delta</title>
+
+  <floating>
+    <title>Navegação</title>
+    <toc scope="project" depth="1"/>
+  </floating>
+
+  <section id="contribuir">
+    <eyebrow>Contribuir</eyebrow>
+    <title>Contribuir com o compilador</title>
+    <intro>
+      Do clone ao pull request: montar o ambiente, reconhecer que forma a sua ideia tem,
+      escrever um passo, testá-lo e vê-lo aparecer no explorador. Pressupõe a leitura de
+      <ref to="compilador">Por dentro do compilador</ref>. A parte do navegador (um custom
+      element novo) tem tutorial próprio, apontado no fim.
+    </intro>
+
+    <toc/>
+
+    <subsection id="passo-ambiente">
+      <title>O ambiente</title>
+
+      Node 20 ou mais novo. Depois:
+
+      <code lang="bash" numbered="false">
+git clone https://github.com/rbribeiro/delta && cd delta
+npm install
+npm test               # a suíte inteira (vitest); regenera os assets antes
+npm run typecheck      # tsc --noEmit
+npm run dev -- build examples/hello.dlt -o out.html    # a CLI, direto do fonte
+npm run example:project                                 # o projeto de exemplo
+npm run docs           # este site (site/ → docs/), inclusive o explorador
+      </code>
+
+      Para rodar um arquivo de teste só, ou um teste pelo nome:
+
+      <code lang="bash" numbered="false">
+npx vitest run test/numbering.test.ts
+npx vitest run -t "resets across"
+      </code>
+
+      <box type="warning">
+        <title>Os assets gerados</title>
+        O emissor importa <c>RUNTIME_JS</c>, <c>CORE_CSS</c> e os temas de
+        <c>src/generated/assets.ts</c>, que é gerado (pelo <c>npm run assets</c>) e não é
+        versionado. Todo script do <c>npm</c> que precisa dele o regenera antes. Mas se você
+        chamar <c>vitest</c> ou <c>tsc</c> diretamente numa cópia recém-clonada, ou depois de
+        mexer em <c>src/runtime/</c> ou <c>src/styles/</c>, rode <c>npm run assets</c> uma
+        vez, ou verá um módulo faltando ou um runtime velho. O mesmo vale para os dados do
+        explorador (<c>npm run trace</c>).
+      </box>
+    </subsection>
+
+    <subsection id="passo-tres-formas">
+      <title>As três formas de um recurso</title>
+
+      Antes de escrever, decida que forma a sua ideia tem. A pergunta que decide é: <b>isso
+      precisa de dados que o navegador não tem, ou só de comportamento?</b>
+
+      <table numbered="false">
+        <header>
+          <column>Se o recurso precisa de…</column>
+          <column>Ele é…</column>
+          <column>Exemplos</column>
+        </header>
+        <row>
+          <column>só um número</column>
+          <column>uma linha em <c>environments.ts</c></column>
+          <column>um ambiente novo, como <c>remark</c></column>
+        </row>
+        <row>
+          <column>saber algo sobre <b>outro</b> elemento (número, conteúdo, posição), ou ler um arquivo</column>
+          <column>um <b>passo</b> do compilador, com um campo no contexto</column>
+          <column><c>ref</c>, sumário, citações, <c>include</c></column>
+        </row>
+        <row>
+          <column>só comportamento local (clicar, abrir, dobrar)</column>
+          <column>um custom element em <c>src/runtime/elements/</c>, sem mexer no compilador</column>
+          <column>seções dobráveis, a prévia de uma referência</column>
+        </row>
+      </table>
+
+      A regra prática: tudo o que precisa <b>conhecer outro elemento</b> é um passo, porque o
+      navegador, aberto de <c>file://</c>, não consegue ler outros arquivos. Tudo o que é local
+      é runtime. Qualquer atributo que você escreva numa tag atravessa o compilador intacto
+      até a tag <c>delta-*</c>, então um comportamento novo muitas vezes é só o runtime lendo
+      um atributo que já chega lá.
+    </subsection>
+
+    <subsection id="passo-anatomia-de-um-passo">
+      <title>A anatomia de um passo</title>
+
+      Um passo é uma função <c>(doc, ctx) => void</c> num arquivo próprio em
+      <c>src/compiler/</c>. Ela percorre a árvore, lê e escreve atributos, lê e escreve o
+      contexto, e registra diagnósticos. Só isso. Este é <c>references.ts</c>, inteiro, o passo
+      que resolve <c>ref</c>:
+
+      <code lang="typescript" numbered="false">
+import { elements, type ElementNode } from "./ast";
+import { warn, type CompileContext } from "./context";
+
+export const REF_TAGS = new Set(["ref", "solution", "proof"]) // tags that can refer to other objects
+
+/**
+ * Resolves `<ref to="id"> <solution of="id"> <proof of="id">` cross-references against the numbering registry
+ * (filled by `numberDocument`). For each ref that resolves, the target's number
+ * and tag are written onto the node — the runtime composes the visible label
+ * ("Theorem 1.1") from them via `t(tag)`, so it localizes — and the target id is
+ * recorded in `ctx.referencedIds` so the emitter snapshots it into a
+ * `<template data-delta-pop="id">` for the offline pop-over preview.
+ *
+ * A ref (or solution/proof) with no `to/of`, or one pointing at an unknown id, is a *warning*: the node
+ * is left bare and the runtime renders it as inert text (no pop-over).
+ */
+export function resolveReferences(doc: ElementNode, ctx: CompileContext): void {
+  for (const el of elements(doc)) {
+    if (!REF_TAGS.has(el.tag)) continue;
+
+    const target_id = el.tag == "ref" ? el.attrs.to : el.attrs.of;
+    if (el.tag == "ref") {
+      if (!target_id) {
+        warn(ctx,"<ref> tag without 'to' attribute", el.pos)
+        continue;
+      }
+    } else {
+      if (!target_id) continue;
+    }
+
+    const entry = ctx.registry.get(target_id);
+    if (!entry) {
+      warn(ctx, `Unresolved reference ${target_id}`,el.pos);
+      continue;
+    }
+    el.attrs['data-target-num'] = entry.num;
+    el.attrs['data-target-tag'] = entry.tag;
+    ctx.referencedIds.add(target_id)
+  }
+}
+      </code>
+
+      Repare em cada convenção, porque todas valem para o seu passo:
+
+      <list marker="dash">
+        <item>
+          <b>Percorre com <c>elements(doc)</c></b> e ramifica pela <c>tag</c>. Só escreva a
+          sua própria recursão quando precisar reconstruir o array de filhos (é o que a
+          matemática e as quebras de linha fazem).
+        </item>
+        <item>
+          <b>Lê o contexto</b> (<c>ctx.registry</c>, preenchido por um passo anterior) e
+          <b>escreve nos atributos</b> (<c>data-target-num</c>) e no contexto
+          (<c>referencedIds</c>, que um passo posterior lê). Nada mais é compartilhado.
+        </item>
+        <item>
+          <b>Não desenha.</b> Escreve o número e a tag; quem monta "Teorema 1.1" é o runtime,
+          traduzido.
+        </item>
+        <item>
+          <b>Avisa, não lança.</b> <c>warn(ctx, mensagem, el.pos)</c> com a posição do nó. Um
+          problema que invalida a saída é <c>error</c>; um que a deixa usável é <c>warn</c>.
+        </item>
+        <item>
+          <b>Se ler um arquivo do autor</b>, use <c>readUserFile</c> (de <c>files.ts</c>): ele
+          registra o arquivo em <c>ctx.deps</c>, que é o que o <c>--watch</c> vigia. E
+          <c>isRemote</c> para recusar URLs: a saída não pode depender da rede.
+        </item>
+      </list>
+    </subsection>
+
+    <subsection id="passo-adicionar-um-passo">
+      <title>Acrescentar um passo, do início ao fim</title>
+
+      Um exemplo pequeno mas completo: cada seção ganha <c>data-words</c>, a contagem de
+      palavras do seu texto, para o runtime poder mostrar um "leitura: 3 min". É um passo
+      porque precisa do texto de todos os descendentes da seção; e é um bom primeiro passo
+      porque não muda o emissor.
+
+      <list marker="number">
+        <item>
+          <b>Escreva o passo</b> em <c>src/compiler/words.ts</c>:
+          <code lang="typescript" numbered="false">
+import { elements, textContent, type ElementNode } from "./ast";
+import type { CompileContext } from "./context";
+
+const HEADINGS = new Set(["chapter", "section", "subsection", "subsubsection"]);
+
+/** Writes `data-words` (the word count of its prose) on every heading element. */
+export function countWords(doc: ElementNode, _ctx: CompileContext): void {
+  for (const el of elements(doc)) {
+    if (!HEADINGS.has(el.tag)) continue;
+    const words = textContent(el).split(/\s+/).filter(Boolean).length;
+    el.attrs["data-words"] = String(words);
+  }
+}
+          </code>
+        </item>
+        <item>
+          <b>Decida a fase</b> pela tabela do contexto. O passo lê texto: se rodar depois de
+          <c>renderMath</c>, as fórmulas (que viraram <c>RawNode</c>) contam zero palavras,
+          o que até é o desejado. Então entra na fase <c>render</c>, depois de
+          <c>renderMath</c>. Se precisasse do <c>num</c>, teria de vir depois de
+          <c>numberDocument</c>; se escrevesse algo que o sumário lê, antes de
+          <c>buildProjectToc</c>.
+        </item>
+        <item>
+          <b>Registre na tabela</b>, em <c>pipeline.ts</c>, no lugar escolhido. O nome do passo
+          é o nome da função:
+          <code lang="typescript" numbered="false">
+{
+  name: "countWords",
+  what: "data-words on every heading: the word count of its prose (after math, so formulas count 0).",
+  each: perFile(countWords),
+},
+          </code>
+          Um passo que precisa do estado do projeto (o registro do livro inteiro, os
+          contadores, o mapa id → arquivo) recebe-o como terceiro argumento:
+          <c>perFile((doc, ctx, shared) => …)</c>. Um passo que roda uma vez sobre todos os
+          arquivos usa <c>all: (files, shared) => …</c>.
+        </item>
+        <item>
+          <b>Se o resultado for para o contexto</b> em vez dos atributos (uma lista que o
+          runtime lê de uma ilha, por exemplo), acrescente o campo em <c>context.ts</c>,
+          inicialize-o em <c>createContext</c>, e ensine <c>emit.ts</c> a embarcá-lo, como
+          <c>renderTocIsland</c> faz com <c>ctx.toc</c>. Se for compartilhado entre os arquivos
+          de um projeto, o lugar é o <c>Shared</c>.
+        </item>
+        <item>
+          <b>Teste</b> em <c>test/words.test.ts</c>, com o ajudante compartilhado:
+          <code lang="typescript" numbered="false">
+import { describe, expect, it } from "vitest";
+import { compile } from "./helpers";
+
+describe("countWords", () => {
+  it("writes the word count on each section", () => {
+    const { html } = compile(`<document><section id="s"><title>T</title>one two $x$ three</section></document>`);
+    expect(html).toContain('data-words="5"');   // "T", "one", "two", "three" + o título... confira o que você espera
+  });
+});
+          </code>
+          O teste de ordem em <c>test/pipeline.test.ts</c> lista os passos literalmente; ele
+          vai falhar até você acrescentar <c>"render/countWords"</c> na posição certa. É
+          proposital: a ordem é uma decisão, e a lista é onde ela fica registrada.
+        </item>
+        <item>
+          <b>Veja o passo no explorador.</b> <c>npm run docs</c> regenera os dados; abra
+          <c>docs/compilador.html</c> e o seu passo está no trilho, com a linha "Mudou"
+          apontando os atributos que ele escreveu. Dê-lhe uma descrição em português em
+          <c>site/packs/pipeline/descriptions.json</c>; o gerador avisa se faltar.
+        </item>
+        <item>
+          <b>O runtime</b>, se houver um: o elemento <c>delta-section</c> lê
+          <c>getAttribute("data-words")</c> e monta o que quiser. Esse lado está no tutorial
+          de componentes, no fim desta página.
+        </item>
+      </list>
+    </subsection>
+
+    <subsection id="passo-adicionar-ambiente">
+      <title>Acrescentar um ambiente numerado</title>
+
+      A forma mais comum e a mais barata. Para um <c>porism</c> numerado por seção:
+
+      <list marker="number">
+        <item>
+          Uma linha em <c>src/compiler/environments.ts</c>:
+          <c>porism: { counter: "porism", prefixWith: "section" }</c>. Se ele deve
+          reiniciar a cada seção (quase sempre), acrescente <c>"porism"</c> à lista de
+          <c>section</c> em <c>COUNTER_RESETS</c>. Para contar <b>junto</b> com os teoremas,
+          use <c>counter: "theorem"</c> em vez de um contador próprio.
+        </item>
+        <item>
+          A tag em <c>ENVIRONMENT_TAGS</c> e em <c>BOX_ENVIRONMENTS</c> (caixa com etiqueta) ou
+          <c>PROOF_ENVIRONMENTS</c> (abertura em itálico), em
+          <c>src/runtime/elements/environment.ts</c>.
+        </item>
+        <item>
+          O nome em cada bloco de idioma de <c>src/compiler/strings.ts</c>
+          (<c>porism: "Porism"</c>, <c>porism: "Porisma"</c>). Sem ele o runtime mostra a tag
+          capitalizada.
+        </item>
+        <item>Um caso em <c>test/numbering.test.ts</c>.</item>
+      </list>
+
+      Nenhum passo muda. É a razão de a numeração ser uma tabela.
+    </subsection>
+
+    <subsection id="passo-testes">
+      <title>Testes</title>
+
+      Um arquivo de teste por passo, em <c>test/</c>. Há duas maneiras de dirigir o
+      compilador, e <c>test/helpers.ts</c> tem as duas:
+
+      <list marker="dash">
+        <item>
+          <b><c>parsed(src)</c> e <c>numbered(src)</c></b> montam um contexto e uma árvore (a
+          segunda já numerada) para você chamar <b>um passo à mão</b> e olhar o resultado:
+          atributos, campos do contexto, diagnósticos. É o teste de unidade de um passo.
+        </item>
+        <item>
+          <b><c>compile(src)</c></b> roda o pipeline inteiro e devolve o HTML e o contexto.
+          É o teste de que o passo se encaixa: que o emissor embarca o que ele escreveu.
+        </item>
+      </list>
+
+      Três testes guardam invariantes da arquitetura, e vale conhecê-los:
+      <c>test/emit.test.ts</c> confere que a saída não referencia nada externo;
+      <c>test/pipeline.test.ts</c> confere a ordem dos passos, e que compilar um arquivo
+      sozinho e compilá-lo como um projeto de um arquivo dão o mesmo HTML; e o teste do
+      <c>trace</c> confere que o gancho dispara a cada passo, que é do que o explorador
+      depende.
+    </subsection>
+
+    <subsection id="passo-checklist">
+      <title>Antes do pull request</title>
+
+      <list marker="dash">
+        <item><c>npm test</c> e <c>npm run typecheck</c> verdes.</item>
+        <item>O passo tem um arquivo próprio, a assinatura <c>(doc, ctx)</c>, e uma linha em <c>pipeline.ts</c> com um <c>what</c> honesto.</item>
+        <item>Nada de <c>throw</c> para erro do autor; <c>error</c>/<c>warn</c> com <c>el.pos</c>.</item>
+        <item>Arquivos lidos passam por <c>readUserFile</c>; URLs são recusadas.</item>
+        <item>Nenhuma tag nova desenha chrome no compilador: o número vai no atributo, o texto vem do runtime e de <c>strings.ts</c>.</item>
+        <item>Um teste novo, e o teste de ordem atualizado.</item>
+        <item><c>npm run docs</c> rodou e o explorador mostra o passo com a descrição em <c>descriptions.json</c>.</item>
+        <item>A documentação em inglês (<c>docs/ARCHITECTURE.md</c>) menciona o passo, se ele muda a história.</item>
+      </list>
+
+      <box type="note">
+        <title>O outro lado: componentes</title>
+        Para o comportamento no navegador, um custom element novo ou um pacote, há um tutorial
+        do zero em <c>docs/TUTORIAL_COMPONENTES.md</c> no repositório. Ele começa exatamente
+        onde esta página termina: no atributo que o compilador entregou.
+      </box>
+    </subsection>
+  </section>
+
+  <footer>
+    Feito com ❤️ em Delta no IMPA Tech.
+  </footer>
+</document>

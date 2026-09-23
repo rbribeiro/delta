@@ -145,15 +145,20 @@ Conventions, all load-bearing:
 
 ### The `window.Delta` API (the stable pack surface)
 
-Build against `window.Delta` — the only contract packages may rely on:
+Build against `window.Delta` — the only contract packages may rely on. It is a plain global,
+assigned before any pack script runs (§2), so it is usable on your first line; there is no
+ready event to wait for.
 
 | Member | Signature | Use |
 |---|---|---|
-| `Delta.popover` | `popover(trigger, content)` | The shared top-layer bubble controller (hovercards, reveal-on-click). Handles positioning, one-open-at-a-time, Esc/outside-click. Style the bubble with the `.delta-pop` class. |
-| `Delta.t` | `t(key, fallback?)` | Localized UI string for the document's `lang`, read from the `#delta-i18n` island. Always pass a `fallback`; never hardcode user-visible English. |
-| `Delta.deck` | `Deck \| null` | The presentation deck handle when `type="presentation"`, else `null`. `{ index, total, go, next, prev, onChange, goToId }` — hook `onChange` to react to slide changes. |
+| `Delta.popover` | `popover(trigger, content, options?) → Popover` | The shared top-layer bubble controller (hovercards, reveal-on-click, menus). Anchors `content` under `trigger` (above when short of room), clamps it on screen, points the caret, re-anchors on scroll/resize, closes on Esc/outside-click, one open at a time. `options`: `onOpen(content, trigger)` (build or refresh the bubble here, lazily), `onClose(content, trigger)`, `gap` (px, default 10), `triggerClick` (default true). Returns `{ open(), close(), toggle(), isOpen, reposition(), destroy() }`. **Side effects at call time:** adds the `delta-pop` class to `content`, **moves `content` to `<body>`**, sets `aria-haspopup="dialog"` (and, with `triggerClick`, `aria-expanded`) on `trigger`. So style the bubble by a namespaced class, never by descent from your tag. |
+| `Delta.t` | `t(key, fallback?) → string` | Localized UI string for the document's `lang`, read once from the `#delta-i18n` island. Packs cannot add keys, so always pass a `fallback`; never hardcode user-visible English. |
+| `Delta.deck` | `Deck \| null` | The presentation deck handle when `type="presentation"` with at least one slide, else `null`. `{ index, total, go(i), next(), prev(), goToId(id) → boolean, onChange(cb(index, total)) }` — `next`/`prev` step through `reveal="true"` fragments first; `onChange` also fires immediately with the current position. |
+| `Delta.review` | `{ annotations, setAnnotations(on), changes, setChanges(mode) }` | The document-wide review switches: whether annotations show, and how `<change>`s render (`"markup"`, `"final"`, `"original"`). Every setter dispatches a `"delta:review"` `CustomEvent` on `document` (no detail); listen to it and re-read the getters. The switches live on `<html data-review>` / `<html data-changes>`, which CSS may target. |
 
 Anything outside this table (internal helpers, private classes) is **not** a contract and may change.
+The Portuguese reference, with a live pop-over demo powered by a twenty-line pack, is the site page
+*API do runtime* ([../site/api.dlt](../site/api.dlt), published as `docs/api.html`).
 
 ---
 

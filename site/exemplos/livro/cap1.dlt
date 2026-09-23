@@ -1,0 +1,66 @@
+<document>
+  <title>Análise na reta</title>
+
+  <floating>
+    <title>Sumário</title>
+    <toc scope="project"/>
+  </floating>
+
+  <chapter id="cap:sequencias">
+    <title>Sequências</title>
+
+    <section id="sec:convergencia">
+      <title>Convergência</title>
+
+      <definition id="def:limite">
+        <title>Limite de uma sequência</title>
+        Uma sequência $(x_n)$ converge para $L \in \mathbb{R}$ quando, para todo
+        $\varepsilon > 0$, existe $N$ tal que $|x_n - L| < \varepsilon$ para todo
+        $n \ge N$. Escreve-se $x_n \to L$.
+      </definition>
+
+      <example id="ex:um-sobre-n">
+        $1/n \to 0$: dado $\varepsilon > 0$, basta tomar $N > 1/\varepsilon$.
+      </example>
+
+      <theorem id="thm:unicidade">
+        <title>Unicidade do limite</title>
+        Uma sequência convergente tem um único limite.
+      </theorem>
+      <proof of="thm:unicidade" collapsible="true">
+        Se $x_n \to L$ e $x_n \to L'$, então $|L - L'| \le |L - x_n| + |x_n - L'|$, e o
+        lado direito fica menor que qualquer $\varepsilon > 0$ para $n$ grande. Logo
+        $L = L'$.
+      </proof>
+    </section>
+
+    <section id="sec:monotonas">
+      <title>Sequências monótonas</title>
+
+      <theorem id="thm:monotona">
+        <title>Convergência monótona</title>
+        Toda sequência monótona e limitada converge.
+      </theorem>
+      <proof of="thm:monotona" collapsible="true" collapsed="true">
+        Se $(x_n)$ é crescente e limitada, seja $L = \sup_n x_n$. Dado $\varepsilon > 0$,
+        algum $x_N$ satisfaz $x_N > L - \varepsilon$; como a sequência é crescente,
+        $L - \varepsilon < x_n \le L$ para todo $n \ge N$.
+      </proof>
+
+      <equation id="eq:euler">\lim_{n \to \infty} \Bigl(1 + \frac{1}{n}\Bigr)^{n} = e</equation>
+
+      O limite <ref to="eq:euler"/> é o exemplo clássico: a sequência é crescente e
+      limitada por $3$, logo converge por <ref to="thm:monotona"/>
+      <cite paper="lima-analise"/>.
+
+      <exercise id="exr:raiz">
+        Mostre que a sequência $x_1 = \sqrt{2}$, $x_{n+1} = \sqrt{2 + x_n}$ converge, e
+        calcule o limite.
+      </exercise>
+      <solution collapsible="true" collapsed="true">
+        Por indução, $x_n < 2$ e $x_{n+1} > x_n$; por <ref to="thm:monotona"/>, a
+        sequência converge para algum $L$ com $L = \sqrt{2 + L}$, isto é, $L = 2$.
+      </solution>
+    </section>
+  </chapter>
+</document>

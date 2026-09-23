@@ -1,0 +1,71 @@
+/* collab.css — shared chrome for the collaboration components (<comment>, <todo>,
+   <change>, status pills, <review>; runtime/elements/collab.ts). Here: the author chip
+   `.who` that memberChip() builds for every `by`/`for`, the document-wide
+   `html[data-review="off"]` switch (the <review> panel's "annotations" toggle) that hides
+   every annotation for a clean read, and the print rule — paper never prints its review
+   marks. Each component's own look lives in its own file. Tokens via var(--delta-*). */
+
+@layer delta.components {
+
+/* -- Author chip ------------------------------------------------------- */
+.who {
+  /* The chip carries its own accent seed (data-accent, set by the runtime from the
+     member's color). Re-derive ink/soft from it here — mirroring box.css — so the
+     chip stays legible in dark mode, where the bare [data-accent] blocks would hand
+     it the light-page ink. */
+  --delta-accent-ink:  color-mix(in oklab, var(--delta-accent) 64%, var(--delta-ink));
+  --delta-accent-soft: color-mix(in oklab, var(--delta-accent) 14%, var(--delta-paper));
+
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--delta-sans);
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: var(--delta-accent-ink);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.who-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--delta-accent);
+  border: 1px solid var(--delta-accent-ink);
+}
+.who-badge {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 5px;
+  border-radius: var(--delta-radius-pill);
+  background: var(--delta-accent-soft);
+  border: 1px solid color-mix(in oklab, var(--delta-accent-ink) 55%, transparent);
+  color: var(--delta-accent-ink);
+}
+/* A `by` that names nobody in <team>: quiet free text, no colour claim. */
+.who-free { color: var(--delta-ink-soft); font-weight: 500; }
+
+/* -- Clean reading view: the panel's "annotations" switch ------------- */
+html[data-review="off"] delta-comment,
+html[data-review="off"] delta-todo,
+html[data-review="off"] .status-pill,
+html[data-review="off"] .status-bar,
+html[data-review="off"] .chg-marker { display: none; }
+
+/* -- Print: the paper, never its review marks -------------------------- */
+@media print {
+  delta-comment,
+  delta-todo,
+  delta-review,
+  .status-pill,
+  .status-bar,
+  .chg-marker { display: none !important; }
+}
+
+}

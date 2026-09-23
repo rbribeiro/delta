@@ -28,13 +28,19 @@ interface RefTarget {
   href?: string | null;
 }
 
+/** "Theorem 1.2" (localized kind + number), or just the kind for an unnumbered target. */
+function refLabel(kind: string, num: string): string {
+  const name = t(kind, kind.charAt(0).toUpperCase() + kind.slice(1));
+  return num ? `${name} ${num}` : name;
+}
+
 /**
  * Wires a trigger element with the <ref> behavior: a preview card filled lazily
  * from the target's `<template data-delta-pop>` snapshot, and a go-to button that
  * pages the deck / navigates cross-file / scrolls-and-flashes in-page.
  */
 export function wireRefPopover(trigger: HTMLElement, { to, num, kind, href }: RefTarget): void {
-  const label = `${t(kind, kind.charAt(0).toUpperCase() + kind.slice(1))} ${num}`;
+  const label = refLabel(kind, num);
 
   // The preview card, filled lazily from the snapshot on first open.
   const card = document.createElement("div");
@@ -104,7 +110,10 @@ class DeltaRef extends HTMLElement {
     const kind = this.getAttribute("data-target-tag");
     // Set on the project path when the target lives in another output file.
     const href = this.getAttribute("data-target-href");
-    if (!kind || !num) return; // unresolved: the compiler warned; leave it as bare text
+    // Unresolved (no attributes): the compiler warned; leave it as bare text. An EMPTY
+    // num is different: a resolved target that has no number (a `numbered="false"`
+    // section), which still gets the link and the preview.
+    if (!kind || num === null) return;
 
     // The clickable link: the author's own text if any, else the composed label.
     const hasText = (this.textContent ?? "").trim().length > 0;
@@ -112,7 +121,7 @@ class DeltaRef extends HTMLElement {
     trigger.type = "button";
     trigger.className = "xref";
     if (hasText) trigger.append(...this.childNodes);
-    else trigger.textContent = `${t(kind, kind.charAt(0).toUpperCase() + kind.slice(1))} ${num}`;
+    else trigger.textContent = refLabel(kind, num);
     this.replaceChildren(trigger);
 
     wireRefPopover(trigger, { to, num, kind, href });

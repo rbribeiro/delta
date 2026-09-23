@@ -44,11 +44,11 @@ npm install -g delta-lang
       ocupado no npm, mas o comando instalado é <c>delta</c> mesmo. Confira:
 
       <code lang="bash" numbered="false">
-delta
+delta --version
       </code>
 
-      Você deve ver o resumo de uso, com os comandos <c>build</c>, <c>create</c> e
-      <c>install</c>.
+      Você deve ver o número da versão. E <c>delta --help</c> mostra o resumo de uso,
+      com os comandos <c>build</c>, <c>review</c>, <c>create</c> e <c>install</c>.
     </subsection>
 
     <subsection id="passo-documento">
@@ -112,6 +112,9 @@ delta build artigo.dlt -o artigo.html
       mesmo, sem servidor nenhum. Você deve ver o título, a seção numerada, a
       fórmula renderizada e o teorema numa caixa. Clique na referência ao final: ela
       abre uma prévia do teorema e oferece um botão para saltar até ele.
+
+      Todos os comandos e opções do <c>delta</c> estão em
+      <ref to="cli">Linha de comando</ref>.
 
       <box type="tip">
         <title>Deixe o compilador rodando enquanto escreve</title>
