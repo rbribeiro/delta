@@ -179,9 +179,8 @@
   <section id="sec:ex">
     <eyebrow>Demonstração</eyebrow>
     <title>Exemplos Práticos</title>
-    <intro>
-      Exemplos de configurações frequentes demonstrando as capacidades e combinações do componente.
-    </intro>
+    
+    Exemplos de configurações frequentes demonstrando as capacidades e combinações do componente.
 
     <subsection>
       <title>Plot Mínimo</title>
@@ -286,7 +285,8 @@
       </code>
       <plot x="-8,8" y="-4,4">
         <title>Curva Analítica</title>
-        <function>Math.sin(x)</function>
+        <function>x**2</function>
+        <point x="0" y="0.1"/>
       </plot>
     </subsection>
   </section>
