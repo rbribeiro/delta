@@ -11,18 +11,23 @@
     margin: var(--delta-block-gap) 0;
   }
 
-  /* A display equation wider than the text column would push the whole page into
-     horizontal scroll on narrow screens; scroll it inside its own box instead.
-     The small top padding keeps tall glyphs (exponents, hats) from being shaved
-     by the clip edge; overflow-y is hidden so the horizontal scrollbar can't also
-     summon a vertical one. */
+  /* A display formula wider than the text column would push the whole page into
+     horizontal scroll on narrow screens; scroll it inside its own box instead. This
+     holds for every display formula: the math tags and `$$…$$` in running text alike
+     (the latter sits in prose, a box or a list, so it is matched by its KaTeX class,
+     not by a tag). The small top padding keeps tall glyphs (exponents, hats) from
+     being shaved by the clip edge; overflow-y is hidden so the horizontal scrollbar
+     can't also summon a vertical one. */
+  .katex-display {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-top: 0.3em;
+  }
+  /* The math tags supply their own block margin. */
   delta-equation .katex-display,
   delta-equations .katex-display,
   delta-math .katex-display {
     margin: 0;
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding-top: 0.3em;
   }
 
   /* Numbered equations lay out as two grid tracks: the (scrollable) equation and

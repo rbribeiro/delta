@@ -1,8 +1,5 @@
-import { execFileSync } from "node:child_process";
-import { mkdtempSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { BROWSER, evaluate } from "./browser";
 import { createContext } from "../src/compiler/context";
 import { compileSource } from "../src/compiler/index";
 
@@ -19,49 +16,6 @@ import { compileSource } from "../src/compiler/index";
  * Hence a real browser, and hence `skipIf`: the suite must stay green on a
  * machine with no Chromium rather than pretend this was verified.
  */
-
-function findBrowser(): string | undefined {
-  if (process.env.CHROME_PATH) return process.env.CHROME_PATH;
-  for (const cmd of ["chromium", "chromium-browser", "google-chrome-stable", "google-chrome"]) {
-    try {
-      // `which` rather than a shell, so no argument concatenation is involved.
-      const p = execFileSync("which", [cmd], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
-      if (p.trim()) return p.trim();
-    } catch {
-      /* not installed — try the next one */
-    }
-  }
-  return undefined;
-}
-
-const BROWSER = findBrowser();
-
-/** Renders `html` with `probe` appended, and returns whatever the probe puts in document.title. */
-function evaluate(html: string, probe: string): string {
-  const dir = mkdtempSync(join(tmpdir(), "delta-hittest-"));
-  const file = join(dir, "page.html");
-  writeFileSync(
-    file,
-    html.replace(
-      "</body>",
-      `<script>window.addEventListener("load",()=>{setTimeout(()=>{${probe}},350);});</script></body>`,
-    ),
-  );
-  const dom = execFileSync(
-    BROWSER!,
-    [
-      "--headless=new",
-      "--no-sandbox",
-      "--disable-gpu",
-      "--virtual-time-budget=2500",
-      "--window-size=1200,900",
-      "--dump-dom",
-      `file://${file}`,
-    ],
-    { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], maxBuffer: 64 * 1024 * 1024 },
-  );
-  return dom.match(/RESULT::([^<]*)/)?.[1] ?? "";
-}
 
 // `&` is written bare: <equations> is a RAW_TAG, so preprocess entity-escapes it.
 const DOC = `<document lang="en">
