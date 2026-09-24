@@ -52,7 +52,7 @@
     "docs": "npm run docs:site && npm run docs:exemplos",
     "docs:site": "tsx src/cli.ts build site/project.toml",
     "predocs:exemplos": "npm run assets",
-    "docs:exemplos": "tsx src/cli.ts build site/exemplos/livro/project.toml && tsx src/cli.ts build site/exemplos/artigo.dlt -o docs/exemplos/artigo.html && tsx src/cli.ts build site/exemplos/apresentacao.dlt -o docs/exemplos/apresentacao.html",
+    "docs:exemplos": "tsx src/cli.ts build site/exemplos/livro/project.toml && tsx src/cli.ts build site/exemplos/gigante/project.toml && tsx src/cli.ts build site/exemplos/artigo.dlt -o docs/exemplos/artigo.html && tsx src/cli.ts build site/exemplos/apresentacao.dlt -o docs/exemplos/apresentacao.html",
     "predocs:watch": "npm run assets && npm run trace",
     "docs:watch": "tsx src/cli.ts build site/project.toml --watch",
     "preexample": "npm run assets",

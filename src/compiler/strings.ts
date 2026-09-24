@@ -99,6 +99,12 @@ export const STRINGS: Record<string, Record<string, string>> = {
     verifiedBy: "verified by",
     note: "Note",
     jumpTo: "Go to",
+    // reader aids on a result (<intuition>, <strategy>, <obstacle>, <heuristic>)
+    intuition: "Intuition",
+    strategy: "Strategy",
+    obstacle: "Obstacle",
+    heuristic: "Heuristic",
+    notRigorous: "not rigorous",
   },
   pt: {
     theorem: "Teorema",
@@ -153,7 +159,7 @@ export const STRINGS: Record<string, Record<string, string>> = {
     tasks: "Tarefas",
     change: "Alteração",
     reply: "Resposta",
-    open: "Aberta",
+    open: "Em aberto", // neutro: rotula anotações e resultados planejados (status="open")
     resolved: "Resolvida",
     doing: "Em andamento",
     done: "Concluída",
@@ -189,6 +195,11 @@ export const STRINGS: Record<string, Record<string, string>> = {
     verifiedBy: "verificado por",
     note: "Nota",
     jumpTo: "Ir para",
+    intuition: "Intuição",
+    strategy: "Estratégia",
+    obstacle: "Obstáculo",
+    heuristic: "Heurística",
+    notRigorous: "não rigoroso",
   },
 };
 

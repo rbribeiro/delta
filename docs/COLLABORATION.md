@@ -48,6 +48,7 @@ JSON, so an agent needs no browser.
 | `<todo for by status priority due on id>` | `status` = `open` \| `doing` \| `done`; `priority` = `high` \| `normal` \| `low` | a block checklist row; `on="id"` places it right after the target |
 | `<change by date note id>` › `<old>` / `<new>` | `kind` inferred and written: `<old>`+`<new>` → `replace`, `<old>` only → `delete`, `<new>` only or bare content → `insert`; `block="true"` inferred when it wraps block content | inline or around whole blocks |
 | `status` / `by` / `verified-by` on any block | `status` = `draft` \| `sketch` \| `review` \| `verified` | environments, proofs, sections, `<draft>`. `by` = who wrote the block, `verified-by` = who checked it |
+| `status="open"` on a result | theorem, proposition, lemma, corollary, conjecture, claim, definition only | a planned result: statement, no proof yet. Rendered as a hollow dashed box; counts as unverified in `--final` |
 | `<draft by note>` | `status` defaults to `draft` | wrapper for loose prose with no header |
 | `<review scope>` | `scope="project"` lists every file of a project | the panel; works inside `<floating>` |
 

@@ -20,6 +20,7 @@ import { collectTeam } from "./team";
 import { expandAnimated } from "./animated";
 import { expandCover } from "./cover";
 import { resolveCollab } from "./collab";
+import { checkUnderstanding } from "./understanding";
 import { fillProjectBibliography, loadBibliography, numberCitations } from "./bibliography";
 import { freshNumbering, numberDocument, type NumberingState } from "./numbering";
 import { annotateCrossFileCites, annotateCrossFileRefs, buildIdMaps } from "./crossfile";
@@ -214,6 +215,11 @@ export const PIPELINE: Phase[] = [
         name: "resolveCollab",
         what: "comment/todo/change/status vocabulary: write defaults, warn on unknown values, check by/for against the team.",
         each: perFile(resolveCollab),
+      },
+      {
+        name: "checkUnderstanding",
+        what: "<intuition>/<strategy>/<obstacle>/<heuristic>: placement errors, no ids, folded by default.",
+        each: perFile(checkUnderstanding),
       },
       {
         name: "summarizeFinal",

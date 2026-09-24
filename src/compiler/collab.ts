@@ -1,6 +1,7 @@
 import type { ElementNode, Node, Position } from "./ast";
 import { warn, type CompileContext } from "./context";
 import { RAW_TAGS } from "./preprocess";
+import { RESULT_TAGS } from "./understanding";
 
 /**
  * The validation pass for the collaboration vocabulary — `<comment>`/`<reply>`, `<todo>`,
@@ -149,8 +150,11 @@ function visitChange(el: ElementNode, ctx: CompileContext): void {
 function visitBlock(el: ElementNode, ctx: CompileContext): void {
   if (el.tag === "draft") el.attrs.status ??= "draft";
   const status = el.attrs.status;
-  if (status !== undefined && !BLOCK_STATUS.has(status)) {
-    warn(ctx, `<${el.tag}> has unknown status "${status}" (expected draft, sketch, review or verified)`, el.pos);
+  // `open` marks a planned result: a statement with no proof yet.
+  const known = BLOCK_STATUS.has(status ?? "") || (status === "open" && RESULT_TAGS.has(el.tag));
+  if (status !== undefined && !known) {
+    const open = RESULT_TAGS.has(el.tag) ? ", open" : "";
+    warn(ctx, `<${el.tag}> has unknown status "${status}" (expected draft, sketch, review${open} or verified)`, el.pos);
   }
   checkMember(ctx, el.attrs.by, el.pos, "by");
   checkMember(ctx, el.attrs["verified-by"], el.pos, "verified-by");

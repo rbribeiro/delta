@@ -316,6 +316,11 @@ Daí <change by="claude" date="2026-09-12" note="sinal trocado"><old>$x < 0$</ol
           <column>Rascunho, esboço (argumento delineado, detalhes faltando), em revisão, verificado</column>
         </row>
         <row>
+          <column mono="true">status</column>
+          <column mono="true">open</column>
+          <column>Só em resultados (teorema, lema, …): enunciado planejado, ainda sem demonstração. A caixa fica vazada e tracejada</column>
+        </row>
+        <row>
           <column mono="true">by</column>
           <column mono="true">id de membro</column>
           <column>Quem escreveu o bloco</column>
@@ -336,6 +341,7 @@ Daí <change by="claude" date="2026-09-12" note="sinal trocado"><old>$x < 0$</ol
 <lemma id="lem-compacto" status="verified" by="claude" verified-by="rodrigo">...</lemma>
 <proof of="lem-compacto" status="sketch" by="claude">...</proof>
 <section id="sec-aplicacoes" status="draft">...</section>
+<lemma id="lem-cota" status="open">Enunciado de um lema que ainda falta provar.</lemma>
 
 <draft by="claude" note="o argumento ainda está frouxo">
   Prosa em construção, sem cabeçalho próprio.
@@ -343,11 +349,17 @@ Daí <change by="claude" date="2026-09-12" note="sinal trocado"><old>$x < 0$</ol
       </code>
 
       O teorema e a demonstração da seção anterior já usam isto (<em>em revisão</em> e
-      <em>esboço</em>, ambos de Claude). Um lema verificado e um rascunho:
+      <em>esboço</em>, ambos de Claude). Um lema verificado, um lema planejado e um
+      rascunho:
 
       <lemma id="demo-colab-lem-ver" status="verified" by="claude" verified-by="rodrigo">
         <title>Compacto é limitado</title>
         Todo subconjunto compacto de $\mathbb{R}$ é limitado.
+      </lemma>
+
+      <lemma id="demo-colab-lem-open" status="open">
+        <title>Um lema planejado</title>
+        Toda função contínua num compacto é limitada.
       </lemma>
 
       <draft by="claude" note="falta o caso em que K é vazio">
@@ -431,6 +443,7 @@ delta review artigo.dlt --json
       <list>
         <item>Declare o agente em <c><team kind="agent"></c> e peça que ele assine tudo com <c>by</c>.</item>
         <item>Mudanças em texto existente vão dentro de <c><change></c>, nunca por substituição silenciosa. Você decide no painel, em modo <em>final</em>, se o texto novo convence.</item>
+        <item>Combinem a arquitetura antes dos detalhes: o teorema principal com <c><strategy></c> e os lemas que faltam como <c>status="open"</c>.</item>
         <item>Demonstrações novas nascem com <c>status="sketch"</c>; quem confere troca para <c>verified</c> e assina em <c>verified-by</c>.</item>
         <item>Dúvidas viram <c><comment></c>; pedidos de trabalho viram <c><todo for="..."></c>.</item>
         <item>Antes de publicar, <c>delta review --status open</c> e <c>delta build --final</c>.</item>

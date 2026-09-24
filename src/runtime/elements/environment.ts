@@ -9,6 +9,7 @@
 
 import { t } from "../i18n";
 import { applyCollapsible, applyStatus } from "./shared";
+import { buildLens } from "./aid";
 
 const ENVIRONMENT_TAGS = [
   "theorem",
@@ -122,6 +123,14 @@ class DeltaEnvironment extends HTMLElement {
         meta.remove();
         this.append(footer);
       }
+    }
+
+    // Reader aids (<intuition>, <strategy>, …) → dots on the top border, and a drawer
+    // hung right after the box, so a long aid never stretches the statement.
+    const lens = buildLens(this);
+    if (lens) {
+      this.append(lens.dots);
+      this.after(lens.drawer);
     }
 
     applyCollapsible(this, tag);

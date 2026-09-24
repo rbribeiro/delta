@@ -117,6 +117,93 @@
       </proof>
     </subsection>
 
+    <subsection id="sobre-entendimento">
+      <title>Entendendo um resultado</title>
+
+      Um enunciado diz <em>o que</em> vale. Quem lê quer saber também <em>por que</em>
+      vale, como a prova anda e onde ela aperta. Quatro tags dizem isso sem encher a
+      página. Elas vão <em>dentro</em> do resultado a que pertencem, e é o aninhamento
+      que diz de quem são. Nenhuma delas é numerada nem pode receber <c>id</c>.
+
+      <table numbered="false">
+        <header>
+          <column>Tag</column>
+          <column>Para quê</column>
+          <column>Onde pode ir</column>
+        </header>
+        <row>
+          <column mono="true">intuition</column>
+          <column>Por que o resultado é verdadeiro, num parágrafo curto</column>
+          <column>Dentro de um resultado</column>
+        </row>
+        <row>
+          <column mono="true">strategy</column>
+          <column>Como a prova anda e como os lemas se encaixam (costuma ter <c><ref></c>)</column>
+          <column>Dentro de um resultado</column>
+        </row>
+        <row>
+          <column mono="true">obstacle</column>
+          <column>Onde está a dificuldade de verdade, e por que o caminho ingênuo falha</column>
+          <column>Dentro de um resultado</column>
+        </row>
+        <row>
+          <column mono="true">heuristic</column>
+          <column>Um argumento não rigoroso, marcado como tal</column>
+          <column>Num resultado, numa demonstração ou no texto corrido</column>
+        </row>
+      </table>
+
+      "Resultado" aqui quer dizer <c>theorem</c>, <c>proposition</c>, <c>lemma</c>,
+      <c>corollary</c>, <c>conjecture</c>, <c>claim</c> ou <c>definition</c>. Uma tag fora
+      do lugar é erro de compilação, com arquivo e linha.
+
+      <code lang="xml" numbered="false">
+<theorem id="thm:bolzano-weierstrass">
+  <title>Bolzano–Weierstrass</title>
+  Toda sequência limitada em $\mathbb{R}$ tem uma subsequência convergente.
+  <intuition>
+    Infinitos pontos num intervalo finito se acumulam em algum lugar.
+  </intuition>
+  <strategy>Bisseção: sempre há uma metade com infinitos termos.</strategy>
+  <obstacle>
+    Escolher a metade não basta; os índices precisam ser crescentes.
+  </obstacle>
+</theorem>
+      </code>
+
+      Elas não ficam dentro da caixa. Cada uma vira um pontinho colorido na borda de
+      cima, do lado oposto ao rótulo, e o nome aparece ao passar o mouse. Um clique abre
+      o conteúdo numa gaveta presa <em>embaixo</em> da caixa, uma de cada vez. Assim a
+      caixa guarda só o enunciado, mesmo quando a estratégia é tão longa quanto a prova.
+      Todas começam fechadas, em qualquer tipo de documento: a página mostra os
+      enunciados, e o leitor abre o resto quando quiser. Para deixar uma aberta desde o
+      início, use <c>collapsed="false"</c> nela. Na impressão, tudo sai aberto.
+
+      <theorem id="demo-entendimento">
+        <title>Bolzano–Weierstrass</title>
+        Toda sequência limitada em $\mathbb{R}$ tem uma subsequência convergente.
+        <intuition>Infinitos pontos num intervalo finito precisam se acumular em algum
+        lugar.</intuition>
+        <strategy>Bisseção, como em <ref to="demo-bolzano"/>: sempre há uma metade com
+        infinitos termos.</strategy>
+        <obstacle>Escolher a metade não basta. É preciso escolher índices
+        <em>crescentes</em>, um em cada intervalo.</obstacle>
+      </theorem>
+
+      Uma <c><heuristic></c> fora de uma caixa (numa demonstração ou no texto) vira um
+      bloco pequeno, com a indicação "não rigoroso", que começa fechado:
+
+      <heuristic>Se a sequência não tivesse ponto de acumulação, cada ponto do intervalo
+      teria uma vizinhança com poucos termos. Um número finito dessas vizinhanças cobriria
+      tudo, o que é impossível com infinitos termos.</heuristic>
+
+      Ao passar o mouse numa <c><ref></c> para um resultado, a prévia mostra o
+      enunciado com os mesmos pontinhos, todos fechados: dá para abrir qualquer um ali mesmo.
+      Um resultado que ainda não tem prova pode levar <c>status="open"</c>, que o marca
+      como planejado (veja <ref to="colab-status">Colaboração</ref>). O livro
+      <link to="exemplos/gigante/cap1.html">A componente gigante</link> usa tudo isto.
+    </subsection>
+
     <subsection id="sobre-ambiente-atributos">
       <title>Atributos comuns a todos os ambientes</title>
 

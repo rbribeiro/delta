@@ -1,0 +1,95 @@
+<document>
+  <title>A componente gigante</title>
+
+  <floating>
+    <title>Sumário</title>
+    <toc scope="project"/>
+  </floating>
+
+  <chapter id="cap:gigante">
+    <title>O grafo aleatório</title>
+
+    O grafo $G(n, p)$ tem $n$ vértices, e cada uma das $\binom{n}{2}$ arestas aparece
+    independentemente com probabilidade $p$. Aqui $p = c/n$, com $c > 0$ fixo.
+
+    <heuristic>Cada vértice tem, em média, cerca de $c$ vizinhos. Explorar uma
+    componente a partir de um vértice é, portanto, algo como um processo de ramificação
+    com $c$ filhos em média. Ele morre se $c < 1$ e pode sobreviver se $c > 1$. Por isso
+    se espera uma transição de fase em $c = 1$.</heuristic>
+
+    <section id="sec:exploracao">
+      <title>Exploração e acoplamento</title>
+
+      <lemma id="lem:acoplamento">
+        <title>Acoplamento</title>
+        Explore a componente de um vértice $v$ em largura. Enquanto o conjunto já
+        explorado tem no máximo $k$ vértices, o número de vizinhos novos do vértice
+        ativo é dominado por $\mathrm{Bin}(n, c/n)$ e domina $\mathrm{Bin}(n - k, c/n)$.
+        <intuition>Cada vértice novo encontrado é um "filho". Enquanto quase nada foi
+        explorado, sobram quase $n$ candidatos a filho.</intuition>
+        <strategy>Conte os candidatos: são os vértices ainda não vistos, e há entre
+        $n - k$ e $n$ deles. Cada um é vizinho com probabilidade $c/n$, independentemente
+        do que já foi revelado.</strategy>
+      </lemma>
+      <proof of="lem:acoplamento" status="sketch" by="claude">
+        Na exploração em largura, cada aresta é consultada no máximo uma vez. Quando o
+        vértice ativo é processado, as arestas até os vértices não vistos ainda não foram
+        consultadas. Elas são independentes, cada uma presente com probabilidade $c/n$.
+        Há entre $n - k$ e $n$ desses vértices, e isso dá a dominação nos dois sentidos.
+      </proof>
+
+      <lemma id="lem:sem-meio" status="open">
+        <title>Nada de tamanho médio</title>
+        Se $c > 1$, existe $K$ tal que, com alta probabilidade, nenhuma componente de
+        $G(n, c/n)$ tem tamanho entre $K \log n$ e $n^{2/3}$.
+        <strategy>Uma exploração que ainda está viva após $K \log n$ passos tem, por
+        <ref to="lem:acoplamento"/>, deriva positiva $c - 1$. Uma cota de Chernoff na
+        caminhada de exploração deve então impedir que ela pare antes de $n^{2/3}$.</strategy>
+      </lemma>
+
+      <lemma id="lem:sprinkling" status="open">
+        <title>Aspersão</title>
+        Com alta probabilidade, todas as componentes de $G(n, c/n)$ com pelo menos
+        $n^{2/3}$ vértices estão numa só componente de $G(n, (c + \varepsilon)/n)$.
+        <intuition>Duas componentes grandes têm $n^{4/3}$ pares de vértices entre si.
+        Uma pitada extra de arestas as liga quase com certeza.</intuition>
+      </lemma>
+    </section>
+
+    <section id="sec:teorema">
+      <title>O teorema</title>
+
+      <theorem id="thm:gigante">
+        <title>Componente gigante</title>
+        Se $c > 1$, então com alta probabilidade $G(n, c/n)$ tem uma componente com
+        $(\rho + o(1))\, n$ vértices, onde $\rho = \rho(c)$ é dado por
+        <ref to="lem:ponto-fixo"/>. Todas as outras componentes têm $O(\log n)$ vértices.
+        <intuition>A exploração a partir de um vértice se parece com uma árvore de
+        Galton–Watson com prole $\mathrm{Poisson}(c)$, que sobrevive com probabilidade
+        $\rho > 0$. Os vértices "sobreviventes" formam juntos uma única componente.</intuition>
+        <strategy>Acople a exploração com o processo de ramificação
+        (<ref to="lem:acoplamento"/>, <ref to="def:gw"/>). Isso dá
+        $\mathbb{P}(|C(v)| \ge K\log n) \to \rho$. Separe componentes pequenas das
+        grandes (<ref to="lem:sem-meio"/>), e então junte as grandes por aspersão
+        (<ref to="lem:sprinkling"/>).</strategy>
+        <obstacle>O acoplamento só vale enquanto o conjunto explorado é $o(n)$. A
+        componente gigante, por definição, não é. Por isso não se pode acoplar até o
+        fim: o argumento passa por "grande" ($\ge n^{2/3}$) e usa a aspersão para
+        concluir.</obstacle>
+      </theorem>
+      <proof of="thm:gigante" status="sketch" by="claude">
+        Chame $v$ de <em>grande</em> se $|C(v)| \ge n^{2/3}$. Por
+        <ref to="lem:acoplamento"/> com $k = K \log n$ e <ref to="lem:ponto-fixo"/>,
+        $\mathbb{P}(|C(v)| \ge K \log n) = \rho + o(1)$. Por <ref to="lem:sem-meio"/>, isso
+        é também $\mathbb{P}(v \text{ grande}) + o(1)$. Logo o número $Y$ de vértices
+        grandes tem $\mathbb{E}\,Y = (\rho + o(1))n$.
+        <heuristic>Para dois vértices $u$ e $v$, as explorações de $C(u)$ e $C(v)$ quase
+        não se tocam enquanto ambas são pequenas. Por isso os eventos "$u$ grande" e
+        "$v$ grande" são quase independentes, e $Y$ se concentra.</heuristic>
+        Um argumento de segundo momento dá $Y = (\rho + o(1))n$ com alta probabilidade.
+        Por <ref to="lem:sprinkling"/>, aplicado com $c - \varepsilon$ no lugar de $c$ e
+        com $\varepsilon \to 0$, os vértices grandes estão todos numa só componente.
+      </proof>
+    </section>
+  </chapter>
+</document>

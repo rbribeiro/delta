@@ -33,6 +33,11 @@
   color: var(--delta-mute);
   border-style: dashed;
 }
+.status-pill[data-status="open"] {
+  color: var(--delta-accent-ink);
+  border-style: dashed;
+  background: transparent;
+}
 .status-pill[data-status="review"] {
   color: var(--delta-warn);
   border-color: color-mix(in oklab, var(--delta-warn) 50%, transparent);

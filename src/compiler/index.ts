@@ -1,4 +1,4 @@
-import { createContext, type CompileContext, type Diagnostic, type ReviewData } from "./context";
+import { createContext, hasErrors, type CompileContext, type Diagnostic, type ReviewData } from "./context";
 import { createShared, outNameFor, runPipeline, type CompileOptions, type FileUnit } from "./pipeline";
 
 export type { CompileOptions, TraceEvent } from "./pipeline";
@@ -51,5 +51,6 @@ function runOne(unit: FileUnit, options: CompileOptions): string | undefined {
   });
   const ok = runPipeline([unit], shared, options);
   ctx.diagnostics.push(...shared.project.diagnostics); // the --final summary lands on the caller's ctx
-  return ok ? unit.html : undefined;
+  // An error in a later phase fails the file too, as it fails a project (cli.ts writeProject).
+  return ok && !hasErrors(ctx) ? unit.html : undefined;
 }

@@ -67,6 +67,7 @@ describe("the declared pipeline", () => {
       "load/expandAnimated",
       "load/expandCover",
       "collab/resolveCollab",
+      "collab/checkUnderstanding",
       "collab/summarizeFinal",
       "bibliography/loadBibliography",
       "bibliography/numberCitations",

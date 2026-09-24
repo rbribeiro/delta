@@ -1,0 +1,195 @@
+/* understanding.css — reader aids on a result (<intuition>, <strategy>, <obstacle>,
+   <heuristic>) and planned results (status="open"). LIVE: buildLens (runtime/elements/
+   aid.ts) leaves .lens-dots on the box's top border and hangs a .lens-drawer after the
+   box, one .lens-panel open at a time; an aid outside a box gets an .aid-label and folds
+   with the shared collapsible. Kept low-key: the box is the statement and nothing else,
+   and an aid as long as the proof extends the page, not the box. Tokens via var(--delta-*). */
+
+@layer delta.components {
+
+delta-intuition,
+delta-strategy,
+delta-obstacle,
+delta-heuristic {
+  display: block;
+}
+
+/* -- Aid colours: one hue per kind, shared by its dot and its drawer --- */
+[data-aid="intuition"] { --aid-hue: var(--delta-accent-ink); }
+[data-aid="strategy"]  { --aid-hue: var(--delta-ink-soft); }
+[data-aid="obstacle"]  { --aid-hue: var(--delta-warn); }
+[data-aid="heuristic"] { --aid-hue: var(--delta-mute); }
+
+/* -- Dots: on the box's top border, opposite the label ---------------- */
+.lens-dots {
+  position: absolute;
+  top: 0;
+  right: 18px;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 2px;
+  padding: 0 4px;
+  /* The box's own border colour (same mix as .box in theorems.css): a bead on the rule. */
+  background: color-mix(in oklab,
+                        var(--delta-env-tone, var(--delta-paper)) calc(var(--delta-env-tint, 0) * 100%),
+                        var(--delta-env-border));
+  border-radius: var(--delta-radius-pill);
+}
+.lens-dot {
+  appearance: none;
+  position: relative;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+/* The visible dot is small; the button around it is a comfortable target. */
+.lens-dot::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  border: 1.5px solid var(--aid-hue);
+  background: color-mix(in oklab, var(--aid-hue) 35%, var(--delta-paper));
+  transition: transform var(--delta-dur-fast) var(--delta-ease),
+              background var(--delta-dur-fast) var(--delta-ease);
+}
+.lens-dot[data-aid="heuristic"]::before { border-style: dashed; background: var(--delta-paper); }
+.lens-dot:hover::before { transform: scale(1.25); }
+.lens-dot[aria-expanded="true"]::before { background: var(--aid-hue); transform: scale(1.25); }
+.lens-dot:focus-visible {
+  outline: 2px solid var(--delta-accent-ink);
+  outline-offset: 1px;
+  border-radius: 50%;
+}
+/* The name shows on hover/focus, like a tooltip, so the dots can stay wordless. */
+.lens-dot::after {
+  content: attr(data-label);
+  position: absolute;
+  bottom: calc(100% + 4px);
+  right: 50%;
+  transform: translateX(50%);
+  padding: 2px 7px;
+  font-family: var(--delta-sans);
+  font-size: 10px;
+  letter-spacing: var(--delta-tracking-cap);
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--delta-paper);
+  background: var(--delta-ink);
+  border-radius: var(--delta-radius-sm);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--delta-dur-fast) var(--delta-ease);
+}
+.lens-dot:hover::after,
+.lens-dot:focus-visible::after { opacity: 1; }
+
+/* -- Drawer: hangs under the box, so the statement keeps its size ---- */
+.box.has-drawer {
+  margin-bottom: 0;
+  border-bottom-left-radius: var(--delta-radius-sm);
+  border-bottom-right-radius: var(--delta-radius-sm);
+}
+.lens-drawer {
+  margin: 0 14px var(--delta-block-gap);
+  padding: 10px 18px 12px;
+  border: var(--delta-hairline) solid var(--delta-rule-soft);
+  border-top: 0;
+  border-radius: 0 0 var(--delta-radius) var(--delta-radius);
+  background: color-mix(in oklab, var(--delta-env-bg) 60%, var(--delta-paper));
+  font-size: 0.92em;
+  line-height: 1.55;
+  color: var(--delta-ink-soft);
+}
+.lens-drawer[hidden],
+.box.is-collapsed + .lens-drawer,
+.lens-panel[hidden] { display: none; }
+
+.lens-panel {
+  border-left: 2px solid var(--aid-hue);
+  padding-left: 12px;
+}
+.lens-panel[data-aid="heuristic"] { border-left-style: dashed; }
+.lens-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 2px;
+}
+.lens-name {
+  font-family: var(--delta-sans);
+  font-size: 10px;
+  letter-spacing: var(--delta-tracking-cap);
+  text-transform: uppercase;
+  color: var(--aid-hue);
+}
+.lens-close {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 0 2px;
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--delta-mute);
+}
+.lens-close:hover { color: var(--delta-ink); }
+
+/* -- In a ref pop-over the box is flattened (reference.css), so there is no
+   border to sit on: the dots join the flow as a row under the statement, and
+   the drawer spans the card. */
+.xref-pop-body .lens-dots {
+  position: static;
+  transform: none;
+  width: fit-content;
+  margin-top: 8px;
+  margin-left: -4px;
+}
+.xref-pop-body .lens-drawer {
+  margin: 8px 0 0;
+  border-top: var(--delta-hairline) solid var(--delta-rule-soft);
+  border-radius: var(--delta-radius-sm);
+}
+/* Tooltips would be clipped by the card's scroller; the drawer names the aid anyway. */
+.xref-pop-body .lens-dot::after { display: none; }
+
+/* -- An aid outside a box (a heuristic in a proof or in body text) ------ */
+.aid {
+  margin: 14px 0;
+  padding: 6px 0 6px 14px;
+  border-left: 2px dashed var(--delta-rule);
+  font-size: 0.94em;
+  color: var(--delta-ink-soft);
+}
+.aid-label {
+  display: block;
+  width: fit-content;
+  font-family: var(--delta-sans);
+  font-size: 10px;
+  letter-spacing: var(--delta-tracking-cap);
+  text-transform: uppercase;
+  color: var(--delta-mute);
+}
+.aid.is-collapsed { padding-block: 0; }
+.aid:not(.is-collapsed) > .aid-label { margin-bottom: 4px; }
+.aid-label.collapse-toggle::before { font-size: 1em; }
+.aid-note { font-style: italic; text-transform: none; letter-spacing: 0; }
+
+/* -- Planned results (status="open"): a hollow, dashed box ------------- */
+.box[data-status="open"] {
+  border-style: dashed;
+  background: transparent;
+  box-shadow: none;
+}
+
+@media print {
+  /* Paper cannot unfold: print every aid under its box. */
+  .lens-drawer[hidden], .lens-panel[hidden] { display: block; }
+  .lens-panel + .lens-panel { margin-top: 10px; }
+  .lens-dots, .lens-close { display: none; }
+}
+
+}

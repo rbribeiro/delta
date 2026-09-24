@@ -11,6 +11,7 @@
 import { defineSections } from "./section";
 import { defineSlide } from "./slide";
 import { defineEnvironments } from "./environment";
+import { defineAids } from "./aid";
 import { defineDocument } from "./document";
 import { defineSidenote } from "./sidenote";
 import { defineMedia } from "./media";
@@ -38,6 +39,7 @@ export function defineComponents(): void {
   defineSections();
   defineSlide();
   defineEnvironments();
+  defineAids(); // after environments: a result box first moves its aids onto its lens
   defineSidenote();
   defineMedia();
   defineHint();
