@@ -165,6 +165,15 @@ edges plus positioned `<pm-node>` boxes, each holding an ordinary `<ref>`, so th
 ref pass and runtime give every box its preview card and jump; boxes are coloured by
 effective trust (`proofmap.css`). No runtime code of its own.
 
+`delta verify <id> [--by name]` is the one command that edits a `.dlt`: it sets
+`status="verified"`, `verified-by` and `against="<hash>"` on the result's first proof,
+rewriting only those attributes of the opening tag (`src/verify.ts`). The hash
+(`checkedHash` in `graph.ts`, 12 hex chars of SHA-256) covers the result's statement, its
+proof, and its parents' statements, not their proofs; content is taken between the tags,
+with aids, titles, comments and todos cut and whitespace collapsed. A mismatch makes the
+verification stale: own trust drops to sketch, the proof's `status` is shown as `stale`,
+and `delta lint` reports it as an error. `verified` without `against` is a lint warning.
+
 The input defaults to `./project.toml`. Formatting lives in `src/graph-report.ts`. Exact
 source slices come from spans the parser records (`ElementNode.src`, via the offset map
 `preprocessMapped` returns), and every position carries its file, so included files report

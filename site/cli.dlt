@@ -206,7 +206,7 @@ delta show thm:gigante --context      # + só os enunciados do que a prova usa
 delta uses lem:acoplamento            # tudo o que depende deste resultado
 delta graph                           # o grafo inteiro
 delta graph --frontier --json         # o trabalho disponível agora
-delta lint                            # ciclos, refs soltas, verificado sobre base fraca
+delta lint                            # ciclos, refs soltas, verificações desatualizadas
       </code>
 
       <table numbered="false">
@@ -240,7 +240,7 @@ delta lint                            # ciclos, refs soltas, verificado sobre ba
         </row>
         <row>
           <column mono="true">lint</column>
-          <column>Raciocínio circular (com o caminho), refs para ids inexistentes, resultados marcados <c>verified</c> cuja confiança efetiva é menor (com os ancestrais culpados), elementos fora do lugar e os demais diagnósticos da compilação</column>
+          <column>Raciocínio circular (com o caminho), refs para ids inexistentes, verificações desatualizadas (veja <ref to="cmd-verify">delta verify</ref>), resultados marcados <c>verified</c> cuja confiança efetiva é menor (com os ancestrais culpados), elementos fora do lugar e os demais diagnósticos da compilação</column>
         </row>
       </table>
 
@@ -249,6 +249,55 @@ delta lint                            # ciclos, refs soltas, verificado sobre ba
       é escrito em disco. Um documento com erros ainda tem grafo, então dá para navegar
       numa prova quebrada. Só um arquivo que não carrega (XML inválido, por exemplo)
       impede o grafo.
+    </subsection>
+
+    <subsection id="cmd-verify">
+      <title>delta verify</title>
+
+      A assinatura de quem conferiu uma prova. O comando marca a demonstração do
+      resultado como verificada e grava nela um <c>against</c>: o resumo (hash) do que
+      foi conferido. É o único comando que edita um <c>.dlt</c>, e mexe só nesses
+      atributos da tag de abertura; o resto do arquivo fica intacto.
+
+      <code lang="bash" numbered="false">
+delta verify lem:acoplamento --by rodrigo
+      </code>
+
+      <code lang="xml" numbered="false">
+<proof of="lem:acoplamento" by="claude" status="verified" verified-by="rodrigo" against="7a0eff8c86df">
+      </code>
+
+      O resumo cobre o enunciado do resultado, a sua demonstração e os
+      <em>enunciados</em> dos resultados que ela usa, mas não as demonstrações deles.
+      Reescrever a prova de um lema, então, não mexe em quem o usa; mudar o que o lema
+      <em>diz</em>, sim. Espaços e quebras de linha, o título, a intuição, a estratégia,
+      o obstáculo, as heurísticas e as anotações de revisão não entram na conta.
+
+      Quando algo coberto muda, a verificação fica <em>desatualizada</em>: a etiqueta da
+      demonstração passa a dizer "Desatualizado", o grafo a trata como <c>sketch</c> (a
+      confiança efetiva cai em tudo o que depende dela) e o <c>delta lint</c> a aponta
+      como erro até alguém conferir de novo e rodar <c>delta verify</c>. Uma prova marcada
+      <c>verified</c> à mão, sem <c>against</c>, gera um aviso: nenhuma edição posterior
+      seria percebida.
+
+      <table numbered="false">
+        <header>
+          <column>Opção</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">--by nome</column>
+          <column>Grava <c>verified-by</c>. O <c>by</c> continua sendo quem escreveu a prova</column>
+        </row>
+        <row>
+          <column mono="true">--json</column>
+          <column>O resultado (id, hash, arquivo e linha, avisos) como JSON</column>
+        </row>
+      </table>
+
+      Verificar um resultado que usa algo ainda não verificado é permitido, com um aviso:
+      a conferência vale, mas a confiança efetiva só sobe quando a base também for
+      verificada. Definições não se verificam, e um resultado sem demonstração dá erro.
     </subsection>
 
     <subsection id="cmd-create">
@@ -328,7 +377,7 @@ delta install delta-callout outro-pacote --project livro/project.toml
         </row>
         <row>
           <column mono="true">1</column>
-          <column>Uso errado do comando, erro de compilação, revisão de um documento com erros, <c>lint</c> com algum erro, id desconhecido em <c>show</c> ou <c>uses</c>, arquivo que não carrega, falha do <c>npm install</c></column>
+          <column>Uso errado do comando, erro de compilação, revisão de um documento com erros, <c>lint</c> com algum erro, id desconhecido em <c>show</c>, <c>uses</c> ou <c>verify</c>, <c>verify</c> de algo sem prova, arquivo que não carrega, falha do <c>npm install</c></column>
         </row>
       </table>
 

@@ -33,7 +33,7 @@ import { resolveTheme } from "./theme";
 import { resolveImports, resolvePack } from "./imports";
 import { resolveLineBreaks } from "./linebreaks";
 import { emit } from "./emit";
-import { buildGraph, type ProofGraph } from "./graph";
+import { buildGraph, markStale, type ProofGraph } from "./graph";
 import { layoutProofMaps } from "./proofmap";
 
 /**
@@ -276,9 +276,10 @@ export const PIPELINE: Phase[] = [
       },
       {
         name: "buildGraph",
-        what: "Results + definitions → the proof graph (edges from refs in statements and proofs), trust propagated. Read by the CLI.",
+        what: "Results + definitions → the proof graph (edges from refs in statements and proofs), trust propagated, stale verifications marked. Read by the CLI.",
         all: (files, s) => {
           s.graph = buildGraph(parsed(files), s.registry);
+          markStale(s.graph);
         },
       },
     ],

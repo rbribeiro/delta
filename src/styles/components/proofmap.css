@@ -64,6 +64,8 @@ delta-pm-node {
 /* Unproved results are drawn hollow; a cycle is flagged in the warning colour. */
 delta-pm-node[data-eff="open"] { border-style: dashed; box-shadow: none; }
 delta-pm-node[data-cyclic="true"] { border-color: var(--delta-warn); }
+/* A verification whose checked content changed: it needs checking again. */
+delta-pm-node[data-stale="true"] { border-color: var(--delta-warn); border-style: dashed; }
 /* Own trust above effective: the proof is fine, something it uses is not. A small dot says so. */
 delta-pm-node[data-own]::after {
   content: "";

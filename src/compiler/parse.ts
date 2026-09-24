@@ -50,17 +50,22 @@ export function parse(source: string, ctx: CompileContext, map?: number[]): Elem
       attrs: { ...(tag.attributes as Record<string, string>) },
       children: [],
       pos: { line: parser.line, column: parser.column, file },
-      src: { file, start: orig(tagStart), end: orig(tagStart) },
+      // `position` is just past the opening tag's `>`: the content starts there.
+      src: { file, start: orig(tagStart), end: orig(tagStart), inner: orig(parser.position - 1) + 1, innerEnd: 0 },
     };
     stack[stack.length - 1].children.push(el);
     stack.push(el);
   });
 
-  parser.on("closetag", () => {
+  parser.on("closetag", (tag) => {
     // no need to check for mismatched tags; saxes already emits an error in that case
     // so it is safe to just pop the stack here. `position` is just past the closing `>`.
     const el = stack.pop();
-    if (el?.src) el.src.end = orig(parser.position - 1) + 1;
+    if (el?.src) {
+      el.src.end = orig(parser.position - 1) + 1;
+      const close = tag.isSelfClosing ? -1 : source.lastIndexOf(`</${tag.name}`, parser.position);
+      el.src.innerEnd = close === -1 ? el.src.inner : orig(close);
+    }
   });
 
   /**

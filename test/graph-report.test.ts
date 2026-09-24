@@ -109,9 +109,11 @@ describe("outline, uses, frontier", () => {
 });
 
 describe("lint", () => {
-  it("reports a clean graph as clean", () => {
+  it("reports a clean graph as clean, except a verification marked by hand", () => {
     const { graph, diagnostics } = build(SRC);
-    expect(lintText(lintFindings(graph, diagnostics, rel))).toBe("no problems found\n");
+    const findings = lintFindings(graph, diagnostics, rel);
+    expect(findings.map((f) => [f.severity, f.kind, f.ids])).toEqual([["warning", "unpinned", ["a"]]]);
+    expect(lintText(findings.filter((f) => f.kind !== "unpinned"))).toBe("no problems found\n");
   });
 
   it("reports cycles, dangling refs, overclaims, misplaced aids and stray proofs, without duplicates", () => {
@@ -126,6 +128,7 @@ describe("lint", () => {
       ["error", "cycle", 2],
       ["error", "dangling-ref", 3],
       ["error", "overclaimed", 2],
+      ["warning", "unpinned", 2],
       ["warning", "stray-proof", 5],
       ["error", "compile", 4],
     ]);

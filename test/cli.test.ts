@@ -1,4 +1,4 @@
-import { execFileSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -28,17 +28,8 @@ function delta(...args: string[]): Run {
 }
 
 function deltaIn(cwd: string, ...args: string[]): Run {
-  try {
-    const stdout = execFileSync(process.execPath, ["--import", TSX, resolve(ROOT, "src/cli.ts"), ...args], {
-      cwd,
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "pipe"],
-    });
-    return { status: 0, stdout, stderr: "" };
-  } catch (e) {
-    const err = e as { status: number | null; stdout: string; stderr: string };
-    return { status: err.status ?? -1, stdout: err.stdout ?? "", stderr: err.stderr ?? "" };
-  }
+  const r = spawnSync(process.execPath, ["--import", TSX, resolve(ROOT, "src/cli.ts"), ...args], { cwd, encoding: "utf8" });
+  return { status: r.status ?? -1, stdout: r.stdout ?? "", stderr: r.stderr ?? "" };
 }
 
 describe("delta --version", () => {
@@ -119,5 +110,42 @@ describe("the proof-graph commands", () => {
     expect(hit.status).toBe(0);
     expect(hit.stdout).toContain('<theorem id="t">By <ref to="a"/>.</theorem>');
     expect(hit.stdout).toContain('<lemma id="a">A.</lemma>');
+  });
+});
+
+describe("delta verify", () => {
+  const dir = mkdtempSync(join(tmpdir(), "delta-cli-verify-"));
+  writeFileSync(join(dir, "project.toml"), 'inputs = ["p.dlt"]\nout = "out"\n');
+  const SRC = `<document><section id="s"><title>S</title>
+  <definition id="d">D.</definition>
+  <lemma id="a">A, by <ref to="d"/>.</lemma>
+  <proof of="a" by="claude">p</proof>
+  <lemma id="b" status="open">B.</lemma>
+  <theorem id="t">By <ref to="a"/> and <ref to="b"/>.</theorem>
+  <proof of="t" status="sketch">q</proof>
+</section></document>`;
+  writeFileSync(join(dir, "p.dlt"), SRC);
+
+  it("signs the proof in place, pinned to a hash, and lint then accepts it", () => {
+    const r = deltaIn(dir, "verify", "a", "--by", "rodrigo", "--json");
+    expect(r.status).toBe(0);
+    const out = JSON.parse(r.stdout);
+    expect(out.against).toMatch(/^[0-9a-f]{12}$/);
+    const text = readFileSync(join(dir, "p.dlt"), "utf8");
+    expect(text).toContain(`<proof of="a" by="claude" status="verified" verified-by="rodrigo" against="${out.against}">p</proof>`);
+    expect(text.replace(/ status="verified" verified-by="rodrigo" against="\w+"/, "")).toBe(SRC);
+    expect(deltaIn(dir, "lint", "--json").stdout).not.toContain('"stale"');
+  });
+
+  it("warns, but signs, on top of an unverified result", () => {
+    const r = deltaIn(dir, "verify", "t");
+    expect(r.status).toBe(0);
+    expect(r.stderr).toContain("t uses b, which is open");
+  });
+
+  it("refuses definitions, results without a proof, and unknown ids", () => {
+    expect(deltaIn(dir, "verify", "d").status).toBe(1);
+    expect(deltaIn(dir, "verify", "b").stderr).toContain("b has no proof yet");
+    expect(deltaIn(dir, "verify", "nope").status).toBe(1);
   });
 });

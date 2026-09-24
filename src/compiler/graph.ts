@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { textContent, titleOf, type ElementNode } from "./ast";
 import type { LabelEntry } from "./context";
 import { AID_TAGS, RESULT_TAGS } from "./understanding";
@@ -15,7 +16,10 @@ import { AID_TAGS, RESULT_TAGS } from "./understanding";
  * - trust is ordered `open < heuristic < sketch < verified < formalized`. A node's own
  *   trust is its proof's status (`open` with no proof; definitions are `verified`), and
  *   its effective trust is the weakest of its own and its parents' effective trust: a
- *   result is only as solid as its weakest ancestor. A node on a cycle is `open`.
+ *   result is only as solid as its weakest ancestor. A node on a cycle is `open`;
+ * - a verification is pinned: `delta verify` writes `against="<hash>"` on the proof, the
+ *   hash of what was checked (see `checkedHash`). When that changes, the verification is
+ *   stale and the proof counts as a sketch until someone verifies it again.
  *
  * Built once per compile, after numbering (so labels are known) and before rendering (so
  * math is still source text). The CLI's outline/show/uses/graph/lint read it.
@@ -64,6 +68,10 @@ export interface GraphNode {
   children: string[];
   /** True when the node sits on a cycle (circular reasoning). */
   cyclic: boolean;
+  /** The hash a verification of this node must match now (`checkedHash`). */
+  hash: string;
+  /** The first proof claims verified/formalized against a hash that no longer matches. */
+  stale: boolean;
 }
 
 export interface OutlineEntry {
@@ -141,6 +149,8 @@ export function buildGraph(files: GraphInput[], registry: Map<string, LabelEntry
         parents: [],
         children: [],
         cyclic: false,
+        hash: "",
+        stale: false,
       });
       into.push({ tag: el.tag, id, num: el.attrs.num ?? "", title: titleText(el), loc, children: [] });
       owner = id;
@@ -203,9 +213,80 @@ export function buildGraph(files: GraphInput[], registry: Map<string, LabelEntry
   };
   for (const f of files) scan(f.doc, undefined, f.ctx.file);
 
+  // Pin verifications: a proof verified against an old hash counts as a sketch again.
+  for (const n of graph.nodes.values()) {
+    n.hash = checkedHash(graph, n);
+    const proof = n.proofs[0];
+    const against = proof?.attrs.against;
+    if (against !== undefined && trustRank(n.own) >= trustRank("verified") && against !== n.hash) {
+      n.stale = true;
+      n.own = "sketch";
+    }
+  }
+
   markCycles(graph);
   propagate(graph);
   return graph;
+}
+
+/** Hash length in hex characters: short enough to read, long enough never to collide by accident. */
+export const HASH_LENGTH = 12;
+
+/**
+ * What a verification of `n` vouches for: its statement, its (first) proof, and the
+ * statements of the results it uses, each tagged with its id. Deliberately not the
+ * parents' proofs: re-proving a lemma does not disturb what uses it, but changing what
+ * the lemma *says* does. See `normalizedContent` for what counts as a change.
+ */
+export function checkedHash(graph: ProofGraph, n: GraphNode): string {
+  const parts = [
+    ["statement", normalizedContent(graph, n.el)],
+    ["proof", n.proofs[0] ? normalizedContent(graph, n.proofs[0]) : ""],
+    ...[...n.parents].sort().map((p) => [p, normalizedContent(graph, graph.nodes.get(p)!.el)]),
+  ];
+  return createHash("sha256").update(JSON.stringify(parts)).digest("hex").slice(0, HASH_LENGTH);
+}
+
+/**
+ * Not mathematics, so never part of a hash: the reader aids, a result's display title,
+ * and review annotations (a comment on a verified proof must not unverify it).
+ */
+const UNCHECKED = new Set([...AID_TAGS, "title", "comment", "todo"]);
+
+/**
+ * The content of `el` as written (between its tags, so the proof's own `status`, `by` and
+ * `against` never count), minus UNCHECKED elements at any depth, with every run of
+ * whitespace collapsed: reflowing a paragraph changes nothing, any other edit does.
+ */
+export function normalizedContent(graph: ProofGraph, el: ElementNode): string {
+  const span = el.src;
+  const text = span && graph.sources.get(span.file);
+  if (!span || text === undefined) return "";
+  const cuts: [number, number][] = [];
+  const collect = (e: ElementNode): void => {
+    for (const c of e.children) {
+      if (c.type !== "element") continue;
+      if (UNCHECKED.has(c.tag) && c.src) cuts.push([c.src.start, c.src.end]);
+      else collect(c);
+    }
+  };
+  collect(el);
+  let out = "";
+  let at = span.inner;
+  for (const [s, e] of cuts) {
+    out += text.slice(at, s) + " ";
+    at = e;
+  }
+  out += text.slice(at, span.innerEnd);
+  return out.replace(/\s+/g, " ").trim();
+}
+
+/**
+ * Shows a stale verification for what it is: the proof's `status` becomes `stale` (the
+ * pill reads "Stale", `delta review` lists it). Its `against` stays for `delta verify`.
+ */
+export function markStale(graph: ProofGraph): void {
+  for (const n of graph.nodes.values()) if (n.stale) n.proofs[0].attrs.status = "stale";
 }
 
 /** Tarjan's SCCs; each non-trivial one is reported once, as one closed path through it. */

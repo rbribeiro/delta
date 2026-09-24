@@ -209,8 +209,11 @@ function render(ids: string[], graph: ProofGraph, ctx: CompileContext, n: number
         "data-eff": node.eff,
         ...(node.own !== node.eff ? { "data-own": node.own } : {}),
         // Hover text: own → effective trust, in the document's language.
-        title: node.own === node.eff ? (t[node.eff] ?? node.eff) : `${t[node.own] ?? node.own} → ${t[node.eff] ?? node.eff}`,
+        title:
+          (node.stale ? `${t.stale} · ` : "") +
+          (node.own === node.eff ? (t[node.eff] ?? node.eff) : `${t[node.own] ?? node.own} → ${t[node.eff] ?? node.eff}`),
         ...(node.cyclic ? { "data-cyclic": "true" } : {}),
+        ...(node.stale ? { "data-stale": "true" } : {}),
         style: `left:${f(s.x)}px;top:${f(top(s))}px;width:${NODE_W}px;height:${NODE_H}px`,
       },
       kids,

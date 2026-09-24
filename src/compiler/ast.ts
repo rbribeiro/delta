@@ -21,6 +21,9 @@ export interface SourceSpan {
   start: number;
   /** Offset just past the closing `>` (or the `/>` of a self-closing tag). */
   end: number;
+  /** The content between the tags: `source.slice(inner, innerEnd)` (empty when self-closing). */
+  inner: number;
+  innerEnd: number;
 }
 
 export interface TextNode {

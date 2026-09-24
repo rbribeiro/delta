@@ -313,7 +313,7 @@ Daí <change by="claude" date="2026-09-12" note="sinal trocado"><old>$x < 0$</ol
         <row>
           <column mono="true">status</column>
           <column mono="true">draft, heuristic, sketch, review, verified, formalized</column>
-          <column>Rascunho, heurístico (argumento não rigoroso), esboço (argumento delineado, detalhes faltando), em revisão, verificado, formalizado (checado por um assistente de provas). Numa demonstração, é a confiança que o grafo da prova propaga (veja <ref to="cmd-grafo">o grafo da prova</ref>); ali <c>draft</c> conta como <c>heuristic</c> e <c>review</c> como <c>sketch</c></column>
+          <column>Rascunho, heurístico (argumento não rigoroso), esboço (argumento delineado, detalhes faltando), em revisão, verificado, formalizado (checado por um assistente de provas). Numa demonstração, é a confiança que o grafo da prova propaga (veja <ref to="cmd-grafo">o grafo da prova</ref>); ali <c>draft</c> conta como <c>heuristic</c> e <c>review</c> como <c>sketch</c>. Use <ref to="cmd-verify">delta verify</ref> para marcar <c>verified</c>: a marca fica presa ao que foi conferido e vira "Desatualizado" se ele mudar</column>
         </row>
         <row>
           <column mono="true">status</column>

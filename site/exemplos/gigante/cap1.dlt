@@ -51,7 +51,7 @@
         mostrar que a probabilidade de extinção é a <em>menor</em> raiz de $f(q) = q$,
         e não a trivial $q = 1$.</obstacle>
       </lemma>
-      <proof of="lem:ponto-fixo" status="verified" by="claude" verified-by="rodrigo">
+      <proof of="lem:ponto-fixo" status="verified" by="claude" verified-by="rodrigo" against="a0d56f8c18f0">
         Seja $f(s) = \mathbb{E}\, s^{\xi} = e^{c(s-1)}$. Então
         $\mathbb{P}(Z_n = 0) = f^{(n)}(0)$, e essa sequência cresce até
         $q = \mathbb{P}(\text{extinção})$. Por continuidade, $f(q) = q$. Se $q'$ é

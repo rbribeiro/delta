@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { type FSWatcher, existsSync, mkdirSync, readdirSync, watch, writeFileSync } from "node:fs";
+import { type FSWatcher, existsSync, mkdirSync, readFileSync, readdirSync, watch, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { compileFile } from "./compiler/index";
@@ -9,7 +9,8 @@ import type { Diagnostic } from "./compiler/context";
 import { scaffoldFiles } from "./scaffold";
 import { installPackages } from "./install";
 import { filterReview, formatReviewText, reviewJson, type ReviewData, type ReviewFilter } from "./review-report";
-import type { ProofGraph } from "./compiler/graph";
+import { trustRank, type ProofGraph } from "./compiler/graph";
+import { setAttributes } from "./verify";
 import {
   frontierJson,
   frontierText,
@@ -47,7 +48,8 @@ const HELP = [
   "       delta show <id> [input] [--context] [--json]             # one result's source (+ its parents' statements)",
   "       delta uses <id> [input] [--json]                         # everything downstream of a result",
   "       delta graph [input] [--frontier] [--json]                # the proof graph (or the work available now)",
-  "       delta lint [input] [--json]                              # cycles, dangling refs, overclaimed results",
+  "       delta lint [input] [--json]                              # cycles, dangling refs, stale and overclaimed results",
+  "       delta verify <id> [input] [--by name] [--json]           # sign a result's proof as verified, pinned to a hash",
   "       delta create <project|package> <name>                    # scaffold a project/package",
   "       delta install <pkg> [<pkg>...] [--project <file>]        # npm install + add to project.toml",
   "       delta --version | -v                                     # print the version",
@@ -301,10 +303,12 @@ interface GraphArgs {
   flags: Set<string>;
 }
 
-function graphArgs(args: string[], allowed: string[]): GraphArgs {
-  const out: GraphArgs = { inputs: [], json: false, ids: [], flags: new Set() };
-  for (const arg of args) {
-    if (arg === "--json") out.json = true;
+function graphArgs(args: string[], allowed: string[], valued: string[] = []): GraphArgs & { values: Map<string, string> } {
+  const out = { inputs: [] as string[], json: false, ids: [] as string[], flags: new Set<string>(), values: new Map<string, string>() };
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (valued.includes(arg)) out.values.set(arg, args[++i] ?? usage());
+    else if (arg === "--json") out.json = true;
     else if (allowed.includes(arg)) out.flags.add(arg);
     else if (arg.startsWith("-")) usage();
     else if (arg.endsWith(".dlt") || arg.endsWith(".toml")) out.inputs.push(arg);
@@ -412,6 +416,56 @@ function lintMain(args: string[]): void {
   process.exit(findings.some((f) => f.severity === "error") ? 1 : 0);
 }
 
+/**
+ * `delta verify <id> [input] [--by name] [--json]` — a human's sign-off: the result's proof
+ * gets `status="verified"`, `verified-by` (with --by) and `against`, the hash of what was
+ * checked (its statement, its proof, and the statements it uses). Editing any of those
+ * later makes the verification stale. Verifying on top of an unverified result is allowed
+ * (the check is still true), with a warning: the effective status stays lower until the
+ * base is verified too.
+ */
+function verifyMain(args: string[]): void {
+  const a = graphArgs(args, [], ["--by"]);
+  if (a.ids.length !== 1) usage();
+  const id = a.ids[0];
+  const { graph } = loadGraph(a.inputs);
+  const node = graph.nodes.get(id);
+  const fail: (msg: string) => never = (msg) => {
+    console.error(`error: ${msg}`);
+    process.exit(1);
+  };
+  if (!node) fail(graph.byId.has(id) ? `"${id}" is not a result` : `no element with id "${id}"`);
+  if (node.tag === "definition") fail(`${id} is a definition: there is nothing to verify`);
+  const proof = node.proofs[0];
+  if (!proof) fail(`${id} has no proof yet`);
+  if (!proof.src) fail(`cannot locate the proof of ${id} in its source`);
+
+  const warnings: string[] = [];
+  if (node.proofs.length > 1) warnings.push(`${id} has ${node.proofs.length} proofs; verifying the first`);
+  for (const p of node.parents) {
+    const up = graph.nodes.get(p)!;
+    if (trustRank(up.eff) < trustRank("verified")) {
+      warnings.push(`${id} uses ${p}, which is ${up.eff}: its effective status stays ${up.eff} until that is verified`);
+    }
+  }
+
+  const attrs: Record<string, string> = { status: "verified" };
+  const by = a.values.get("--by");
+  if (by) attrs["verified-by"] = by;
+  attrs.against = node.hash;
+  const file = proof.src.file;
+  writeFileSync(file, setAttributes(readFileSync(file, "utf8"), proof.src, attrs));
+
+  for (const w of warnings) console.error(`warning: ${w}`);
+  const line = readFileSync(file, "utf8").slice(0, proof.src.start).split("\n").length;
+  print(
+    a.json,
+    () => ({ id, against: node.hash, ...(by ? { verifiedBy: by } : {}), file: rel(file), line, warnings }),
+    () => `verified ${id} against ${node.hash}${by ? ` by ${by}` : ""} (${rel(file)}:${line})\n`,
+  );
+  process.exit(0);
+}
+
 /** `delta create <project|package> <name>` — scaffold a starter directory (never clobbers). */
 function createMain(args: string[]): void {
   const [kind, name] = args;
@@ -478,6 +532,8 @@ function main(): void {
       return graphMain(args);
     case "lint":
       return lintMain(args);
+    case "verify":
+      return verifyMain(args);
     case "create":
       return createMain(args);
     case "install":

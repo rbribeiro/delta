@@ -39,6 +39,13 @@
   border-style: dashed;
   background: transparent;
 }
+/* A verification whose checked content changed since (see graph.ts): redo it. */
+.status-pill[data-status="stale"] {
+  color: var(--delta-warn);
+  border-style: dashed;
+  border-color: color-mix(in oklab, var(--delta-warn) 50%, transparent);
+  background: transparent;
+}
 .status-pill[data-status="review"] {
   color: var(--delta-warn);
   border-color: color-mix(in oklab, var(--delta-warn) 50%, transparent);

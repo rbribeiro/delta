@@ -24,7 +24,8 @@ const where = (loc: Loc, rel: Rel): string => `${rel(loc.file)}:${loc.line}`;
 const label = (n: GraphNode): string => `${n.tag}${n.num ? ` ${n.num}` : ""}`;
 const title = (n: { title: string }): string => (n.title ? ` (${n.title})` : "");
 /** `sketch` when own = eff, `sketch → open` when an ancestor pulls it down. */
-const trust = (n: GraphNode): string => (n.own === n.eff ? n.eff : `${n.own} → ${n.eff}`) + (n.cyclic ? ", cyclic" : "");
+const trust = (n: GraphNode): string =>
+  (n.own === n.eff ? n.eff : `${n.own} → ${n.eff}`) + (n.stale ? ", stale" : "") + (n.cyclic ? ", cyclic" : "");
 
 function nodeJson(n: GraphNode, rel: Rel): Record<string, unknown> {
   return {
@@ -39,6 +40,8 @@ function nodeJson(n: GraphNode, rel: Rel): Record<string, unknown> {
     parents: n.parents,
     children: n.children,
     ...(n.cyclic ? { cyclic: true } : {}),
+    ...(n.stale ? { stale: true } : {}),
+    hash: n.hash,
   };
 }
 
@@ -291,6 +294,26 @@ export function lintFindings(graph: ProofGraph, diagnostics: Diagnostic[], rel: 
       ...at(node.loc),
       ids: [node.id, ...blame],
     });
+  }
+  for (const n of graph.nodes.values()) {
+    const against = n.proofs[0]?.attrs.against;
+    if (n.stale) {
+      out.push({
+        severity: "error",
+        kind: "stale",
+        message: `${n.id}'s verification is stale: its statement, its proof, or a statement it uses changed since it was checked (against ${against}, now ${n.hash}); check it again and run delta verify ${n.id}`,
+        ...at(n.loc),
+        ids: [n.id],
+      });
+    } else if (n.tag !== "definition" && against === undefined && ["verified", "formalized"].includes(n.proofs[0]?.attrs.status ?? "")) {
+      out.push({
+        severity: "warning",
+        kind: "unpinned",
+        message: `${n.id} is marked ${n.proofs[0].attrs.status} by hand, with no against= hash, so a later edit cannot be detected; run delta verify ${n.id}`,
+        ...at(n.loc),
+        ids: [n.id],
+      });
+    }
   }
   for (const s of graph.strayProofs) {
     out.push({ severity: "warning", kind: "stray-proof", message: `<proof of="${s.of}"> does not prove a result in the graph`, ...at(s.loc), ids: [s.of] });
