@@ -75,6 +75,7 @@ describe("the declared pipeline", () => {
       "numbering/numberDocument",
       "numbering/buildIdMaps",
       "numbering/buildGraph",
+      "render/layoutProofMaps",
       "render/renderMath",
       "render/highlightCode",
       "render/buildProjectToc",

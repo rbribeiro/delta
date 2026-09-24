@@ -158,6 +158,13 @@ delta graph [input] [--frontier] [--json]      # the DAG, or the work available 
 delta lint [input] [--json]                    # cycles, dangling refs, overclaims; exit 1 on errors
 ```
 
+For readers, `<proof-map of="id"/>` (no `of`: the whole graph) draws a result's
+ancestors as a layered graph, laid out at compile time by `src/compiler/proofmap.ts`
+(bottom-up layers, dummy points on long edges, barycenter ordering). It emits an SVG of
+edges plus positioned `<pm-node>` boxes, each holding an ordinary `<ref>`, so the existing
+ref pass and runtime give every box its preview card and jump; boxes are coloured by
+effective trust (`proofmap.css`). No runtime code of its own.
+
 The input defaults to `./project.toml`. Formatting lives in `src/graph-report.ts`. Exact
 source slices come from spans the parser records (`ElementNode.src`, via the offset map
 `preprocessMapped` returns), and every position carries its file, so included files report

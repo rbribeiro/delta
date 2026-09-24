@@ -59,6 +59,11 @@
     <section id="sec:teorema">
       <title>O teorema</title>
 
+      O plano da prova, antes dos detalhes: o que o teorema usa, e o quanto cada peça
+      já está firme.
+
+      <proof-map of="thm:gigante"/>
+
       <theorem id="thm:gigante">
         <title>Componente gigante</title>
         Se $c > 1$, então com alta probabilidade $G(n, c/n)$ tem uma componente com

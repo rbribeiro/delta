@@ -34,6 +34,7 @@ import { resolveImports, resolvePack } from "./imports";
 import { resolveLineBreaks } from "./linebreaks";
 import { emit } from "./emit";
 import { buildGraph, type ProofGraph } from "./graph";
+import { layoutProofMaps } from "./proofmap";
 
 /**
  * THE pipeline, declared as data. Every compilation — one `.dlt` or a whole project — is a list
@@ -286,6 +287,11 @@ export const PIPELINE: Phase[] = [
     name: "render",
     what: "Resolve everything that needs the registry, and inline every asset.",
     steps: [
+      {
+        name: "layoutProofMaps",
+        what: "<proof-map> → an SVG of edges + positioned boxes, laid out from the graph. First, so the boxes' refs and title math go through the next steps.",
+        each: perFile((doc, ctx, s) => layoutProofMaps(doc, ctx, s.graph)),
+      },
       {
         name: "renderMath",
         what: "$…$ and math tags → KaTeX HTML (RawNode); \\ref{} inside math resolves against the registry. Sets mathUsed.",
