@@ -300,6 +300,20 @@ delta verify lem:acoplamento --by rodrigo
       verificada. Definições não se verificam, e um resultado sem demonstração dá erro.
     </subsection>
 
+    <subsection id="cmd-agent-guide">
+      <title>delta agent-guide</title>
+
+      Imprime, em inglês e numa tela, as convenções para um agente trabalhar numa prova
+      em Delta com uma pessoa: o modelo do grafo e da confiança, o fluxo (arquitetura,
+      <c>graph --frontier</c>, <c>show --context</c>, esboço, <c>lint</c>, verificação
+      humana), como escrever um resultado e os comandos. O mesmo fluxo, em português,
+      está em <ref to="colab-agentes">Trabalhando com um agente</ref>.
+
+      <code lang="bash" numbered="false">
+delta agent-guide
+      </code>
+    </subsection>
+
     <subsection id="cmd-create">
       <title>delta create</title>
 

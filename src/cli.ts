@@ -11,6 +11,7 @@ import { installPackages } from "./install";
 import { filterReview, formatReviewText, reviewJson, type ReviewData, type ReviewFilter } from "./review-report";
 import { trustRank, type ProofGraph } from "./compiler/graph";
 import { setAttributes } from "./verify";
+import { AGENT_GUIDE } from "./agent-guide";
 import {
   frontierJson,
   frontierText,
@@ -50,6 +51,7 @@ const HELP = [
   "       delta graph [input] [--frontier] [--json]                # the proof graph (or the work available now)",
   "       delta lint [input] [--json]                              # cycles, dangling refs, stale and overclaimed results",
   "       delta verify <id> [input] [--by name] [--json]           # sign a result's proof as verified, pinned to a hash",
+  "       delta agent-guide                                        # how an agent works on a proof here",
   "       delta create <project|package> <name>                    # scaffold a project/package",
   "       delta install <pkg> [<pkg>...] [--project <file>]        # npm install + add to project.toml",
   "       delta --version | -v                                     # print the version",
@@ -534,6 +536,10 @@ function main(): void {
       return lintMain(args);
     case "verify":
       return verifyMain(args);
+    case "agent-guide":
+      if (args.length) usage();
+      process.stdout.write(AGENT_GUIDE);
+      process.exit(0);
     case "create":
       return createMain(args);
     case "install":

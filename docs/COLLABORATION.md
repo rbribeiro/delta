@@ -192,6 +192,10 @@ correctly.
 
 ## Annotating a paper as an AI agent
 
+`delta agent-guide` prints the conventions below together with the proof workflow
+(architecture with `open` stubs → `graph --frontier` → `show --context` → a `sketch` →
+`lint` → a human's `delta verify`), in one screen. Its text lives in `src/agent-guide.ts`.
+
 If you are an agent editing a `.dlt` with a human:
 
 1. **Sign everything.** Put `by="<your member id>"` on every comment, task, change and
@@ -200,8 +204,8 @@ If you are an agent editing a `.dlt` with a human:
    insertions as `<change by="…">…</change>`, deletions as `<change by="…"><old>…</old></change>`.
    Never edit inside someone's `<old>`. Add a short `note` with the reason.
 3. **Mark what you write.** New proofs and lemmas start as `status="sketch"` (or `draft`);
-   set `status="review"` when you believe they are complete. Only a human sets
-   `verified` and `verified-by`.
+   set `status="review"` when you believe they are complete. Only a human verifies, with
+   `delta verify <id> --by <name>` (never write `verified`, `verified-by` or `against`).
 4. **Ask in place.** A doubt is a `<comment>` right where it applies (or `on="id"`); a
    request for work is a `<todo for="…">`. Resolve a thread by setting `status="resolved"`
    and, if useful, a `<reply>`; finish a task by setting `status="done"`.

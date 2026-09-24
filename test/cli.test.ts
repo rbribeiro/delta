@@ -149,3 +149,14 @@ describe("delta verify", () => {
     expect(deltaIn(dir, "verify", "nope").status).toBe(1);
   });
 });
+
+describe("delta agent-guide", () => {
+  it("prints the conventions, and names only commands the CLI has", () => {
+    const r = delta("agent-guide");
+    expect(r.status).toBe(0);
+    expect(r.stdout).toContain("delta graph --frontier --json");
+    expect(r.stdout).toContain("delta show <id> --context");
+    const help = delta("--help").stdout;
+    for (const [, cmd] of r.stdout.matchAll(/delta ([a-z-]+)/g)) expect(help).toContain(`delta ${cmd}`);
+  });
+});
