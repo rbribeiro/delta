@@ -14,11 +14,11 @@ delta-heuristic {
   display: block;
 }
 
-/* -- Aid colours: one hue per kind, shared by its dot and its drawer --- */
-[data-aid="intuition"] { --aid-hue: var(--delta-accent-ink); }
-[data-aid="strategy"]  { --aid-hue: var(--delta-ink-soft); }
-[data-aid="obstacle"]  { --aid-hue: var(--delta-warn); }
-[data-aid="heuristic"] { --aid-hue: var(--delta-mute); }
+/* -- Aid colours: one per kind (tokens in base.css), shared by its dot and its drawer */
+[data-aid="intuition"] { --aid-hue: var(--delta-aid-intuition); }
+[data-aid="strategy"]  { --aid-hue: var(--delta-aid-strategy); }
+[data-aid="obstacle"]  { --aid-hue: var(--delta-aid-obstacle); }
+[data-aid="heuristic"] { --aid-hue: var(--delta-aid-heuristic); }
 
 /* -- Dots: on the box's top border, opposite the label ---------------- */
 .lens-dots {

@@ -94,7 +94,7 @@ delta-hyp-uses { display: none; }
   color: var(--delta-ink-soft);
 }
 delta-hyp-used, delta-hyp-needed, delta-hyp-unused { display: block; }
-delta-hyp-unused { color: var(--delta-warn); }
+delta-hyp-unused { color: var(--delta-proof-alert); }
 .hyp-uses-label { color: var(--delta-mute); }
 delta-hyp-used > :not(.hyp-uses-label) + :not(.hyp-uses-label)::before,
 delta-hyp-needed > :not(.hyp-uses-label) + :not(.hyp-uses-label)::before { content: ", "; }

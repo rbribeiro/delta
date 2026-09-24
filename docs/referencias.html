@@ -142,6 +142,26 @@
   --delta-env-tag-ink:     var(--delta-accent-ink);
   --delta-env-tag-border:  var(--delta-rule);
 
+  /* Proof TRUST — one colour per level of the order open < heuristic < sketch <
+     verified < formalized. The proof map's boxes and legend and the status pills of
+     those levels all read these, so a theme recolours trust everywhere at once. They
+     default to the semantic palette (warn → ok), so dark mode follows on its own. */
+  --delta-trust-open:       var(--delta-mute);
+  --delta-trust-heuristic:  var(--delta-warn);
+  --delta-trust-sketch:     color-mix(in oklab, var(--delta-warn) 55%, var(--delta-ok));
+  --delta-trust-verified:   var(--delta-ok);
+  --delta-trust-formalized: var(--delta-ok);
+  /* Something in a proof needs attention: a stale verification, a cycle, a result
+     resting on something weaker than itself, an unused hypothesis. */
+  --delta-proof-alert:      var(--delta-warn);
+
+  /* Reader AIDS on a result — the dot and the drawer rule of each kind
+     (components/understanding.css). */
+  --delta-aid-intuition:    var(--delta-accent-ink);
+  --delta-aid-strategy:     var(--delta-ink-soft);
+  --delta-aid-obstacle:     var(--delta-warn);
+  --delta-aid-heuristic:    var(--delta-mute);
+
   /* The quiet figures: heading numbers and equation numbers. One token, because
      they are the same typographic gesture — a number set back from its content. */
   --delta-num:          var(--delta-mute);
@@ -2243,16 +2263,17 @@ delta-pm-canvas {
   stroke: none;
 }
 .pm-edges path.pm-back {
-  stroke: var(--delta-warn);
+  stroke: var(--delta-proof-alert);
   stroke-dasharray: 4 3;
 }
 
-/* -- Trust colours: one tint per status, shared by boxes and legend keys -- */
-[data-eff="open"]       { --pm-hue: var(--delta-mute); --pm-fill: 0%; }
-[data-eff="heuristic"]  { --pm-hue: var(--delta-warn); --pm-fill: 10%; }
-[data-eff="sketch"]     { --pm-hue: color-mix(in oklab, var(--delta-warn) 55%, var(--delta-ok)); --pm-fill: 12%; }
-[data-eff="verified"]   { --pm-hue: var(--delta-ok); --pm-fill: 12%; }
-[data-eff="formalized"] { --pm-hue: var(--delta-ok); --pm-fill: 26%; }
+/* -- Trust colours (tokens in base.css), shared by boxes and legend keys. The fill
+   strength is this component's own: formalized reads as a deeper verified. ------- */
+[data-eff="open"]       { --pm-hue: var(--delta-trust-open);       --pm-fill: 0%; }
+[data-eff="heuristic"]  { --pm-hue: var(--delta-trust-heuristic);  --pm-fill: 10%; }
+[data-eff="sketch"]     { --pm-hue: var(--delta-trust-sketch);     --pm-fill: 12%; }
+[data-eff="verified"]   { --pm-hue: var(--delta-trust-verified);   --pm-fill: 12%; }
+[data-eff="formalized"] { --pm-hue: var(--delta-trust-formalized); --pm-fill: 26%; }
 
 delta-pm-node {
   position: absolute;
@@ -2271,9 +2292,9 @@ delta-pm-node {
 }
 /* Unproved results are drawn hollow; a cycle is flagged in the warning colour. */
 delta-pm-node[data-eff="open"] { border-style: dashed; box-shadow: none; }
-delta-pm-node[data-cyclic="true"] { border-color: var(--delta-warn); }
+delta-pm-node[data-cyclic="true"] { border-color: var(--delta-proof-alert); }
 /* A verification whose checked content changed: it needs checking again. */
-delta-pm-node[data-stale="true"] { border-color: var(--delta-warn); border-style: dashed; }
+delta-pm-node[data-stale="true"] { border-color: var(--delta-proof-alert); border-style: dashed; }
 /* Own trust above effective: the proof is fine, something it uses is not. A small dot says so. */
 delta-pm-node[data-own]::after {
   content: "";
@@ -2283,7 +2304,7 @@ delta-pm-node[data-own]::after {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--delta-warn);
+  background: var(--delta-proof-alert);
 }
 
 delta-pm-node .xref {
@@ -2435,7 +2456,7 @@ delta-hyp-uses { display: none; }
   color: var(--delta-ink-soft);
 }
 delta-hyp-used, delta-hyp-needed, delta-hyp-unused { display: block; }
-delta-hyp-unused { color: var(--delta-warn); }
+delta-hyp-unused { color: var(--delta-proof-alert); }
 .hyp-uses-label { color: var(--delta-mute); }
 delta-hyp-used > :not(.hyp-uses-label) + :not(.hyp-uses-label)::before,
 delta-hyp-needed > :not(.hyp-uses-label) + :not(.hyp-uses-label)::before { content: ", "; }
@@ -3146,22 +3167,29 @@ delta-sidenote { display: block; }
   white-space: nowrap;
 }
 .status-pill .who { font-size: 10.5px; }
-.status-pill[data-status="draft"],
-.status-pill[data-status="heuristic"],
-.status-pill[data-status="sketch"] {
+.status-pill[data-status="draft"] {
   color: var(--delta-mute);
   border-style: dashed;
 }
+/* The trust levels read the trust tokens (base.css), like the proof map does. */
+.status-pill[data-status="heuristic"],
+.status-pill[data-status="sketch"] {
+  color: var(--pill-trust);
+  border-style: dashed;
+  border-color: color-mix(in oklab, var(--pill-trust) 50%, transparent);
+}
+.status-pill[data-status="heuristic"] { --pill-trust: var(--delta-trust-heuristic); }
+.status-pill[data-status="sketch"]    { --pill-trust: var(--delta-trust-sketch); }
 .status-pill[data-status="open"] {
-  color: var(--delta-accent-ink);
+  color: var(--delta-trust-open);
   border-style: dashed;
   background: transparent;
 }
 /* A verification whose checked content changed since (see graph.ts): redo it. */
 .status-pill[data-status="stale"] {
-  color: var(--delta-warn);
+  color: var(--delta-proof-alert);
   border-style: dashed;
-  border-color: color-mix(in oklab, var(--delta-warn) 50%, transparent);
+  border-color: color-mix(in oklab, var(--delta-proof-alert) 50%, transparent);
   background: transparent;
 }
 .status-pill[data-status="review"] {
@@ -3171,10 +3199,12 @@ delta-sidenote { display: block; }
 }
 .status-pill[data-status="verified"],
 .status-pill[data-status="formalized"] {
-  color: var(--delta-ok);
-  border-color: color-mix(in oklab, var(--delta-ok) 50%, transparent);
-  background: color-mix(in oklab, var(--delta-ok) 10%, var(--delta-paper));
+  color: var(--pill-trust);
+  border-color: color-mix(in oklab, var(--pill-trust) 50%, transparent);
+  background: color-mix(in oklab, var(--pill-trust) 10%, var(--delta-paper));
 }
+.status-pill[data-status="verified"]   { --pill-trust: var(--delta-trust-verified); }
+.status-pill[data-status="formalized"] { --pill-trust: var(--delta-trust-formalized); }
 .status-check { color: var(--delta-ok); font-size: 1.15em; }
 
 /* In a label the pill follows the text. */
@@ -4054,11 +4084,11 @@ delta-heuristic {
   display: block;
 }
 
-/* -- Aid colours: one hue per kind, shared by its dot and its drawer --- */
-[data-aid="intuition"] { --aid-hue: var(--delta-accent-ink); }
-[data-aid="strategy"]  { --aid-hue: var(--delta-ink-soft); }
-[data-aid="obstacle"]  { --aid-hue: var(--delta-warn); }
-[data-aid="heuristic"] { --aid-hue: var(--delta-mute); }
+/* -- Aid colours: one per kind (tokens in base.css), shared by its dot and its drawer */
+[data-aid="intuition"] { --aid-hue: var(--delta-aid-intuition); }
+[data-aid="strategy"]  { --aid-hue: var(--delta-aid-strategy); }
+[data-aid="obstacle"]  { --aid-hue: var(--delta-aid-obstacle); }
+[data-aid="heuristic"] { --aid-hue: var(--delta-aid-heuristic); }
 
 /* -- Dots: on the box's top border, opposite the label ---------------- */
 .lens-dots {

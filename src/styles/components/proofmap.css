@@ -35,16 +35,17 @@ delta-pm-canvas {
   stroke: none;
 }
 .pm-edges path.pm-back {
-  stroke: var(--delta-warn);
+  stroke: var(--delta-proof-alert);
   stroke-dasharray: 4 3;
 }
 
-/* -- Trust colours: one tint per status, shared by boxes and legend keys -- */
-[data-eff="open"]       { --pm-hue: var(--delta-mute); --pm-fill: 0%; }
-[data-eff="heuristic"]  { --pm-hue: var(--delta-warn); --pm-fill: 10%; }
-[data-eff="sketch"]     { --pm-hue: color-mix(in oklab, var(--delta-warn) 55%, var(--delta-ok)); --pm-fill: 12%; }
-[data-eff="verified"]   { --pm-hue: var(--delta-ok); --pm-fill: 12%; }
-[data-eff="formalized"] { --pm-hue: var(--delta-ok); --pm-fill: 26%; }
+/* -- Trust colours (tokens in base.css), shared by boxes and legend keys. The fill
+   strength is this component's own: formalized reads as a deeper verified. ------- */
+[data-eff="open"]       { --pm-hue: var(--delta-trust-open);       --pm-fill: 0%; }
+[data-eff="heuristic"]  { --pm-hue: var(--delta-trust-heuristic);  --pm-fill: 10%; }
+[data-eff="sketch"]     { --pm-hue: var(--delta-trust-sketch);     --pm-fill: 12%; }
+[data-eff="verified"]   { --pm-hue: var(--delta-trust-verified);   --pm-fill: 12%; }
+[data-eff="formalized"] { --pm-hue: var(--delta-trust-formalized); --pm-fill: 26%; }
 
 delta-pm-node {
   position: absolute;
@@ -63,9 +64,9 @@ delta-pm-node {
 }
 /* Unproved results are drawn hollow; a cycle is flagged in the warning colour. */
 delta-pm-node[data-eff="open"] { border-style: dashed; box-shadow: none; }
-delta-pm-node[data-cyclic="true"] { border-color: var(--delta-warn); }
+delta-pm-node[data-cyclic="true"] { border-color: var(--delta-proof-alert); }
 /* A verification whose checked content changed: it needs checking again. */
-delta-pm-node[data-stale="true"] { border-color: var(--delta-warn); border-style: dashed; }
+delta-pm-node[data-stale="true"] { border-color: var(--delta-proof-alert); border-style: dashed; }
 /* Own trust above effective: the proof is fine, something it uses is not. A small dot says so. */
 delta-pm-node[data-own]::after {
   content: "";
@@ -75,7 +76,7 @@ delta-pm-node[data-own]::after {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--delta-warn);
+  background: var(--delta-proof-alert);
 }
 
 delta-pm-node .xref {

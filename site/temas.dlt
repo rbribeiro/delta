@@ -97,6 +97,41 @@
 }
       </code>
 
+      Algumas cores têm significado, e cada significado tem a sua variável. Todas partem
+      da paleta (<c>--delta-ok</c>, <c>--delta-warn</c>, <c>--delta-mute</c>…), então
+      acompanham o modo escuro sozinhas. Um tema que as redefine muda a cor em todo lugar
+      onde aquele significado aparece.
+
+      <table numbered="false">
+        <header>
+          <column>Variáveis</column>
+          <column>Onde aparecem</column>
+        </header>
+        <row>
+          <column mono="true">--delta-trust-open, -heuristic, -sketch, -verified, -formalized</column>
+          <column>A confiança de uma prova: as caixas e a legenda do mapa da prova e as etiquetas desses estados</column>
+        </row>
+        <row>
+          <column mono="true">--delta-proof-alert</column>
+          <column>O que pede atenção numa prova: verificação desatualizada, ciclo, resultado apoiado em algo mais fraco, hipótese sem uso</column>
+        </row>
+        <row>
+          <column mono="true">--delta-aid-intuition, -strategy, -obstacle, -heuristic</column>
+          <column>Os pontinhos e a gaveta de intuição, estratégia, obstáculo e heurística</column>
+        </row>
+        <row>
+          <column mono="true">--delta-tone-theorem, -definition, -example, -remark, -exercise</column>
+          <column>O rótulo de cada família de ambientes</column>
+        </row>
+      </table>
+
+      <code lang="css" numbered="false">
+:root {
+  --delta-trust-sketch:  #b7791f;   /* esboços em âmbar */
+  --delta-aid-intuition: #2b6cb0;   /* intuição em azul */
+}
+      </code>
+
       <box type="warning">
         <title>O seu CSS vence tudo</title>
         A folha do autor é a última a ser aplicada, acima inclusive do CSS da

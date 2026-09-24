@@ -133,6 +133,26 @@
   --delta-env-tag-ink:     var(--delta-accent-ink);
   --delta-env-tag-border:  var(--delta-rule);
 
+  /* Proof TRUST — one colour per level of the order open < heuristic < sketch <
+     verified < formalized. The proof map's boxes and legend and the status pills of
+     those levels all read these, so a theme recolours trust everywhere at once. They
+     default to the semantic palette (warn → ok), so dark mode follows on its own. */
+  --delta-trust-open:       var(--delta-mute);
+  --delta-trust-heuristic:  var(--delta-warn);
+  --delta-trust-sketch:     color-mix(in oklab, var(--delta-warn) 55%, var(--delta-ok));
+  --delta-trust-verified:   var(--delta-ok);
+  --delta-trust-formalized: var(--delta-ok);
+  /* Something in a proof needs attention: a stale verification, a cycle, a result
+     resting on something weaker than itself, an unused hypothesis. */
+  --delta-proof-alert:      var(--delta-warn);
+
+  /* Reader AIDS on a result — the dot and the drawer rule of each kind
+     (components/understanding.css). */
+  --delta-aid-intuition:    var(--delta-accent-ink);
+  --delta-aid-strategy:     var(--delta-ink-soft);
+  --delta-aid-obstacle:     var(--delta-warn);
+  --delta-aid-heuristic:    var(--delta-mute);
+
   /* The quiet figures: heading numbers and equation numbers. One token, because
      they are the same typographic gesture — a number set back from its content. */
   --delta-num:          var(--delta-mute);

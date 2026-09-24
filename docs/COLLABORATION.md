@@ -185,6 +185,12 @@ breaks="hyp-id">`s) as a `<hyp-uses>` child shown only in the hypothesis's own p
 `lint` warns on unused hypotheses and unproved steps, and errors on a counterexample of an
 unknown hypothesis.
 
+Colours are semantic tokens in `base.css`, never literals or per-component choices:
+`--delta-trust-{open,heuristic,sketch,verified,formalized}` (proof map, legend, trust
+pills), `--delta-proof-alert` (stale, cycles, weaker base, unused hypotheses) and
+`--delta-aid-{intuition,strategy,obstacle,heuristic}` (the aid dots and drawer). They
+default to the palette, so dark mode and themes follow.
+
 The input defaults to `./project.toml`. Formatting lives in `src/graph-report.ts`. Exact
 source slices come from spans the parser records (`ElementNode.src`, via the offset map
 `preprocessMapped` returns), and every position carries its file, so included files report
