@@ -13,6 +13,7 @@
 
 import { t } from "../i18n";
 import { popover } from "../utils";
+import { unfoldAncestors } from "./shared";
 
 // Small "jump to" arrow for the pop-over's go-to button (sized by reference.css).
 const XREF_GO_ICON =
@@ -30,6 +31,7 @@ interface RefTarget {
 
 /** "Theorem 1.2" (localized kind + number), or just the kind for an unnumbered target. */
 function refLabel(kind: string, num: string): string {
+  if (kind === "hyp") return `(${num})`; // hypotheses read "(H1)", as in the statement
   const name = t(kind, kind.charAt(0).toUpperCase() + kind.slice(1));
   return num ? `${name} ${num}` : name;
 }
@@ -92,6 +94,7 @@ export function wireRefPopover(trigger: HTMLElement, { to, num, kind, href }: Re
     }
     const target = document.getElementById(to);
     if (!target) return;
+    unfoldAncestors(target); // a step inside a folded proof
     target.scrollIntoView({ block: "center", behavior: "smooth" });
     target.classList.add("is-xref-target");
     target.addEventListener("animationend", () => target.classList.remove("is-xref-target"), {

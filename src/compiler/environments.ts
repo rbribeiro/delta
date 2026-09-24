@@ -31,6 +31,7 @@ export const ENVIRONMENTS: Record<string, EnvironmentSpec> = {
   conjecture: { counter: "conjecture", prefixWith: "section" },
   definition: { counter: "definition", prefixWith: "section" },
   example: { counter: "example", prefixWith: "section" },
+  counterexample: { counter: "counterexample", prefixWith: "section" },
   claim: { counter: "claim", prefixWith: "section" },
   observation: { counter: "observation", prefixWith: "section" },
   remark: { counter: "remark", prefixWith: "section" },
@@ -63,6 +64,6 @@ export const ENVIRONMENTS: Record<string, EnvironmentSpec> = {
  */
 export const COUNTER_RESETS: Record<string, string[]> = {
   chapter: ["section"],
-  section: ["subsection", "subsubsection", "theorem", "proposition", "lemma", "corollary", "conjecture", "definition", "example", "claim", "observation", "exercise", "problem", "equation", "figure", "video", "audio", "remark", "table", "interactive", "code"],
+  section: ["subsection", "subsubsection", "theorem", "proposition", "lemma", "corollary", "conjecture", "definition", "example", "counterexample", "claim", "observation", "exercise", "problem", "equation", "figure", "video", "audio", "remark", "table", "interactive", "code"],
   subsection: ["subsubsection"],
 };

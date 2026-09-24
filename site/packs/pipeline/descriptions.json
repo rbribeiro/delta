@@ -18,6 +18,7 @@
     "expandAnimated": "Só em apresentações: animated=\"true\" vira reveal=\"true\" em cada filho.",
     "expandCover": "Só em apresentações: <cover> vira <slide cover=\"true\">.",
     "resolveCollab": "Vocabulário de comment/todo/change/status: escreve padrões, avisa sobre valores desconhecidos e confere by/for contra a equipe.",
+    "structureProofs": "<step> numerados 1, 2.1, … (com id para quem não tem) e com a prova fechada; <hyp> numeradas H1, H2, … por resultado; o lugar de cada um é conferido.",
     "checkUnderstanding": "<intuition>/<strategy>/<obstacle>/<heuristic>: erro se estiverem fora do lugar ou tiverem id; todas começam fechadas.",
     "summarizeFinal": "Só com --final: um único aviso com o que a compilação final deixou pendente.",
     "loadBibliography": "Os <paper> e o arquivo .ref vão para o mapa de artigos compartilhado; o <bibliography> é esvaziado (o título fica).",

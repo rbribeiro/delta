@@ -13,11 +13,28 @@ import { memberChip } from "./collab";
 export function flashTarget(id: string): void {
   const target = document.getElementById(id);
   if (!target) return;
+  unfoldAncestors(target);
   target.scrollIntoView({ block: "center", behavior: "smooth" });
   target.classList.add("is-xref-target");
   target.addEventListener("animationend", () => target.classList.remove("is-xref-target"), {
     once: true,
   });
+}
+
+/**
+ * Folds or unfolds a host `applyCollapsible` wired, keeping its toggle's `aria-expanded` in
+ * step. For controls that fold many hosts at once (the proof's step levels).
+ */
+export function setFolded(host: Element, folded: boolean): void {
+  host.classList.toggle("is-collapsed", folded);
+  host.querySelector(":scope > .collapse-toggle")?.setAttribute("aria-expanded", String(!folded));
+}
+
+/** Unfolds every folded ancestor of `el`, so a jump to a step inside a folded proof lands on it. */
+export function unfoldAncestors(el: Element): void {
+  for (let at = el.parentElement?.closest(".is-collapsed"); at; at = at.parentElement?.closest(".is-collapsed")) {
+    setFolded(at, false);
+  }
 }
 
 /**
@@ -74,10 +91,7 @@ export function applyCollapsible(host: HTMLElement, label: HTMLElement): void {
   label.setAttribute("role", "button");
   label.tabIndex = 0;
 
-  const apply = (c: boolean): void => {
-    host.classList.toggle("is-collapsed", c);
-    label.setAttribute("aria-expanded", String(!c));
-  };
+  const apply = (c: boolean): void => setFolded(host, c);
   apply(collapsed);
 
   const flip = (): void => apply(!host.classList.contains("is-collapsed"));

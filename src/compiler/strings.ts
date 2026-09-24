@@ -107,6 +107,16 @@ export const STRINGS: Record<string, Record<string, string>> = {
     obstacle: "Obstacle",
     heuristic: "Heuristic",
     notRigorous: "not rigorous",
+    // structured proofs and hypotheses (<step>, <hyp>, <counterexample>)
+    step: "Step",
+    hyp: "Hypothesis",
+    counterexample: "Counterexample",
+    usedIn: "Used in",
+    notUsed: "Not used in the proof",
+    theProof: "the proof",
+    brokenBy: "Needed, see",
+    stepLevel: "Steps",
+    stepLevelHint: "Expand the proof to this level",
   },
   pt: {
     theorem: "Teorema",
@@ -204,6 +214,15 @@ export const STRINGS: Record<string, Record<string, string>> = {
     obstacle: "Obstáculo",
     heuristic: "Heurística",
     notRigorous: "não rigoroso",
+    step: "Passo",
+    hyp: "Hipótese",
+    counterexample: "Contraexemplo",
+    usedIn: "Usada em",
+    notUsed: "Não usada na demonstração",
+    theProof: "a demonstração",
+    brokenBy: "Necessária, veja",
+    stepLevel: "Passos",
+    stepLevelHint: "Abrir a demonstração até este nível",
   },
 };
 

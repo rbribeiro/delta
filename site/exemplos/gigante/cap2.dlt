@@ -66,7 +66,8 @@
 
       <theorem id="thm:gigante">
         <title>Componente gigante</title>
-        Se $c > 1$, então com alta probabilidade $G(n, c/n)$ tem uma componente com
+        Suponha <hyp id="hyp:super">$c > 1$</hyp>. Então com alta probabilidade
+        $G(n, c/n)$ tem uma componente com
         $(\rho + o(1))\, n$ vértices, onde $\rho = \rho(c)$ é dado por
         <ref to="lem:ponto-fixo"/>. Todas as outras componentes têm $O(\log n)$ vértices.
         <intuition>A exploração a partir de um vértice se parece com uma árvore de
@@ -83,18 +84,77 @@
         concluir.</obstacle>
       </theorem>
       <proof of="thm:gigante" status="sketch" by="claude">
-        Chame $v$ de <em>grande</em> se $|C(v)| \ge n^{2/3}$. Por
-        <ref to="lem:acoplamento"/> com $k = K \log n$ e <ref to="lem:ponto-fixo"/>,
-        $\mathbb{P}(|C(v)| \ge K \log n) = \rho + o(1)$. Por <ref to="lem:sem-meio"/>, isso
-        é também $\mathbb{P}(v \text{ grande}) + o(1)$. Logo o número $Y$ de vértices
-        grandes tem $\mathbb{E}\,Y = (\rho + o(1))n$.
-        <heuristic>Para dois vértices $u$ e $v$, as explorações de $C(u)$ e $C(v)$ quase
-        não se tocam enquanto ambas são pequenas. Por isso os eventos "$u$ grande" e
-        "$v$ grande" são quase independentes, e $Y$ se concentra.</heuristic>
-        Um argumento de segundo momento dá $Y = (\rho + o(1))n$ com alta probabilidade.
-        Por <ref to="lem:sprinkling"/>, aplicado com $c - \varepsilon$ no lugar de $c$ e
-        com $\varepsilon \to 0$, os vértices grandes estão todos numa só componente.
+        Chame $v$ de <em>grande</em> se $|C(v)| \ge n^{2/3}$, e seja $Y$ o número de
+        vértices grandes.
+
+        <step id="st:local">
+          <claim>$\mathbb{P}(|C(v)| \ge K \log n) = \rho + o(1)$ para cada vértice $v$.</claim>
+          <proof>
+            Por <ref to="lem:acoplamento"/> com $k = K \log n$, a exploração de $C(v)$ fica
+            entre dois processos de Galton–Watson com prole binomial, e ambos convergem
+            para prole $\mathrm{Poisson}(c)$. A probabilidade de sobreviver $K \log n$
+            gerações converge para $\rho$ por <ref to="lem:ponto-fixo"/>.
+          </proof>
+        </step>
+
+        <step id="st:grandes">
+          <claim>Com alta probabilidade, $Y = (\rho + o(1))\, n$.</claim>
+          <proof>
+            <step>
+              <claim>$\mathbb{E}\, Y = (\rho + o(1))\, n$.</claim>
+              <proof>
+                Por <ref to="lem:sem-meio"/>, que vale sob <ref to="hyp:super"/>, uma
+                componente com pelo menos $K \log n$ vértices tem pelo menos $n^{2/3}$ com
+                alta probabilidade. Logo $\mathbb{P}(v \text{ grande}) = \rho + o(1)$ por
+                <ref to="st:local"/>, e basta somar sobre $v$.
+              </proof>
+            </step>
+            <step>
+              <claim>$\operatorname{Var} Y = o(n^2)$.</claim>
+              <proof>
+                <heuristic>Para dois vértices $u$ e $v$, as explorações de $C(u)$ e $C(v)$
+                quase não se tocam enquanto ambas são pequenas. Por isso os eventos "$u$
+                grande" e "$v$ grande" são quase independentes.</heuristic>
+                Explore $C(u)$ até $K \log n$ vértices; condicionado a isso, a exploração de
+                $C(v)$ no grafo restante é acoplada como em <ref to="lem:acoplamento"/> com
+                $n$ trocado por $n - K\log n$. Então
+                $\mathbb{P}(u, v \text{ grandes}) = \rho^2 + o(1)$.
+              </proof>
+            </step>
+            <step>
+              <claim>Logo $Y = (\rho + o(1))\, n$ com alta probabilidade.</claim>
+              <proof>Pela desigualdade de Chebyshev, com os dois passos anteriores.</proof>
+            </step>
+          </proof>
+        </step>
+
+        <step id="st:juntar">
+          <claim>Com alta probabilidade, os vértices grandes estão todos numa só componente.</claim>
+          <proof>
+            Escolha $\varepsilon > 0$ com $c - \varepsilon > 1$, possível por
+            <ref to="hyp:super"/>. Aplique os passos anteriores a $G(n, (c - \varepsilon)/n)$ e
+            depois <ref to="lem:sprinkling"/> para chegar a $G(n, c/n)$. Faça
+            $\varepsilon \to 0$: como $\rho$ é contínua, o tamanho da componente é
+            $(\rho + o(1))\, n$.
+          </proof>
+        </step>
+
+        <step id="st:pequenas">
+          <claim>Todas as outras componentes têm $O(\log n)$ vértices.</claim>
+          <proof>
+            Uma componente que não é a gigante não tem vértice grande, logo tem menos de
+            $n^{2/3}$ vértices, e então menos de $K \log n$ por <ref to="lem:sem-meio"/>.
+          </proof>
+        </step>
       </proof>
+
+      <counterexample breaks="hyp:super">
+        <title>O caso subcrítico</title>
+        Se $c < 1$, a exploração de cada componente é dominada por um processo de
+        Galton–Watson com média $c < 1$, que morre depressa: com alta probabilidade
+        todas as componentes têm $O(\log n)$ vértices. Sem <ref to="hyp:super"/> não há
+        componente gigante, e $\rho(c) = 0$ por <ref to="lem:ponto-fixo"/>.
+      </counterexample>
     </section>
   </chapter>
 </document>

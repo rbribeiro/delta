@@ -174,6 +174,17 @@ with aids, titles, comments and todos cut and whitespace collapsed. A mismatch m
 verification stale: own trust drops to sketch, the proof's `status` is shown as `stale`,
 and `delta lint` reports it as an error. `verified` without `against` is a lint warning.
 
+Structured proofs: `<step>` (inside a `<proof>`) holds a `<claim>` and usually its own
+`<proof>`; `structure.ts` numbers steps 1, 2, 2.1…, ids the ones without (`<result>-step-2.1`),
+folds each step's proof, and renames the step's `<claim>` to `<step-claim>` so the numbered
+`<claim>` environment is untouched. The runtime adds a "Steps 1 2 … All" level control to
+the proof. `<hyp>` in a statement is numbered H1, H2… per result (a ref reads "(H1)"); refs
+to hypotheses are not edges: the graph records, per hypothesis, the steps of the owner's
+proof that use it, and `annotateHypotheses` injects that (plus `<counterexample
+breaks="hyp-id">`s) as a `<hyp-uses>` child shown only in the hypothesis's own preview.
+`lint` warns on unused hypotheses and unproved steps, and errors on a counterexample of an
+unknown hypothesis.
+
 The input defaults to `./project.toml`. Formatting lives in `src/graph-report.ts`. Exact
 source slices come from spans the parser records (`ElementNode.src`, via the offset map
 `preprocessMapped` returns), and every position carries its file, so included files report

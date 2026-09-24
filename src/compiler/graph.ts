@@ -12,7 +12,9 @@ import { AID_TAGS, RESULT_TAGS } from "./understanding";
  * - a `<ref to="u">` (or `\ref{u}` / `\eqref{u}` in math) inside the statement or the
  *   `<proof of>` of v gives the edge u → v. A ref to an equation or figure counts for
  *   the result that contains it. Refs inside `<intuition>`, `<strategy>`, `<obstacle>`
- *   and `<heuristic>` are narrative, not reasoning, and give no edge;
+ *   and `<heuristic>` are narrative, not reasoning, and give no edge. Refs inside a
+ *   proof's `<step>`s count for the result the proof proves. A ref to a hypothesis
+ *   (`<hyp>`) is not an edge either: it records where the hypothesis is used;
  * - trust is ordered `open < heuristic < sketch < verified < formalized`. A node's own
  *   trust is its proof's status (`open` with no proof; definitions are `verified`), and
  *   its effective trust is the weakest of its own and its parents' effective trust: a
@@ -83,6 +85,20 @@ export interface OutlineEntry {
   children: OutlineEntry[];
 }
 
+/** A `<hyp>` in a result's statement, and where the result's proof uses it. */
+export interface Hypothesis {
+  id: string;
+  num: string;
+  /** The result whose statement it is in. */
+  owner: string;
+  el: ElementNode;
+  loc: Loc;
+  /** Each place the owner's proof refs it: the innermost `<step>`, or the proof itself. */
+  uses: ElementNode[];
+  /** `<counterexample breaks="id">`s: why the hypothesis is needed. */
+  counterexamples: ElementNode[];
+}
+
 export interface ProofGraph {
   /** In document order (input files in order). */
   nodes: Map<string, GraphNode>;
@@ -98,6 +114,14 @@ export interface ProofGraph {
   byId: Map<string, ElementNode>;
   /** file → original text, for exact source slices. */
   sources: Map<string, string>;
+  /** Every hypothesis with an id, in document order. */
+  hypotheses: Map<string, Hypothesis>;
+  /** `<counterexample breaks>` naming something that is not a hypothesis. */
+  badBreaks: { breaks: string; loc: Loc }[];
+  /** For every id inside a result or its proof (steps, equations, hypotheses): that result. */
+  owners: Map<string, string>;
+  /** Steps with a claim but no proof of their own. */
+  unprovedSteps: { id: string; num: string; owner?: string; loc: Loc }[];
 }
 
 export interface GraphInput {
@@ -121,13 +145,18 @@ export function buildGraph(files: GraphInput[], registry: Map<string, LabelEntry
     outline: [],
     byId: new Map(),
     sources: new Map(),
+    hypotheses: new Map(),
+    owners: new Map(),
+    badBreaks: [],
+    unprovedSteps: [],
   };
   for (const f of files) for (const [file, text] of f.ctx.sources) graph.sources.set(file, text);
   const locOf = locator(graph.sources);
 
   // Pass 1: nodes, proofs, the outline, and for every id the result that owns it.
   const proofsOf = new Map<string, ElementNode[]>();
-  const ownerOf = new Map<string, string>();
+  const ownerOf = graph.owners;
+  const counterexamples: ElementNode[] = [];
   const collect = (el: ElementNode, into: OutlineEntry[], owner: string | undefined, fallback: string): void => {
     if (OPAQUE.has(el.tag)) return;
     const id = el.attrs.id;
@@ -163,6 +192,12 @@ export function buildGraph(files: GraphInput[], registry: Map<string, LabelEntry
       list.push(el);
       proofsOf.set(el.attrs.of, list);
       owner = el.attrs.of;
+    } else if (el.tag === "hyp" && id !== undefined && owner !== undefined && !graph.hypotheses.has(id)) {
+      graph.hypotheses.set(id, { id, num: el.attrs.num ?? "", owner, el, loc: locOf(el, fallback), uses: [], counterexamples: [] });
+    } else if (el.tag === "counterexample" && el.attrs.breaks) {
+      counterexamples.push(el);
+    } else if (el.tag === "step" && !el.children.some((c) => c.type === "element" && c.tag === "proof")) {
+      graph.unprovedSteps.push({ id: id ?? "", num: el.attrs.num ?? "", owner, loc: locOf(el, fallback) });
     }
     if (id !== undefined && owner !== undefined && !ownerOf.has(id)) ownerOf.set(id, owner);
     for (const c of el.children) if (c.type === "element") collect(c, nextInto, owner, fallback);
@@ -183,6 +218,11 @@ export function buildGraph(files: GraphInput[], registry: Map<string, LabelEntry
   for (const [of, proofs] of proofsOf) {
     if (!graph.nodes.has(of)) for (const p of proofs) graph.strayProofs.push({ of, loc: locOf(p, "") });
   }
+  for (const ce of counterexamples) {
+    const h = graph.hypotheses.get(ce.attrs.breaks);
+    if (h) h.counterexamples.push(ce);
+    else graph.badBreaks.push({ breaks: ce.attrs.breaks, loc: locOf(ce, "") });
+  }
 
   // Pass 2: refs → edges (and dangling refs anywhere).
   const edge = (u: string, v: string): void => {
@@ -191,27 +231,42 @@ export function buildGraph(files: GraphInput[], registry: Map<string, LabelEntry
     if (!to.parents.includes(u)) to.parents.push(u);
     if (!from.children.includes(v)) from.children.push(v);
   };
-  const use = (target: string, at: ElementNode, node: string | undefined, fallback: string): void => {
+  const use = (target: string, at: ElementNode, node: string | undefined, fallback: string, where: ElementNode | undefined): void => {
     if (!registry.has(target)) {
       graph.dangling.push({ to: target, loc: locOf(at, fallback) });
+      return;
+    }
+    const hyp = graph.hypotheses.get(target);
+    if (hyp) {
+      // Only the owner's own proof "uses" its hypothesis; elsewhere a ref is just a mention.
+      if (where && node === hyp.owner && !hyp.uses.includes(where)) hyp.uses.push(where);
       return;
     }
     if (node === undefined) return;
     const u = graph.nodes.has(target) ? target : ownerOf.get(target);
     if (u !== undefined && u !== node && graph.nodes.has(u)) edge(u, node);
   };
-  const scan = (el: ElementNode, node: string | undefined, fallback: string): void => {
+  /** `where`: inside a proof, the innermost step (or the proof itself), for hypothesis uses. */
+  const scan = (el: ElementNode, node: string | undefined, fallback: string, where: ElementNode | undefined): void => {
     if (OPAQUE.has(el.tag) || LITERAL.has(el.tag)) return;
-    if (RESULT_TAGS.has(el.tag) && el.attrs.id !== undefined && graph.nodes.get(el.attrs.id)?.el === el) node = el.attrs.id;
-    else if (el.tag === "proof" && el.attrs.of !== undefined) node = graph.nodes.has(el.attrs.of) ? el.attrs.of : undefined;
-    else if (AID_TAGS.has(el.tag)) node = undefined; // narrative: still checked for dangling refs
-    if (el.tag === "ref" && el.attrs.to) use(el.attrs.to, el, node, fallback);
+    if (RESULT_TAGS.has(el.tag) && el.attrs.id !== undefined && graph.nodes.get(el.attrs.id)?.el === el) {
+      node = el.attrs.id;
+      where = undefined;
+    } else if (el.tag === "proof" && el.attrs.of !== undefined) {
+      node = graph.nodes.has(el.attrs.of) ? el.attrs.of : undefined;
+      where = el;
+    } else if (el.tag === "step") {
+      where = el;
+    } else if (AID_TAGS.has(el.tag)) {
+      node = undefined; // narrative: still checked for dangling refs
+    }
+    if (el.tag === "ref" && el.attrs.to) use(el.attrs.to, el, node, fallback, where);
     for (const c of el.children) {
-      if (c.type === "element") scan(c, node, fallback);
-      else if (c.type === "text") for (const m of c.text.matchAll(MATH_REF)) use(m[1], el, node, fallback);
+      if (c.type === "element") scan(c, node, fallback, where);
+      else if (c.type === "text") for (const m of c.text.matchAll(MATH_REF)) use(m[1], el, node, fallback, where);
     }
   };
-  for (const f of files) scan(f.doc, undefined, f.ctx.file);
+  for (const f of files) scan(f.doc, undefined, f.ctx.file, undefined);
 
   // Pin verifications: a proof verified against an old hash counts as a sketch again.
   for (const n of graph.nodes.values()) {
@@ -279,6 +334,40 @@ export function normalizedContent(graph: ProofGraph, el: ElementNode): string {
   }
   out += text.slice(at, span.innerEnd);
   return out.replace(/\s+/g, " ").trim();
+}
+
+/**
+ * Gives each hypothesis the facts its ref preview shows: where the proof uses it (a ref
+ * per step, or "the proof"), or that it does not; and the counterexamples showing it is
+ * needed. They go in as a `<hyp-uses>` child, hidden in the page and shown only when the
+ * hypothesis is the target of a preview (proofmap.css / hyp CSS). Runs before the ref pass,
+ * so the refs in it resolve like any other.
+ */
+export function annotateHypotheses(graph: ProofGraph): void {
+  const el = (tag: string, attrs: Record<string, string> = {}, children: ElementNode[] = []): ElementNode => ({
+    type: "element",
+    tag,
+    attrs,
+    children,
+  });
+  for (const h of graph.hypotheses.values()) {
+    const parts: ElementNode[] = [];
+    const proved = (graph.nodes.get(h.owner)?.proofs.length ?? 0) > 0;
+    if (h.uses.length) {
+      parts.push(
+        el(
+          "hyp-used",
+          {},
+          h.uses.map((w) => (w.tag === "step" && w.attrs.id ? el("ref", { to: w.attrs.id }) : el("hyp-in-proof"))),
+        ),
+      );
+    } else if (proved) {
+      parts.push(el("hyp-unused"));
+    }
+    const ces = h.counterexamples.filter((c) => c.attrs.id);
+    if (ces.length) parts.push(el("hyp-needed", {}, ces.map((c) => el("ref", { to: c.attrs.id }))));
+    if (parts.length) h.el.children.push(el("hyp-uses", {}, parts));
+  }
 }
 
 /**

@@ -20,6 +20,7 @@ import { expandAnimated } from "./animated";
 import { expandCover } from "./cover";
 import { resolveCollab } from "./collab";
 import { checkUnderstanding } from "./understanding";
+import { structureProofs } from "./structure";
 import { fillProjectBibliography, loadBibliography, numberCitations } from "./bibliography";
 import { freshNumbering, numberDocument, type NumberingState } from "./numbering";
 import { annotateCrossFileCites, annotateCrossFileRefs, buildIdMaps } from "./crossfile";
@@ -33,7 +34,7 @@ import { resolveTheme } from "./theme";
 import { resolveImports, resolvePack } from "./imports";
 import { resolveLineBreaks } from "./linebreaks";
 import { emit } from "./emit";
-import { buildGraph, markStale, type ProofGraph } from "./graph";
+import { annotateHypotheses, buildGraph, markStale, type ProofGraph } from "./graph";
 import { layoutProofMaps } from "./proofmap";
 
 /**
@@ -220,6 +221,11 @@ export const PIPELINE: Phase[] = [
         each: perFile(resolveCollab),
       },
       {
+        name: "structureProofs",
+        what: "<step>s numbered 1, 1.2, … (ids for those without), their proofs folded; <hyp>s numbered H1, H2, … per result; placement checked.",
+        each: perFile(structureProofs),
+      },
+      {
         name: "checkUnderstanding",
         what: "<intuition>/<strategy>/<obstacle>/<heuristic>: placement errors, no ids, folded by default.",
         each: perFile(checkUnderstanding),
@@ -276,10 +282,11 @@ export const PIPELINE: Phase[] = [
       },
       {
         name: "buildGraph",
-        what: "Results + definitions → the proof graph (edges from refs in statements and proofs), trust propagated, stale verifications marked. Read by the CLI.",
+        what: "Results + definitions → the proof graph (edges from refs in statements and proofs), trust propagated, stale verifications marked, each <hyp> told where it is used. Read by the CLI.",
         all: (files, s) => {
           s.graph = buildGraph(parsed(files), s.registry);
           markStale(s.graph);
+          annotateHypotheses(s.graph);
         },
       },
     ],

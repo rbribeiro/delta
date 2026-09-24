@@ -10,6 +10,7 @@
 import { t } from "../i18n";
 import { applyCollapsible, applyStatus } from "./shared";
 import { buildLens } from "./aid";
+import { stepLevels } from "./proofstructure";
 
 const ENVIRONMENT_TAGS = [
   "theorem",
@@ -19,6 +20,7 @@ const ENVIRONMENT_TAGS = [
   "conjecture",
   "definition",
   "example",
+  "counterexample",
   "claim",
   "observation",
   "exercise",
@@ -31,7 +33,7 @@ const ENVIRONMENT_TAGS = [
 // Rendered as a bordered .box with a floating .box-tag label.
 const BOX_ENVIRONMENTS = new Set([
   "theorem", "proposition", "lemma", "corollary", "conjecture", "definition",
-  "example", "claim", "observation", "exercise", "problem", "remark",
+  "example", "counterexample", "claim", "observation", "exercise", "problem", "remark",
 ]);
 // Rendered inline with an italic lead; proof additionally gets a QED mark.
 const PROOF_ENVIRONMENTS = new Set(["proof", "solution"]);
@@ -74,6 +76,9 @@ class DeltaEnvironment extends HTMLElement {
       lead.append(".");
       this.prepend(lead, " ");
       applyStatus(this, lead); // status="sketch" by="…" → pill after "Proof."
+      // A structured proof: "Steps 1 2 … All" to unfold it level by level.
+      const depth = Number(this.getAttribute("data-step-depth") ?? 0);
+      if (depth > 0) lead.append(" ", stepLevels(this, depth));
 
       //if (tagName === "proof") {
       const qed = document.createElement("span");
@@ -90,7 +95,7 @@ class DeltaEnvironment extends HTMLElement {
     // A floating tag carries the tagName + number (CSS uppercases it) and the
     // optional author title (CSS parenthesises it).
     this.classList.add("box");
-    if (tagName === "example") this.classList.add("example");
+    if (tagName === "example" || tagName === "counterexample") this.classList.add("example");
     const tag = document.createElement("span");
     tag.className = "box-tag";
     tag.textContent = name + (num ? ` ${num}` : "");

@@ -204,6 +204,75 @@
       <link to="exemplos/gigante/cap1.html">A componente gigante</link> usa tudo isto.
     </subsection>
 
+    <subsection id="sobre-provas-estruturadas">
+      <title>Provas em passos e hipóteses</title>
+
+      Uma prova longa lê melhor em níveis: primeiro as afirmações principais, depois a
+      prova de cada uma, que por sua vez pode ter os seus próprios passos. Cada
+      <c><step></c> tem uma <c><claim></c> (o que o passo estabelece) e, de preferência,
+      uma <c><proof></c>. Os passos são numerados pelo lugar que ocupam: 1, 2, e dentro
+      do passo 2, 2.1, 2.2. A prova de cada passo começa fechada, e o cabeçalho da
+      demonstração ganha o controle "Passos 1 2 … Todos", que abre a prova até o nível
+      escolhido. Um passo pode ser citado com <c><ref></c> ("Passo 2.1"), e quem não tem
+      <c>id</c> ganha um.
+
+      <code lang="xml" numbered="false">
+<theorem id="thm:t">
+  Suponha <hyp id="hyp:pos">$x > 0$</hyp> e <hyp id="hyp:int">$x$ inteiro</hyp>.
+  Então $x \ge 1$.
+</theorem>
+<proof of="thm:t">
+  <step id="st:nz">
+    <claim>$x \ne 0$.</claim>
+    <proof>Por <ref to="hyp:pos"/>.</proof>
+  </step>
+  <step>
+    <claim>$x \ge 1$.</claim>
+    <proof>Por <ref to="st:nz"/> e <ref to="hyp:int"/>.</proof>
+  </step>
+</proof>
+<counterexample breaks="hyp:int">$x = 1/2$ é positivo e menor que $1$.</counterexample>
+      </code>
+
+      Dentro de um passo, <c><claim></c> é a afirmação do passo; fora dele continua sendo
+      o ambiente numerado "Afirmação" de sempre.
+
+      Cada <c><hyp></c> no enunciado ganha um rótulo, (H1), (H2), …, e uma
+      <c><ref></c> para ela diz "(H1)". A prévia de uma hipótese mostra em que passos a
+      demonstração a usa, ou avisa que ela não é usada, e lista os
+      <c><counterexample breaks="…"></c> que mostram por que ela é necessária.
+      O <c>delta lint</c> aponta hipóteses que a prova nunca usa: ou falta um passo, ou o
+      teorema vale sem ela. Aponta também passos sem demonstração.
+
+      <theorem id="demo-passos-thm">
+        Suponha <hyp id="demo-hyp-pos">$x > 0$</hyp> e <hyp id="demo-hyp-int">$x$
+        inteiro</hyp>. Então $x \ge 1$.
+      </theorem>
+      <proof of="demo-passos-thm">
+        <step id="demo-passo-nz">
+          <claim>$x \ne 0$.</claim>
+          <proof>Por <ref to="demo-hyp-pos"/>.</proof>
+        </step>
+        <step>
+          <claim>$x \ge 1$.</claim>
+          <proof>
+            <step>
+              <claim>$|x| \ge 1$.</claim>
+              <proof>Um inteiro diferente de zero, por <ref to="demo-passo-nz"/> e <ref to="demo-hyp-int"/>.</proof>
+            </step>
+            <step>
+              <claim>Logo $x = |x| \ge 1$.</claim>
+              <proof>Pois $x > 0$.</proof>
+            </step>
+          </proof>
+        </step>
+      </proof>
+      <counterexample breaks="demo-hyp-int">
+        $x = 1/2$ é positivo e menor que $1$: sem a hipótese <ref to="demo-hyp-int"/>, o
+        teorema é falso.
+      </counterexample>
+    </subsection>
+
     <subsection id="sobre-mapa-prova">
       <title>O mapa da prova</title>
 
@@ -234,7 +303,7 @@
         <title>Convergência monótona</title>
         Toda sequência monótona e limitada converge.
       </lemma>
-      <proof of="demo-mapa-mono" status="verified" collapsible="true" collapsed="true">
+      <proof of="demo-mapa-mono" status="verified" collapsible="true" collapsed="true" verified-by="rodrigo" against="d45d7fdc4ce1">
         Se a sequência cresce, ela converge para o supremo dos seus termos; se decresce,
         para o ínfimo.
       </proof>

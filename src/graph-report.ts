@@ -131,6 +131,11 @@ export function sliceOf(graph: ProofGraph, el: ElementNode, rel: Rel, drop?: Set
 export interface ShowData {
   id: string;
   node?: GraphNode;
+  /** For an id inside a result or its proof (a step, a hypothesis…): that result. */
+  owner?: GraphNode;
+  /** The element's tag and number, for a non-result ("step", "2.1"). */
+  tag: string;
+  num: string;
   statement?: Slice;
   proofs: Slice[];
   /** With --context: each parent's statement, aids removed (their proofs are not needed). */
@@ -142,17 +147,23 @@ export function showData(graph: ProofGraph, id: string, rel: Rel, withContext: b
   const node = graph.nodes.get(id);
   const el = node?.el ?? graph.byId.get(id);
   if (!el) return undefined;
+  const ownerId = node ? undefined : graph.owners.get(id);
+  const owner = ownerId !== undefined ? graph.nodes.get(ownerId) : undefined;
   const data: ShowData = {
     id,
     node,
+    owner,
+    tag: el.tag === "step-claim" ? "claim" : el.tag,
+    num: el.attrs.num ?? "",
     statement: sliceOf(graph, el, rel),
     proofs: (node?.proofs ?? []).flatMap((p) => sliceOf(graph, p, rel) ?? []),
   };
-  if (withContext && node) {
-    data.context = node.parents.map((p) => {
-      const parent = graph.nodes.get(p)!;
-      return { node: parent, statement: sliceOf(graph, parent.el, rel, AID_TAGS) };
-    });
+  // The context of a result: its parents' statements. Of a step (or anything else inside a
+  // proof): the result's own statement, hypotheses included, and its parents' statements.
+  const base = node ?? owner;
+  if (withContext && base) {
+    const statement = (n: GraphNode) => ({ node: n, statement: sliceOf(graph, n.el, rel, AID_TAGS) });
+    data.context = [...(owner ? [statement(owner)] : []), ...base.parents.map((p) => statement(graph.nodes.get(p)!))];
   }
   return data;
 }
@@ -162,6 +173,7 @@ const range = (s: Slice): string => `${s.file}:${s.line}${s.endLine !== s.line ?
 export function showText(d: ShowData): string {
   const out: string[] = [];
   if (d.node) out.push(`${label(d.node)} ${d.id}${title(d.node)} [${trust(d.node)}]`);
+  else if (d.owner) out.push(`${d.tag}${d.num ? ` ${d.num}` : ""} ${d.id}, in ${label(d.owner)} ${d.owner.id} [${trust(d.owner)}]`);
   else out.push(`${d.id} (not a result: no proof, no dependencies)`);
   if (d.statement) out.push(`── ${d.node ? "statement" : "source"} ${range(d.statement)}`, d.statement.source);
   for (const p of d.proofs) out.push(`── proof ${range(p)}`, p.source);
@@ -170,7 +182,9 @@ export function showText(d: ShowData): string {
     out.push(
       d.context.length === 0
         ? "── context: uses no other result"
-        : `── context: the statements this proof may use (${d.context.length})`,
+        : d.owner
+          ? `── context: the result this is part of, and the statements its proof may use (${d.context.length})`
+          : `── context: the statements this proof may use (${d.context.length})`,
     );
     for (const c of d.context) {
       out.push(`── ${label(c.node)} ${c.node.id}${title(c.node)} [${c.node.eff}]${c.statement ? ` ${range(c.statement)}` : ""}`);
@@ -182,7 +196,7 @@ export function showText(d: ShowData): string {
 
 export function showJson(d: ShowData, rel: Rel): unknown {
   return {
-    ...(d.node ? nodeJson(d.node, rel) : { id: d.id }),
+    ...(d.node ? nodeJson(d.node, rel) : { id: d.id, tag: d.tag, num: d.num, ...(d.owner ? { owner: d.owner.id } : {}) }),
     ...(d.statement ? { statement: d.statement } : {}),
     proofs: d.proofs,
     ...(d.context
@@ -314,6 +328,30 @@ export function lintFindings(graph: ProofGraph, diagnostics: Diagnostic[], rel: 
         ids: [n.id],
       });
     }
+  }
+  for (const h of graph.hypotheses.values()) {
+    const owner = graph.nodes.get(h.owner);
+    if (owner && owner.proofs.length > 0 && h.uses.length === 0) {
+      out.push({
+        severity: "warning",
+        kind: "unused-hypothesis",
+        message: `(${h.num}) ${h.id} of ${h.owner} is never used in its proof: either a step is missing, or the result holds without it`,
+        ...at(h.loc),
+        ids: [h.id, h.owner],
+      });
+    }
+  }
+  for (const b of graph.badBreaks) {
+    out.push({ severity: "error", kind: "bad-counterexample", message: `<counterexample breaks="${b.breaks}">: no hypothesis has that id`, ...at(b.loc), ids: [b.breaks] });
+  }
+  for (const s of graph.unprovedSteps) {
+    out.push({
+      severity: "warning",
+      kind: "unproved-step",
+      message: `step ${s.num}${s.owner ? ` of ${s.owner}` : ""} has a claim but no proof`,
+      ...at(s.loc),
+      ...(s.id ? { ids: [s.id] } : {}),
+    });
   }
   for (const s of graph.strayProofs) {
     out.push({ severity: "warning", kind: "stray-proof", message: `<proof of="${s.of}"> does not prove a result in the graph`, ...at(s.loc), ids: [s.of] });

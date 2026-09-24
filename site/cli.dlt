@@ -220,11 +220,11 @@ delta lint                            # ciclos, refs soltas, verificações desa
         </row>
         <row>
           <column mono="true">show id</column>
-          <column>O texto-fonte do elemento, exatamente como está no arquivo, e o de cada demonstração dele</column>
+          <column>O texto-fonte do elemento, exatamente como está no arquivo, e o de cada demonstração dele. Vale também para um passo (<c><step></c>) ou uma hipótese</column>
         </row>
         <row>
           <column mono="true">show id --context</column>
-          <column>O mesmo, mais os <em>enunciados</em> (sem demonstrações e sem intuição, estratégia etc.) dos resultados que ele usa. É o contexto mínimo para conferir a prova</column>
+          <column>O mesmo, mais os <em>enunciados</em> (sem demonstrações e sem intuição, estratégia etc.) dos resultados que ele usa. É o contexto mínimo para conferir a prova. Para um passo, vêm o enunciado do resultado a que ele pertence (com as hipóteses) e os enunciados que a prova usa</column>
         </row>
         <row>
           <column mono="true">uses id</column>
@@ -240,7 +240,7 @@ delta lint                            # ciclos, refs soltas, verificações desa
         </row>
         <row>
           <column mono="true">lint</column>
-          <column>Raciocínio circular (com o caminho), refs para ids inexistentes, verificações desatualizadas (veja <ref to="cmd-verify">delta verify</ref>), resultados marcados <c>verified</c> cuja confiança efetiva é menor (com os ancestrais culpados), elementos fora do lugar e os demais diagnósticos da compilação</column>
+          <column>Hipóteses que a prova nunca usa, passos sem demonstração, contraexemplos de hipóteses inexistentes, raciocínio circular (com o caminho), refs para ids inexistentes, verificações desatualizadas (veja <ref to="cmd-verify">delta verify</ref>), resultados marcados <c>verified</c> cuja confiança efetiva é menor (com os ancestrais culpados), elementos fora do lugar e os demais diagnósticos da compilação</column>
         </row>
       </table>
 
