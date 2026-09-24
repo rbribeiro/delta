@@ -1,3 +1,4 @@
+import type { ProofGraph } from "./graph";
 import { join } from "node:path";
 import type { ProjectConfig } from "./config";
 import { createContext, hasErrors, type Diagnostic, type ReviewData } from "./context";
@@ -13,6 +14,8 @@ export interface ProjectResult {
   deps: string[];
   /** The project's collaboration state, every item tagged with its home output (for `delta review`). */
   review?: ReviewData;
+  /** The proof graph (absent when an input failed to load), for the CLI's graph commands. */
+  graph?: ProofGraph;
 }
 
 /**
@@ -52,11 +55,12 @@ export function compileProject(config: ProjectConfig, options: CompileOptions = 
   const ctxs = [project, ...files.map((f) => f.ctx)];
   const diagnostics = ctxs.flatMap((c) => c.diagnostics);
   const deps = [...new Set(ctxs.flatMap((c) => [...c.deps]))];
-  if (!ok) return { outputs: [], diagnostics, deps };
+  if (!ok) return { outputs: [], diagnostics, deps, graph: shared.graph };
   return {
     outputs: files.map((f) => ({ path: join(config.outDir, f.outName), html: f.html! })),
     diagnostics,
     deps,
     review: { team: [...shared.team.values()], items: shared.reviewItems },
+    graph: shared.graph,
   };
 }

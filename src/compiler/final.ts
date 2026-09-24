@@ -97,7 +97,8 @@ function strip(el: ElementNode, stats: FinalStats): void {
         continue;
       }
     }
-    if (child.attrs.status !== undefined && child.attrs.status !== "verified") stats.unverified++;
+    const status = child.attrs.status;
+    if (status !== undefined && status !== "verified" && status !== "formalized") stats.unverified++;
     delete child.attrs.status;
     delete child.attrs.by;
     delete child.attrs["verified-by"];

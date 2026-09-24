@@ -47,7 +47,7 @@ JSON, so an agent needs no browser.
 | `<comment by status date on id>` › `<reply by date>` | `status` = `open` (default) \| `resolved` | inline or block. `on="id"` anchors the marker to another element (its box tag / heading / proof lead) |
 | `<todo for by status priority due on id>` | `status` = `open` \| `doing` \| `done`; `priority` = `high` \| `normal` \| `low` | a block checklist row; `on="id"` places it right after the target |
 | `<change by date note id>` › `<old>` / `<new>` | `kind` inferred and written: `<old>`+`<new>` → `replace`, `<old>` only → `delete`, `<new>` only or bare content → `insert`; `block="true"` inferred when it wraps block content | inline or around whole blocks |
-| `status` / `by` / `verified-by` on any block | `status` = `draft` \| `sketch` \| `review` \| `verified` | environments, proofs, sections, `<draft>`. `by` = who wrote the block, `verified-by` = who checked it |
+| `status` / `by` / `verified-by` on any block | `status` = `draft` \| `heuristic` \| `sketch` \| `review` \| `verified` \| `formalized` | environments, proofs, sections, `<draft>`. `by` = who wrote the block, `verified-by` = who checked it |
 | `status="open"` on a result | theorem, proposition, lemma, corollary, conjecture, claim, definition only | a planned result: statement, no proof yet. Rendered as a hollow dashed box; counts as unverified in `--final` |
 | `<draft by note>` | `status` defaults to `draft` | wrapper for loose prose with no header |
 | `<review scope>` | `scope="project"` lists every file of a project | the panel; works inside `<floating>` |
@@ -137,6 +137,31 @@ delta review paper.dlt --json                      # { team, summary, items } (n
 
 Filters: `--status`, `--for`, `--by`, `--kind comment|todo|change|status`. The
 formatting lives in `src/review-report.ts` (pure functions).
+
+### The proof graph
+
+`buildGraph` (`src/compiler/graph.ts`, a pipeline step after numbering) reads a DAG off
+the refs the compiler already resolves. The nodes are results and definitions with an
+`id`. A `<ref>`, `\ref` or `\eqref` in the statement or `<proof of>` of v to u gives the
+edge u → v (a ref to an equation or figure counts for the result containing it); refs
+inside the four reader aids are narrative and give no edge. Trust is ordered
+`open < heuristic < sketch < verified < formalized`: own = the first proof's status
+(`draft` → heuristic, `review` → sketch, no status → sketch, no proof → open,
+definitions → verified), and eff = the minimum of own and every parent's eff. Nodes on a
+cycle are `open`.
+
+```
+delta outline [input] [--json]                 # sections + results, own → eff, file:line
+delta show <id> [input] [--context] [--json]   # exact source; --context adds parents' statements
+delta uses <id> [input] [--json]               # everything downstream
+delta graph [input] [--frontier] [--json]      # the DAG, or the work available now
+delta lint [input] [--json]                    # cycles, dangling refs, overclaims; exit 1 on errors
+```
+
+The input defaults to `./project.toml`. Formatting lives in `src/graph-report.ts`. Exact
+source slices come from spans the parser records (`ElementNode.src`, via the offset map
+`preprocessMapped` returns), and every position carries its file, so included files report
+correctly.
 
 ## Annotating a paper as an AI agent
 

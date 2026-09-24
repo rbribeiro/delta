@@ -19,7 +19,9 @@ import { RESULT_TAGS } from "./understanding";
 const COMMENT_STATUS = new Set(["open", "resolved"]);
 const TODO_STATUS = new Set(["open", "doing", "done"]);
 const PRIORITY = new Set(["high", "normal", "low"]);
-const BLOCK_STATUS = new Set(["draft", "sketch", "review", "verified"]);
+// heuristic and formalized complete the trust order the proof graph propagates
+// (open < heuristic < sketch < verified < formalized); see graph.ts.
+const BLOCK_STATUS = new Set(["draft", "heuristic", "sketch", "review", "verified", "formalized"]);
 
 /** Tags that are collaboration items themselves (their `status` vocab is their own). */
 export const COLLAB_TAGS = new Set(["comment", "todo", "change"]);
@@ -154,7 +156,7 @@ function visitBlock(el: ElementNode, ctx: CompileContext): void {
   const known = BLOCK_STATUS.has(status ?? "") || (status === "open" && RESULT_TAGS.has(el.tag));
   if (status !== undefined && !known) {
     const open = RESULT_TAGS.has(el.tag) ? ", open" : "";
-    warn(ctx, `<${el.tag}> has unknown status "${status}" (expected draft, sketch, review${open} or verified)`, el.pos);
+    warn(ctx, `<${el.tag}> has unknown status "${status}" (expected draft, heuristic, sketch, review${open}, verified or formalized)`, el.pos);
   }
   checkMember(ctx, el.attrs.by, el.pos, "by");
   checkMember(ctx, el.attrs["verified-by"], el.pos, "verified-by");

@@ -10,6 +10,17 @@
 export interface Position {
   line: number;
   column: number;
+  /** The file the node was parsed from — an `<include>`d file keeps its own (diagnostics use it). */
+  file?: string;
+}
+
+/** Where an element sits in its source file: `source.slice(start, end)` is its exact text. */
+export interface SourceSpan {
+  file: string;
+  /** Offset of the opening `<`. */
+  start: number;
+  /** Offset just past the closing `>` (or the `/>` of a self-closing tag). */
+  end: number;
 }
 
 export interface TextNode {
@@ -30,6 +41,8 @@ export interface ElementNode {
   attrs: Record<string, string>;
   children: Node[];
   pos?: Position;
+  /** Set by `parseSource`; absent on nodes a pass synthesizes. */
+  src?: SourceSpan;
 }
 
 export type Node = ElementNode | TextNode | RawNode;

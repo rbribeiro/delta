@@ -1,4 +1,5 @@
 import { createContext, hasErrors, type CompileContext, type Diagnostic, type ReviewData } from "./context";
+import type { ProofGraph } from "./graph";
 import { createShared, outNameFor, runPipeline, type CompileOptions, type FileUnit } from "./pipeline";
 
 export type { CompileOptions, TraceEvent } from "./pipeline";
@@ -15,6 +16,8 @@ export interface CompileResult {
   deps: string[];
   /** The collaboration state (`<team>` + comments/tasks/changes/status blocks), for `delta review`. */
   review?: ReviewData;
+  /** The proof graph (absent when the file failed to load), for the CLI's graph commands. */
+  graph?: ProofGraph;
 }
 
 /**
@@ -22,16 +25,17 @@ export interface CompileResult {
  * context. Returns the HTML, or undefined when compilation failed (`hasErrors(ctx)` is then true).
  */
 export function compileSource(source: string, ctx: CompileContext, options: CompileOptions = {}): string | undefined {
-  return runOne({ ctx, outName: outNameFor(ctx.file), source, doc: null }, options);
+  return runOne({ ctx, outName: outNameFor(ctx.file), source, doc: null }, options).html;
 }
 
 /** Reads a `.dlt` file, compiles it, and returns the HTML along with diagnostics, deps and the review state. */
 export function compileFile(path: string, options: CompileOptions = {}): CompileResult {
   const ctx = createContext(path);
   ctx.final = options.final ?? false;
-  const html = runOne({ ctx, outName: outNameFor(path), doc: null }, options);
+  const { html, graph } = runOne({ ctx, outName: outNameFor(path), doc: null }, options);
   return {
     html,
+    graph,
     diagnostics: ctx.diagnostics,
     deps: [...ctx.deps],
     review: { team: [...ctx.team.values()], items: ctx.review },
@@ -39,7 +43,7 @@ export function compileFile(path: string, options: CompileOptions = {}): Compile
 }
 
 /** Runs the pipeline for one file whose context lends its own maps as the shared state. */
-function runOne(unit: FileUnit, options: CompileOptions): string | undefined {
+function runOne(unit: FileUnit, options: CompileOptions): { html?: string; graph?: ProofGraph } {
   const { ctx } = unit;
   const shared = createShared({
     registry: ctx.registry,
@@ -52,5 +56,5 @@ function runOne(unit: FileUnit, options: CompileOptions): string | undefined {
   const ok = runPipeline([unit], shared, options);
   ctx.diagnostics.push(...shared.project.diagnostics); // the --final summary lands on the caller's ctx
   // An error in a later phase fails the file too, as it fails a project (cli.ts writeProject).
-  return ok && !hasErrors(ctx) ? unit.html : undefined;
+  return { html: ok && !hasErrors(ctx) ? unit.html : undefined, graph: shared.graph };
 }

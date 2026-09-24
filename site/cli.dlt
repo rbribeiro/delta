@@ -159,7 +159,7 @@ delta review artigo.dlt --status open --for claude
         </row>
         <row>
           <column mono="true">--status</column>
-          <column mono="true">open, resolved (comentários); open, doing, done (tarefas); draft, sketch, review, verified (blocos)</column>
+          <column mono="true">open, resolved (comentários); open, doing, done (tarefas); draft, heuristic, sketch, review, verified, formalized (blocos)</column>
           <column>Só os itens nesse estado</column>
         </row>
         <row>
@@ -177,6 +177,78 @@ delta review artigo.dlt --status open --for claude
       Os filtros se combinam. A marcação que o relatório lê está em
       <ref to="colaboracao">Colaboração</ref>. Se a compilação tiver erros, nada é
       impresso e o código de saída é 1.
+    </subsection>
+
+    <subsection id="cmd-grafo">
+      <title>O grafo da prova: outline, show, uses, graph, lint</title>
+
+      Uma prova é um grafo de resultados. O compilador o lê das referências que já
+      resolve, sem marcação nova: cada <c><ref></c> (ou <c>\ref</c> dentro da
+      fórmula) no enunciado ou na demonstração de um resultado <em>v</em> para outro
+      resultado <em>u</em> vira a aresta <em>u</em> → <em>v</em>. Uma referência a uma equação ou figura conta para o
+      resultado que a contém. Referências dentro de <c><intuition></c>,
+      <c><strategy></c>, <c><obstacle></c> e <c><heuristic></c> são narrativa e não
+      viram aresta. Os nós são os resultados e definições que têm <c>id</c>, em todos os
+      arquivos do projeto.
+
+      Cada nó tem uma confiança própria, o estado da sua demonstração, na ordem
+      <c>open</c> &lt; <c>heuristic</c> &lt; <c>sketch</c> &lt; <c>verified</c> &lt;
+      <c>formalized</c>. Sem demonstração, é <c>open</c>; definições valem
+      <c>verified</c>; uma demonstração sem <c>status</c> vale <c>sketch</c>, porque a
+      confiança é declarada, nunca suposta. A confiança <em>efetiva</em> é a menor entre
+      a própria e a efetiva de cada resultado usado: um resultado é tão sólido quanto
+      o seu ancestral mais fraco. Um nó num ciclo vale <c>open</c>.
+
+      <code lang="bash" numbered="false">
+delta outline                         # seções e resultados, com a confiança e arquivo:linha
+delta show lem:acoplamento            # o código-fonte do enunciado e da demonstração
+delta show thm:gigante --context      # + só os enunciados do que a prova usa
+delta uses lem:acoplamento            # tudo o que depende deste resultado
+delta graph                           # o grafo inteiro
+delta graph --frontier --json         # o trabalho disponível agora
+delta lint                            # ciclos, refs soltas, verificado sobre base fraca
+      </code>
+
+      <table numbered="false">
+        <header>
+          <column>Comando</column>
+          <column>O que imprime</column>
+        </header>
+        <row>
+          <column mono="true">outline</column>
+          <column>A árvore de seções e resultados de cada arquivo. Em cada resultado: id, título, confiança própria → efetiva e <c>arquivo:linha</c></column>
+        </row>
+        <row>
+          <column mono="true">show id</column>
+          <column>O texto-fonte do elemento, exatamente como está no arquivo, e o de cada demonstração dele</column>
+        </row>
+        <row>
+          <column mono="true">show id --context</column>
+          <column>O mesmo, mais os <em>enunciados</em> (sem demonstrações e sem intuição, estratégia etc.) dos resultados que ele usa. É o contexto mínimo para conferir a prova</column>
+        </row>
+        <row>
+          <column mono="true">uses id</column>
+          <column>Tudo o que está abaixo no grafo, marcando o que usa o resultado diretamente</column>
+        </row>
+        <row>
+          <column mono="true">graph</column>
+          <column>Cada nó com a confiança e os resultados que usa, e os ciclos</column>
+        </row>
+        <row>
+          <column mono="true">graph --frontier</column>
+          <column>Os resultados sem prova, ou com prova <c>heuristic</c> ou <c>sketch</c>, cujos ancestrais diretos valem pelo menos <c>sketch</c>: o que dá para trabalhar agora</column>
+        </row>
+        <row>
+          <column mono="true">lint</column>
+          <column>Raciocínio circular (com o caminho), refs para ids inexistentes, resultados marcados <c>verified</c> cuja confiança efetiva é menor (com os ancestrais culpados), elementos fora do lugar e os demais diagnósticos da compilação</column>
+        </row>
+      </table>
+
+      Todos aceitam <c>--json</c>. A entrada é um <c>.dlt</c>, vários, ou um
+      <c>project.toml</c>; sem entrada, usam o <c>project.toml</c> da pasta atual. Nada
+      é escrito em disco. Um documento com erros ainda tem grafo, então dá para navegar
+      numa prova quebrada. Só um arquivo que não carrega (XML inválido, por exemplo)
+      impede o grafo.
     </subsection>
 
     <subsection id="cmd-create">
@@ -252,11 +324,11 @@ delta install delta-callout outro-pacote --project livro/project.toml
         </header>
         <row>
           <column mono="true">0</column>
-          <column>Compilação sem erros (avisos não contam), relatório de revisão impresso, pacote instalado, <c>--help</c>, <c>--version</c></column>
+          <column>Compilação sem erros (avisos não contam), relatório de revisão impresso, consulta ao grafo respondida, <c>lint</c> sem erros, pacote instalado, <c>--help</c>, <c>--version</c></column>
         </row>
         <row>
           <column mono="true">1</column>
-          <column>Uso errado do comando, erro de compilação, revisão de um documento com erros, falha do <c>npm install</c></column>
+          <column>Uso errado do comando, erro de compilação, revisão de um documento com erros, <c>lint</c> com algum erro, id desconhecido em <c>show</c> ou <c>uses</c>, arquivo que não carrega, falha do <c>npm install</c></column>
         </row>
       </table>
 
@@ -266,9 +338,9 @@ delta install delta-callout outro-pacote --project livro/project.toml
       <box type="note">
         <title>Para scripts e agentes</title>
         Três coisas tornam o comando previsível para um programa: <c>--version</c>,
-        para confirmar qual Delta está instalado; <c>review --json</c>, para ler o
-        estado de revisão sem interpretar texto; e o código de saída, para saber se a
-        compilação passou. Diagnósticos ficam na saída de erro; o resultado, na saída
+        para confirmar qual Delta está instalado; <c>--json</c> em <c>review</c> e nos
+        comandos do grafo, para ler o resultado sem interpretar texto; e o código de
+        saída, para saber se a compilação (ou o <c>lint</c>) passou. Diagnósticos ficam na saída de erro; o resultado, na saída
         padrão.
       </box>
     </subsection>

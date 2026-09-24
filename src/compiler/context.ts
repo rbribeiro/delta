@@ -119,6 +119,8 @@ export interface ReviewData {
 
 export interface CompileContext {
   file: string;
+  /** file → its original text, for every file `parseSource` read (the master and its includes). */
+  sources: Map<string, string>;
   /** Output basename for this file (e.g. "chapter1.html"), set by the pipeline runner for every build. */
   outName?: string;
   diagnostics: Diagnostic[];
@@ -186,6 +188,7 @@ export function createContext(file: string): CompileContext {
     review: [],
     final: false,
     deps: new Set(),
+    sources: new Map(),
   };
 }
 
@@ -194,12 +197,14 @@ export function addDep(ctx: CompileContext, p: string): void {
   ctx.deps.add(resolve(p));
 }
 
+// A position carries the file it was parsed from, so a node spliced in by <include> is
+// reported against its own file rather than the master document.
 export function error(ctx: CompileContext, message: string, pos?: Position): void {
-  ctx.diagnostics.push({ severity: "error", message, file: ctx.file, pos });
+  ctx.diagnostics.push({ severity: "error", message, file: pos?.file ?? ctx.file, pos });
 }
 
 export function warn(ctx: CompileContext, message: string, pos?: Position): void {
-  ctx.diagnostics.push({ severity: "warning", message, file: ctx.file, pos });
+  ctx.diagnostics.push({ severity: "warning", message, file: pos?.file ?? ctx.file, pos });
 }
 
 export function hasErrors(ctx: CompileContext): boolean {

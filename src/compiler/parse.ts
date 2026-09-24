@@ -1,18 +1,34 @@
 import { SaxesParser } from "saxes";
 import type { ElementNode } from "./ast";
 import { error, type CompileContext } from "./context";
+import { preprocessMapped } from "./preprocess";
+
+/**
+ * Preprocesses and parses the author's text, recording it in `ctx.sources` under `ctx.file`
+ * and giving every element its exact `src` span in that text (what `delta show` prints).
+ */
+export function parseSource(source: string, ctx: CompileContext): ElementNode | null {
+  const { text, map } = preprocessMapped(source);
+  ctx.sources.set(ctx.file, source);
+  return parse(text, ctx, map);
+}
 
 /**
  * Parses the source string into an AST. It relies on the saxes parser to handle the low-level parsing, and builds a tree of ElementNode and TextNode objects. It runs the document depth-first, so that in the stack, the last element is always the current parent element. It also merges adjacent text nodes into a single node.
  * @param source the source string to parse
  * @param ctx the compilation context
+ * @param map offset map from `preprocessMapped`: turns positions in `source` into positions in
+ * the author's text (without it, spans are offsets into `source` itself)
  * @returns the root element of the parsed document, or null if parsing failed
  */
-export function parse(source: string, ctx: CompileContext): ElementNode | null {
+export function parse(source: string, ctx: CompileContext, map?: number[]): ElementNode | null {
   const parser = new SaxesParser();
   const root: ElementNode = { type: "element", tag: "#root", attrs: {}, children: [] };
   const stack: ElementNode[] = [root];
   let failed = false;
+  const file = ctx.file;
+  const orig = (at: number): number => (map ? (map[at] ?? source.length) : at);
+  let tagStart = 0;
 
   parser.on("error", (err) => {
     failed = true;
@@ -21,13 +37,20 @@ export function parse(source: string, ctx: CompileContext): ElementNode | null {
     error(ctx, message, { line: parser.line, column: parser.column });
   });
 
+  // saxes reports `position` just past the tag name (plus one character of lookahead), so
+  // the opening `<` is the last `<name` at or before it.
+  parser.on("opentagstart", (tag) => {
+    tagStart = source.lastIndexOf(`<${tag.name}`, parser.position);
+  });
+
   parser.on("opentag", (tag) => {
     const el: ElementNode = {
       type: "element",
       tag: tag.name,
       attrs: { ...(tag.attributes as Record<string, string>) },
       children: [],
-      pos: { line: parser.line, column: parser.column },
+      pos: { line: parser.line, column: parser.column, file },
+      src: { file, start: orig(tagStart), end: orig(tagStart) },
     };
     stack[stack.length - 1].children.push(el);
     stack.push(el);
@@ -35,8 +58,9 @@ export function parse(source: string, ctx: CompileContext): ElementNode | null {
 
   parser.on("closetag", () => {
     // no need to check for mismatched tags; saxes already emits an error in that case
-    // so it is safe to just pop the stack here.
-    stack.pop(); 
+    // so it is safe to just pop the stack here. `position` is just past the closing `>`.
+    const el = stack.pop();
+    if (el?.src) el.src.end = orig(parser.position - 1) + 1;
   });
 
   /**

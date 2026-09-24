@@ -2,8 +2,7 @@ import { dirname, relative, resolve, sep } from "node:path";
 import { type ElementNode, type Node, findElementById } from "./ast";
 import { error, type CompileContext } from "./context";
 import { isRemote, readUserFile, withFile } from "./files";
-import { parse } from "./parse";
-import { preprocess } from "./preprocess";
+import { parseSource } from "./parse";
 
 // figure, video and audio are the only tags that can have a relative src that needs to be rewritten to be relative to the master document.
 const ASSET_TAGS = new Set(["figure", "video", "audio"]);
@@ -73,7 +72,7 @@ function expand(
 
   // Diagnostics raised while parsing and walking the included file point at that file.
   return withFile(ctx, abs, (): Node[] => {
-    const root = parse(preprocess(text), ctx);
+    const root = parseSource(text, ctx);
     if (!root) return [];
     // `target-id` includes only the element with that id, not the whole file.
     if (targetId) {

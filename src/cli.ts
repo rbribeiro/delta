@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { type FSWatcher, existsSync, mkdirSync, readdirSync, watch, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
-import { basename, dirname, join, resolve } from "node:path";
+import { basename, dirname, join, relative, resolve } from "node:path";
 import { compileFile } from "./compiler/index";
 import { loadProjectConfig } from "./compiler/config";
 import { compileProject, type ProjectResult } from "./compiler/project";
@@ -9,6 +9,23 @@ import type { Diagnostic } from "./compiler/context";
 import { scaffoldFiles } from "./scaffold";
 import { installPackages } from "./install";
 import { filterReview, formatReviewText, reviewJson, type ReviewData, type ReviewFilter } from "./review-report";
+import type { ProofGraph } from "./compiler/graph";
+import {
+  frontierJson,
+  frontierText,
+  graphJson,
+  graphText,
+  lintFindings,
+  lintText,
+  outlineJson,
+  outlineText,
+  showData,
+  showJson,
+  showText,
+  usesJson,
+  usesText,
+  type Rel,
+} from "./graph-report";
 
 /** The CLI source entry point.
  * It parses command-line arguments, loads a project config if requested, and calls the compiler. It reports diagnostics and writes outputs to disk. It exits with a non-zero code if there were any errors, unless `--watch` is set (then it keeps running and rebuilds on change).
@@ -26,11 +43,17 @@ const HELP = [
   "       delta build <a.dlt> <b.dlt> ... [-o out-dir] [--watch] [--final]   # multi-file project",
   "       delta build <project.toml> [-o out-dir] [--watch] [--final]        # project file",
   "       delta review <file.dlt | project.toml> [--json] [--status s] [--for id] [--by id] [--kind k]",
+  "       delta outline [input] [--json]                           # sections and results, with status",
+  "       delta show <id> [input] [--context] [--json]             # one result's source (+ its parents' statements)",
+  "       delta uses <id> [input] [--json]                         # everything downstream of a result",
+  "       delta graph [input] [--frontier] [--json]                # the proof graph (or the work available now)",
+  "       delta lint [input] [--json]                              # cycles, dangling refs, overclaimed results",
   "       delta create <project|package> <name>                    # scaffold a project/package",
   "       delta install <pkg> [<pkg>...] [--project <file>]        # npm install + add to project.toml",
   "       delta --version | -v                                     # print the version",
   "       delta --help | -h                                        # print this help",
   "  --final  strips every collaboration mark (comments, tasks, changes, status, team): the clean publication",
+  "  input    a .dlt, several .dlt, or a project.toml; defaults to ./project.toml",
 ].join("\n");
 
 /** A usage error: the banner on stderr, exit 1. */
@@ -270,6 +293,125 @@ function reviewMain(args: string[]): void {
   process.exit(0);
 }
 
+/** What every graph command parses: the inputs, `--json`, positional ids, and its own flags. */
+interface GraphArgs {
+  inputs: string[];
+  json: boolean;
+  ids: string[];
+  flags: Set<string>;
+}
+
+function graphArgs(args: string[], allowed: string[]): GraphArgs {
+  const out: GraphArgs = { inputs: [], json: false, ids: [], flags: new Set() };
+  for (const arg of args) {
+    if (arg === "--json") out.json = true;
+    else if (allowed.includes(arg)) out.flags.add(arg);
+    else if (arg.startsWith("-")) usage();
+    else if (arg.endsWith(".dlt") || arg.endsWith(".toml")) out.inputs.push(arg);
+    else out.ids.push(arg);
+  }
+  if (out.inputs.length === 0) {
+    if (!existsSync("project.toml")) usage();
+    out.inputs.push("project.toml");
+  }
+  return out;
+}
+
+/**
+ * Compiles the inputs without writing anything and returns the proof graph with every
+ * diagnostic. A document with errors still has a graph (only a file that fails to load
+ * has none), so an agent can navigate a broken proof and `lint` can report what broke.
+ */
+function loadGraph(inputs: string[]): { graph: ProofGraph; diagnostics: Diagnostic[] } {
+  let graph: ProofGraph | undefined;
+  let diagnostics: Diagnostic[];
+  if (inputs.length === 1 && inputs[0].endsWith(".toml")) {
+    const loaded = loadProjectConfig(inputs[0]);
+    if (!loaded.config) {
+      for (const d of loaded.diagnostics) report(d);
+      process.exit(1);
+    }
+    const result = compileProject(loaded.config);
+    diagnostics = [...loaded.diagnostics, ...result.diagnostics];
+    graph = result.graph;
+  } else if (inputs.length > 1) {
+    const result = compileProject({ inputs, outDir: "." });
+    diagnostics = result.diagnostics;
+    graph = result.graph;
+  } else {
+    const result = compileFile(inputs[0]);
+    diagnostics = result.diagnostics;
+    graph = result.graph;
+  }
+  if (!graph) {
+    for (const d of diagnostics) report(d);
+    process.exit(1);
+  }
+  return { graph, diagnostics };
+}
+
+const rel: Rel = (file) => relative(process.cwd(), resolve(file)) || file;
+
+function print(json: boolean, data: () => unknown, text: () => string): void {
+  process.stdout.write(json ? JSON.stringify(data(), null, 2) + "\n" : text());
+}
+
+/** An id the graph does not know: say so on stderr, exit 1. */
+function unknownId(id: string): never {
+  console.error(`error: no element with id "${id}"`);
+  process.exit(1);
+}
+
+/** `delta outline [input] [--json]` — sections and results, each with own/effective status and file:line. */
+function outlineMain(args: string[]): void {
+  const a = graphArgs(args, []);
+  const { graph } = loadGraph(a.inputs);
+  print(a.json, () => outlineJson(graph, rel), () => outlineText(graph, rel));
+  process.exit(0);
+}
+
+/** `delta show <id> [input] [--context] [--json]` — a node's source; with --context, its parents' statements too. */
+function showMain(args: string[]): void {
+  const a = graphArgs(args, ["--context"]);
+  if (a.ids.length !== 1) usage();
+  const { graph } = loadGraph(a.inputs);
+  const data = showData(graph, a.ids[0], rel, a.flags.has("--context"));
+  if (!data) unknownId(a.ids[0]);
+  print(a.json, () => showJson(data, rel), () => showText(data));
+  process.exit(0);
+}
+
+/** `delta uses <id> [input] [--json]` — everything downstream of a result. */
+function usesMain(args: string[]): void {
+  const a = graphArgs(args, []);
+  if (a.ids.length !== 1) usage();
+  const { graph } = loadGraph(a.inputs);
+  const id = a.ids[0];
+  if (!graph.nodes.has(id)) unknownId(id);
+  print(a.json, () => usesJson(graph, id, rel), () => usesText(graph, id, rel));
+  process.exit(0);
+}
+
+/** `delta graph [input] [--frontier] [--json]` — the whole graph, or just the work available now. */
+function graphMain(args: string[]): void {
+  const a = graphArgs(args, ["--frontier"]);
+  if (a.ids.length) usage();
+  const { graph } = loadGraph(a.inputs);
+  if (a.flags.has("--frontier")) print(a.json, () => frontierJson(graph, rel), () => frontierText(graph, rel));
+  else print(a.json, () => graphJson(graph, rel), () => graphText(graph, rel));
+  process.exit(0);
+}
+
+/** `delta lint [input] [--json]` — structural problems; exit 1 when any is an error. */
+function lintMain(args: string[]): void {
+  const a = graphArgs(args, []);
+  if (a.ids.length) usage();
+  const { graph, diagnostics } = loadGraph(a.inputs);
+  const findings = lintFindings(graph, diagnostics, rel);
+  print(a.json, () => ({ findings }), () => lintText(findings));
+  process.exit(findings.some((f) => f.severity === "error") ? 1 : 0);
+}
+
 /** `delta create <project|package> <name>` — scaffold a starter directory (never clobbers). */
 function createMain(args: string[]): void {
   const [kind, name] = args;
@@ -326,6 +468,16 @@ function main(): void {
       return buildMain(args);
     case "review":
       return reviewMain(args);
+    case "outline":
+      return outlineMain(args);
+    case "show":
+      return showMain(args);
+    case "uses":
+      return usesMain(args);
+    case "graph":
+      return graphMain(args);
+    case "lint":
+      return lintMain(args);
     case "create":
       return createMain(args);
     case "install":

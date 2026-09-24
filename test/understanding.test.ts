@@ -119,7 +119,7 @@ describe('status="open"', () => {
     </document>`);
     expect(html).toContain('<delta-lemma id="l" status="open"');
     expect(messages(ctx, "warning")).toEqual([
-      '<section> has unknown status "open" (expected draft, sketch, review or verified)',
+      '<section> has unknown status "open" (expected draft, heuristic, sketch, review, verified or formalized)',
     ]);
   });
 });

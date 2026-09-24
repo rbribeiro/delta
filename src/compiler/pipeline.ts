@@ -11,8 +11,7 @@ import {
   type TeamMember,
 } from "./context";
 import { readUserFile } from "./files";
-import { preprocess } from "./preprocess";
-import { parse } from "./parse";
+import { parseSource } from "./parse";
 import { resolveIncludes } from "./include";
 import { applyDocumentDefaults } from "./document";
 import { describeFinal, finalizeReview, sumFinal, type FinalStats } from "./final";
@@ -34,6 +33,7 @@ import { resolveTheme } from "./theme";
 import { resolveImports, resolvePack } from "./imports";
 import { resolveLineBreaks } from "./linebreaks";
 import { emit } from "./emit";
+import { buildGraph, type ProofGraph } from "./graph";
 
 /**
  * THE pipeline, declared as data. Every compilation — one `.dlt` or a whole project — is a list
@@ -76,6 +76,8 @@ export interface Shared {
   finalStats: FinalStats[];
   /** Every collaboration item, tagged with its home output (`delta review` prints this). */
   reviewItems: ReviewItem[];
+  /** The proof graph, once `buildGraph` ran (every compile that got past `load`). */
+  graph?: ProofGraph;
   /** The project's own context: `project.toml` packages land on its `imports`, project-level
    *  diagnostics (duplicate outputs, the --final summary) on its `diagnostics`. */
   project: CompileContext;
@@ -170,7 +172,7 @@ export const PIPELINE: Phase[] = [
         name: "parse",
         what: "preprocess (escape < > & inside math and raw tags), then strict XML → the generic AST.",
         each: (f) => {
-          if (f.source !== undefined) f.doc = parse(preprocess(f.source), f.ctx);
+          if (f.source !== undefined) f.doc = parseSource(f.source, f.ctx);
         },
       },
       {
@@ -270,6 +272,13 @@ export const PIPELINE: Phase[] = [
         name: "buildIdMaps",
         what: "id → node (pop-over snapshots) and id → home output (cross-file links), project-wide. No later step may replace an element node.",
         all: (files, s) => buildIdMaps(parsed(files), s.globalById, s.idToFile),
+      },
+      {
+        name: "buildGraph",
+        what: "Results + definitions → the proof graph (edges from refs in statements and proofs), trust propagated. Read by the CLI.",
+        all: (files, s) => {
+          s.graph = buildGraph(parsed(files), s.registry);
+        },
       },
     ],
   },

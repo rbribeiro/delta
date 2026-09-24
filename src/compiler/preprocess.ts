@@ -17,7 +17,31 @@ export function escapeHtml(s: string): string {
 }
 
 export function preprocess(source: string): string {
+  return preprocessMapped(source).text;
+}
+
+/**
+ * `preprocess`, plus `map[j]` = the offset in `source` of output character `j`. Escaping
+ * only lengthens text (one `<` becomes `&lt;`), so the map lets the parser report where an
+ * element sits in the author's file, which is what `delta show` prints.
+ */
+export function preprocessMapped(source: string): { text: string; map: number[] } {
   let out = "";
+  const map: number[] = [];
+  /** Copies `source[from, to)` verbatim. */
+  const copy = (from: number, to: number): void => {
+    out += source.slice(from, to);
+    for (let k = from; k < to; k++) map.push(k);
+  };
+  /** Copies `source[from, to)` entity-escaped; every entity character maps to its source character. */
+  const esc = (from: number, to: number): void => {
+    for (let k = from; k < to; k++) {
+      const e = escapeHtml(source[k]);
+      out += e;
+      for (let n = 0; n < e.length; n++) map.push(k);
+    }
+  };
+
   let i = 0;
   let math: "$" | "$$" | null = null;
 
@@ -26,45 +50,43 @@ export function preprocess(source: string): string {
 
     if (math) {
       if (ch === "\\" && source[i + 1] === "$") {
-        out += "\\$";
+        copy(i, i + 2);
         i += 2;
         continue;
       }
       if (ch === "$" && source.startsWith(math, i)) {
-        out += math;
+        copy(i, i + math.length);
         i += math.length;
         math = null;
         continue;
       }
-      out += escapeHtml(ch);
+      esc(i, i + 1);
       i++;
       continue;
     }
 
     if (ch === "\\" && source[i + 1] === "$") {
-      out += "\\$";
+      copy(i, i + 2);
       i += 2;
       continue;
     }
 
     if (ch === "$") {
       math = source[i + 1] === "$" ? "$$" : "$";
-      out += math;
+      copy(i, i + math.length);
       i += math.length;
       continue;
     }
 
     if (ch === "<") {
-      const copied = copyMarkup(source, i);
-      out += copied.text;
-      i = copied.end;
+      i = copyMarkup(source, i, copy, esc);
       continue;
     }
 
-    out += ch;
+    copy(i, i + 1);
     i++;
   }
-  return out;
+  return { text: out, map };
 }
 
 /**
@@ -72,8 +94,14 @@ export function preprocess(source: string): string {
  * declaration, or tag (quotes in attribute values respected, so `>` inside them
  * doesn't end the tag). When the tag opens a RAW_TAG, its content is escaped up
  * to the closing tag — raw content is opaque, so nothing inside it is scanned.
+ * Returns the offset just past what it copied.
  */
-function copyMarkup(source: string, start: number): { text: string; end: number } {
+function copyMarkup(
+  source: string,
+  start: number,
+  copy: (from: number, to: number) => void,
+  esc: (from: number, to: number) => void,
+): number {
   for (const [open, close] of [
     ["<!--", "-->"],
     ["<![CDATA[", "]]>"],
@@ -81,7 +109,8 @@ function copyMarkup(source: string, start: number): { text: string; end: number 
     if (source.startsWith(open, start)) {
       const at = source.indexOf(close, start + open.length);
       const end = at === -1 ? source.length : at + close.length;
-      return { text: source.slice(start, end), end };
+      copy(start, end);
+      return end;
     }
   }
 
@@ -99,18 +128,19 @@ function copyMarkup(source: string, start: number): { text: string; end: number 
     i++;
   }
   const end = Math.min(i + 1, source.length);
-  let text = source.slice(start, end);
+  const text = source.slice(start, end);
+  copy(start, end);
 
   const name = /^<([A-Za-z][\w-]*)/.exec(text);
   const selfClosing = /\/\s*>$/.test(text);
   if (name && RAW_TAGS.has(name[1]) && !selfClosing) {
     const closeTag = new RegExp(`</\\s*${name[1]}\\s*>`);
-    const rest = source.slice(end);
-    const match = closeTag.exec(rest);
+    const match = closeTag.exec(source.slice(end));
     if (match) {
-      text += escapeHtml(rest.slice(0, match.index)) + match[0];
-      return { text, end: end + match.index + match[0].length };
+      esc(end, end + match.index);
+      copy(end + match.index, end + match.index + match[0].length);
+      return end + match.index + match[0].length;
     }
   }
-  return { text, end };
+  return end;
 }

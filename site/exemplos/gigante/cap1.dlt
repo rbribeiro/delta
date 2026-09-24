@@ -33,12 +33,13 @@
       <definition id="def:rho">
         <title>Probabilidade de sobrevivência</title>
         Para $c > 0$, $\rho(c)$ é a probabilidade de que o processo de Galton–Watson
-        com prole $\mathrm{Poisson}(c)$ sobreviva.
+        (<ref to="def:gw"/>) com prole $\mathrm{Poisson}(c)$ sobreviva.
       </definition>
 
       <lemma id="lem:ponto-fixo">
         <title>Equação de ponto fixo</title>
-        $\rho = \rho(c)$ é a maior solução em $[0, 1]$ de
+        A probabilidade de sobrevivência $\rho = \rho(c)$ (<ref to="def:rho"/>) é a
+        maior solução em $[0, 1]$ de
         <equation id="eq:rho">1 - \rho = e^{-c \rho}.</equation>
         Em particular, $\rho(c) > 0$ se e só se $c > 1$.
         <intuition>O processo morre exatamente quando a subárvore de cada filho da raiz

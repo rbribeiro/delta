@@ -25,6 +25,7 @@
     "fillProjectBibliography": "O primeiro <bibliography> (na ordem dos inputs) recebe os artigos citados; os demais avisam e ficam vazios.",
     "numberDocument": "Escreve attrs.num em cada tag numerada e registra todo id no registro compartilhado. Os contadores continuam de um arquivo para o outro.",
     "buildIdMaps": "Dois mapas do projeto inteiro: id → nó (para as prévias) e id → arquivo de saída (para os links entre arquivos).",
+    "buildGraph": "Resultados e definições viram o grafo da prova (arestas vindas das refs em enunciados e demonstrações), com a confiança propagada. Quem lê é a CLI.",
     "renderMath": "$…$ e as tags de matemática viram HTML do KaTeX (um RawNode); \\ref{} dentro da fórmula resolve contra o registro. Liga mathUsed.",
     "highlightCode": "<code lang> vira HTML destacado (um RawNode). Depois da matemática, que pula a tag crua code.",
     "buildProjectToc": "A árvore de títulos vira ctx.toc (títulos sem id ganham um slug); do livro inteiro quando há um <toc scope=\"project\">.",

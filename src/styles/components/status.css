@@ -29,6 +29,7 @@
 }
 .status-pill .who { font-size: 10.5px; }
 .status-pill[data-status="draft"],
+.status-pill[data-status="heuristic"],
 .status-pill[data-status="sketch"] {
   color: var(--delta-mute);
   border-style: dashed;
@@ -43,7 +44,8 @@
   border-color: color-mix(in oklab, var(--delta-warn) 50%, transparent);
   background: color-mix(in oklab, var(--delta-warn) 10%, var(--delta-paper));
 }
-.status-pill[data-status="verified"] {
+.status-pill[data-status="verified"],
+.status-pill[data-status="formalized"] {
   color: var(--delta-ok);
   border-color: color-mix(in oklab, var(--delta-ok) 50%, transparent);
   background: color-mix(in oklab, var(--delta-ok) 10%, var(--delta-paper));
@@ -59,8 +61,10 @@ h1 .status-pill, h2 .status-pill, h3 .status-pill, h4 .status-pill { margin-left
 
 /* Unfinished blocks: dashed edge. */
 .box[data-status="draft"],
+.box[data-status="heuristic"],
 .box[data-status="sketch"] { border-style: dashed; }
 delta-proof[data-status="draft"],
+delta-proof[data-status="heuristic"],
 delta-proof[data-status="sketch"],
 delta-solution[data-status="draft"],
 delta-solution[data-status="sketch"] {
