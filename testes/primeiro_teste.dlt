@@ -1,0 +1,13 @@
+<document lang="pt-BR" type="paper">
+  <title>Meu Primeiro Documento</title>
+
+  <section id="sec:intro">
+    <title>Introdução</title>
+    Escrever em Delta é simples. Fórmulas matemáticas funcionam diretamente na mesma linha, como $E = mc^2$.
+
+    <theorem id="thm:exemplo">
+      <title>Teorema de Exemplo</title>
+      <equation id="eq:1">a^2 + b^2 = c^2</equation>
+    </theorem>
+  </section>
+</document>

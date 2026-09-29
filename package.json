@@ -55,6 +55,7 @@
     "prepublishOnly": "npm run typecheck && npm test"
   },
   "dependencies": {
+    "delta-lang": "^0.2.6",
     "highlight.js": "^11.11.1",
     "katex": "^0.17.0",
     "saxes": "^6.0.0",

@@ -1,4 +1,4 @@
-<document lang="en" type="paper" theme-accent="green" theme-mode="dark">
+<document lang="en" type="paper" theme-accent="green" theme-mode="light">
   <import src="./packages/question" />
 
   <title>Laboratório de testes do questionário</title>
@@ -38,20 +38,21 @@
     <item> <c>timed="true"</c>: Habilita o modo cronometrado. A questão é ocultada inicialmente e exibe um botão para o usuário iniciar o tempo. </item>
     <item> <c>number="..."</c>: Define o número ou identificador da questão. </item>
     <item> <c>start-text="..."</c>: Personaliza o texto do botão de início (trata a questão do idioma ou adicionar instruções). </item>
+    <item> <c>randomize="true"</c>: aleatoriza as alternatizas da questão. </item>
     </itemize>
 
     Passe o mouse sobre as opções para testar o hover e clique para ver os estados de sucesso/erro.
 
     Inicie a questão para inicializar o cronômetro.
 
-    <question timed="true" number="Questão 1" start-text="▶︎">
+    <question timed="true" number="Questão 1" start-text="▶︎" randomize="true">
       <title> Derivadas Básicas </title>
       Qual a derivada de $x^2$?
       <option>$x$</option>
       <option correct="true">$2x$</option>
     </question>
 
-    <question>
+    <question randomize="true">
       Simulação de erro proposital:
       <option>Clique nesta opção errada</option>
       <option correct="true">Para ver como o componente revela esta correta</option>

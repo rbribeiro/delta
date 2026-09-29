@@ -54,6 +54,8 @@ customElements.define(
             const isTimed = this.getAttribute('timed') === 'true'; // definir se o timer será usado
             const qNumber = this.getAttribute('number'); // identificador da questão
 
+            const isRandomized = this.getAttribute('randomize') === 'true'; // definir se as alternativas serão randomizadas
+
             const customStartText = this.getAttribute('start-text') || 'Iniciar Questão';
 
             const titleNode = this.querySelector(':scope > delta-title');
@@ -62,7 +64,7 @@ customElements.define(
             boxElement.className = 'box delta-question-box';
 
             // Cria o cabeçalho com número, título ou cronômetro se forem definidos pelo usuário
-            if (qNumber || qTitle || isTimed) {
+            if (qNumber || titleNode || isTimed) {
                 const header = document.createElement('div');
                 header.className = 'delta-question-header';
 
@@ -109,6 +111,10 @@ customElements.define(
                     innerContent.appendChild(this.firstChild);
                 }
 
+                if (isRandomized) {
+                    this.shuffleOptions(innerContent);
+                }
+
                 this.startButton = document.createElement('button');
                 this.startButton.textContent = customStartText; // Usa o texto customizado
                 this.startButton.className = 'delta-start-btn'; // botão para iniciar a questão
@@ -133,6 +139,10 @@ customElements.define(
                 while (this.firstChild) {
                     contentContainer.appendChild(this.firstChild);
                 }
+
+                if (isRandomized) {
+                    this.shuffleOptions(contentContainer);
+                }
             }
             boxElement.appendChild(contentContainer);
             this.appendChild(boxElement);
@@ -156,6 +166,20 @@ customElements.define(
             if (this.timerInterval) {
                 clearInterval(this.timerInterval);
                 this.timerInterval = null;
+            }
+        }
+
+        shuffleOptions(container) { 
+            // Procura as opções apenas dentro do container da questão específica
+            const options = Array.from(container.querySelectorAll('delta-option'));
+            
+            if (options.length > 0) {
+                for (let i = options.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [options[i], options[j]] = [options[j], options[i]];
+                }
+            
+                options.forEach(option => container.appendChild(option)); 
             }
         }
     }
