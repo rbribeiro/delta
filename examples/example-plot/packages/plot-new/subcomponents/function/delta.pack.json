@@ -1,0 +1,6 @@
+{
+  "js": "index.js",
+  "needs": [
+    "./actions"
+  ]
+}

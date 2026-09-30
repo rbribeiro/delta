@@ -1,0 +1,16 @@
+{
+  "js": "index.js",
+  "css": "theme.css",
+  "needs": [
+    "./auxiliary",
+    "./factory",
+    "./data-handle",
+    "./actions",
+    "./subcomponents/title",
+    "./subcomponents/grid",
+    "./subcomponents/axis",
+    "./subcomponents/point",
+    "./subcomponents/points",
+    "./subcomponents/function"
+  ]
+}
