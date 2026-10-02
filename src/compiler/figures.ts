@@ -47,8 +47,8 @@ export function inlineFigures(doc: ElementNode, ctx: CompileContext): void {
     }
     try {
       const imgPath = resolve(base, src);
+      addDep(ctx, imgPath); // even when missing: `--watch` rebuilds once it appears
       const data = readFileSync(imgPath);
-      addDep(ctx, imgPath);
       el.attrs.src = `data:${mime};base64,${data.toString("base64")}`;
     } catch {
       warn(ctx, `figure image not found: ${src}`, el.pos);

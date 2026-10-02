@@ -12,7 +12,7 @@ const DEFAULT_LANG = "en";
 
 export const STRINGS: Record<string, Record<string, string>> = {
   en: {
-    // environment labels (one per ENVIRONMENT_TAGS entry)
+    // environment labels (one per ENVIRONMENTS entry in environments.ts)
     theorem: "Theorem",
     proposition: "Proposition",
     lemma: "Lemma",

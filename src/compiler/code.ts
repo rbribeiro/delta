@@ -1,10 +1,22 @@
-import hljs from "highlight.js";
+import { createRequire } from "node:module";
+import type { HLJSApi } from "highlight.js";
 import { textContent, type ElementNode, type Node, type Position } from "./ast";
 import { warn, type CompileContext } from "./context";
 import { escapeHtml, RAW_TAGS } from "./preprocess";
 
 /** The highlighted display block. Inline `<c>` stays literal (styled by CSS only). */
 const CODE_TAG = "code";
+
+const require = createRequire(import.meta.url);
+let hljsApi: HLJSApi | undefined;
+
+/**
+ * highlight.js with every language, loaded on the first `<code lang>`: importing it costs
+ * ~150 ms, more than compiling a typical document, and most documents have no code.
+ */
+function hljs(): HLJSApi {
+  return (hljsApi ??= require("highlight.js") as HLJSApi);
+}
 
 /**
  * Strips leading and trailing empty lines and dedents the code block by the minimum indentation of all non-empty lines. 
@@ -49,14 +61,14 @@ export function highlightCode(doc: ElementNode, ctx: CompileContext): void {
 
   function highlight(source: string, lang: string | undefined, pos?: Position): Node {
     if (!lang) return { type: "raw", html: escapeHtml(source) };
-    if (!hljs.getLanguage(lang)) {
+    if (!hljs().getLanguage(lang)) {
       warn(ctx, `code: unknown language "${lang}"`, pos);
       return { type: "raw", html: escapeHtml(source) };
     }
     try {
       // Highlight the code using highlight.js and return a raw node with the highlighted HTML.
       // This allows the highlighted code to be inserted directly into the output without further escaping.
-      return { type: "raw", html: hljs.highlight(source, { language: lang }).value };
+      return { type: "raw", html: hljs().highlight(source, { language: lang }).value };
     } catch (e) {
       warn(ctx, `code: ${e instanceof Error ? e.message : String(e)}`, pos);
       return { type: "raw", html: escapeHtml(source) };

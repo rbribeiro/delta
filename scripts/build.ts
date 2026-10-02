@@ -56,7 +56,7 @@ function coreCss(): string {
  *  Adding either is just dropping a file in the directory — no wiring here. */
 function cssMap(dir: string): Record<string, string> {
   const out: Record<string, string> = {};
-  for (const f of readdirSync(dir)) {
+  for (const f of readdirSync(dir).sort()) {
     if (f.endsWith(".css")) out[f.replace(/\.css$/, "")] = readFileSync(join(dir, f), "utf8");
   }
   return out;

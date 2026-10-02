@@ -117,11 +117,16 @@ class DeltaEnvironment extends HTMLElement {
         footer.className = "box-meta";
         for (const item of metaItems) {
           const label = item.getAttribute("key");
-          const value = item.innerHTML.trim();
-          if (label && value) {
+          if (label && item.textContent?.trim()) {
+            const k = document.createElement("span");
+            k.className = "k";
+            k.textContent = label;
+            const v = document.createElement("span");
+            v.className = "v";
+            v.append(" ", ...item.childNodes);
             const pair = document.createElement("span");
             pair.className = "box-meta-item";
-            pair.innerHTML = `<span class="k">${label}</span><span class='v'> ${value}</span>`;
+            pair.append(k, v);
             footer.appendChild(pair);
           }
         }

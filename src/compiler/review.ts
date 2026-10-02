@@ -24,7 +24,7 @@ import { proofTarget } from "./structure";
  * each tagged with its home output; otherwise per-file. It always returns the fully
  * tagged list for `ProjectResult.review` (the CLI).
  */
-export function buildReview(doc: ElementNode, ctx: CompileContext): void {
+function buildReview(doc: ElementNode, ctx: CompileContext): void {
   ctx.review = collectReview(doc, ctx, usedIds(doc, ctx), { auto: 0 });
 }
 

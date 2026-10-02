@@ -23,7 +23,6 @@ export const HEADING_LEVEL: Record<string, number> = {
   subsection: 3,
   subsubsection: 4,
 };
-const LEVEL = HEADING_LEVEL;
 
 /** Mutable slug counter, threaded so auto-ids stay unique across a project's files. */
 export interface SlugState {
@@ -99,7 +98,7 @@ function collectHeadings(
   const out: TocEntry[] = [];
   // A deleted (<old>) or commented-out heading is not part of the paper.
   for (const el of elements(doc, OPAQUE)) {
-    const level = LEVEL[el.tag];
+    const level = HEADING_LEVEL[el.tag];
     if (level === undefined) continue;
 
     const titleEl = titleOf(el);

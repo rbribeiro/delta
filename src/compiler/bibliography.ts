@@ -72,7 +72,7 @@ export function numberCitations(doc: ElementNode, ctx: CompileContext): void {
  * @param doc the root ElementNode from which we start looking for the `<bibliography>` tag
  * @param ctx the compiler context
  */
-export function fillBibliography(doc: ElementNode, ctx: CompileContext): void {
+function fillBibliography(doc: ElementNode, ctx: CompileContext): void {
   if (ctx.citedPapers.length === 0) return;
 
   const bib = [...elements(doc)].find((e) => e.tag === "bibliography");

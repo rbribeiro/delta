@@ -152,6 +152,13 @@
   --delta-aid-strategy:     var(--delta-ink-soft);
   --delta-aid-obstacle:     var(--delta-warn);
 
+  /* The play button drawn over a video's poster image (components/figure.css). It sits
+     on a photo, not on the page, so it ignores dark mode: a dark disc with a white
+     triangle that turns red on hover, the convention readers recognise. */
+  --delta-video-play:       rgb(18 18 18 / 0.78);
+  --delta-video-play-hover: rgb(255 0 0);
+  --delta-video-play-icon:  rgb(255 255 255);
+
   /* The quiet figures: heading numbers and equation numbers. One token, because
      they are the same typographic gesture — a number set back from its content. */
   --delta-num:          var(--delta-mute);

@@ -123,6 +123,10 @@
           <column mono="true">--delta-tone-theorem, -definition, -example, -remark, -exercise</column>
           <column>O rótulo de cada família de ambientes</column>
         </row>
+        <row>
+          <column mono="true">--delta-video-play, -play-hover, -play-icon</column>
+          <column>O botão de play sobre a imagem de um vídeo (fundo, fundo ao passar o mouse, triângulo)</column>
+        </row>
       </table>
 
       <code lang="css" numbered="false">

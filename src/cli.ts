@@ -163,19 +163,28 @@ function buildOnce(opts: BuildOptions): BuildOutcome {
  * directories containing the deps and filters events to the dep basenames, which is
  * robust to editors' atomic save-as-rename and means writing the output file (not a
  * source dep) never triggers a rebuild loop.
+ *
+ * The watchers stay open across builds, so a save that lands while a build runs is
+ * queued and triggers the next one. They are recreated only when the dep set changed
+ * (an `<include>` added or removed, a figure renamed).
  */
 function runWatch(opts: BuildOptions): void {
   let watchers: FSWatcher[] = [];
+  let watched = "";
   let timer: NodeJS.Timeout | undefined;
-  let building = false;
-  let dirty = false;
 
-  const closeWatchers = (): void => {
-    for (const w of watchers) w.close();
-    watchers = [];
+  const trigger = (): void => {
+    clearTimeout(timer);
+    timer = setTimeout(rebuild, 80); // debounce the burst editors emit per save
   };
 
-  const setupWatchers = (deps: string[]): void => {
+  const watchDeps = (deps: string[]): void => {
+    const key = [...deps].sort().join("\n");
+    if (key === watched) return;
+    watched = key;
+    for (const w of watchers) w.close();
+    watchers = [];
+
     const byDir = new Map<string, Set<string>>();
     for (const f of deps) {
       const dir = dirname(f);
@@ -197,24 +206,10 @@ function runWatch(opts: BuildOptions): void {
     console.error(`watching ${deps.length} files… (Ctrl-C to stop)`);
   };
 
-  const rebuild = (): void => {
-    building = true;
-    dirty = false;
-    closeWatchers();
+  function rebuild(): void {
     const { deps } = buildOnce(opts); // reports + writes; never exits in watch mode
-    setupWatchers(deps);
-    building = false;
-    if (dirty) trigger(); // a change landed mid-build — go again
-  };
-
-  const trigger = (): void => {
-    if (building) {
-      dirty = true;
-      return;
-    }
-    clearTimeout(timer);
-    timer = setTimeout(rebuild, 80); // debounce the burst editors emit per save
-  };
+    watchDeps(deps);
+  }
 
   rebuild(); // initial build + watch
 }

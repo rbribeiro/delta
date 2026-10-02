@@ -1,7 +1,6 @@
 import { basename, dirname } from "node:path";
-import { elements, hasTag, titleOf, type ElementNode, type Node } from "./ast";
+import { hasTag, titleOf, type ElementNode, type Node } from "./ast";
 import type { CompileContext } from "./context";
-import { OPAQUE } from "./numbering";
 import { escapeAttr, escapeHtml } from "./preprocess";
 import { katexCss } from "./katex-css";
 import { plainText } from "./review";
@@ -19,14 +18,14 @@ const CONTAINER_TAGS = new Set(["chapter", "section", "subsection", "subsubsecti
  * 
  * @param doc - the root AST node of the document to emit
  * @param ctx - the compilation context, which contains information about the document and its dependencies
- * @param globalById - an optional map of element IDs to their corresponding AST nodes, used for cross-file references
+ * @param globalById - id → element across every file of the build (one file's ids on a single-file build)
  * 
  * @returns - the serialized HTML string
  */
 export function emit(
   doc: ElementNode,
   ctx: CompileContext,
-  globalById?: Map<string, ElementNode>,
+  globalById: Map<string, ElementNode>,
 ): string {
   const strings = stringsFor(resolveLang(ctx.lang));
   const titleEl = titleOf(doc);
@@ -49,7 +48,7 @@ export function emit(
   // it into a pop-over preview without a fetch. Only referenced ids are emitted.
   // On the project path `globalById` spans every file, so a cross-file target's
   // copy ships into this output too.
-  const templates = renderTemplates(doc, ctx, globalById);
+  const templates = renderTemplates(ctx, globalById);
   // Heading tree for <delta-toc>, shipped as an inert JSON island.
   const toc = renderTocIsland(ctx);
   // Collaboration data (<team> + the items a <review> panel lists), same shape.
@@ -117,32 +116,23 @@ ${packScripts}
  * 
  * Builds an inert `<template data-delta-pop="id">…</template>` at the end of the page
  * for every element referenced by a `<ref>`/`<cite>`/`<solution of>`/`<proof of>` (recorded in `ctx.referencedIds`). 
- * The runtime clones a template into the pop-over preview, so no fetch is needed. On the project path the caller
- * passes a `globalById` that maps every element ID to its AST node across all files, so copying a node from another file still works. 
+ * The runtime clones a template into the pop-over preview, so no fetch is needed. `globalById` maps every
+ * element ID to its AST node across all files, so copying a node from another file still works.
  * Returns an empty string when nothing is referenced.
  * 
- * @param doc - the root AST node of the document to emit
  * @param ctx - the compilation context, which contains information about the document and its dependencies
- * @param globalById - an optional map of element IDs to their corresponding AST nodes, used for cross-file references
+ * @param globalById - id → element across every file of the build
  * 
  * @returns - the serialized HTML string of the templates for referenced IDs or empty string if no IDs are referenced
  */
 function renderTemplates(
-  doc: ElementNode,
   ctx: CompileContext,
-  globalById?: Map<string, ElementNode>,
+  globalById: Map<string, ElementNode>,
 ): string {
   if (ctx.referencedIds.size === 0) return "";
-  const byId = globalById ?? new Map<string, ElementNode>();
-  if (!globalById) {
-    for (const el of elements(doc, OPAQUE)) {
-      const id = el.attrs.id;
-      if (id && !byId.has(id)) byId.set(id, el);
-    }
-  }
   const out: string[] = [];
   for (const id of ctx.referencedIds) {
-    const node = byId.get(id);
+    const node = globalById.get(id);
     if (node) {
       // For elements that contain a lot of other elements such as chapters, sections, and so on
       // the template holds only the title

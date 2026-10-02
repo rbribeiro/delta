@@ -14,6 +14,9 @@
 /** Tags whose text content is taken literally — protected here, never `$`-scanned. */
 export const RAW_TAGS = new Set(["m", "math", "equation", "equations", "code", "c"]);
 
+/** The closing tag of each RAW_TAGS element; global, so a search can start mid-file (`lastIndex`). */
+const CLOSE_TAG = new Map([...RAW_TAGS].map((tag) => [tag, new RegExp(`</\\s*${tag}\\s*>`, "g")]));
+
 const ENTITIES: Record<string, string> = { "&": "&amp;", "<": "&lt;", ">": "&gt;" };
 
 /** Entity-escapes `&`, `<` and `>`. Shared by this pass, the code highlighter and the emitter. */
@@ -168,12 +171,13 @@ function copyMarkup(
   const name = /^<([A-Za-z][\w-]*)/.exec(text);
   const selfClosing = /\/\s*>$/.test(text);
   if (name && RAW_TAGS.has(name[1]) && !selfClosing) {
-    const closeTag = new RegExp(`</\\s*${name[1]}\\s*>`);
-    const match = closeTag.exec(source.slice(end));
+    const closeTag = CLOSE_TAG.get(name[1])!;
+    closeTag.lastIndex = end;
+    const match = closeTag.exec(source);
     if (match) {
-      esc(end, end + match.index);
-      copy(end + match.index, end + match.index + match[0].length);
-      return end + match.index + match[0].length;
+      esc(end, match.index);
+      copy(match.index, closeTag.lastIndex);
+      return closeTag.lastIndex;
     }
   }
   return end;

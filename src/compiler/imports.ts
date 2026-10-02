@@ -33,8 +33,8 @@ interface PackManifest {
  * available) and the CSS before the author theme. The `<import>` nodes are stripped so they never
  * serialize as `<delta-import>`. Document-level only — no tree walk.
  *
- * The shared resolution lives in `resolvePack`, which `project.ts` also calls for `project.toml`
- * `packages`, so all channels feed the one inliner. The output references nothing external: pack
+ * The shared resolution lives in `resolvePack`, which the pipeline's `resolvePackages` step also
+ * calls for `project.toml` `packages`, so all channels feed the one inliner. The output references nothing external: pack
  * files are inlined, an external reference inside one (via `fetch()`, `import()`, or `http(s)://`)
  * is a warning. A `src`-less import warns; an unresolvable pack is an error.
  *
@@ -53,7 +53,7 @@ export function resolveImports(doc: ElementNode, ctx: CompileContext): void {
 
   const baseDir = resolve(dirname(ctx.file));
   // Dedup by absolute entry path, seeded with packages already on ctx.imports (e.g. injected
-  // project-wide by project.ts) so the same pack reached through two channels inlines once.
+  // project-wide by the pipeline) so the same pack reached through two channels inlines once.
   const seen = new Set(ctx.imports.map((i) => i.source));
   for (const node of imports) {
     const src = node.attrs.src;

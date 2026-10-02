@@ -25,7 +25,8 @@ and in Portuguese, with an interactive step-by-step explorer, is the site page
 
 Three node types, nothing else: `ElementNode` (any tag, keyed by the `tag` string, with an
 `attrs` bag and `children`), `TextNode`, and `RawNode` (pre-rendered HTML the emitter copies
-verbatim; only KaTeX and the code highlighter produce one). There are no per-feature
+verbatim; produced by KaTeX, the code highlighter, the proof-map layout and the line-break
+pass). There are no per-feature
 subclasses. Passes branch on `tag` and **write results back into `attrs`** (numbering writes
 `num`; references write `data-target-num`). `elements()`, `textContent()`, `hasTag()` and
 `titleOf()` are the helpers passes use to walk and read the tree.

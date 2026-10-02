@@ -3,7 +3,8 @@
  * Passes branch on `tag` and write computed results back into `attrs` (for instance, the
  * numbering pass writes `num`); there are no per-feature node subclasses, so adding
  * an environment is configuration, not a new node type. RawNode carries pre-rendered
- * HTML (KaTeX output) that the emitter must not escape.
+ * HTML the emitter must not escape: KaTeX output, highlighted code, a proof map's SVG,
+ * and the `<br>`s of a blank line inside `<linebreaks>`.
  */
 
 /** A position represents the location of a node in the source document. It is used for warning and error reporting. */
@@ -109,12 +110,12 @@ export function titleOf(el: ElementNode): ElementNode | undefined {
  * @param id  - the id
  * @returns - the element with the given id, or null if not found, or undefined if multiple elements are found
  */
-export function findElementById(root: ElementNode,id: string): ElementNode | null | undefined {
-  let elementList: ElementNode[] = []
+export function findElementById(root: ElementNode, id: string): ElementNode | null | undefined {
+  let found: ElementNode | null = null;
   for (const el of elements(root)) {
-    if(el.attrs?.id === id) elementList.push(el);
+    if (el.attrs.id !== id) continue;
+    if (found) return undefined;
+    found = el;
   }
-  if(elementList.length === 0) return null;
-  if(elementList.length > 1) return undefined;
-  return elementList[0];
+  return found;
 }

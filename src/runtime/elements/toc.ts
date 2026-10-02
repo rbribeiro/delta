@@ -52,11 +52,11 @@ class DeltaToc extends HTMLElement {
     const nav = document.createElement("nav");
     nav.className = "toc";
     const title = this.querySelector(":scope > delta-title");
-    const heading = title ? title.innerHTML :t("contents", "Contents");
-    nav.setAttribute("aria-label", heading);
+    nav.setAttribute("aria-label", (title && spokenText(title)) || t("contents", "Contents"));
     const titleEl = document.createElement("div");
     titleEl.className = "toc-title";
-    titleEl.innerHTML = heading;
+    if (title) titleEl.append(...title.childNodes);
+    else titleEl.textContent = t("contents", "Contents");
     nav.append(titleEl);
 
     const root = document.createElement("ol");
@@ -122,6 +122,16 @@ class DeltaToc extends HTMLElement {
     nav.append(root);
     this.replaceChildren(nav);
   }
+}
+
+/**
+ * The text a screen reader should hear for `el`. KaTeX renders each formula three times
+ * (MathML, a TeX annotation, the visual HTML); only the MathML reading is kept.
+ */
+function spokenText(el: Element): string {
+  const copy = el.cloneNode(true) as Element;
+  for (const dup of copy.querySelectorAll(".katex-html, annotation")) dup.remove();
+  return copy.textContent?.replace(/\s+/g, " ").trim() ?? "";
 }
 
 export function defineToc(): void {

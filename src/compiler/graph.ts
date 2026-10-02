@@ -287,7 +287,7 @@ export function buildGraph(files: GraphInput[], registry: Map<string, LabelEntry
 }
 
 /** Hash length in hex characters: short enough to read, long enough never to collide by accident. */
-export const HASH_LENGTH = 12;
+const HASH_LENGTH = 12;
 
 /**
  * What a verification of `n` vouches for: its statement, its (first) proof, and the
@@ -295,7 +295,7 @@ export const HASH_LENGTH = 12;
  * parents' proofs: re-proving a lemma does not disturb what uses it, but changing what
  * the lemma *says* does. See `normalizedContent` for what counts as a change.
  */
-export function checkedHash(graph: ProofGraph, n: GraphNode): string {
+function checkedHash(graph: ProofGraph, n: GraphNode): string {
   const parts = [
     ["statement", normalizedContent(graph, n.el)],
     ["proof", n.proofs[0] ? normalizedContent(graph, n.proofs[0]) : ""],
@@ -316,7 +316,7 @@ const UNCHECKED = new Set([...AID_TAGS, "title", "comment", "todo"]);
  * whitespace collapsed: reflowing a paragraph changes nothing, any other edit does. An
  * `<include src>` counts as the included file's text, so editing that file is an edit too.
  */
-export function normalizedContent(graph: ProofGraph, el: ElementNode): string {
+function normalizedContent(graph: ProofGraph, el: ElementNode): string {
   const span = el.src;
   if (!span || !graph.sources.has(span.file)) return "";
   // Cuts per file: an included child's offsets are in its own file.

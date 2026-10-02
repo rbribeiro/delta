@@ -17,14 +17,6 @@ export function freshNumbering(): NumberingState {
 }
 
 /**
- * Numbers all elements in the document according to their environment specifications.
- * The function traverses the document tree, assigning numbers to elements based on their environment specifications. It also registers elements with IDs in the compilation context's registry.
- * @param doc - the root element of the document
- * @param ctx - the compilation context
- * @param state - the current numbering state, used to continue numbering across files
- * @returns the updated numbering state
- */
-/**
  * Tags whose *descendants* are neither numbered nor registered: collaboration markup
  * that a `--final` build removes (`comment`, `todo`) or rejects (`old`). An equation
  * quoted inside a comment must not shift the paper's numbering between the review build
@@ -33,11 +25,18 @@ export function freshNumbering(): NumberingState {
  */
 export const OPAQUE = new Set(["comment", "todo", "old"]);
 
+/**
+ * Numbers all elements in the document according to their environment specifications.
+ * The function traverses the document tree, assigning numbers to elements based on their environment specifications. It also registers elements with IDs in the compilation context's registry.
+ * @param doc - the root element of the document
+ * @param ctx - the compilation context
+ * @param state - the current numbering state, used to continue numbering across files (updated in place)
+ */
 export function numberDocument(
   doc: ElementNode,
   ctx: CompileContext,
   state: NumberingState = freshNumbering(),
-): NumberingState {
+): void {
   const { counters, display } = state;
 
   const assign = (el: ElementNode, spec: EnvironmentSpec): void => {
@@ -93,5 +92,4 @@ export function numberDocument(
 
   register(doc);
   visit(doc);
-  return state;
 }

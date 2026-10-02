@@ -1,7 +1,16 @@
 import { elements, type ElementNode, type Node } from "./ast";
-import { warn, type CompileContext } from "./context";
+import type { CompileContext } from "./context";
 import { RAW_TAGS } from "./preprocess";
 import { changeParts } from "./collab";
+
+/** What a `--final` build stripped from one file. */
+export interface FinalStats {
+  openComments: number;
+  openTasks: number;
+  /** Blocks whose status is not `verified` (drafts included). */
+  unverified: number;
+  changesAccepted: number;
+}
 
 /**
  * `--final` — the clean publication build. Strips every collaboration mark from the tree
@@ -17,25 +26,14 @@ import { changeParts } from "./collab";
  * counter (numbering.ts's OPAQUE set already keeps a review build's numbers identical).
  * The block marks go later, at the start of render: the proof graph reads a proof's
  * `status` as its trust, and a final build's proof map must still show it.
- * A no-op unless `ctx.final`. Returns what it found; with `report` it warns once with the
- * counts ("final build: 3 open comments, …") so the author knows the paper is not done.
+ * A no-op unless `ctx.final`. Returns what it found; the pipeline sums the counts over the
+ * project and warns once ("final build: 3 open comments, …") so the author knows the paper
+ * is not done.
  */
-export interface FinalStats {
-  openComments: number;
-  openTasks: number;
-  /** Blocks whose status is not `verified` (drafts included). */
-  unverified: number;
-  changesAccepted: number;
-}
-
-export function finalizeReview(doc: ElementNode, ctx: CompileContext, report = true): FinalStats {
+export function finalizeReview(doc: ElementNode, ctx: CompileContext): FinalStats {
   const stats: FinalStats = { openComments: 0, openTasks: 0, unverified: 0, changesAccepted: 0 };
   if (!ctx.final) return stats;
   strip(doc, stats);
-  if (report) {
-    const msg = describeFinal(stats);
-    if (msg) warn(ctx, msg);
-  }
   return stats;
 }
 

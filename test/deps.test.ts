@@ -37,6 +37,13 @@ describe("dependency tracking (for --watch)", () => {
     expect(withBuiltin.deps).toEqual([resolve("test/fixtures/theme-builtin.dlt")]);
   });
 
+  it("records a missing include or figure, so --watch rebuilds once it appears", () => {
+    const include = compileFile(resolve("test/fixtures/missing-include.dlt"));
+    expect(include.deps).toContain(resolve("test/fixtures/not-written-yet.dlt"));
+    const figure = compileFile(resolve("test/fixtures/missing-figure.dlt"));
+    expect(figure.deps).toContain(resolve("test/fixtures/not-drawn-yet.png"));
+  });
+
   it("unions deps across every input on the project path", () => {
     const { config } = loadProjectConfig(resolve("examples/project/project.toml"));
     expect(config).toBeDefined();

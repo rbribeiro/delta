@@ -193,7 +193,7 @@ export const PIPELINE: Phase[] = [
         name: "finalizeReview",
         what: "--final only: strip comments/tasks/team, accept changes. Before numbering, so nothing stripped consumes a counter. Block marks (status, by) stay for the graph.",
         each: perFile((doc, ctx, s) => {
-          s.finalStats.push(finalizeReview(doc, ctx, false));
+          s.finalStats.push(finalizeReview(doc, ctx));
         }),
       },
       {
