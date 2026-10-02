@@ -43,7 +43,6 @@
     "build": "tsx scripts/build.ts",
     "predev": "npm run assets",
     "dev": "tsx src/cli.ts",
-    "pretest": "npm run assets",
     "test": "vitest run",
     "test:watch": "vitest",
     "pretypecheck": "npm run assets",
@@ -75,6 +74,7 @@
     "@types/katex": "^0.16.8",
     "@types/node": "^25.9.3",
     "esbuild": "^0.28.1",
+    "happy-dom": "^20.14.5",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3",
     "vitest": "^4.1.8"

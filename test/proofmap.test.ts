@@ -1,16 +1,5 @@
-import { mkdtempSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { compileProject } from "../src/compiler/project";
-
-function build(files: Record<string, string>) {
-  const dir = mkdtempSync(join(tmpdir(), "delta-map-"));
-  for (const [name, src] of Object.entries(files)) writeFileSync(join(dir, name), src);
-  const r = compileProject({ inputs: Object.keys(files).map((n) => join(dir, n)), outDir: dir });
-  const html = (name: string) => r.outputs.find((o) => o.path.endsWith(name))?.html ?? "";
-  return { ...r, html };
-}
+import { compileFiles as build } from "./helpers";
 
 const doc = (body: string) => `<document lang="pt-BR"><section id="s"><title>S</title>${body}</section></document>`;
 

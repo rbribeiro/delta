@@ -1,12 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { createContext } from "../src/compiler/context";
-import { compileSource } from "../src/compiler/index";
 import { filterReview, formatReviewText, reviewJson, summarize, type ReviewData } from "../src/review-report";
+import { compile } from "./helpers";
 
 function data(src: string): ReviewData {
-  const ctx = createContext("test.dlt");
-  const html = compileSource(src, ctx);
-  if (html === undefined) throw new Error("compile failed: " + JSON.stringify(ctx.diagnostics));
+  const { ctx } = compile(src);
   return { team: [...ctx.team.values()], items: ctx.review };
 }
 

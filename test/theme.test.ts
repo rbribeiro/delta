@@ -1,26 +1,19 @@
 import { describe, expect, it } from "vitest";
 import type { ElementNode } from "../src/compiler/ast";
 import { createContext, type CompileContext } from "../src/compiler/context";
-import { compileSource } from "../src/compiler/index";
 import { parse } from "../src/compiler/parse";
 import { preprocess } from "../src/compiler/preprocess";
 import { isBuiltinThemeName, resolveTheme } from "../src/compiler/theme";
 import { BUILTIN_THEMES, CORE_CSS, THEMES } from "../src/generated/assets";
+import { compileHtml, parsed } from "./helpers";
+
+const compile = (src: string): string => compileHtml(src, { file: "test/doc.dlt" });
 
 // ctx.file lives in test/, so a `theme` path resolves relative to test/.
 function resolved(src: string): { doc: ElementNode; ctx: CompileContext } {
-  const ctx = createContext("test/doc.dlt");
-  const doc = parse(preprocess(src), ctx);
-  if (!doc) throw new Error("parse failed: " + JSON.stringify(ctx.diagnostics));
+  const { doc, ctx } = parsed(src, "test/doc.dlt");
   resolveTheme(doc, ctx);
   return { doc, ctx };
-}
-
-function compile(src: string): string {
-  const ctx = createContext("test/doc.dlt");
-  const html = compileSource(src, ctx);
-  if (html === undefined) throw new Error("compile failed: " + JSON.stringify(ctx.diagnostics));
-  return html;
 }
 
 describe("resolveTheme", () => {

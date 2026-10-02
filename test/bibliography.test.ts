@@ -1,27 +1,21 @@
 import { describe, expect, it } from "vitest";
 import { elements, type ElementNode } from "../src/compiler/ast";
 import { loadBibliography, resolveCitations } from "../src/compiler/bibliography";
-import { createContext, type CompileContext } from "../src/compiler/context";
-import { compileSource } from "../src/compiler/index";
-import { parse } from "../src/compiler/parse";
-import { preprocess } from "../src/compiler/preprocess";
+import type { CompileContext } from "../src/compiler/context";
+import { compileHtml, parsed, warnings } from "./helpers";
 
-// ctx.file lives in test/, so a `src` resolves relative to test/.
-function run(src: string): { doc: ElementNode; ctx: CompileContext } {
-  const ctx = createContext("test/doc.dlt");
-  const doc = parse(preprocess(src), ctx);
-  if (!doc) throw new Error("parse failed: " + JSON.stringify(ctx.diagnostics));
-  loadBibliography(doc, ctx);
-  resolveCitations(doc, ctx);
-  return { doc, ctx };
+// The document lives in test/, so a `src` resolves relative to test/.
+const FILE = "test/doc.dlt";
+
+/** Parsed, papers loaded and citations numbered: the bibliography passes by hand. */
+function run(src: string) {
+  const out = parsed(src, FILE);
+  loadBibliography(out.doc, out.ctx);
+  resolveCitations(out.doc, out.ctx);
+  return out;
 }
 
-function compile(src: string): string {
-  const ctx = createContext("test/doc.dlt");
-  const html = compileSource(src, ctx);
-  if (html === undefined) throw new Error("compile failed: " + JSON.stringify(ctx.diagnostics));
-  return html;
-}
+const compile = (src: string): string => compileHtml(src, { file: FILE });
 
 const bibPaperIds = (doc: ElementNode): string[] => {
   const bib = [...elements(doc)].find((e) => e.tag === "bibliography");
@@ -31,8 +25,7 @@ const bibPaperIds = (doc: ElementNode): string[] => {
 };
 const cite = (doc: ElementNode): ElementNode | undefined =>
   [...elements(doc)].find((e) => e.tag === "cite");
-const warned = (ctx: CompileContext, re: RegExp): boolean =>
-  ctx.diagnostics.some((d) => d.severity === "warning" && re.test(d.message));
+const warned = (ctx: CompileContext, re: RegExp): boolean => warnings(ctx).some((m) => re.test(m));
 
 describe("loadBibliography", () => {
   it("collects inline <paper> entries into ctx.papers", () => {

@@ -217,7 +217,7 @@ usable on its own. Checked items are implemented and tested.
        runtime `t()`; environment labels localized. 
 - [ ] 29. Diagnostics polish: warnings for unresolved refs/cites, unclosed math regions
 - [x] 30. Author documentation (docs/get-started) and richer examples
-- [x] 31. Code component with highlight syntax
+- [x] 65. Code component with highlight syntax
 
 ## M7 — Presentations (core deck)
 

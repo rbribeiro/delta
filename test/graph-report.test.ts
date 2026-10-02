@@ -1,8 +1,5 @@
-import { mkdtempSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { basename, join } from "node:path";
+import { basename } from "node:path";
 import { describe, expect, it } from "vitest";
-import { compileProject } from "../src/compiler/project";
 import { AID_TAGS } from "../src/language/tags";
 import {
   frontierText,
@@ -15,13 +12,12 @@ import {
   sliceOf,
   usesText,
 } from "../src/graph-report";
+import { compileFiles } from "./helpers";
 
 const rel = (f: string) => basename(f);
 
 function build(src: string) {
-  const dir = mkdtempSync(join(tmpdir(), "delta-report-"));
-  writeFileSync(join(dir, "p.dlt"), src);
-  const r = compileProject({ inputs: [join(dir, "p.dlt")], outDir: dir });
+  const r = compileFiles({ "p.dlt": src });
   return { graph: r.graph!, diagnostics: r.diagnostics };
 }
 

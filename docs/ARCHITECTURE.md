@@ -35,9 +35,11 @@ subclasses. Passes branch on `tag` and **write results back into `attrs`** (numb
 
 One mutable `CompileContext` per file, threaded through every pass. Passes never call each
 other and share no globals: they communicate **only** through this object and through node
-attrs. It carries `diagnostics`, `registry` (id → `{tag, num}`), `referencedIds`, `toc`,
-`mathUsed`, `lang`, the theme fields, `imports`, `papers`, `citedPapers`, `team`, `review`,
-`final` and `deps`. The who-writes / who-reads matrix is in the site page; the rule it proves
+attrs (what they share as code is the vocabulary in `src/language/` and the readings in
+`paper.ts`). It carries `file`, `sources` (each file read → its text), `outName`,
+`diagnostics`, `registry` (id → `{tag, num}`), `referencedIds`, `toc`, `mathUsed`, `lang`,
+the theme fields (`userCss`, `builtinCss`, `themeAccent`, `themeMode`), `imports`, `papers`,
+`citedPapers`, `team`, `review`, `final` and `deps`. The who-writes / who-reads matrix is in the site page; the rule it proves
 is that every read comes *after* its write in pipeline order. In a project, four of those
 maps (`registry`, `papers`, `citedPapers`, `team`) are the **same instance** in every file's
 context; the rest of the project-wide state (`numbering`, `autoIds`, `globalById`, `idToFile`,
@@ -146,6 +148,8 @@ src/
   commands.ts                  every `delta` command: parseArgs, resolveInputs, compileInputs (stopAfter), print/write
   verify.ts                    `delta verify`: checks, then signs a proof in place (setAttributes)
   review-report.ts             `delta review` text/JSON formatting (pure)
+  graph-report.ts              outline/show/uses/graph/lint as text or JSON, plus frontier/overclaimed (pure)
+  agent-guide.ts               the text `delta agent-guide` prints
   scaffold.ts, install.ts      `delta create`, `delta install`
   language/                    the vocabulary, pure data, imported by compiler AND runtime
     tags.ts                    tag families (HEADING_LEVEL, RESULT_TAGS, BOX_TAGS, RAW_TAGS, OPAQUE, …)
@@ -168,10 +172,15 @@ src/
     final.ts                   --final: strip marks, accept changes (the clean publication)
     team.ts                    <team>/<member> → ctx.team (node removed)
     collab.ts                  comment/todo/change/status vocabulary: defaults + warnings
+    structure.ts               linkProofs (a proof without `of`), numbered steps and hypotheses
+    understanding.ts           reader aids (<intuition>, <strategy>, <obstacle>): placement + fold default
     animated.ts, cover.ts      presentation sugar (animated → reveal; <cover> → <slide>)
     bibliography.ts            load .ref papers; number <cite>; fill the (first) <bibliography>
     numbering.ts               assigns num attrs, fills the registry; NumberingState
     crossfile.ts               buildIdMaps (globalById/idToFile); cross-file href annotations
+    graph.ts                   the proof graph: nodes, edges, trust propagation, cycles; annotateHypotheses, markStale
+    graph-hash.ts              the hash a verification is pinned to (what counts as changing a proof)
+    proofmap.ts                <proof-map> → a laid-out SVG of the graph (layered layout, at compile time)
     math.ts                    compile-time KaTeX (+ \ref{} inside math)
     code.ts                    compile-time highlight.js for <code lang>
     toc.ts                     heading tree + auto-slug ids (single + project)
@@ -186,7 +195,8 @@ src/
   runtime/
     index.ts                   registers the custom elements; window.Delta
     deck.ts                    the presentation controller
-    utils.ts, i18n.ts          the shared popover controller; t(key) from the #delta-i18n island
+    utils.ts, i18n.ts          the shared popover controller; t(key) and nameOf(tag) from the #delta-i18n island
+    island.ts                  readIsland: the JSON islands (#delta-i18n, #delta-toc, #delta-review), parsed once
     elements/                  one <delta-*> custom element per file (browser chrome)
   styles/
     base.css                   @layer delta.base — tokens + page grid + primitives
@@ -204,7 +214,10 @@ site/packs/inicio/             the landing page's pack: <go> (a same-tab link) a
 site/exemplos/                 the live examples linked from the landing page (article, presentation, book project);
                                built by `npm run docs:exemplos` into docs/exemplos/, outside the site project
 examples/                      hello.dlt (single file), project/ (multi-file), collab.dlt, slides.dlt
-test/                          one suite per pass; helpers.ts (compile/parsed/numbered); pipeline.test.ts
+test/                          compiler suites (most passes have one); helpers.ts (compile/parsed/numbered/compileFiles);
+                               pipeline.test.ts pins the step list; language.test.ts the vocabulary
+test/runtime/                  runtime suites in happy-dom: helpers.ts `mount(dlt)`, one file per element family
+test/browser.ts                real Chromium, for hit-testing and overflow only (hittest/overflow tests)
 ```
 
 The single most important file to internalize is

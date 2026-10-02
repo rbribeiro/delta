@@ -37,8 +37,10 @@ compiles, type-checks or tests. `buildAssets()` writes four constants:
   [src/runtime/index.ts](../src/runtime/index.ts) into a single **minified IIFE** string
   (`format: "iife"`, `target: "es2020"`, `bundle: true`, `write: false`). The emitter drops
   this verbatim into a `<script>` at the end of `<body>`.
-- **`CORE_CSS`** -- `src/styles/base.css` followed by **every** `src/styles/components/*.css`
-  (read in sorted filename order) concatenated into one string. The `@layer` declaration at
+- **`CORE_CSS`** -- the `@font-face` rules for Newsreader (the body font, its woff2 files
+  inlined as `data:` URIs from `@fontsource-variable/newsreader`), then `src/styles/base.css`,
+  then **every** `src/styles/components/*.css` (read in sorted filename order), concatenated
+  into one string. `src/styles/staged/` is not read. The `@layer` declaration at
   the top of `base.css` fixes the cascade order, so concatenation order beyond "base first"
   does not matter. Adding a `components/<name>.css` file needs no build wiring -- it is picked
   up automatically.
@@ -63,7 +65,7 @@ two-file sample in `site/packs/pipeline/sample/` with the pipeline's `trace` hoo
 the tree, the per-file context and the shared state after every step, and writes the data
 plus the hand-written `element.js` as one classic script. The site page `compilador.dlt`
 imports that pack, so the explorer is inlined into `docs/compilador.html` like any other
-pack. `npm run trace` regenerates it; `predocs` does so automatically.
+pack. `npm run trace` regenerates it; `predocs:site` and `predocs:watch` do so automatically.
 
 ## Step 2: the CLI bundle (`dist/cli.js`)
 
@@ -73,7 +75,7 @@ pack. `npm run trace` regenerates it; `predocs` does so automatically.
 points the published binary at it:
 
 ```json
-"bin":   { "delta": "./dist/cli.js" },
+"bin":   { "delta": "dist/cli.js", "dlt": "dist/cli.js" },
 "files": ["dist"]
 ```
 
@@ -91,27 +93,35 @@ So `npm publish` ships only `dist/`, and an installed `delta` command runs the b
 | `typecheck` | `tsc --noEmit` | type-check without emitting |
 | `example` | `tsx src/cli.ts build examples/hello.dlt -o out.html` | compile the single-file example |
 | `example:project` | `tsx src/cli.ts build examples/project/project.toml` | compile the multi-file project example |
+| `example:collab` | `tsx src/cli.ts build examples/collab.dlt -o examples/collab.html` | compile the collaboration example |
 | `trace` | `tsx scripts/trace.ts` | regenerate the pipeline explorer's data (`site/packs/pipeline/dist/index.js`) |
-| `docs` | `npm run docs:site && npm run docs:exemplos` | build the whole published site; `predocs` runs `assets` and `trace` first |
-| `docs:site` | `tsx src/cli.ts build site/project.toml` | compile the site project (`site/*.dlt` → `docs/*.html`) |
-| `docs:exemplos` | three `tsx src/cli.ts build …` calls | compile the live examples (`site/exemplos/` → `docs/exemplos/`): the book project, the article, the presentation; `predocs:exemplos` runs `assets` first |
+| `docs` | `npm run docs:site && npm run docs:exemplos` | build the whole published site |
+| `docs:site` | `tsx src/cli.ts build site/project.toml` | compile the site project (`site/*.dlt` → `docs/*.html`); `predocs:site` runs `assets` and `trace` first |
+| `docs:watch` | `tsx src/cli.ts build site/project.toml --watch` | rebuild the site on every save; `predocs:watch` runs `assets` and `trace` first |
+| `docs:exemplos` | four `tsx src/cli.ts build …` calls | compile the live examples (`site/exemplos/` → `docs/exemplos/`): the two book projects, the article, the presentation; `predocs:exemplos` runs `assets` first |
+| `prepack` | `npm run build` | build `dist/` before `npm pack` / `npm publish` |
+| `prepublishOnly` | `npm run typecheck && npm test` | refuse to publish a broken build |
 
-**Pre-hooks regenerate the assets for you.** `predev`, `pretest`, `pretypecheck`,
-`preexample` and `preexample:project` all run `npm run assets` first, so the generated
-file is fresh whenever you go through `npm`.
+**The assets regenerate for you.** Every vitest run (`npm test`, `test:watch`, or `vitest`
+directly) rebuilds them first through its global setup ([vitest.config.ts](../vitest.config.ts),
+`test/setup-assets.ts`). `predev`, `pretypecheck`, `preexample` and `preexample:project` run
+`npm run assets` first, so the generated file is fresh whenever you go through `npm`.
 
-**The one gotcha:** `test:watch` has **no** pre-hook, and running `vitest` or `tsc`
-**directly** (not via `npm`) skips the hook too. On a fresh checkout, or after editing
-anything under `src/runtime/` or `src/styles/`, run `npm run assets` once first --
-otherwise you will hit a missing-module error or see stale runtime/CSS. (Same note in
+**The one gotcha:** running `tsc` or `tsx src/cli.ts` **directly** (not via `npm`) skips the
+hooks. On a fresh checkout, or after editing anything under `src/runtime/` or `src/styles/`,
+run `npm run assets` once first -- otherwise you will hit a missing-module error or see stale
+runtime/CSS. In `test:watch`, the assets are rebuilt once per start, not on every save. (Same note in
 [CONTRIBUTING.md](CONTRIBUTING.md#the-one-gotcha-generated-assets).)
 
 ## Dependencies
 
-- **Runtime** (`dependencies`): `katex` (compile-time math rendering), `saxes` (strict XML
+- **Runtime** (`dependencies`): `katex` (compile-time math rendering), `highlight.js`
+  (compile-time code highlighting, loaded on the first `<code lang>`), `saxes` (strict XML
   parsing), `smol-toml` (`project.toml` parsing).
-- **Build / dev** (`devDependencies`): `esbuild` (bundling), `tsx` (run TS directly),
-  `typescript` (type-checking), `vitest` (tests), `@types/*`.
+- **Build / dev** (`devDependencies`): `esbuild` (bundling), `@fontsource-variable/newsreader`
+  (the body font, inlined into `CORE_CSS` at build time), `tsx` (run TS directly),
+  `typescript` (type-checking), `vitest` (tests), `happy-dom` (the runtime tests' DOM),
+  `@types/*`.
 
 ## A typical loop
 

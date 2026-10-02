@@ -1,14 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { createContext } from "../src/compiler/context";
-import { compileSource } from "../src/compiler/index";
 import { THEMES } from "../src/generated/assets";
-
-function compile(src: string) {
-  const ctx = createContext("test.dlt");
-  const html = compileSource(src, ctx);
-  if (html === undefined) throw new Error("compile failed: " + JSON.stringify(ctx.diagnostics));
-  return { html, ctx };
-}
+import { compile } from "./helpers";
 
 const DOC = `<document lang="en">
   <title>T</title>

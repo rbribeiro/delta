@@ -9,3 +9,6 @@ site/packs/pipeline/dist/
 CLAUDE.md
 .claude/
 mise.toml
+
+# Compiled examples: regenerate with `npm run example`, `example:project`, `example:collab`.
+examples/**/*.html

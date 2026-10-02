@@ -312,7 +312,16 @@ describe("countWords", () => {
       <c>test/pipeline.test.ts</c> confere a ordem dos passos, e que compilar um arquivo
       sozinho e compilá-lo como um projeto de um arquivo dão o mesmo HTML; e o teste do
       <c>trace</c> confere que o gancho dispara a cada passo, que é do que o explorador
-      depende.
+      depende. <c>test/language.test.ts</c> confere que o vocabulário de
+      <c>src/language/</c> concorda com os textos traduzidos e com o CSS.
+
+      O runtime tem os seus testes em <c>test/runtime/</c>, sem navegador:
+      <c>mount(src)</c> compila o documento e roda a página inteira, runtime incluído, num DOM
+      simulado (happy-dom). O teste olha o que o leitor veria e faz o que ele faria:
+      <c>page.$(".box-tag")</c>, <c>page.click(".collapse-toggle")</c>,
+      <c>page.key("Escape")</c>. Um erro que a página registre no console derruba o teste.
+      O que depende de layout de verdade (o que está sob o mouse, o que transborda num
+      celular) fica em <c>test/hittest.test.ts</c>, que usa o Chromium da máquina.
     </subsection>
 
     <subsection id="passo-checklist">

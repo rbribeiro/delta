@@ -1,29 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { createContext, type CompileContext } from "../src/compiler/context";
-import { compileSource } from "../src/compiler/index";
-import { parse } from "../src/compiler/parse";
-import { preprocess } from "../src/compiler/preprocess";
+import { type CompileContext } from "../src/compiler/context";
 import { collectTeam } from "../src/compiler/team";
 import { PALETTE } from "../src/language/palette";
 import type { ElementNode } from "../src/compiler/ast";
+import { compile, parsed, warnings } from "./helpers";
 
 function team(src: string): { doc: ElementNode; ctx: CompileContext } {
-  const ctx = createContext("test.dlt");
-  const doc = parse(preprocess(src), ctx);
-  if (!doc) throw new Error("parse failed: " + JSON.stringify(ctx.diagnostics));
+  const { doc, ctx } = parsed(src);
   collectTeam(doc, ctx);
   return { doc, ctx };
 }
-
-function compile(src: string): { html: string; ctx: CompileContext } {
-  const ctx = createContext("test.dlt");
-  const html = compileSource(src, ctx);
-  if (html === undefined) throw new Error("compile failed: " + JSON.stringify(ctx.diagnostics));
-  return { html, ctx };
-}
-
-const warnings = (ctx: CompileContext): string[] =>
-  ctx.diagnostics.filter((d) => d.severity === "warning").map((d) => d.message);
 
 describe("collectTeam", () => {
   it("builds the member map with explicit and auto-assigned colors", () => {

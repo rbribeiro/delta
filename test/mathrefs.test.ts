@@ -1,13 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createContext, type CompileContext } from "../src/compiler/context";
-import { compileSource } from "../src/compiler/index";
-
-function compile(src: string): { html: string; ctx: CompileContext } {
-  const ctx = createContext("test.dlt");
-  const html = compileSource(src, ctx);
-  if (html === undefined) throw new Error("compile failed: " + JSON.stringify(ctx.diagnostics));
-  return { html, ctx };
-}
+import { compile } from "./helpers";
 
 const DOC = `<document>
   <section id="s"><title>S</title>

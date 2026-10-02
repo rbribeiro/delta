@@ -1,16 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { elements, type ElementNode } from "../src/compiler/ast";
-import { createContext, type CompileContext } from "../src/compiler/context";
-import { compileSource } from "../src/compiler/index";
+import { type CompileContext } from "../src/compiler/context";
 import { numberDocument } from "../src/compiler/numbering";
-import { parse } from "../src/compiler/parse";
-import { preprocess } from "../src/compiler/preprocess";
 import { buildToc } from "../src/compiler/toc";
+import { compileHtml, parsed } from "./helpers";
 
 function built(src: string): { doc: ElementNode; ctx: CompileContext } {
-  const ctx = createContext("test.dlt");
-  const doc = parse(preprocess(src), ctx);
-  if (!doc) throw new Error("parse failed: " + JSON.stringify(ctx.diagnostics));
+  const { doc, ctx } = parsed(src);
   numberDocument(doc, ctx);
   buildToc(doc, ctx);
   return { doc, ctx };
@@ -19,13 +15,6 @@ function built(src: string): { doc: ElementNode; ctx: CompileContext } {
 function firstSection(doc: ElementNode): ElementNode | undefined {
   for (const el of elements(doc)) if (el.tag === "section") return el;
   return undefined;
-}
-
-function compile(src: string): string {
-  const ctx = createContext("test.dlt");
-  const html = compileSource(src, ctx);
-  if (html === undefined) throw new Error("compile failed: " + JSON.stringify(ctx.diagnostics));
-  return html;
 }
 
 describe("buildToc", () => {
@@ -74,7 +63,7 @@ describe("buildToc", () => {
 
 describe("emit with a table of contents", () => {
   it("ships the heading tree as the #delta-toc island and passes <toc> through", () => {
-    const html = compile(
+    const html = compileHtml(
       `<document><toc depth="3"/><section id="a"><title>Intro</title>x</section></document>`,
     );
     expect(html).toContain('<script type="application/json" id="delta-toc">');
@@ -84,7 +73,7 @@ describe("emit with a table of contents", () => {
   });
 
   it("ships the island and renames <floating> when the <toc> is nested in it", () => {
-    const html = compile(
+    const html = compileHtml(
       `<document><floating><title>Navigate</title><toc/></floating>` +
         `<section id="a"><title>Intro</title>x</section></document>`,
     );
@@ -94,12 +83,12 @@ describe("emit with a table of contents", () => {
   });
 
   it("emits no island when there is no <toc>", () => {
-    const html = compile(`<document><section id="a"><title>Intro</title>x</section></document>`);
+    const html = compileHtml(`<document><section id="a"><title>Intro</title>x</section></document>`);
     expect(html).not.toContain('id="delta-toc"');
   });
 
   it("keeps the offline invariant", () => {
-    const html = compile(
+    const html = compileHtml(
       `<document><toc/><section id="a"><title>Intro</title>x</section></document>`,
     );
     expect(html).not.toMatch(/(src|href)\s*=\s*["']https?:/i);
@@ -110,7 +99,7 @@ describe("emit with a table of contents", () => {
   });
 
   it("preserves custom title content inside <toc> when emitting", () => {
-    const html = compile(
+    const html = compileHtml(
       `<document><toc><title>Table of Contents</title></toc>` +
         `<section id="a"><title>Intro</title>x</section></document>`,
     );

@@ -1,17 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { elements, type ElementNode } from "../src/compiler/ast";
-import { createContext, type CompileContext } from "../src/compiler/context";
-import { numberDocument } from "../src/compiler/numbering";
-import { parse } from "../src/compiler/parse";
-import { preprocess } from "../src/compiler/preprocess";
-
-function numbered(src: string): { doc: ElementNode; ctx: CompileContext } {
-  const ctx = createContext("test.dlt");
-  const doc = parse(preprocess(src), ctx);
-  if (!doc) throw new Error("parse failed: " + JSON.stringify(ctx.diagnostics));
-  numberDocument(doc, ctx);
-  return { doc, ctx };
-}
+import { numbered } from "./helpers";
 
 function numOf(doc: ElementNode, id: string): string | undefined {
   for (const el of elements(doc)) if (el.attrs.id === id) return el.attrs.num;

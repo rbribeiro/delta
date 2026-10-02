@@ -1,28 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { elements, type ElementNode } from "../src/compiler/ast";
-import { createContext, type CompileContext } from "../src/compiler/context";
-import { compileSource } from "../src/compiler/index";
+import { type CompileContext } from "../src/compiler/context";
 import { numberDocument } from "../src/compiler/numbering";
-import { parse } from "../src/compiler/parse";
-import { preprocess } from "../src/compiler/preprocess";
 import { resolveReferences } from "../src/compiler/references";
+import { compileHtml, parsed } from "./helpers";
 
 function resolved(src: string): { ref?: ElementNode; ctx: CompileContext } {
-  const ctx = createContext("test.dlt");
-  const doc = parse(preprocess(src), ctx);
-  if (!doc) throw new Error("parse failed: " + JSON.stringify(ctx.diagnostics));
+  const { doc, ctx } = parsed(src);
   numberDocument(doc, ctx);
   resolveReferences(doc, ctx);
   let ref: ElementNode | undefined;
   for (const el of elements(doc)) if (el.tag === "ref") ref = el;
   return { ref, ctx };
-}
-
-function compile(src: string): string {
-  const ctx = createContext("test.dlt");
-  const html = compileSource(src, ctx);
-  if (html === undefined) throw new Error("compile failed: " + JSON.stringify(ctx.diagnostics));
-  return html;
 }
 
 const DOC = `<document>
@@ -63,7 +52,7 @@ describe("resolveReferences", () => {
 
 describe("emit with references", () => {
   it("ships resolved data on the ref and snapshots the target into a <template>", () => {
-    const html = compile(DOC);
+    const html = compileHtml(DOC);
     expect(html).toContain('data-target-num="1.1"');
     expect(html).toContain('data-target-tag="theorem"');
     expect(html).toContain('<template data-delta-pop="t">');
@@ -72,7 +61,7 @@ describe("emit with references", () => {
   });
 
   it("snapshots only referenced targets", () => {
-    const html = compile(`<document><section id="s"><title>S</title>
+    const html = compileHtml(`<document><section id="s"><title>S</title>
       <theorem id="t"><title>A</title>x</theorem>
       <theorem id="u"><title>B</title>y</theorem>
       See <ref to="t"/>.
@@ -82,7 +71,7 @@ describe("emit with references", () => {
   });
 
   it("keeps the offline invariant", () => {
-    const html = compile(DOC);
+    const html = compileHtml(DOC);
     expect(html).not.toMatch(/(src|href)\s*=\s*["']https?:/i);
     expect(html).not.toMatch(/<link/i);
     for (const m of html.matchAll(/url\(\s*([^)]*)\)/g)) {

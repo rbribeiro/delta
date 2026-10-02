@@ -1,17 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { elements, type ElementNode } from "../src/compiler/ast";
-import { createContext, type CompileContext } from "../src/compiler/context";
-import { compileSource } from "../src/compiler/index";
-
-function compile(src: string): { html: string; ctx: CompileContext } {
-  const ctx = createContext("test.dlt");
-  const html = compileSource(src, ctx);
-  if (html === undefined) throw new Error("compile failed: " + JSON.stringify(ctx.diagnostics));
-  return { html, ctx };
-}
-
-const warnings = (ctx: CompileContext): string[] =>
-  ctx.diagnostics.filter((d) => d.severity === "warning").map((d) => d.message);
+import { compile, warnings } from "./helpers";
 
 const wrap = (body: string): string =>
   `<document><section id="s"><title>S</title>${body}</section></document>`;
@@ -87,9 +76,7 @@ describe("<comment>", () => {
 
 describe("collab elements in the AST", () => {
   it("writes defaults onto the nodes themselves (compile-time data, runtime chrome)", () => {
-    const ctx = createContext("test.dlt");
-    const html = compileSource(wrap(`x<comment by="x">n</comment>`), ctx);
-    expect(html).toBeDefined();
+    const { html } = compile(wrap(`x<comment by="x">n</comment>`));
     // (the AST isn't returned; the attribute on the emitted tag proves the write)
     expect(html).toContain('status="open"');
   });
@@ -104,8 +91,7 @@ describe("collab elements in the AST", () => {
 // Keeps `elements` import used for future AST-level cases; asserts the generic walk sees comments.
 describe("tree shape", () => {
   it("keeps <comment> as an ordinary ElementNode", () => {
-    const ctx = createContext("test.dlt");
-    const html = compileSource(wrap(`x<comment by="x">n</comment>`), ctx);
+    const { html } = compile(wrap(`x<comment by="x">n</comment>`));
     expect(html).toContain("</delta-comment>");
     const probe: ElementNode = { type: "element", tag: "comment", attrs: {}, children: [] };
     expect([...elements(probe)].length).toBe(1);

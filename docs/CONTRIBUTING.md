@@ -26,11 +26,11 @@ The emitter imports `RUNTIME_JS`, `CORE_CSS` and `THEMES` from
 by `npm run assets` (`tsx scripts/build.ts assets`), which bundles the browser
 runtime and concatenates the stylesheets under `src/styles/`.
 
-Every npm script that needs it (`test`, `typecheck`, `example`, `dev`) has a
-pre-hook that regenerates it, so you rarely think about it. But if you edit
-`src/runtime/` or anything under `src/styles/` and then run `vitest` or `tsc`
-**directly** (not through npm), run `npm run assets` first or you'll see stale
-behavior or a missing-module error.
+The tests regenerate it themselves (vitest's global setup, `test/setup-assets.ts`), and
+every other npm script that needs it (`typecheck`, `example`, `dev`) has a pre-hook, so you
+rarely think about it. But if you edit `src/runtime/` or anything under `src/styles/` and
+then run `tsc` or `tsx src/cli.ts` **directly** (not through npm), run `npm run assets`
+first or you'll see stale behavior or a missing-module error.
 
 The full build — the generated assets, the CLI bundle, and every npm script — is
 documented in [BUILDING.md](BUILDING.md).
@@ -67,7 +67,7 @@ the browser can't compute on its own, or just behavior?**
 | Your feature needs… | Where it lives | Examples |
 |---|---|---|
 | Pure numbering | A row in [environments.ts](../src/language/environments.ts) + its family in [tags.ts](../src/language/tags.ts) | a new theorem-like environment |
-| Data about *other* elements, resolved at compile time | A new pass + a `ctx` field, wired into [index.ts](../src/compiler/index.ts) | `<ref>`, table of contents, `<cite>`, bibliography, `<include>` |
+| Data about *other* elements, resolved at compile time | A new pass + a `ctx` field, a step in [pipeline.ts](../src/compiler/pipeline.ts) | `<ref>`, table of contents, `<cite>`, bibliography, `<include>` |
 | Only local browser behavior | A class in its own file under [src/runtime/elements/](../src/runtime/elements/) | collapsible sections, pop-over interaction |
 
 The rule of thumb: **anything requiring knowledge of another element** (its number,
@@ -117,9 +117,8 @@ The flow is always: **extend `ctx` → write the pass → wire it into the orche
    state the pass needs to hand to the emitter:
    ```ts
    referencedIds: Set<string>;          // which targets are referenced
-   templates: Map<string, string>;      // id → snapshot HTML for the pop-over
    ```
-   Initialize them in `createContext`.
+   Initialize it in `createContext`.
 
 2. **Write the pass** — `src/compiler/references.ts`, exporting
    `resolveReferences(doc, ctx)`. Walk the AST with `elements(doc)`; for each
@@ -138,9 +137,9 @@ The flow is always: **extend `ctx` → write the pass → wire it into the orche
    `test/pipeline.test.ts` lists the steps literally, so update that list too — the order is
    a decision, and that list is where it is recorded.
 
-4. **Teach the emitter** ([emit.ts](../src/compiler/emit.ts)) — when `serialize()`
-   reaches an element whose `id` is in `ctx.referencedIds`, also store its serialized
-   HTML in `ctx.templates`. After the body, emit each entry as
+4. **Teach the emitter** ([emit.ts](../src/compiler/emit.ts)) — after the body,
+   `renderTemplates` emits every id in `ctx.referencedIds` (looked up in the project-wide
+   `globalById`, so a target in another file works too) as
    `<template data-delta-pop="X">…</template>`. (Templates are inert in the DOM, so
    they cost nothing until cloned.)
 
@@ -224,10 +223,22 @@ Tests live in [test/](../test/) and mirror the passes. Patterns to follow:
   including the invariant that it references no external resources. See
   [test/emit.test.ts](../test/emit.test.ts).
 - **Architecture tests** live in [test/pipeline.test.ts](../test/pipeline.test.ts): the step
-  order, "a single file equals a project of one file", and the trace hook.
+  order, "a single file equals a project of one file", the trace hook and `stopAfter`.
+  [test/language.test.ts](../test/language.test.ts) checks that the vocabulary agrees with
+  itself, the strings and the CSS.
+- **Runtime tests** live in [test/runtime/](../test/runtime/) and need no browser:
+  `mount(dlt)` from [test/runtime/helpers.ts](../test/runtime/helpers.ts) compiles the
+  document and loads it, runtime and all, into a fresh happy-dom window. Assert on what
+  the reader would see and do: `page.$(".box-tag")`, `page.click(".collapse-toggle")`,
+  `page.key("Escape")`, `page.openPopover()`. An error the page logs fails the test.
+  See [test/runtime/references.test.ts](../test/runtime/references.test.ts).
+- **Layout tests** (what is under the mouse, what overflows on a phone) need a real browser:
+  [test/hittest.test.ts](../test/hittest.test.ts) runs Chromium through
+  [test/browser.ts](../test/browser.ts), and skips when none can start.
 
 When you add a pass, add a matching test file. When you add a numbered environment,
-add a numbering case.
+add a numbering case. When you add or change a runtime element, add a case to the
+matching file in `test/runtime/`.
 
 ## The roadmap
 

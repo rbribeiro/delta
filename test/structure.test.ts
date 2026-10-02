@@ -1,15 +1,11 @@
-import { mkdtempSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { basename, join } from "node:path";
+import { basename } from "node:path";
 import { describe, expect, it } from "vitest";
-import { compileProject } from "../src/compiler/project";
 import { lintFindings, showData, showText } from "../src/graph-report";
+import { compileFiles } from "./helpers";
 
 function build(src: string) {
-  const dir = mkdtempSync(join(tmpdir(), "delta-struct-"));
-  writeFileSync(join(dir, "p.dlt"), src);
-  const r = compileProject({ inputs: [join(dir, "p.dlt")], outDir: dir });
-  return { ...r, html: r.outputs[0]?.html ?? "", graph: r.graph! };
+  const r = compileFiles({ "p.dlt": src });
+  return { ...r, html: r.html("p.html"), graph: r.graph! };
 }
 
 const doc = (body: string) => `<document lang="pt-BR"><section id="s"><title>S</title>${body}</section></document>`;
@@ -137,12 +133,12 @@ describe("several proofs of one result", () => {
   });
 
   it("counts across the files of a project, and so do counterexample ids", () => {
-    const dir = mkdtempSync(join(tmpdir(), "delta-struct-"));
-    writeFileSync(join(dir, "a.dlt"), doc(`<theorem id="t">If <hyp id="h">p</hyp>.</theorem>
-      <proof of="t"><step><claim>a</claim></step></proof><counterexample breaks="h">one</counterexample>`));
-    writeFileSync(join(dir, "b.dlt"), `<document><section id="s2"><title>S2</title>
-      <proof of="t"><step><claim>b</claim></step></proof><counterexample breaks="h">two</counterexample></section></document>`);
-    const r = compileProject({ inputs: [join(dir, "a.dlt"), join(dir, "b.dlt")], outDir: dir });
+    const r = compileFiles({
+      "a.dlt": doc(`<theorem id="t">If <hyp id="h">p</hyp>.</theorem>
+      <proof of="t"><step><claim>a</claim></step></proof><counterexample breaks="h">one</counterexample>`),
+      "b.dlt": `<document><section id="s2"><title>S2</title>
+      <proof of="t"><step><claim>b</claim></step></proof><counterexample breaks="h">two</counterexample></section></document>`,
+    });
     expect(r.diagnostics).toEqual([]);
     expect(r.outputs[1].html).toContain('id="t-proof2-step-1"');
     expect(r.outputs[1].html).toContain('id="h-counterexample-2"');

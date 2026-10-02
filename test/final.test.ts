@@ -1,14 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { createContext, type CompileContext } from "../src/compiler/context";
-import { compileSource } from "../src/compiler/index";
+import { compile as compileWith } from "./helpers";
 
-function compile(src: string, final: boolean): { html: string; ctx: CompileContext } {
-  const ctx = createContext("test.dlt");
-  ctx.final = final;
-  const html = compileSource(src, ctx);
-  if (html === undefined) throw new Error("compile failed: " + JSON.stringify(ctx.diagnostics));
-  return { html, ctx };
-}
+const compile = (src: string, final: boolean) => compileWith(src, { final });
 
 /** The rendered document only: no inlined CSS/JS (whose comments mention tags) and no <template> snapshots. */
 const body = (html: string): string => html.slice(html.indexOf("<delta-document"), html.indexOf("</delta-document>"));

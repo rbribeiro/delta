@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { BROWSER, evaluate } from "./browser";
-import { createContext } from "../src/compiler/context";
-import { compileSource } from "../src/compiler/index";
+import { compileHtml } from "./helpers";
 
 /**
  * Hit-testing regression guard — the ONE thing a DOM shim cannot check.
@@ -31,12 +30,7 @@ const DOC = `<document lang="en">
   </section>
 </document>`;
 
-function compile(): string {
-  const ctx = createContext("test/doc.dlt");
-  const html = compileSource(DOC, ctx);
-  if (!html) throw new Error("compile failed: " + JSON.stringify(ctx.diagnostics));
-  return html;
-}
+const compile = (): string => compileHtml(DOC, { file: "test/doc.dlt" });
 
 describe.skipIf(!BROWSER)("in-math \\ref markers are actually clickable", () => {
   it("owns the pixels across its own box, in display and inline math", () => {
@@ -114,12 +108,7 @@ const COLLAB_DOC = `<document lang="en">
   </section>
 </document>`;
 
-function compileSrc(src: string): string {
-  const ctx = createContext("test/doc.dlt");
-  const html = compileSource(src, ctx);
-  if (!html) throw new Error("compile failed: " + JSON.stringify(ctx.diagnostics));
-  return html;
-}
+const compileSrc = (src: string): string => compileHtml(src, { file: "test/doc.dlt" });
 
 describe.skipIf(!BROWSER)("collaboration runtime", () => {
   it("opens a comment thread from its marker, with the author chip in the member's color", () => {
@@ -217,7 +206,7 @@ describe.skipIf(!BROWSER)("review panel runtime", () => {
        document.title="RESULT::stats="+stats.join("|")+";groups="+groups.join("|")+";items="+items+";href="+jump.getAttribute("href");`,
     );
     expect(out).toBe(
-      "stats=1 open comments|1 open tasks|2 pending changes|1 In review|1 Sketch|1 Draft;groups=Annotations|Tasks|Changes|blocks;items=8;href=#c-inline",
+      "stats=1 open comments|1 open tasks|2 pending changes|1 In review|1 Sketch|1 Draft;groups=Annotations|Tasks|Changes|Blocks;items=8;href=#c-inline",
     );
   });
 

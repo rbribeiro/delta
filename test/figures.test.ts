@@ -5,14 +5,11 @@ import { elements, type ElementNode } from "../src/compiler/ast";
 import { createContext, type CompileContext } from "../src/compiler/context";
 import { inlineFigures } from "../src/compiler/figures";
 import { compileSource } from "../src/compiler/index";
-import { parse } from "../src/compiler/parse";
-import { preprocess } from "../src/compiler/preprocess";
+import { parsed } from "./helpers";
 
 // ctx.file lives in test/, so a figure `src` resolves relative to test/.
 function inlined(src: string): { doc: ElementNode; ctx: CompileContext } {
-  const ctx = createContext("test/doc.dlt");
-  const doc = parse(preprocess(src), ctx);
-  if (!doc) throw new Error("parse failed: " + JSON.stringify(ctx.diagnostics));
+  const { doc, ctx } = parsed(src, "test/doc.dlt");
   inlineFigures(doc, ctx);
   return { doc, ctx };
 }
