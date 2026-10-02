@@ -33,7 +33,10 @@ function deltaIn(cwd: string, ...args: string[]): Run {
   const before = process.cwd();
   process.chdir(cwd);
   try {
-    run.status = main(args, { out: (t) => void (run.stdout += t), err: (t) => void (run.stderr += t) });
+    run.status = main(args, {
+      out: (t) => void (run.stdout += t),
+      err: (t) => void (run.stderr += t),
+    });
   } finally {
     process.chdir(before);
   }
@@ -42,7 +45,10 @@ function deltaIn(cwd: string, ...args: string[]): Run {
 
 /** The real executable, as a child process. */
 function spawnDelta(cwd: string, ...args: string[]): Run {
-  const r = spawnSync(process.execPath, ["--import", TSX, resolve(ROOT, "src/cli.ts"), ...args], { cwd, encoding: "utf8" });
+  const r = spawnSync(process.execPath, ["--import", TSX, resolve(ROOT, "src/cli.ts"), ...args], {
+    cwd,
+    encoding: "utf8",
+  });
   return { status: r.status ?? -1, stdout: r.stdout ?? "", stderr: r.stderr ?? "" };
 }
 
@@ -146,7 +152,9 @@ describe("delta verify", () => {
     const out = JSON.parse(r.stdout);
     expect(out.against).toMatch(/^[0-9a-f]{12}$/);
     const text = readFileSync(join(dir, "p.dlt"), "utf8");
-    expect(text).toContain(`<proof of="a" by="claude" status="verified" verified-by="rodrigo" against="${out.against}">p</proof>`);
+    expect(text).toContain(
+      `<proof of="a" by="claude" status="verified" verified-by="rodrigo" against="${out.against}">p</proof>`,
+    );
     expect(text.replace(/ status="verified" verified-by="rodrigo" against="\w+"/, "")).toBe(SRC);
     expect(deltaIn(dir, "lint", "--json").stdout).not.toContain('"stale"');
   });
@@ -171,7 +179,8 @@ describe("delta agent-guide", () => {
     expect(r.stdout).toContain("delta graph --frontier --json");
     expect(r.stdout).toContain("delta show <id> --context");
     const help = delta("--help").stdout;
-    for (const [, cmd] of r.stdout.matchAll(/delta ([a-z-]+)/g)) expect(help).toContain(`delta ${cmd}`);
+    for (const [, cmd] of r.stdout.matchAll(/delta ([a-z-]+)/g))
+      expect(help).toContain(`delta ${cmd}`);
   });
 });
 
@@ -179,7 +188,10 @@ describe("delta review", () => {
   it("defaults to ./project.toml, like the other commands", () => {
     const dir = mkdtempSync(join(tmpdir(), "delta-cli-review-"));
     writeFileSync(join(dir, "project.toml"), 'inputs = ["p.dlt"]\nout = "out"\n');
-    writeFileSync(join(dir, "p.dlt"), `<document><section id="s"><title>S</title><todo for="a">x</todo></section></document>`);
+    writeFileSync(
+      join(dir, "p.dlt"),
+      `<document><section id="s"><title>S</title><todo for="a">x</todo></section></document>`,
+    );
     const r = deltaIn(dir, "review", "--json");
     expect(r.status).toBe(0);
     expect(r.stdout).toContain('"kind": "todo"');
@@ -190,19 +202,28 @@ describe("delta verify on a proof without `of`", () => {
   it("finds and signs the proof that follows the result", () => {
     const dir = mkdtempSync(join(tmpdir(), "delta-cli-verify-implicit-"));
     writeFileSync(join(dir, "project.toml"), 'inputs = ["p.dlt"]\nout = "out"\n');
-    writeFileSync(join(dir, "p.dlt"), `<document><section id="s"><title>S</title>
+    writeFileSync(
+      join(dir, "p.dlt"),
+      `<document><section id="s"><title>S</title>
   <lemma id="a">A.</lemma>
   <proof/>
-</section></document>`);
+</section></document>`,
+    );
     const r = deltaIn(dir, "verify", "a", "--by", "rodrigo");
     expect(r.status).toBe(0);
-    expect(readFileSync(join(dir, "p.dlt"), "utf8")).toMatch(/<proof status="verified" verified-by="rodrigo" against="\w+"\/>/);
+    expect(readFileSync(join(dir, "p.dlt"), "utf8")).toMatch(
+      /<proof status="verified" verified-by="rodrigo" against="\w+"\/>/,
+    );
   });
 });
 
 describe("argument parsing", () => {
   it("rejects an unknown flag, a flag without its value, and --project with positional inputs", () => {
-    for (const args of [["build", "x.dlt", "--bogus"], ["build", "x.dlt", "-o"], ["build", "--project", "p.toml", "x.dlt"]]) {
+    for (const args of [
+      ["build", "x.dlt", "--bogus"],
+      ["build", "x.dlt", "-o"],
+      ["build", "--project", "p.toml", "x.dlt"],
+    ]) {
       const r = delta(...args);
       expect(r.status, args.join(" ")).toBe(1);
       expect(r.stderr).toContain("usage: delta build");

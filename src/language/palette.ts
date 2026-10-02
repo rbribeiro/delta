@@ -5,6 +5,16 @@
  * neighbours in the list are hues that are easy to tell apart.
  */
 export const PALETTE: readonly string[] = [
-  "blue", "purple", "orange", "teal", "pink", "green",
-  "red", "indigo", "sky", "lime", "yellow", "slate",
+  "blue",
+  "purple",
+  "orange",
+  "teal",
+  "pink",
+  "green",
+  "red",
+  "indigo",
+  "sky",
+  "lime",
+  "yellow",
+  "slate",
 ];

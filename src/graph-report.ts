@@ -25,7 +25,9 @@ const label = (n: GraphNode): string => `${n.tag}${n.num ? ` ${n.num}` : ""}`;
 const title = (n: { title: string }): string => (n.title ? ` (${n.title})` : "");
 /** `sketch` when own = eff, `sketch → open` when an ancestor pulls it down. */
 const trust = (n: GraphNode): string =>
-  (n.own === n.eff ? n.eff : `${n.own} → ${n.eff}`) + (n.stale ? ", stale" : "") + (n.cyclic ? ", cyclic" : "");
+  (n.own === n.eff ? n.eff : `${n.own} → ${n.eff}`) +
+  (n.stale ? ", stale" : "") +
+  (n.cyclic ? ", cyclic" : "");
 
 function nodeJson(n: GraphNode, rel: Rel): Record<string, unknown> {
   return {
@@ -54,9 +56,13 @@ export function outlineText(graph: ProofGraph, rel: Rel): string {
       const pad = "  ".repeat(depth);
       const node = e.id !== undefined ? graph.nodes.get(e.id) : undefined;
       if (node && node.el.tag === e.tag) {
-        out.push(`${pad}${label(node)} ${node.id}${title(node)} [${trust(node)}] ${where(node.loc, rel)}`);
+        out.push(
+          `${pad}${label(node)} ${node.id}${title(node)} [${trust(node)}] ${where(node.loc, rel)}`,
+        );
       } else {
-        out.push(`${pad}${e.num ? `${e.num} ` : ""}${e.title || `<${e.tag}>`} ${where(e.loc, rel)}`);
+        out.push(
+          `${pad}${e.num ? `${e.num} ` : ""}${e.title || `<${e.tag}>`} ${where(e.loc, rel)}`,
+        );
       }
       walk(e.children, depth + 1);
     }
@@ -71,11 +77,20 @@ export function outlineText(graph: ProofGraph, rel: Rel): string {
 export function outlineJson(graph: ProofGraph, rel: Rel): unknown {
   const entry = (e: OutlineEntry): unknown => {
     const node = e.id !== undefined ? graph.nodes.get(e.id) : undefined;
-    const base = { tag: e.tag, ...(e.id !== undefined ? { id: e.id } : {}), num: e.num, title: e.title, file: rel(e.loc.file), line: e.loc.line };
+    const base = {
+      tag: e.tag,
+      ...(e.id !== undefined ? { id: e.id } : {}),
+      num: e.num,
+      title: e.title,
+      file: rel(e.loc.file),
+      line: e.loc.line,
+    };
     if (node && node.el.tag === e.tag) return { ...base, own: node.own, eff: node.eff };
     return { ...base, children: e.children.map(entry) };
   };
-  return { files: graph.outline.map((f) => ({ file: rel(f.file), entries: f.entries.map(entry) })) };
+  return {
+    files: graph.outline.map((f) => ({ file: rel(f.file), entries: f.entries.map(entry) })),
+  };
 }
 
 // -- show ------------------------------------------------------------------
@@ -93,7 +108,12 @@ export interface Slice {
  * tags are cut out (and the lines they leave empty), which is how a parent's *statement*
  * is shown without its narrative aids.
  */
-export function sliceOf(graph: ProofGraph, el: ElementNode, rel: Rel, drop?: ReadonlySet<string>): Slice | undefined {
+export function sliceOf(
+  graph: ProofGraph,
+  el: ElementNode,
+  rel: Rel,
+  drop?: ReadonlySet<string>,
+): Slice | undefined {
   const span = el.src;
   const text = span && graph.sources.get(span.file);
   if (!span || text === undefined) return undefined;
@@ -143,7 +163,12 @@ export interface ShowData {
 }
 
 /** Everything `delta show <id> [--context]` prints, or undefined for an unknown id. */
-export function showData(graph: ProofGraph, id: string, rel: Rel, withContext: boolean): ShowData | undefined {
+export function showData(
+  graph: ProofGraph,
+  id: string,
+  rel: Rel,
+  withContext: boolean,
+): ShowData | undefined {
   const node = graph.nodes.get(id);
   const el = node?.el ?? graph.byId.get(id);
   if (!el) return undefined;
@@ -162,20 +187,31 @@ export function showData(graph: ProofGraph, id: string, rel: Rel, withContext: b
   // proof): the result's own statement, hypotheses included, and its parents' statements.
   const base = node ?? owner;
   if (withContext && base) {
-    const statement = (n: GraphNode) => ({ node: n, statement: sliceOf(graph, n.el, rel, AID_TAGS) });
-    data.context = [...(owner ? [statement(owner)] : []), ...base.parents.map((p) => statement(graph.nodes.get(p)!))];
+    const statement = (n: GraphNode) => ({
+      node: n,
+      statement: sliceOf(graph, n.el, rel, AID_TAGS),
+    });
+    data.context = [
+      ...(owner ? [statement(owner)] : []),
+      ...base.parents.map((p) => statement(graph.nodes.get(p)!)),
+    ];
   }
   return data;
 }
 
-const range = (s: Slice): string => `${s.file}:${s.line}${s.endLine !== s.line ? `-${s.endLine}` : ""}`;
+const range = (s: Slice): string =>
+  `${s.file}:${s.line}${s.endLine !== s.line ? `-${s.endLine}` : ""}`;
 
 export function showText(d: ShowData): string {
   const out: string[] = [];
   if (d.node) out.push(`${label(d.node)} ${d.id}${title(d.node)} [${trust(d.node)}]`);
-  else if (d.owner) out.push(`${d.tag}${d.num ? ` ${d.num}` : ""} ${d.id}, in ${label(d.owner)} ${d.owner.id} [${trust(d.owner)}]`);
+  else if (d.owner)
+    out.push(
+      `${d.tag}${d.num ? ` ${d.num}` : ""} ${d.id}, in ${label(d.owner)} ${d.owner.id} [${trust(d.owner)}]`,
+    );
   else out.push(`${d.id} (not a result: no proof, no dependencies)`);
-  if (d.statement) out.push(`── ${d.node ? "statement" : "source"} ${range(d.statement)}`, d.statement.source);
+  if (d.statement)
+    out.push(`── ${d.node ? "statement" : "source"} ${range(d.statement)}`, d.statement.source);
   for (const p of d.proofs) out.push(`── proof ${range(p)}`, p.source);
   if (d.node && d.node.tag !== "definition" && d.proofs.length === 0) out.push("── no proof yet");
   if (d.context) {
@@ -187,7 +223,9 @@ export function showText(d: ShowData): string {
           : `── context: the statements this proof may use (${d.context.length})`,
     );
     for (const c of d.context) {
-      out.push(`── ${label(c.node)} ${c.node.id}${title(c.node)} [${c.node.eff}]${c.statement ? ` ${range(c.statement)}` : ""}`);
+      out.push(
+        `── ${label(c.node)} ${c.node.id}${title(c.node)} [${c.node.eff}]${c.statement ? ` ${range(c.statement)}` : ""}`,
+      );
       if (c.statement) out.push(c.statement.source);
     }
   }
@@ -196,11 +234,18 @@ export function showText(d: ShowData): string {
 
 export function showJson(d: ShowData, rel: Rel): unknown {
   return {
-    ...(d.node ? nodeJson(d.node, rel) : { id: d.id, tag: d.tag, num: d.num, ...(d.owner ? { owner: d.owner.id } : {}) }),
+    ...(d.node
+      ? nodeJson(d.node, rel)
+      : { id: d.id, tag: d.tag, num: d.num, ...(d.owner ? { owner: d.owner.id } : {}) }),
     ...(d.statement ? { statement: d.statement } : {}),
     proofs: d.proofs,
     ...(d.context
-      ? { context: d.context.map((c) => ({ ...nodeJson(c.node, rel), ...(c.statement ? { statement: c.statement } : {}) })) }
+      ? {
+          context: d.context.map((c) => ({
+            ...nodeJson(c.node, rel),
+            ...(c.statement ? { statement: c.statement } : {}),
+          })),
+        }
       : {}),
   };
 }
@@ -211,7 +256,9 @@ export function usesText(graph: ProofGraph, id: string, rel: Rel): string {
   const node = graph.nodes.get(id)!;
   const down = descendants(graph, id);
   if (down.length === 0) return `nothing uses ${id}\n`;
-  const out = [`${down.length} result${down.length === 1 ? "" : "s"} downstream of ${label(node)} ${id}:`];
+  const out = [
+    `${down.length} result${down.length === 1 ? "" : "s"} downstream of ${label(node)} ${id}:`,
+  ];
   for (const d of down) {
     const n = graph.nodes.get(d)!;
     const direct = node.children.includes(d) ? "direct" : "indirect";
@@ -264,7 +311,8 @@ export function frontier(graph: ProofGraph): GraphNode[] {
 
 export function frontierText(graph: ProofGraph, rel: Rel): string {
   const work = frontier(graph);
-  if (work.length === 0) return "no work available: every result is verified or waits on an open ancestor\n";
+  if (work.length === 0)
+    return "no work available: every result is verified or waits on an open ancestor\n";
   const out = [`${work.length} result${work.length === 1 ? "" : "s"} ready to work on:`];
   for (const n of work) {
     const state = n.proofs.length === 0 ? "needs a proof" : `proof is ${n.own}`;
@@ -297,7 +345,9 @@ export interface Finding {
 export function overclaimed(graph: ProofGraph): { node: GraphNode; blame: string[] }[] {
   const verified = trustRank("verified");
   return [...graph.nodes.values()]
-    .filter((n) => n.tag !== "definition" && trustRank(n.own) >= verified && trustRank(n.eff) < verified)
+    .filter(
+      (n) => n.tag !== "definition" && trustRank(n.own) >= verified && trustRank(n.eff) < verified,
+    )
     .map((node) => ({
       node,
       blame: ancestors(graph, node.id).filter((a) => {
@@ -319,10 +369,22 @@ export function lintFindings(graph: ProofGraph, diagnostics: Diagnostic[], rel: 
 
   for (const cycle of graph.cycles) {
     const first = graph.nodes.get(cycle[0])!;
-    out.push({ severity: "error", kind: "cycle", message: `circular reasoning: ${cycle.join(" → ")}`, ...at(first.loc), ids: cycle });
+    out.push({
+      severity: "error",
+      kind: "cycle",
+      message: `circular reasoning: ${cycle.join(" → ")}`,
+      ...at(first.loc),
+      ids: cycle,
+    });
   }
   for (const d of graph.dangling) {
-    out.push({ severity: "error", kind: "dangling-ref", message: `ref to "${d.to}", which no element defines`, ...at(d.loc), ids: [d.to] });
+    out.push({
+      severity: "error",
+      kind: "dangling-ref",
+      message: `ref to "${d.to}", which no element defines`,
+      ...at(d.loc),
+      ids: [d.to],
+    });
   }
   for (const { node, blame } of overclaimed(graph)) {
     const why = blame
@@ -349,7 +411,11 @@ export function lintFindings(graph: ProofGraph, diagnostics: Diagnostic[], rel: 
         ...at(n.loc),
         ids: [n.id],
       });
-    } else if (n.tag !== "definition" && against === undefined && ["verified", "formalized"].includes(n.proofs[0]?.attrs.status ?? "")) {
+    } else if (
+      n.tag !== "definition" &&
+      against === undefined &&
+      ["verified", "formalized"].includes(n.proofs[0]?.attrs.status ?? "")
+    ) {
       out.push({
         severity: "warning",
         kind: "unpinned",
@@ -372,7 +438,13 @@ export function lintFindings(graph: ProofGraph, diagnostics: Diagnostic[], rel: 
     }
   }
   for (const b of graph.badBreaks) {
-    out.push({ severity: "error", kind: "bad-counterexample", message: `<counterexample breaks="${b.breaks}">: no hypothesis has that id`, ...at(b.loc), ids: [b.breaks] });
+    out.push({
+      severity: "error",
+      kind: "bad-counterexample",
+      message: `<counterexample breaks="${b.breaks}">: no hypothesis has that id`,
+      ...at(b.loc),
+      ids: [b.breaks],
+    });
   }
   for (const s of graph.unprovedSteps) {
     out.push({
@@ -384,27 +456,55 @@ export function lintFindings(graph: ProofGraph, diagnostics: Diagnostic[], rel: 
     });
   }
   for (const s of graph.strayProofs) {
-    out.push({ severity: "warning", kind: "stray-proof", message: `<proof of="${s.of}"> does not prove a result in the graph`, ...at(s.loc), ids: [s.of] });
+    out.push({
+      severity: "warning",
+      kind: "stray-proof",
+      message: `<proof of="${s.of}"> does not prove a result in the graph`,
+      ...at(s.loc),
+      ids: [s.of],
+    });
   }
   for (const n of graph.nodes.values()) {
     if (n.proofs.length > 1) {
-      out.push({ severity: "warning", kind: "several-proofs", message: `${n.id} has ${n.proofs.length} proofs; the first sets its status`, ...at(n.loc), ids: [n.id] });
+      out.push({
+        severity: "warning",
+        kind: "several-proofs",
+        message: `${n.id} has ${n.proofs.length} proofs; the first sets its status`,
+        ...at(n.loc),
+        ids: [n.id],
+      });
     }
     if (n.el.attrs.status === "open" && n.proofs.length > 0) {
-      out.push({ severity: "warning", kind: "open-with-proof", message: `${n.id} is status="open" but has a proof; drop the status`, ...at(n.loc), ids: [n.id] });
+      out.push({
+        severity: "warning",
+        kind: "open-with-proof",
+        message: `${n.id} is status="open" but has a proof; drop the status`,
+        ...at(n.loc),
+        ids: [n.id],
+      });
     }
   }
   for (const d of diagnostics) {
     if (d.message.startsWith("Unresolved reference")) continue;
-    out.push({ severity: d.severity, kind: "compile", message: d.message, file: rel(d.file), ...(d.pos ? { line: d.pos.line } : {}) });
+    out.push({
+      severity: d.severity,
+      kind: "compile",
+      message: d.message,
+      file: rel(d.file),
+      ...(d.pos ? { line: d.pos.line } : {}),
+    });
   }
   return out;
 }
 
 export function lintText(findings: Finding[]): string {
   if (findings.length === 0) return "no problems found\n";
-  const lines = findings.map((f) => `${f.severity}: ${f.message} (${f.file}${f.line !== undefined ? `:${f.line}` : ""})`);
+  const lines = findings.map(
+    (f) => `${f.severity}: ${f.message} (${f.file}${f.line !== undefined ? `:${f.line}` : ""})`,
+  );
   const errors = findings.filter((f) => f.severity === "error").length;
-  lines.push(`${errors} error${errors === 1 ? "" : "s"}, ${findings.length - errors} warning${findings.length - errors === 1 ? "" : "s"}`);
+  lines.push(
+    `${errors} error${errors === 1 ? "" : "s"}, ${findings.length - errors} warning${findings.length - errors === 1 ? "" : "s"}`,
+  );
   return lines.join("\n") + "\n";
 }

@@ -16,7 +16,10 @@ function findBrowser(): string | undefined {
   for (const cmd of ["chromium", "chromium-browser", "google-chrome-stable", "google-chrome"]) {
     try {
       // `which` rather than a shell, so no argument concatenation is involved.
-      const p = execFileSync("which", [cmd], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+      const p = execFileSync("which", [cmd], {
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "ignore"],
+      });
       if (p.trim()) return p.trim();
     } catch {
       /* not installed — try the next one */
@@ -28,10 +31,15 @@ function findBrowser(): string | undefined {
 /** True when `browser` starts and renders a blank page; a binary that is merely installed is not enough. */
 function canLaunch(browser: string): boolean {
   try {
-    execFileSync(browser, [...FLAGS, "--dump-dom", "about:blank"], { stdio: "ignore", timeout: 15_000 });
+    execFileSync(browser, [...FLAGS, "--dump-dom", "about:blank"], {
+      stdio: "ignore",
+      timeout: 15_000,
+    });
     return true;
   } catch {
-    console.warn(`test/browser.ts: ${browser} is installed but did not start; browser suites are skipped`);
+    console.warn(
+      `test/browser.ts: ${browser} is installed but did not start; browser suites are skipped`,
+    );
     return false;
   }
 }
@@ -73,4 +81,3 @@ export function evaluate(html: string, probe: string, width = 1200): string {
   }
   return dom.match(/RESULT::([^<]*)/)?.[1] ?? "";
 }
-

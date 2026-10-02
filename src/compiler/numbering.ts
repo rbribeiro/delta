@@ -42,7 +42,7 @@ export function numberDocument(
     } else if (numbered) {
       const next = (counters[spec.counter] ?? 0) + 1;
       counters[spec.counter] = next;
-      // Display prefix only if there is a prefix counter and it is non-zero. 
+      // Display prefix only if there is a prefix counter and it is non-zero.
       // This avoids "0.1" for the first theorem in a sectionless document.
       const prefix =
         spec.prefixWith && (counters[spec.prefixWith] ?? 0) > 0

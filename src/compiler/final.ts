@@ -41,9 +41,11 @@ export function finalizeReview(doc: ElementNode, ctx: CompileContext): FinalStat
 /** One-line summary of what a final build left behind, or "" when everything is done. */
 export function describeFinal(s: FinalStats): string {
   const parts: string[] = [];
-  if (s.openComments) parts.push(`${s.openComments} open comment${s.openComments === 1 ? "" : "s"}`);
+  if (s.openComments)
+    parts.push(`${s.openComments} open comment${s.openComments === 1 ? "" : "s"}`);
   if (s.openTasks) parts.push(`${s.openTasks} open task${s.openTasks === 1 ? "" : "s"}`);
-  if (s.unverified) parts.push(`${s.unverified} block${s.unverified === 1 ? "" : "s"} not verified`);
+  if (s.unverified)
+    parts.push(`${s.unverified} block${s.unverified === 1 ? "" : "s"} not verified`);
   return parts.length ? `final build: ${parts.join(", ")}` : "";
 }
 

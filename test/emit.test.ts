@@ -95,7 +95,7 @@ describe("emit", () => {
     );
     // Generic rename: the slide is a delta-slide the runtime upgrades + pages.
     expect(html).toContain("<delta-slide>");
-    expect(html).toContain("customElements.define(\"delta-slide\"");
+    expect(html).toContain('customElements.define("delta-slide"');
     // The document title comes from the doc-level <title>, not a slide's <title>.
     expect(html).toContain("<title>Deck</title>");
     expect(html).not.toContain("<title>First</title>");
@@ -164,7 +164,9 @@ describe("emit", () => {
   });
 
   it("leaves <cover> untouched outside a presentation", () => {
-    const { html } = compile(`<document><title>D</title><cover><title>X</title></cover></document>`);
+    const { html } = compile(
+      `<document><title>D</title><cover><title>X</title></cover></document>`,
+    );
     expect(html).toContain("<delta-cover>");
     // It wasn't renamed to a cover slide. (`cover="true"` still appears in the inlined
     // deck CSS, so assert on the element, not the bare substring.)
@@ -259,7 +261,9 @@ describe("ids inside <old>", () => {
 
 describe("the page <title>", () => {
   it("keeps math as its source", () => {
-    const { html } = compile(`<document><title>On $x^2$ &amp; more</title><section id="s"><title>S</title>x</section></document>`);
+    const { html } = compile(
+      `<document><title>On $x^2$ &amp; more</title><section id="s"><title>S</title>x</section></document>`,
+    );
     expect(html).toContain("<title>On $x^2$ &amp; more</title>");
   });
 });

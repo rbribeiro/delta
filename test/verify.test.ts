@@ -8,7 +8,11 @@ import { compileProject } from "../src/compiler/project";
 import { lintFindings } from "../src/graph-report";
 import { setAttributes } from "../src/verify";
 
-function graphOf(src: string): { graph: ProofGraph; html: string; diagnostics: ReturnType<typeof compileProject>["diagnostics"] } {
+function graphOf(src: string): {
+  graph: ProofGraph;
+  html: string;
+  diagnostics: ReturnType<typeof compileProject>["diagnostics"];
+} {
   const dir = mkdtempSync(join(tmpdir(), "delta-verify-"));
   writeFileSync(join(dir, "p.dlt"), src);
   const r = compileProject({ inputs: [join(dir, "p.dlt")], outDir: dir });
@@ -36,7 +40,11 @@ ${extra}</section></document>`;
 
 const hashes = (src: string) => {
   const { graph } = graphOf(src);
-  return { l: graph.nodes.get("l")!.hash, t: graph.nodes.get("t")!.hash, c: graph.nodes.get("c")!.hash };
+  return {
+    l: graph.nodes.get("l")!.hash,
+    t: graph.nodes.get("t")!.hash,
+    c: graph.nodes.get("c")!.hash,
+  };
 };
 
 describe("what a verification is pinned to", () => {
@@ -56,8 +64,11 @@ describe("what a verification is pinned to", () => {
 
   it("ignores whitespace, titles, aids, comments, and the tags' own attributes", () => {
     const same = doc({
-      lemma: 'If  $x < y$\n   then $x + 1 < y + 1$.<intuition>Translation.</intuition><comment by="a">ok?</comment>',
-    }).replace("<title>Shift</title>", "<title>Translation</title>").replace('<proof of="l">', '<proof of="l" status="review" by="a">');
+      lemma:
+        'If  $x < y$\n   then $x + 1 < y + 1$.<intuition>Translation.</intuition><comment by="a">ok?</comment>',
+    })
+      .replace("<title>Shift</title>", "<title>Translation</title>")
+      .replace('<proof of="l">', '<proof of="l" status="review" by="a">');
     expect(hashes(same)).toEqual(base);
   });
 });
@@ -66,7 +77,10 @@ describe("a stale verification", () => {
   it("counts as a sketch, shows as stale, and is a lint error", () => {
     const { graph: g0 } = graphOf(doc());
     const pinned = (lemma: string) =>
-      doc({ lemma }).replace('<proof of="l">', `<proof of="l" status="verified" against="${g0.nodes.get("l")!.hash}">`);
+      doc({ lemma }).replace(
+        '<proof of="l">',
+        `<proof of="l" status="verified" against="${g0.nodes.get("l")!.hash}">`,
+      );
 
     const fresh = graphOf(pinned(BASE.lemma));
     expect(fresh.graph.nodes.get("l")).toMatchObject({ own: "verified", stale: false });
@@ -82,7 +96,13 @@ describe("a stale verification", () => {
 describe("setAttributes", () => {
   const span = (text: string, tag: string): SourceSpan => {
     const start = text.indexOf(tag);
-    return { file: "x", start, end: start, inner: start + tag.length, innerEnd: start + tag.length };
+    return {
+      file: "x",
+      start,
+      end: start,
+      inner: start + tag.length,
+      innerEnd: start + tag.length,
+    };
   };
 
   it("replaces existing values (either quote) and appends new ones, touching nothing else", () => {
@@ -107,8 +127,16 @@ describe("setAttributes on a self-closing tag", () => {
     for (const tag of [`<proof of="x"/>`, `<proof of="x" />`]) {
       const text = `a ${tag} z`;
       const start = text.indexOf(tag);
-      const span = { file: "x", start, end: start + tag.length, inner: start + tag.length, innerEnd: start + tag.length };
-      expect(setAttributes(text, span, { status: "verified" })).toBe(`a ${tag.replace(/\s*\/>$/, "")} status="verified"${tag.endsWith(" />") ? " />" : "/>"} z`);
+      const span = {
+        file: "x",
+        start,
+        end: start + tag.length,
+        inner: start + tag.length,
+        innerEnd: start + tag.length,
+      };
+      expect(setAttributes(text, span, { status: "verified" })).toBe(
+        `a ${tag.replace(/\s*\/>$/, "")} status="verified"${tag.endsWith(" />") ? " />" : "/>"} z`,
+      );
     }
   });
 });
@@ -116,10 +144,16 @@ describe("setAttributes on a self-closing tag", () => {
 describe("a proof with included content", () => {
   const build = (body: string) => {
     const dir = mkdtempSync(join(tmpdir(), "delta-verify-inc-"));
-    writeFileSync(join(dir, "body.dlt"), `<document>${body}<intuition>never hashed</intuition></document>`);
-    writeFileSync(join(dir, "p.dlt"), `<document><section id="s"><title>S</title>
+    writeFileSync(
+      join(dir, "body.dlt"),
+      `<document>${body}<intuition>never hashed</intuition></document>`,
+    );
+    writeFileSync(
+      join(dir, "p.dlt"),
+      `<document><section id="s"><title>S</title>
 <lemma id="l">L.<intuition>i</intuition></lemma>
-<proof of="l">Start. <include src="body.dlt"/> End.</proof></section></document>`);
+<proof of="l">Start. <include src="body.dlt"/> End.</proof></section></document>`,
+    );
     const r = compileProject({ inputs: [join(dir, "p.dlt")], outDir: dir });
     return r.graph!.nodes.get("l")!.hash;
   };

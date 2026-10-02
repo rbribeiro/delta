@@ -6,7 +6,6 @@ import { addDep, warn, error, type CompileContext, type ImportEntry } from "./co
 import { EXTERNAL_REF } from "./theme";
 import { isRemote, readUserFile } from "./files";
 
-
 const JS_EXTERNAL_REF = /\bfetch\s*\(|\bimport\s*\(|https?:\/\//i;
 
 /** The browser-side contract a package declares — a `"delta"` field in its `package.json`
@@ -47,9 +46,7 @@ export function resolveImports(doc: ElementNode, ctx: CompileContext): void {
   );
   if (imports.length === 0) return;
   // Strip every <import> so none survive into the output as <delta-import>.
-  doc.children = doc.children.filter(
-    (c) => !(c.type === "element" && c.tag === "import"),
-  );
+  doc.children = doc.children.filter((c) => !(c.type === "element" && c.tag === "import"));
 
   const baseDir = resolve(dirname(ctx.file));
   // Dedup by absolute entry path, seeded with packages already on ctx.imports (e.g. injected
@@ -120,7 +117,11 @@ export function resolvePack(
   if (existsSync(cssPath)) {
     css = readUserFile(ctx, cssPath);
     if (EXTERNAL_REF.test(css)) {
-      warn(ctx, `import theme '${spec}/${cssRel}' references an external resource; output may not work offline`, pos);
+      warn(
+        ctx,
+        `import theme '${spec}/${cssRel}' references an external resource; output may not work offline`,
+        pos,
+      );
     }
   } else if (manifest.css !== undefined) {
     // The default theme.css is optional, but a manifest that names a css file means it.
@@ -150,7 +151,11 @@ function resolvePackDir(
     const require = createRequire(resolve(baseDir, "noop.js"));
     return dirname(require.resolve(`${spec}/package.json`));
   } catch {
-    error(ctx, `import pack not found: ${spec} (not a local folder, and not installed in node_modules)`, pos);
+    error(
+      ctx,
+      `import pack not found: ${spec} (not a local folder, and not installed in node_modules)`,
+      pos,
+    );
     return undefined;
   }
 }

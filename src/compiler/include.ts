@@ -10,7 +10,7 @@ const ASSET_TAGS = new Set(["figure", "video", "audio", "bibliography", "import"
 
 /**
  * Resolves `<include>` nodes in `doc` by reading the referenced files, parsing them, and splicing their children in place of the `<include>`. Relative asset paths are rewritten relative to the master document. Cycles are detected and reported as errors.
- * 
+ *
  * @param doc - the document node to scan for `<include>` children
  * @param ctx - the compiler context, used for errors and for the current file path (used to resolve relative includes)
  */
@@ -46,7 +46,7 @@ function expand(
 ): Node[] {
   const src = inc.attrs.src;
   const targetId = inc.attrs["target-id"];
-  
+
   if (!src) {
     error(ctx, "<include> without a 'src' attribute", inc.pos);
     return [];
@@ -81,7 +81,11 @@ function expand(
       if (target === null) {
         error(ctx, `include target-id not found: ${targetId}`, inc.pos);
       } else if (target === undefined) {
-        error(ctx, `Can't resolve include target-id: ${targetId} (multiple elements with the same id found)`, inc.pos);
+        error(
+          ctx,
+          `Can't resolve include target-id: ${targetId} (multiple elements with the same id found)`,
+          inc.pos,
+        );
       } else {
         root.children = [target];
       }

@@ -183,7 +183,8 @@ function resolveInputs(positionals: string[], projectFlag?: string): Inputs {
     if (positionals.length) usage(); // `--project` and positional inputs together: ambiguous
     return { projectFile: projectFlag };
   }
-  if (positionals.length === 1 && positionals[0].endsWith(".toml")) return { projectFile: positionals[0] };
+  if (positionals.length === 1 && positionals[0].endsWith(".toml"))
+    return { projectFile: positionals[0] };
   if (positionals.length > 0) return { files: positionals };
   if (!existsSync("project.toml")) usage();
   return { projectFile: "project.toml" };
@@ -205,7 +206,9 @@ interface Compiled {
  * toml's `out`).
  */
 function compileInputs(inputs: Inputs, options: CompileOptions, output?: string): Compiled {
-  const entry = ("projectFile" in inputs ? [inputs.projectFile] : inputs.files).map((p) => resolve(p));
+  const entry = ("projectFile" in inputs ? [inputs.projectFile] : inputs.files).map((p) =>
+    resolve(p),
+  );
   const withEntry = (deps: string[]): string[] => [...new Set([...entry, ...deps])];
 
   if ("projectFile" in inputs) {
@@ -213,7 +216,11 @@ function compileInputs(inputs: Inputs, options: CompileOptions, output?: string)
     if (!config) return { diagnostics, deps: entry, outputs: [] };
     if (output) config.outDir = resolve(output);
     const result = compileProject(config, options);
-    return { ...result, diagnostics: [...diagnostics, ...result.diagnostics], deps: withEntry(result.deps) };
+    return {
+      ...result,
+      diagnostics: [...diagnostics, ...result.diagnostics],
+      deps: withEntry(result.deps),
+    };
   }
   if (inputs.files.length > 1) {
     const result = compileProject({ inputs: inputs.files, outDir: output ?? "." }, options);
@@ -335,12 +342,18 @@ function reviewMain(args: string[]): number {
     by: { type: "string" },
     kind: { type: "string" },
   });
-  const { diagnostics, review } = compileInputs(resolveInputs(positionals), { stopAfter: "buildProjectReview" });
+  const { diagnostics, review } = compileInputs(resolveInputs(positionals), {
+    stopAfter: "buildProjectReview",
+  });
   for (const d of diagnostics) report(d);
   if (!review || hasError(diagnostics)) return 1;
 
   const items = filterReview(review.items, values);
-  print(values.json ?? false, () => reviewJson(review, items), () => formatReviewText(review, items));
+  print(
+    values.json ?? false,
+    () => reviewJson(review, items),
+    () => formatReviewText(review, items),
+  );
   return 0;
 }
 
@@ -365,7 +378,10 @@ function graphArgs<const O extends Options>(args: string[], options: O, ids: num
  * graph (only a file that fails to load has none), so an agent can navigate a broken proof
  * and `lint` can report what broke.
  */
-function loadGraph(inputs: Inputs, through = "buildGraph"): { graph: ProofGraph; diagnostics: Diagnostic[] } {
+function loadGraph(
+  inputs: Inputs,
+  through = "buildGraph",
+): { graph: ProofGraph; diagnostics: Diagnostic[] } {
   const { graph, diagnostics } = compileInputs(inputs, { stopAfter: through });
   if (!graph) {
     for (const d of diagnostics) report(d);
@@ -378,7 +394,11 @@ function loadGraph(inputs: Inputs, through = "buildGraph"): { graph: ProofGraph;
 function outlineMain(args: string[]): number {
   const a = graphArgs(args, {}, 0);
   const { graph } = loadGraph(a.inputs);
-  print(a.values.json ?? false, () => outlineJson(graph, rel), () => outlineText(graph, rel));
+  print(
+    a.values.json ?? false,
+    () => outlineJson(graph, rel),
+    () => outlineText(graph, rel),
+  );
   return 0;
 }
 
@@ -389,7 +409,11 @@ function showMain(args: string[]): number {
   const { graph } = loadGraph(a.inputs);
   const data = showData(graph, id, rel, a.values.context ?? false);
   if (!data) fail(`no element with id "${id}"`);
-  print(a.values.json ?? false, () => showJson(data, rel), () => showText(data));
+  print(
+    a.values.json ?? false,
+    () => showJson(data, rel),
+    () => showText(data),
+  );
   return 0;
 }
 
@@ -399,7 +423,11 @@ function usesMain(args: string[]): number {
   const [id] = a.ids;
   const { graph } = loadGraph(a.inputs);
   if (!graph.nodes.has(id)) fail(`no element with id "${id}"`);
-  print(a.values.json ?? false, () => usesJson(graph, id, rel), () => usesText(graph, id, rel));
+  print(
+    a.values.json ?? false,
+    () => usesJson(graph, id, rel),
+    () => usesText(graph, id, rel),
+  );
   return 0;
 }
 
@@ -408,8 +436,18 @@ function graphMain(args: string[]): number {
   const a = graphArgs(args, { frontier: { type: "boolean" } }, 0);
   const { graph } = loadGraph(a.inputs);
   const json = a.values.json ?? false;
-  if (a.values.frontier) print(json, () => frontierJson(graph, rel), () => frontierText(graph, rel));
-  else print(json, () => graphJson(graph, rel), () => graphText(graph, rel));
+  if (a.values.frontier)
+    print(
+      json,
+      () => frontierJson(graph, rel),
+      () => frontierText(graph, rel),
+    );
+  else
+    print(
+      json,
+      () => graphJson(graph, rel),
+      () => graphText(graph, rel),
+    );
   return 0;
 }
 
@@ -422,7 +460,11 @@ function lintMain(args: string[]): number {
   const a = graphArgs(args, {}, 0);
   const { graph, diagnostics } = loadGraph(a.inputs, "render");
   const findings = lintFindings(graph, diagnostics, rel);
-  print(a.values.json ?? false, () => ({ findings }), () => lintText(findings));
+  print(
+    a.values.json ?? false,
+    () => ({ findings }),
+    () => lintText(findings),
+  );
   return findings.some((f) => f.severity === "error") ? 1 : 0;
 }
 
@@ -436,7 +478,8 @@ function verifyMain(args: string[]): number {
   print(
     a.values.json ?? false,
     () => ({ ...v, file: rel(v.file) }),
-    () => `verified ${v.id} against ${v.against}${v.verifiedBy ? ` by ${v.verifiedBy}` : ""} (${rel(v.file)}:${v.line})\n`,
+    () =>
+      `verified ${v.id} against ${v.against}${v.verifiedBy ? ` by ${v.verifiedBy}` : ""} (${rel(v.file)}:${v.line})\n`,
   );
   return 0;
 }
@@ -459,7 +502,8 @@ function createMain(args: string[]): number {
   }
 
   const target = resolve(name);
-  if (existsSync(target) && readdirSync(target).length > 0) fail(`${target} already exists and is not empty`);
+  if (existsSync(target) && readdirSync(target).length > 0)
+    fail(`${target} already exists and is not empty`);
 
   for (const [path, content] of Object.entries(scaffoldFiles(kind, basename(target)))) {
     const file = join(target, path);

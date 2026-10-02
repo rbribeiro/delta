@@ -15,7 +15,10 @@ const DOC = `<document>
 describe("<ref>", () => {
   it("reads as the target's label unless the author wrote their own text", async () => {
     const page = await mount(DOC);
-    expect(page.$$("delta-ref .xref").map((b) => b.textContent)).toEqual(["Lemma 1.1", "the key lemma"]);
+    expect(page.$$("delta-ref .xref").map((b) => b.textContent)).toEqual([
+      "Lemma 1.1",
+      "the key lemma",
+    ]);
   });
 
   it("opens a preview card cloned from the target's snapshot, without its ids", async () => {
@@ -64,7 +67,9 @@ describe("<toc>", () => {
   });
 
   it("takes its heading from a <title>, and depth limits how deep it goes", async () => {
-    const page = await mount(DOC.replace("<document>", `<document><toc depth="1"><title>Plan</title></toc>`));
+    const page = await mount(
+      DOC.replace("<document>", `<document><toc depth="1"><title>Plan</title></toc>`),
+    );
     expect(page.$(".toc-title")!.textContent).toBe("Plan");
     expect(page.$$(".toc-link")).toHaveLength(2);
   });
@@ -97,7 +102,9 @@ describe("<cite> and <bibliography>", () => {
   it("opens a card with every cited paper; its number jumps to the entry", async () => {
     const page = await mount(BIB);
     page.$$(".cite")[1].click();
-    expect(page.$$(".cite-pop-item").map((i) => i.querySelector(".cite-pop-num")!.textContent)).toEqual(["[1]", "[2]"]);
+    expect(
+      page.$$(".cite-pop-item").map((i) => i.querySelector(".cite-pop-num")!.textContent),
+    ).toEqual(["[1]", "[2]"]);
     page.$$(".cite-pop-num")[1].click();
     expect(page.$("#ab10")!.classList.contains("is-xref-target")).toBe(true);
   });
@@ -105,7 +112,9 @@ describe("<cite> and <bibliography>", () => {
 
 describe("<hint>", () => {
   it("is a trigger labelled by its title that reveals the body", async () => {
-    const page = await mount(`<document><p>Try it <hint><title>Need a push?</title>Factor it.</hint>.</p></document>`);
+    const page = await mount(
+      `<document><p>Try it <hint><title>Need a push?</title>Factor it.</hint>.</p></document>`,
+    );
     const trigger = page.$(".hint-trigger")!;
     expect(trigger.textContent).toBe("💡 Need a push?");
     trigger.click();

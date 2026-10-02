@@ -34,14 +34,25 @@ export function collectTeam(doc: ElementNode, ctx: CompileContext): void {
 
   const members = teams.flatMap((team) => team.children).flatMap((m) => readMember(m, ctx) ?? []);
   // Colors already spoken for: earlier files' members plus every explicit choice here.
-  const pick = colorPicker([...[...ctx.team.values()].map((m) => m.color), ...members.flatMap((m) => m.color ?? [])]);
+  const pick = colorPicker([
+    ...[...ctx.team.values()].map((m) => m.color),
+    ...members.flatMap((m) => m.color ?? []),
+  ]);
 
   for (const m of members) {
     const prev = ctx.team.get(m.id);
     if (prev) {
       // A project re-declares the team in every file: identical → fine; different → warn.
-      if (prev.name !== m.name || prev.kind !== m.kind || (m.color !== undefined && prev.color !== m.color)) {
-        warn(ctx, `duplicate <member id="${m.id}"> with different attributes; keeping the first`, m.pos);
+      if (
+        prev.name !== m.name ||
+        prev.kind !== m.kind ||
+        (m.color !== undefined && prev.color !== m.color)
+      ) {
+        warn(
+          ctx,
+          `duplicate <member id="${m.id}"> with different attributes; keeping the first`,
+          m.pos,
+        );
       }
       continue;
     }
@@ -69,12 +80,20 @@ function readMember(m: Node, ctx: CompileContext): MemberDecl | undefined {
   }
   let kind = m.attrs.kind ?? "human";
   if (!KINDS.has(kind)) {
-    warn(ctx, `<member id="${id}"> has unknown kind "${kind}" (expected human or agent); using human`, m.pos);
+    warn(
+      ctx,
+      `<member id="${id}"> has unknown kind "${kind}" (expected human or agent); using human`,
+      m.pos,
+    );
     kind = "human";
   }
   let color: string | undefined = m.attrs.color;
   if (color !== undefined && !PALETTE.includes(color)) {
-    warn(ctx, `<member id="${id}"> has unknown color "${color}" (expected one of ${PALETTE.join(", ")})`, m.pos);
+    warn(
+      ctx,
+      `<member id="${id}"> has unknown color "${color}" (expected one of ${PALETTE.join(", ")})`,
+      m.pos,
+    );
     color = undefined;
   }
   return { id, name, kind: kind as TeamMember["kind"], color, pos: m.pos };

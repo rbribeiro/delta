@@ -28,9 +28,7 @@ interface TocEntry {
 
 /** Parse the `#delta-toc` JSON island out of an output's HTML. */
 function tocIsland(html: string): TocEntry[] {
-  const m = html.match(
-    /<script type="application\/json" id="delta-toc">([\s\S]*?)<\/script>/,
-  );
+  const m = html.match(/<script type="application\/json" id="delta-toc">([\s\S]*?)<\/script>/);
   return m ? (JSON.parse(m[1]) as TocEntry[]) : [];
 }
 
@@ -123,7 +121,10 @@ describe("compileProject packages", () => {
       join(pkg, "index.js"),
       `customElements.define("delta-proj-widget", class extends HTMLElement {});`,
     );
-    writeFileSync(join(root, "a.dlt"), `<document><title>A</title><section id="a"><title>A</title>x</section></document>`);
+    writeFileSync(
+      join(root, "a.dlt"),
+      `<document><title>A</title><section id="a"><title>A</title>x</section></document>`,
+    );
     writeFileSync(
       join(root, "b.dlt"),
       `<document><title>B</title><import src="delta-proj-pack" /><section id="b"><title>B</title>y</section></document>`,
@@ -151,7 +152,10 @@ describe("compileProject packages", () => {
 
   it("errors when a project package cannot be resolved", () => {
     const root = mkdtempSync(join(tmpdir(), "delta-proj-"));
-    writeFileSync(join(root, "a.dlt"), `<document><title>A</title><section id="a"><title>A</title>x</section></document>`);
+    writeFileSync(
+      join(root, "a.dlt"),
+      `<document><title>A</title><section id="a"><title>A</title>x</section></document>`,
+    );
     const r = compileProject({
       inputs: [join(root, "a.dlt")],
       outDir: join(root, "out"),
@@ -159,7 +163,9 @@ describe("compileProject packages", () => {
       root,
     });
     expect(r.outputs).toHaveLength(0);
-    expect(r.diagnostics.some((d) => d.severity === "error" && /not found/.test(d.message))).toBe(true);
+    expect(r.diagnostics.some((d) => d.severity === "error" && /not found/.test(d.message))).toBe(
+      true,
+    );
   });
 });
 
@@ -211,7 +217,11 @@ describe("compileProject document defaults", () => {
     const { root, inputs } = docs({
       "deck.dlt": `<document><cover><title>Talk</title></cover><slide><title>S</title>hi</slide></document>`,
     });
-    const r = compileProject({ inputs, outDir: join(root, "out"), document: { type: "presentation" } });
+    const r = compileProject({
+      inputs,
+      outDir: join(root, "out"),
+      document: { type: "presentation" },
+    });
     const html = out(r, "deck.html");
     expect(htmlTag(html)).toContain('data-type="presentation"');
     // Injected before expandCover, so the cover desugared to a slide.
@@ -222,7 +232,11 @@ describe("compileProject document defaults", () => {
     const { root, inputs } = docs({
       "art.dlt": `<document type="article"><cover><title>X</title></cover><section id="s"><title>S</title>z</section></document>`,
     });
-    const r = compileProject({ inputs, outDir: join(root, "out"), document: { type: "presentation" } });
+    const r = compileProject({
+      inputs,
+      outDir: join(root, "out"),
+      document: { type: "presentation" },
+    });
     const html = out(r, "art.html");
     expect(htmlTag(html)).not.toContain("data-type"); // article is the default → no attribute
     expect(html).toContain("<delta-cover"); // sugar skipped: <cover> stayed un-desugared
@@ -346,7 +360,9 @@ describe("project-wide review", () => {
     for (const [name, src] of Object.entries(files)) writeFileSync(join(dir, name), src);
     return Object.keys(files).map((n) => join(dir, n));
   }
-  function reviewIsland(html: string): { team: unknown[]; items?: Record<string, unknown>[] } | undefined {
+  function reviewIsland(
+    html: string,
+  ): { team: unknown[]; items?: Record<string, unknown>[] } | undefined {
     const m = html.match(/<script type="application\/json" id="delta-review">([\s\S]*?)<\/script>/);
     return m ? JSON.parse(m[1]) : undefined;
   }
@@ -408,6 +424,8 @@ describe("project-wide review", () => {
     }
     const finals = r.diagnostics.filter((d) => d.message.startsWith("final build"));
     expect(finals).toHaveLength(1);
-    expect(finals[0].message).toBe("final build: 1 open comment, 1 open task, 1 block not verified");
+    expect(finals[0].message).toBe(
+      "final build: 1 open comment, 1 open task, 1 block not verified",
+    );
   });
 });

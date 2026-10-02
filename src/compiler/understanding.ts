@@ -29,10 +29,18 @@ export function checkUnderstanding(doc: ElementNode, ctx: CompileContext): void 
 function visitAid(el: ElementNode, owner: ElementNode | undefined, ctx: CompileContext): void {
   if (!owner || !AID_OWNERS.has(owner.tag)) {
     const where = owner ? `<${owner.tag}>` : "the document root";
-    error(ctx, `<${el.tag}> must be a direct child of a numbered result (${[...RESULT_TAGS].join(", ")}) or of a <step>; found inside ${where}`, el.pos);
+    error(
+      ctx,
+      `<${el.tag}> must be a direct child of a numbered result (${[...RESULT_TAGS].join(", ")}) or of a <step>; found inside ${where}`,
+      el.pos,
+    );
   }
   if (el.attrs.id !== undefined) {
-    error(ctx, `<${el.tag}> cannot carry an id: it is not a ref target (put the id on its result)`, el.pos);
+    error(
+      ctx,
+      `<${el.tag}> cannot carry an id: it is not a ref target (put the id on its result)`,
+      el.pos,
+    );
     delete el.attrs.id;
   }
   // Hidden until asked for, in every document type: the page shows statements.
@@ -44,7 +52,8 @@ function checkDuplicates(el: ElementNode, ctx: CompileContext): void {
   const seen = new Set<string>();
   for (const child of el.children) {
     if (child.type !== "element" || !AID_TAGS.has(child.tag)) continue;
-    if (seen.has(child.tag)) warn(ctx, `<${el.tag}> has more than one <${child.tag}>; merge them into one`, child.pos);
+    if (seen.has(child.tag))
+      warn(ctx, `<${el.tag}> has more than one <${child.tag}>; merge them into one`, child.pos);
     seen.add(child.tag);
   }
 }

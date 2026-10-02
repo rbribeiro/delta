@@ -72,7 +72,11 @@ export function proofTarget(proof: ElementNode): string | undefined {
  * becomes its target's localized label ("Lemma 2.1", straight from the registry),
  * whitespace collapses.
  */
-export function plainText(nodes: Node[], ctx: CompileContext, label: (tag: string) => string): string {
+export function plainText(
+  nodes: Node[],
+  ctx: CompileContext,
+  label: (tag: string) => string,
+): string {
   let out = "";
   for (const n of nodes) {
     if (n.type === "text") out += n.text;

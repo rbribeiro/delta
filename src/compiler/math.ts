@@ -25,7 +25,11 @@ const REF_MARK = /data-delta-ref="(\d+)"/g;
  * @param ctx - the compilation context
  * @param idToFile - project path only: id → home output name, for cross-file \ref hrefs
  */
-export function renderMath(doc: ElementNode, ctx: CompileContext, idToFile?: Map<string, string>): void {
+export function renderMath(
+  doc: ElementNode,
+  ctx: CompileContext,
+  idToFile?: Map<string, string>,
+): void {
   visit(doc, { ctx, idToFile });
 }
 
@@ -95,14 +99,19 @@ function expandDollars(text: string, pos: Position | undefined, scope: MathScope
 
 /**
  * Renders LaTeX to HTML via KaTeX. A LaTeX error is an error: the source text is emitted as fallback.
- * 
+ *
  * @param latex - the LaTeX string to render
  * @param displayMode - whether to render in display mode (true) or inline mode (false)
  * @param pos - the position in the source document (for diagnostics)
  * @param scope - the context and cross-file homes
  * @returns - a Node representing the rendered HTML or a text node with the original LaTeX if rendering fails
  */
-function render(latex: string, displayMode: boolean, pos: Position | undefined, scope: MathScope): Node {
+function render(
+  latex: string,
+  displayMode: boolean,
+  pos: Position | undefined,
+  scope: MathScope,
+): Node {
   scope.ctx.mathUsed = true;
   try {
     const refs: string[] = [];
@@ -115,7 +124,11 @@ function render(latex: string, displayMode: boolean, pos: Position | undefined, 
       trust: (c) => c.command === "\\htmlData",
       strict: (code: string) => (code === "htmlExtension" ? "ignore" : "warn"),
     });
-    return { type: "raw", html: html.replace(REF_MARK, (_m, k: string) => refs[Number(k)]), kind: "math" };
+    return {
+      type: "raw",
+      html: html.replace(REF_MARK, (_m, k: string) => refs[Number(k)]),
+      kind: "math",
+    };
   } catch (e) {
     error(scope.ctx, `KaTeX: ${e instanceof Error ? e.message : String(e)}`, pos);
     return { type: "text", text: latex };
@@ -129,7 +142,12 @@ function render(latex: string, displayMode: boolean, pos: Position | undefined, 
  * span's real `data-delta-ref-*` attributes, swapped in after rendering. An unresolved id
  * warns and renders as `??` (the LaTeX convention).
  */
-function expandMathRefs(latex: string, refs: string[], pos: Position | undefined, scope: MathScope): string {
+function expandMathRefs(
+  latex: string,
+  refs: string[],
+  pos: Position | undefined,
+  scope: MathScope,
+): string {
   const { ctx, idToFile } = scope;
   return latex.replace(MATH_REF, (_match, cmd: string, id: string) => {
     const entry = ctx.registry.get(id);
@@ -140,7 +158,11 @@ function expandMathRefs(latex: string, refs: string[], pos: Position | undefined
     const label = cmd === "eqref" ? `(${entry.num})` : entry.num;
     ctx.referencedIds.add(id); // emit snapshots the target into a <template>
     const home = idToFile?.get(id);
-    const attrs: [string, string][] = [["to", id], ["num", entry.num], ["tag", entry.tag]];
+    const attrs: [string, string][] = [
+      ["to", id],
+      ["num", entry.num],
+      ["tag", entry.tag],
+    ];
     if (home && home !== ctx.outName) attrs.push(["href", `${home}#${id}`]);
     refs.push(attrs.map(([k, v]) => `data-delta-ref-${k}="${escapeAttr(v)}"`).join(" "));
     return `\\htmlData{delta-ref=${refs.length - 1}}{\\text{${label}}}`;

@@ -67,7 +67,12 @@ const KIND_TITLE: Record<ReviewItem["kind"], string> = {
   change: "Changes",
   status: "Blocks",
 };
-const KIND_PREFIX: Record<ReviewItem["kind"], string> = { comment: "C", todo: "T", change: "Δ", status: "" };
+const KIND_PREFIX: Record<ReviewItem["kind"], string> = {
+  comment: "C",
+  todo: "T",
+  change: "Δ",
+  status: "",
+};
 
 /** Human/agent-readable report: team, summary, then the items grouped by kind. */
 export function formatReviewText(data: ReviewData, items: ReviewItem[] = data.items): string {
@@ -114,13 +119,16 @@ function formatItem(i: ReviewItem): string[] {
   ]
     .filter(Boolean)
     .join(" · ");
-  const out = [`  ${head} [${tags.join("/")}]${who.length ? ` ${who.join(" · ")}` : ""} · ${where}`];
+  const out = [
+    `  ${head} [${tags.join("/")}]${who.length ? ` ${who.join(" · ")}` : ""} · ${where}`,
+  ];
   if (i.kind === "status") {
     const rest = i.text.split(" — ").slice(1).join(" — ");
     if (rest) out.push(`      ${rest}`);
   } else if (i.text) out.push(`      ${i.text}`);
   if (i.note) out.push(`      note: ${i.note}`);
-  for (const r of i.replies ?? []) out.push(`      ↳ ${r.by ?? "?"}${r.date ? ` ${r.date}` : ""}: ${r.text}`);
+  for (const r of i.replies ?? [])
+    out.push(`      ↳ ${r.by ?? "?"}${r.date ? ` ${r.date}` : ""}: ${r.text}`);
   return out;
 }
 

@@ -55,7 +55,9 @@ describe("loadProjectConfig", () => {
   });
 
   it("errors when packages is not a list of strings", () => {
-    expect(loadProjectConfig(writeToml(`inputs = ["a.dlt"]\npackages = "delta-foo"`)).config).toBeUndefined();
+    expect(
+      loadProjectConfig(writeToml(`inputs = ["a.dlt"]\npackages = "delta-foo"`)).config,
+    ).toBeUndefined();
     const bad = loadProjectConfig(writeToml(`inputs = ["a.dlt"]\npackages = [1, 2]`));
     expect(bad.config).toBeUndefined();
     expect(bad.diagnostics.some((d) => /packages/.test(d.message))).toBe(true);

@@ -13,7 +13,6 @@ import { RAW_TAGS } from "../language/tags";
  * stray dollar never swallows the rest of the file.
  */
 
-
 /** The closing tag of each RAW_TAGS element; global, so a search can start mid-file (`lastIndex`). */
 const CLOSE_TAG = new Map([...RAW_TAGS].map((tag) => [tag, new RegExp(`</\\s*${tag}\\s*>`, "g")]));
 
@@ -70,7 +69,11 @@ export function preprocess(source: string): string {
  * element sits in the author's file, which is what `delta show` prints. `problems` lists
  * every unmatched `$`.
  */
-export function preprocessMapped(source: string): { text: string; map: number[]; problems: DollarProblem[] } {
+export function preprocessMapped(source: string): {
+  text: string;
+  map: number[];
+  problems: DollarProblem[];
+} {
   let out = "";
   const map: number[] = [];
   const problems: DollarProblem[] = [];

@@ -23,13 +23,24 @@ export const HEADING_TAGS: ReadonlySet<string> = new Set(Object.keys(HEADING_LEV
  * and `status="open"` (a planned result with no proof yet). All are drawn as boxes.
  */
 export const RESULT_TAGS: ReadonlySet<string> = new Set([
-  "theorem", "proposition", "lemma", "corollary", "conjecture", "claim", "definition",
+  "theorem",
+  "proposition",
+  "lemma",
+  "corollary",
+  "conjecture",
+  "claim",
+  "definition",
 ]);
 
 /** Environments drawn as a bordered box with a label: the results, then the rest. */
 export const BOX_TAGS: ReadonlySet<string> = new Set([
   ...RESULT_TAGS,
-  "example", "counterexample", "observation", "remark", "exercise", "problem",
+  "example",
+  "counterexample",
+  "observation",
+  "remark",
+  "exercise",
+  "problem",
 ]);
 
 /** Environments drawn inline with an italic lead ("Proof."); proof also gets a QED mark. */
@@ -57,7 +68,14 @@ export const RAW_TAGS: ReadonlySet<string> = new Set([...MATH_TAGS, ...LITERAL_T
 /** Collaboration items: numbered, collected by `<review>`, removed by `--final`. */
 export const COLLAB_TAGS: ReadonlySet<string> = new Set(["comment", "todo", "change"]);
 /** Structural parts of the collaboration vocabulary; never blocks in their own right. */
-export const COLLAB_PARTS: ReadonlySet<string> = new Set(["reply", "old", "new", "team", "member", "review"]);
+export const COLLAB_PARTS: ReadonlySet<string> = new Set([
+  "reply",
+  "old",
+  "new",
+  "team",
+  "member",
+  "review",
+]);
 
 /**
  * Tags whose *descendants* are neither numbered nor registered: collaboration markup
@@ -78,6 +96,19 @@ export const TRANSPARENT: ReadonlySet<string> = new Set(["change", "new", "old",
 export const BLOCK_TAGS: ReadonlySet<string> = new Set([
   ...HEADING_TAGS,
   ...ENVIRONMENT_TAGS,
-  "equation", "equations", "figure", "video", "youtube", "audio", "table", "code",
-  "list", "box", "columns", "draft", "todo", "abstract", "interactive",
+  "equation",
+  "equations",
+  "figure",
+  "video",
+  "youtube",
+  "audio",
+  "table",
+  "code",
+  "list",
+  "box",
+  "columns",
+  "draft",
+  "todo",
+  "abstract",
+  "interactive",
 ]);

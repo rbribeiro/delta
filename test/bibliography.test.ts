@@ -38,7 +38,9 @@ describe("loadBibliography", () => {
   });
 
   it("loads + merges papers from a .ref src", () => {
-    const { ctx } = run(`<document><bibliography src="fixtures/refs.ref" /><cite paper="ARS10" /></document>`);
+    const { ctx } = run(
+      `<document><bibliography src="fixtures/refs.ref" /><cite paper="ARS10" /></document>`,
+    );
     expect([...ctx.papers.keys()].sort()).toEqual(["ARS10", "KL98", "UNCITED"]);
   });
 
@@ -109,7 +111,9 @@ describe("resolveCitations", () => {
   });
 
   it("records cited ids in referencedIds (for emit's template snapshot)", () => {
-    const { ctx } = run(`<document><bibliography src="fixtures/refs.ref" /><cite paper="ARS10" /></document>`);
+    const { ctx } = run(
+      `<document><bibliography src="fixtures/refs.ref" /><cite paper="ARS10" /></document>`,
+    );
     expect(ctx.referencedIds.has("ARS10")).toBe(true);
   });
 
@@ -153,7 +157,9 @@ describe("emit with a bibliography", () => {
 });
 
 describe("emit with a bibliography with custom title", () => {
-  const doc = (body: string) => `<document><title>T</title><section id="s"><title>S</title>${body}</section>
+  const doc = (
+    body: string,
+  ) => `<document><title>T</title><section id="s"><title>S</title>${body}</section>
   <bibliography src="fixtures/refs.ref"><title>My Custom Title</title></bibliography></document>`;
 
   it("preserves the custom <title> ahead of the cited papers", () => {
@@ -163,4 +169,4 @@ describe("emit with a bibliography with custom title", () => {
     expect(html).toMatch(/<delta-bibliography[^>]*><delta-title>My Custom Title<\/delta-title>/);
     expect(html).toContain('<delta-paper id="ARS10"'); // papers still ship after it
   });
-})
+});

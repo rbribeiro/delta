@@ -20,9 +20,9 @@ function hljs(): HLJSApi {
 }
 
 /**
- * Strips leading and trailing empty lines and dedents the code block by the minimum indentation of all non-empty lines. 
+ * Strips leading and trailing empty lines and dedents the code block by the minimum indentation of all non-empty lines.
  * Tabs are replaced with two spaces.
- * 
+ *
  * @param source - the code source to be dedented
  * @returns string - the dedented code
  */
@@ -30,17 +30,15 @@ function dedent(source: string): string {
   let lines = source.replace(/\t/g, "  ").split("\n");
   while (lines.length > 0 && lines[0].trim() === "") lines = lines.slice(1);
   while (lines.length > 0 && lines[lines.length - 1].trim() === "") lines = lines.slice(0, -1);
-  const indents = lines
-    .filter((l) => l.trim() !== "")
-    .map((l) => (l.match(/^ */)?.[0].length ?? 0));
+  const indents = lines.filter((l) => l.trim() !== "").map((l) => l.match(/^ */)?.[0].length ?? 0);
   const indent = indents.length ? Math.min(...indents) : 0;
   return lines.map((l) => l.slice(indent)).join("\n");
 }
 
 /**
- * Highlights all `<code>` blocks in the given document using highlight.js. If the language is not specified or unknown, 
+ * Highlights all `<code>` blocks in the given document using highlight.js. If the language is not specified or unknown,
  * the code will be escaped and displayed as-is. Warnings are issued for unknown languages or errors during highlighting.
- * 
+ *
  * @param doc - the root ElementNode to start highlighting from
  * @param ctx - the compilation context for warnings and errors
  */

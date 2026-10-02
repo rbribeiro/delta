@@ -83,7 +83,9 @@ describe("emit with a table of contents", () => {
   });
 
   it("emits no island when there is no <toc>", () => {
-    const html = compileHtml(`<document><section id="a"><title>Intro</title>x</section></document>`);
+    const html = compileHtml(
+      `<document><section id="a"><title>Intro</title>x</section></document>`,
+    );
     expect(html).not.toContain('id="delta-toc"');
   });
 

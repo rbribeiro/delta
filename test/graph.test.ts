@@ -7,16 +7,21 @@ import { frontier, overclaimed } from "../src/graph-report";
 import { compileProject, type ProjectResult } from "../src/compiler/project";
 
 /** Writes the files into a fresh dir and compiles the `.dlt` ones (in order) as one project. */
-function project(files: Record<string, string>): ProjectResult & { graph: ProofGraph; dir: string } {
+function project(
+  files: Record<string, string>,
+): ProjectResult & { graph: ProofGraph; dir: string } {
   const dir = mkdtempSync(join(tmpdir(), "delta-graph-"));
   for (const [name, src] of Object.entries(files)) writeFileSync(join(dir, name), src);
-  const inputs = Object.keys(files).filter((n) => n.endsWith(".dlt") && !n.startsWith("_")).map((n) => join(dir, n));
+  const inputs = Object.keys(files)
+    .filter((n) => n.endsWith(".dlt") && !n.startsWith("_"))
+    .map((n) => join(dir, n));
   const r = compileProject({ inputs, outDir: dir });
   if (!r.graph) throw new Error("no graph: " + JSON.stringify(r.diagnostics));
   return { ...r, graph: r.graph, dir };
 }
 
-const one = (body: string) => project({ "a.dlt": `<document><section id="s"><title>S</title>${body}</section></document>` });
+const one = (body: string) =>
+  project({ "a.dlt": `<document><section id="s"><title>S</title>${body}</section></document>` });
 const parents = (g: ProofGraph, id: string) => g.nodes.get(id)!.parents;
 
 describe("edges", () => {
@@ -77,7 +82,14 @@ describe("trust", () => {
       <lemma id="f">x</lemma><proof of="f" status="formalized">p</proof>`);
     const own = Object.fromEntries([...graph.nodes.values()].map((n) => [n.id, n.own]));
     expect(own).toEqual({
-      d: "verified", none: "open", bare: "sketch", dr: "heuristic", rv: "sketch", h: "heuristic", v: "verified", f: "formalized",
+      d: "verified",
+      none: "open",
+      bare: "sketch",
+      dr: "heuristic",
+      rv: "sketch",
+      h: "heuristic",
+      v: "verified",
+      f: "formalized",
     });
   });
 
@@ -104,7 +116,12 @@ describe("trust", () => {
     const cycle = graph.cycles[0];
     expect(cycle[0]).toBe(cycle[cycle.length - 1]);
     expect(new Set(cycle)).toEqual(new Set(["a", "b", "c"]));
-    expect(["a", "b", "c", "t"].map((id) => graph.nodes.get(id)!.eff)).toEqual(["open", "open", "open", "open"]);
+    expect(["a", "b", "c", "t"].map((id) => graph.nodes.get(id)!.eff)).toEqual([
+      "open",
+      "open",
+      "open",
+      "open",
+    ]);
   });
 
   it("offers as work the unproved and sketched results whose parents are at least sketched", () => {

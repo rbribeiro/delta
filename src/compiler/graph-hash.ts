@@ -76,7 +76,9 @@ function sourceText(
   if (text === undefined || stack.includes(file)) return "";
   let out = "";
   let at = from;
-  const inRange = (cuts.get(file) ?? []).filter(([s, e]) => s >= from && e <= to).sort((x, y) => x[0] - y[0]);
+  const inRange = (cuts.get(file) ?? [])
+    .filter(([s, e]) => s >= from && e <= to)
+    .sort((x, y) => x[0] - y[0]);
   for (const [s, e] of inRange) {
     out += text.slice(at, s) + " ";
     at = e;
@@ -85,6 +87,8 @@ function sourceText(
   return out.replace(INCLUDE_TAG, (_tag, _q, src: string) => {
     const inc = resolve(dirname(file), src);
     const incText = graph.sources.get(inc);
-    return incText === undefined ? "" : ` ${sourceText(graph, cuts, inc, 0, incText.length, [...stack, file])} `;
+    return incText === undefined
+      ? ""
+      : ` ${sourceText(graph, cuts, inc, 0, incText.length, [...stack, file])} `;
   });
 }

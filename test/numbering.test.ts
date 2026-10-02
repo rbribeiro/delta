@@ -17,7 +17,7 @@ describe("numbering", () => {
     );
     expect(numOf(doc, "s1")).toBe("1");
     expect(numOf(doc, "a")).toBe("1.1");
-    expect(numOf(doc, "b")).toBe("1.1"); 
+    expect(numOf(doc, "b")).toBe("1.1");
     expect(numOf(doc, "s2")).toBe("2");
     expect(numOf(doc, "c")).toBe("2.1");
   });
@@ -68,9 +68,7 @@ describe("numbering", () => {
   });
 
   it("respects an explicit num and continues counting from it", () => {
-    const { doc } = numbered(
-      `<document><theorem id="a" num="5"/><theorem id="b"/></document>`,
-    );
+    const { doc } = numbered(`<document><theorem id="a" num="5"/><theorem id="b"/></document>`);
     expect(numOf(doc, "a")).toBe("5");
     expect(numOf(doc, "b")).toBe("6");
   });
@@ -87,9 +85,7 @@ describe("numbering", () => {
   });
 
   it("records every id in the registry for the reference pass", () => {
-    const { ctx } = numbered(
-      `<document><section id="s"><theorem id="t"/></section></document>`,
-    );
+    const { ctx } = numbered(`<document><section id="s"><theorem id="t"/></section></document>`);
     expect(ctx.registry.get("t")).toEqual({ tag: "theorem", num: "1.1" });
     expect(ctx.registry.get("s")).toEqual({ tag: "section", num: "1" });
   });

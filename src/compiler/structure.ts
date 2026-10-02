@@ -53,8 +53,17 @@ export function linkProofs(doc: ElementNode, _ctx: CompileContext): void {
     seq.forEach((n, i) => {
       if (n.type !== "element") return;
       const prev = seq[i - 1];
-      if (n.tag === "proof" && n.attrs.of === undefined && el.tag !== "step" && prev?.type === "element") {
-        const target = RESULT_TAGS.has(prev.tag) ? prev.attrs.id : prev.tag === "proof" ? proofTarget(prev) : undefined;
+      if (
+        n.tag === "proof" &&
+        n.attrs.of === undefined &&
+        el.tag !== "step" &&
+        prev?.type === "element"
+      ) {
+        const target = RESULT_TAGS.has(prev.tag)
+          ? prev.attrs.id
+          : prev.tag === "proof"
+            ? proofTarget(prev)
+            : undefined;
         if (target) n.attrs["data-of"] = target;
       }
       visit(n);
@@ -70,14 +79,23 @@ function next(autoIds: Map<string, number>, key: string): number {
   return n;
 }
 
-export function structureProofs(doc: ElementNode, ctx: CompileContext, autoIds = new Map<string, number>()): void {
+export function structureProofs(
+  doc: ElementNode,
+  ctx: CompileContext,
+  autoIds = new Map<string, number>(),
+): void {
   walk(doc, (el, ancestors) => {
     if (RAW_TAGS.has(el.tag) || OPAQUE.has(el.tag)) return false;
     visit(el, paperParent(ancestors), ctx, autoIds);
   });
 }
 
-function visit(el: ElementNode, parent: ElementNode | undefined, ctx: CompileContext, autoIds: Map<string, number>): void {
+function visit(
+  el: ElementNode,
+  parent: ElementNode | undefined,
+  ctx: CompileContext,
+  autoIds: Map<string, number>,
+): void {
   if (el.tag === "proof" && parent?.tag !== "step") {
     // The k-th proof of a result names its steps <result>-proof<k>-step-…; the first keeps <result>-step-….
     const owner = proofTarget(el) ?? el.attrs.id;
@@ -86,17 +104,31 @@ function visit(el: ElementNode, parent: ElementNode | undefined, ctx: CompileCon
   }
   if (RESULT_TAGS.has(el.tag)) numberHypotheses(el, ctx);
   if (el.tag === "step" && !(parent && STEP_PARENTS.has(parent.tag))) {
-    error(ctx, `<step> must be directly inside a <proof> (a step's own <proof> included); found inside <${parent?.tag ?? "document"}>`, el.pos);
+    error(
+      ctx,
+      `<step> must be directly inside a <proof> (a step's own <proof> included); found inside <${parent?.tag ?? "document"}>`,
+      el.pos,
+    );
   }
   // Hypotheses were numbered when their result was visited (above, before its children):
   // one still without a number sits outside any result's statement.
   if (el.tag === "hyp" && el.attrs.num === undefined) {
-    error(ctx, "<hyp> must be in the statement of a result (theorem, lemma, …), not in a proof or an aid", el.pos);
+    error(
+      ctx,
+      "<hyp> must be in the statement of a result (theorem, lemma, …), not in a proof or an aid",
+      el.pos,
+    );
   }
   if (el.tag === "counterexample") {
-    if (!el.attrs.breaks) error(ctx, '<counterexample> needs breaks="hyp-id": the hypothesis it shows is needed', el.pos);
+    if (!el.attrs.breaks)
+      error(
+        ctx,
+        '<counterexample> needs breaks="hyp-id": the hypothesis it shows is needed',
+        el.pos,
+      );
     // An id, so the hypothesis's preview can link to it.
-    else if (!el.attrs.id) el.attrs.id = `${el.attrs.breaks}-counterexample-${next(autoIds, `${el.attrs.breaks}-counterexample`)}`;
+    else if (!el.attrs.id)
+      el.attrs.id = `${el.attrs.breaks}-counterexample-${next(autoIds, `${el.attrs.breaks}-counterexample`)}`;
   }
 }
 
@@ -104,7 +136,13 @@ function visit(el: ElementNode, parent: ElementNode | undefined, ctx: CompileCon
  * Numbers the steps of one proof (and, recursively, of each step's proof). Returns the
  * depth of the deepest step, so the top-level proof can offer levels 1…depth.
  */
-function numberSteps(proof: ElementNode, prefix: string, owner: string | undefined, ctx: CompileContext, depth = 1): number {
+function numberSteps(
+  proof: ElementNode,
+  prefix: string,
+  owner: string | undefined,
+  ctx: CompileContext,
+  depth = 1,
+): number {
   let deepest = 0;
   let n = 0;
   for (const step of flow(proof)) {
@@ -118,12 +156,19 @@ function numberSteps(proof: ElementNode, prefix: string, owner: string | undefin
     const kids = flow(step).filter((c): c is ElementNode => c.type === "element");
     const claims = kids.filter((c) => c.tag === "claim");
     const proofs = kids.filter((c) => c.tag === "proof");
-    if (claims.length === 0) error(ctx, `step ${num} has no <claim>: say what the step establishes`, step.pos);
-    if (claims.length > 1) warn(ctx, `step ${num} has ${claims.length} <claim>s; use one`, step.pos);
-    if (proofs.length > 1) warn(ctx, `step ${num} has ${proofs.length} <proof>s; use one`, step.pos);
+    if (claims.length === 0)
+      error(ctx, `step ${num} has no <claim>: say what the step establishes`, step.pos);
+    if (claims.length > 1)
+      warn(ctx, `step ${num} has ${claims.length} <claim>s; use one`, step.pos);
+    if (proofs.length > 1)
+      warn(ctx, `step ${num} has ${proofs.length} <proof>s; use one`, step.pos);
     for (const k of kids) {
       if (k.tag !== "claim" && k.tag !== "proof" && !AID_TAGS.has(k.tag)) {
-        warn(ctx, `<${k.tag}> directly inside step ${num}: put it in the step's <claim> or <proof>`, k.pos);
+        warn(
+          ctx,
+          `<${k.tag}> directly inside step ${num}: put it in the step's <claim> or <proof>`,
+          k.pos,
+        );
       }
     }
     // <claim> is also a numbered environment (the theorem family's "Claim"). Inside a step it
@@ -148,10 +193,21 @@ function numberHypotheses(result: ElementNode, ctx: CompileContext): void {
   let n = 0;
   const visit = (el: ElementNode): void => {
     for (const c of el.children) {
-      if (c.type !== "element" || AID_TAGS.has(c.tag) || RESULT_TAGS.has(c.tag) || OPAQUE.has(c.tag)) continue;
+      if (
+        c.type !== "element" ||
+        AID_TAGS.has(c.tag) ||
+        RESULT_TAGS.has(c.tag) ||
+        OPAQUE.has(c.tag)
+      )
+        continue;
       if (c.tag === "hyp") {
         c.attrs.num = `H${++n}`;
-        if (!c.attrs.id) warn(ctx, `hypothesis H${n} has no id: give it one so the proof can say where it is used`, c.pos);
+        if (!c.attrs.id)
+          warn(
+            ctx,
+            `hypothesis H${n} has no id: give it one so the proof can say where it is used`,
+            c.pos,
+          );
       }
       visit(c);
     }

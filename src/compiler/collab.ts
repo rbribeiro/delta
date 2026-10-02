@@ -24,7 +24,12 @@ const PRIORITY = new Set(["high", "normal", "low"]);
 const BLOCK_STATUS = new Set(Object.keys(TRUST_OF));
 
 /** Warn when `id` names nobody in `<team>` (a no-op without a team — `by` is then free text). */
-function checkMember(ctx: CompileContext, id: string | undefined, pos: Position | undefined, attr: string): void {
+function checkMember(
+  ctx: CompileContext,
+  id: string | undefined,
+  pos: Position | undefined,
+  attr: string,
+): void {
   if (!id || ctx.team.size === 0) return;
   if (!ctx.team.has(id)) warn(ctx, `${attr}="${id}" is not a <member> of the <team>`, pos);
 }
@@ -64,22 +69,38 @@ function walk(el: ElementNode, parent: ElementNode | null, ctx: CompileContext):
 function visitComment(el: ElementNode, parent: ElementNode | null, ctx: CompileContext): void {
   el.attrs.status ??= "open";
   if (!COMMENT_STATUS.has(el.attrs.status)) {
-    warn(ctx, `<comment> has unknown status "${el.attrs.status}" (expected open or resolved)`, el.pos);
+    warn(
+      ctx,
+      `<comment> has unknown status "${el.attrs.status}" (expected open or resolved)`,
+      el.pos,
+    );
   }
   checkMember(ctx, el.attrs.by, el.pos, "by");
   if (parent?.tag === "title") {
-    warn(ctx, '<comment> inside a <title> — place it after the element and anchor it with on="id" instead', el.pos);
+    warn(
+      ctx,
+      '<comment> inside a <title> — place it after the element and anchor it with on="id" instead',
+      el.pos,
+    );
   }
 }
 
 function visitTodo(el: ElementNode, ctx: CompileContext): void {
   el.attrs.status ??= "open";
   if (!TODO_STATUS.has(el.attrs.status)) {
-    warn(ctx, `<todo> has unknown status "${el.attrs.status}" (expected open, doing or done)`, el.pos);
+    warn(
+      ctx,
+      `<todo> has unknown status "${el.attrs.status}" (expected open, doing or done)`,
+      el.pos,
+    );
   }
   el.attrs.priority ??= "normal";
   if (!PRIORITY.has(el.attrs.priority)) {
-    warn(ctx, `<todo> has unknown priority "${el.attrs.priority}" (expected high, normal or low)`, el.pos);
+    warn(
+      ctx,
+      `<todo> has unknown priority "${el.attrs.priority}" (expected high, normal or low)`,
+      el.pos,
+    );
   }
   checkMember(ctx, el.attrs.for, el.pos, "for");
   checkMember(ctx, el.attrs.by, el.pos, "by");
@@ -93,14 +114,22 @@ function visitChange(el: ElementNode, ctx: CompileContext): void {
   const hasNew = parts.news.length > 0;
   const hasBare = parts.bare.length > 0;
   if (hasBare && (hasOld || hasNew)) {
-    warn(ctx, "<change> mixes loose content with <old>/<new>; put the new text inside <new>", el.pos);
+    warn(
+      ctx,
+      "<change> mixes loose content with <old>/<new>; put the new text inside <new>",
+      el.pos,
+    );
   }
   if (!hasOld && !hasNew && !hasBare) warn(ctx, "empty <change>", el.pos);
 
   const inferred = hasOld && hasNew ? "replace" : hasOld ? "delete" : "insert";
   const given = el.attrs.kind;
   if (given !== undefined && given !== inferred) {
-    warn(ctx, `<change kind="${given}"> disagrees with its content (${inferred}); using ${inferred}`, el.pos);
+    warn(
+      ctx,
+      `<change kind="${given}"> disagrees with its content (${inferred}); using ${inferred}`,
+      el.pos,
+    );
   }
   el.attrs.kind = inferred;
 
@@ -121,7 +150,11 @@ function visitBlock(el: ElementNode, ctx: CompileContext): void {
   const known = BLOCK_STATUS.has(status ?? "") || (status === "open" && RESULT_TAGS.has(el.tag));
   if (status !== undefined && !known) {
     const open = RESULT_TAGS.has(el.tag) ? ", open" : "";
-    warn(ctx, `<${el.tag}> has unknown status "${status}" (expected draft, heuristic, sketch, review${open}, verified or formalized)`, el.pos);
+    warn(
+      ctx,
+      `<${el.tag}> has unknown status "${status}" (expected draft, heuristic, sketch, review${open}, verified or formalized)`,
+      el.pos,
+    );
   }
   checkMember(ctx, el.attrs.by, el.pos, "by");
   checkMember(ctx, el.attrs["verified-by"], el.pos, "verified-by");

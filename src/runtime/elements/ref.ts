@@ -82,7 +82,8 @@ export function wireRefPopover(trigger: HTMLElement, { to, num, kind, href }: Re
   go.addEventListener("click", (e) => {
     e.preventDefault();
     pop.close();
-    if (href) location.href = href; // cross-file: navigate to the target's output (#id flashes on arrival)
+    if (href)
+      location.href = href; // cross-file: navigate to the target's output (#id flashes on arrival)
     else jumpTo(to);
   });
 }
@@ -123,8 +124,12 @@ class DeltaRef extends HTMLElement {
  */
 export function wireMathRefs(): void {
   for (const span of document.querySelectorAll<HTMLElement>(".katex [data-delta-ref-to]")) {
-    const { deltaRefTo: to, deltaRefNum: num, deltaRefTag: kind, deltaRefHref: href } =
-      span.dataset;
+    const {
+      deltaRefTo: to,
+      deltaRefNum: num,
+      deltaRefTag: kind,
+      deltaRefHref: href,
+    } = span.dataset;
     if (!to || !num || !kind) continue;
     span.classList.add("math-xref");
     span.setAttribute("role", "link");

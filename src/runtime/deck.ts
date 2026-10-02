@@ -60,7 +60,10 @@ export function setupDeck(): Deck | null {
   // reveal-order just repositions an element relative to its peers.
   const fragmentsOf = (slide: HTMLElement): HTMLElement[] =>
     [...slide.querySelectorAll<HTMLElement>('[reveal="true"]')]
-      .map((el, i) => ({ el, order: el.hasAttribute("reveal-order") ? Number(el.getAttribute("reveal-order")) : i }))
+      .map((el, i) => ({
+        el,
+        order: el.hasAttribute("reveal-order") ? Number(el.getAttribute("reveal-order")) : i,
+      }))
       .sort((a, b) => a.order - b.order)
       .map((x) => x.el);
   const frags = slides.map(fragmentsOf);
@@ -203,7 +206,10 @@ export function setupDeck(): Deck | null {
     });
     document.body.append(topbar);
     listeners.push((i) =>
-      topbar.classList.toggle("topbar-hidden", slides[i].matches('[cover="true"], [divider="true"]')),
+      topbar.classList.toggle(
+        "topbar-hidden",
+        slides[i].matches('[cover="true"], [divider="true"]'),
+      ),
     );
   }
 

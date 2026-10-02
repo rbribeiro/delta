@@ -27,9 +27,7 @@ describe("code", () => {
   });
 
   it("strips common indentation and surrounding blank lines (dedent)", () => {
-    const { html } = compile(
-      doc(`<code>\n      a\n        b\n      c\n    </code>`),
-    );
+    const { html } = compile(doc(`<code>\n      a\n        b\n      c\n    </code>`));
     // common indent (6 spaces) removed; inner relative indent kept
     expect(html).toContain(`<delta-code num="1.1">a\n  b\nc</delta-code>`);
   });

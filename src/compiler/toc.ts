@@ -32,7 +32,10 @@ export function ensureHeadingId(el: ElementNode, used: Set<string>, state: SlugS
   let id = el.attrs.id;
   if (!id) {
     const titleEl = titleOf(el);
-    id = uniqueSlug(slugify(titleEl ? textContent(titleEl) : "") || `section-${++state.auto}`, used);
+    id = uniqueSlug(
+      slugify(titleEl ? textContent(titleEl) : "") || `section-${++state.auto}`,
+      used,
+    );
     el.attrs.id = id;
   }
   used.add(id);

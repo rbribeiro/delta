@@ -8,7 +8,9 @@ const TEAM = `<team>
 
 describe("comments, tasks and changes", () => {
   it("a comment is a numbered marker whose thread opens in a bubble", async () => {
-    const page = await mount(`<document>${TEAM}<p>Text.<comment by="ana">Is this right?<reply by="bot">Yes.</reply></comment></p></document>`);
+    const page = await mount(
+      `<document>${TEAM}<p>Text.<comment by="ana">Is this right?<reply by="bot">Yes.</reply></comment></p></document>`,
+    );
     const marker = page.$(".note-marker")!;
     expect(marker.textContent).toBe("1");
     marker.click();
@@ -19,14 +21,18 @@ describe("comments, tasks and changes", () => {
   });
 
   it("a task shows its state and who it is for", async () => {
-    const page = await mount(`<document>${TEAM}<todo for="bot" status="doing">Check the bound.</todo></document>`);
+    const page = await mount(
+      `<document>${TEAM}<todo for="bot" status="doing">Check the bound.</todo></document>`,
+    );
     expect(page.$(".todo-state")!.textContent).toBe("◐");
     expect(page.$(".todo-num")!.textContent).toBe("Task 1");
     expect(page.$(".todo-for .who-badge")!.textContent).toBe("agent");
   });
 
   it("a change marks its kind; the document-wide switch picks which side shows", async () => {
-    const page = await mount(`<document><p>A <change by="ana"><old>bad</old><new>good</new></change> idea.</p></document>`);
+    const page = await mount(
+      `<document><p>A <change by="ana"><old>bad</old><new>good</new></change> idea.</p></document>`,
+    );
     expect(page.$("delta-change")!.dataset.kind).toBe("replace");
     page.window.Delta.review.setChanges("final");
     expect(page.document.documentElement.dataset.changes).toBe("final");
@@ -35,11 +41,16 @@ describe("comments, tasks and changes", () => {
   });
 
   it("a block's status and authors become a pill in its label", async () => {
-    const page = await mount(`<document>${TEAM}<lemma status="sketch" by="bot" verified-by="ana">L.</lemma></document>`);
+    const page = await mount(
+      `<document>${TEAM}<lemma status="sketch" by="bot" verified-by="ana">L.</lemma></document>`,
+    );
     const pill = page.$(".box-tag .status-pill")!;
     expect(pill.dataset.status).toBe("sketch");
     expect(pill.querySelector(".status-label")!.textContent).toBe("Sketch");
-    expect([...pill.querySelectorAll(".who-name")].map((n) => n.textContent)).toEqual(["Claude", "Ana Ribeiro"]);
+    expect([...pill.querySelectorAll(".who-name")].map((n) => n.textContent)).toEqual([
+      "Claude",
+      "Ana Ribeiro",
+    ]);
     expect(page.$("delta-lemma")!.dataset.status).toBe("sketch");
   });
 });
@@ -61,7 +72,11 @@ describe("<review>", () => {
       "0 pending changes",
       "1 Sketch",
     ]);
-    expect(page.$$(".review-group-title").map((g) => g.textContent)).toEqual(["Annotations", "Tasks", "Blocks"]);
+    expect(page.$$(".review-group-title").map((g) => g.textContent)).toEqual([
+      "Annotations",
+      "Tasks",
+      "Blocks",
+    ]);
     expect(page.$$(".review-item")).toHaveLength(4);
     expect(page.$(".review-loc")!.textContent).toBe("§ 1 Intro");
   });

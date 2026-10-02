@@ -91,6 +91,8 @@ So `npm publish` ships only `dist/`, and an installed `delta` command runs the b
 | `test` | `vitest run` | run the test suite once |
 | `test:watch` | `vitest` | run the suite in watch mode |
 | `typecheck` | `tsc --noEmit` | type-check without emitting |
+| `format` | `prettier --write .` | format the code (TS, JS, JSON; see `.prettierignore` for what is left alone) |
+| `format:check` | `prettier --check .` | fail if any file is not formatted (run by `prepublishOnly`) |
 | `example` | `tsx src/cli.ts build examples/hello.dlt -o out.html` | compile the single-file example |
 | `example:project` | `tsx src/cli.ts build examples/project/project.toml` | compile the multi-file project example |
 | `example:collab` | `tsx src/cli.ts build examples/collab.dlt -o examples/collab.html` | compile the collaboration example |
@@ -100,7 +102,7 @@ So `npm publish` ships only `dist/`, and an installed `delta` command runs the b
 | `docs:watch` | `tsx src/cli.ts build site/project.toml --watch` | rebuild the site on every save; `predocs:watch` runs `assets` and `trace` first |
 | `docs:exemplos` | four `tsx src/cli.ts build …` calls | compile the live examples (`site/exemplos/` → `docs/exemplos/`): the two book projects, the article, the presentation; `predocs:exemplos` runs `assets` first |
 | `prepack` | `npm run build` | build `dist/` before `npm pack` / `npm publish` |
-| `prepublishOnly` | `npm run typecheck && npm test` | refuse to publish a broken build |
+| `prepublishOnly` | `npm run format:check && npm run typecheck && npm test` | refuse to publish an unformatted or broken build |
 
 **The assets regenerate for you.** Every vitest run (`npm test`, `test:watch`, or `vitest`
 directly) rebuilds them first through its global setup ([vitest.config.ts](../vitest.config.ts),
@@ -121,6 +123,7 @@ runtime/CSS. In `test:watch`, the assets are rebuilt once per start, not on ever
 - **Build / dev** (`devDependencies`): `esbuild` (bundling), `@fontsource-variable/newsreader`
   (the body font, inlined into `CORE_CSS` at build time), `tsx` (run TS directly),
   `typescript` (type-checking), `vitest` (tests), `happy-dom` (the runtime tests' DOM),
+  `prettier` (formatting),
   `@types/*`.
 
 ## A typical loop

@@ -14,7 +14,13 @@ import { readUserFile } from "./files";
 import { parseSource } from "./parse";
 import { resolveIncludes } from "./include";
 import { applyDocumentDefaults } from "./document";
-import { describeFinal, finalizeReview, stripReviewMarks, sumFinal, type FinalStats } from "./final";
+import {
+  describeFinal,
+  finalizeReview,
+  stripReviewMarks,
+  sumFinal,
+  type FinalStats,
+} from "./final";
 import { collectTeam } from "./team";
 import { expandAnimated } from "./animated";
 import { expandCover } from "./cover";
@@ -210,12 +216,12 @@ export const PIPELINE: Phase[] = [
       },
       {
         name: "expandAnimated",
-        what: "Presentations only: animated=\"true\" → reveal=\"true\" on each child element.",
+        what: 'Presentations only: animated="true" → reveal="true" on each child element.',
         each: perFile(expandAnimated),
       },
       {
         name: "expandCover",
-        what: "Presentations only: <cover> → <slide cover=\"true\">.",
+        what: 'Presentations only: <cover> → <slide cover="true">.',
         each: perFile(expandCover),
       },
     ],
@@ -231,7 +237,7 @@ export const PIPELINE: Phase[] = [
       },
       {
         name: "linkProofs",
-        what: "A <proof> without `of` proves the result right before it: data-of=\"<id>\" (the label stays plain \"Proof.\").",
+        what: 'A <proof> without `of` proves the result right before it: data-of="<id>" (the label stays plain "Proof.").',
         each: perFile(linkProofs),
       },
       {
@@ -331,7 +337,7 @@ export const PIPELINE: Phase[] = [
       },
       {
         name: "buildProjectToc",
-        what: "Heading tree → ctx.toc (auto-slug ids for headings without one); book-wide when a <toc scope=\"project\"> exists.",
+        what: 'Heading tree → ctx.toc (auto-slug ids for headings without one); book-wide when a <toc scope="project"> exists.',
         all: (files) => buildProjectToc(parsed(files)),
       },
       {
@@ -348,7 +354,7 @@ export const PIPELINE: Phase[] = [
       },
       {
         name: "annotateCrossFileRefs",
-        what: "A resolved ref whose target lives in another output gets data-target-href=\"file#id\".",
+        what: 'A resolved ref whose target lives in another output gets data-target-href="file#id".',
         each: perFile((doc, _ctx, s, f) => annotateCrossFileRefs(doc, f.outName, s.idToFile)),
       },
       {
@@ -405,9 +411,16 @@ export const PIPELINE: Phase[] = [
  * caller then produces no output. With `stopAfter` it returns true right after that step
  * or phase; no file has HTML then.
  */
-export function runPipeline(files: FileUnit[], shared: Shared, options: CompileOptions = {}): boolean {
+export function runPipeline(
+  files: FileUnit[],
+  shared: Shared,
+  options: CompileOptions = {},
+): boolean {
   const { trace, stopAfter } = options;
-  if (stopAfter !== undefined && !PIPELINE.some((p) => p.name === stopAfter || p.steps.some((s) => s.name === stopAfter))) {
+  if (
+    stopAfter !== undefined &&
+    !PIPELINE.some((p) => p.name === stopAfter || p.steps.some((s) => s.name === stopAfter))
+  ) {
     throw new Error(`stopAfter: no pipeline step or phase named "${stopAfter}"`);
   }
   for (const f of files) {
@@ -431,7 +444,8 @@ export function runPipeline(files: FileUnit[], shared: Shared, options: CompileO
       trace?.({ phase: phase.name, step: step.name, files, shared });
       if (step.name === stopAfter) return true;
     }
-    if (phase.bail && (hasErrors(shared.project) || files.some((f) => hasErrors(f.ctx)))) return false;
+    if (phase.bail && (hasErrors(shared.project) || files.some((f) => hasErrors(f.ctx))))
+      return false;
     if (phase.name === stopAfter) return true;
   }
   return true;

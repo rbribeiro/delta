@@ -58,12 +58,18 @@ export async function mount(dlt: string, file = "test.dlt"): Promise<Page> {
   const ctx = createContext(file);
   const html = compileSource(dlt, ctx);
   if (html === undefined) {
-    throw new Error(`the document did not compile:\n${ctx.diagnostics.map((d) => d.message).join("\n")}`);
+    throw new Error(
+      `the document did not compile:\n${ctx.diagnostics.map((d) => d.message).join("\n")}`,
+    );
   }
   const window = new HappyWindow({
     url: `file:///${file.replace(/\.dlt$/, ".html")}`,
     // The page runs its own inlined runtime; the documents are ours, so the sandbox warning is noise.
-    settings: { enableJavaScriptEvaluation: true, suppressInsecureJavaScriptEnvironmentWarning: true, disableCSSFileLoading: true },
+    settings: {
+      enableJavaScriptEvaluation: true,
+      suppressInsecureJavaScriptEnvironmentWarning: true,
+      disableCSSFileLoading: true,
+    },
   });
   open.push(window);
   window.document.write(html);
@@ -85,7 +91,9 @@ export async function mount(dlt: string, file = "test.dlt"): Promise<Page> {
     key(key, selector) {
       const target = selector ? $(selector) : document;
       if (!target) throw new Error(`nothing matches ${selector}`);
-      target.dispatchEvent(new window.KeyboardEvent("keydown", { key, bubbles: true }) as unknown as Event);
+      target.dispatchEvent(
+        new window.KeyboardEvent("keydown", { key, bubbles: true }) as unknown as Event,
+      );
     },
   };
 }

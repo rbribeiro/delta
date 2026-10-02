@@ -58,7 +58,13 @@ export function parse(source: string, ctx: CompileContext, map?: number[]): Elem
       children: [],
       pos: { line: parser.line, column: parser.column, file },
       // `position` is just past the opening tag's `>`: the content starts there.
-      src: { file, start: orig(tagStart), end: orig(tagStart), inner: orig(parser.position - 1) + 1, innerEnd: 0 },
+      src: {
+        file,
+        start: orig(tagStart),
+        end: orig(tagStart),
+        inner: orig(parser.position - 1) + 1,
+        innerEnd: 0,
+      },
     };
     stack[stack.length - 1].children.push(el);
     stack.push(el);
@@ -97,6 +103,6 @@ export function parse(source: string, ctx: CompileContext, map?: number[]): Elem
     error(ctx, "no root element found");
     return null;
   }
-  
+
   return doc;
 }

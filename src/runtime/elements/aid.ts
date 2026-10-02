@@ -23,7 +23,6 @@ import { button, kindOf } from "./shared";
 const AIDS = [...AID_TAGS];
 const SELECTOR = AIDS.map((a) => `:scope > delta-${a}`).join(", ");
 
-
 /** The dots (for the box's top border) and the drawer (for right after the box). */
 export interface Lens {
   dots: HTMLElement;
@@ -91,6 +90,6 @@ export function buildLens(host: HTMLElement): Lens | null {
   }
 
   const inPreview = host.closest(".xref-pop-body") !== null;
-  show(inPreview ? null : aids.find((a) => a.getAttribute("collapsed") === "false") ?? null);
+  show(inPreview ? null : (aids.find((a) => a.getAttribute("collapsed") === "false") ?? null));
   return { dots, drawer };
 }

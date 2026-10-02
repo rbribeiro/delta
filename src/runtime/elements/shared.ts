@@ -139,7 +139,11 @@ export function renderMeta(host: Element): HTMLElement | null {
 }
 
 /** A "Copy" button that puts `text()` on the clipboard and says "Copied" for a moment. */
-export function copyButton(className: string, label: string, text: () => string): HTMLButtonElement {
+export function copyButton(
+  className: string,
+  label: string,
+  text: () => string,
+): HTMLButtonElement {
   const copy = button(className, label);
   copy.addEventListener("click", () => {
     void navigator.clipboard?.writeText(text()).then(() => {
@@ -167,7 +171,11 @@ export function setFolded(host: Element, folded: boolean): void {
 
 /** Unfolds every folded ancestor of `el`, so a jump to a step inside a folded proof lands on it. */
 export function unfoldAncestors(el: Element): void {
-  for (let at = el.parentElement?.closest(".is-collapsed"); at; at = at.parentElement?.closest(".is-collapsed")) {
+  for (
+    let at = el.parentElement?.closest(".is-collapsed");
+    at;
+    at = at.parentElement?.closest(".is-collapsed")
+  ) {
     setFolded(at, false);
   }
 }
@@ -181,8 +189,7 @@ export function unfoldAncestors(el: Element): void {
  */
 export function formatPaper(paper: Element): DocumentFragment {
   const frag = document.createDocumentFragment();
-  const field = (name: string): Element | null =>
-    paper.querySelector(`:scope > delta-${name}`);
+  const field = (name: string): Element | null => paper.querySelector(`:scope > delta-${name}`);
 
   const present = ["author", "title", "journal", "year"]
     .map(field)

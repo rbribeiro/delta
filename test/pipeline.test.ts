@@ -139,13 +139,16 @@ describe("the trace hook", () => {
         trace: (e: TraceEvent) => {
           log.push([e.phase, e.step, e.file]);
           const bDoc = () => JSON.stringify(e.files[1].doc);
-          if (e.step === "numberDocument" && e.file === "a.html") seen.registryAfterA = [...e.shared.registry.keys()];
+          if (e.step === "numberDocument" && e.file === "a.html")
+            seen.registryAfterA = [...e.shared.registry.keys()];
           if (e.step === "numberDocument" && e.file === undefined) {
             seen.registryAfterNumbering = [...e.shared.registry.keys()];
             seen.htmlAfterNumbering = e.files.map((f) => f.html);
           }
-          if (e.step === "resolveReferences" && e.file === "b.html") seen.hrefBefore = bDoc().includes("data-target-href");
-          if (e.step === "annotateCrossFileRefs" && e.file === "b.html") seen.hrefAfter = bDoc().includes('"data-target-href":"a.html#thm"');
+          if (e.step === "resolveReferences" && e.file === "b.html")
+            seen.hrefBefore = bDoc().includes("data-target-href");
+          if (e.step === "annotateCrossFileRefs" && e.file === "b.html")
+            seen.hrefAfter = bDoc().includes('"data-target-href":"a.html#thm"');
         },
       },
     );
@@ -185,19 +188,26 @@ describe("the trace hook", () => {
 
 describe("stopAfter", () => {
   it("stops right after the named step: the graph exists, the HTML does not", () => {
-    const r = compileFile(resolve("examples/project/ch1-geometry.dlt"), { stopAfter: "buildGraph" });
+    const r = compileFile(resolve("examples/project/ch1-geometry.dlt"), {
+      stopAfter: "buildGraph",
+    });
     expect(r.graph?.nodes.size).toBeGreaterThan(0);
     expect(r.html).toBeUndefined();
   });
 
   it("accepts a phase name", () => {
     const steps: string[] = [];
-    compileFile(resolve("examples/project/ch1-geometry.dlt"), { stopAfter: "numbering", trace: (e) => void steps.push(e.step) });
+    compileFile(resolve("examples/project/ch1-geometry.dlt"), {
+      stopAfter: "numbering",
+      trace: (e) => void steps.push(e.step),
+    });
     expect(steps.at(-1)).toBe("buildGraph");
     expect(steps).not.toContain("renderMath");
   });
 
   it("throws on a name that is neither a step nor a phase", () => {
-    expect(() => compileFile(resolve("examples/project/ch1-geometry.dlt"), { stopAfter: "nope" })).toThrow(/no pipeline step/);
+    expect(() =>
+      compileFile(resolve("examples/project/ch1-geometry.dlt"), { stopAfter: "nope" }),
+    ).toThrow(/no pipeline step/);
   });
 });

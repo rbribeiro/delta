@@ -55,15 +55,21 @@ describe("collectTeam", () => {
   });
 
   it("removes the <team> node from the tree (the data ships in the island, not as markup)", () => {
-    const { doc } = team(`<document><team><member id="a" name="A"/></team><section id="s"><title>S</title>x</section></document>`);
+    const { doc } = team(
+      `<document><team><member id="a" name="A"/></team><section id="s"><title>S</title>x</section></document>`,
+    );
     expect(doc.children.some((c) => c.type === "element" && c.tag === "team")).toBe(false);
-    const { html } = compile(`<document><team><member id="a" name="A"/></team><section id="s"><title>S</title>x</section></document>`);
+    const { html } = compile(
+      `<document><team><member id="a" name="A"/></team><section id="s"><title>S</title>x</section></document>`,
+    );
     expect(html).not.toContain("<delta-team");
     expect(html).not.toContain("<delta-member");
   });
 
   it("warns about a <team> that is not a direct child of <document>", () => {
-    const { ctx } = team(`<document><section id="s"><title>S</title><team><member id="a" name="A"/></team></section></document>`);
+    const { ctx } = team(
+      `<document><section id="s"><title>S</title><team><member id="a" name="A"/></team></section></document>`,
+    );
     expect(warnings(ctx).some((m) => m.includes("direct child"))).toBe(true);
     expect(ctx.team.size).toBe(0);
   });
@@ -72,7 +78,9 @@ describe("collectTeam", () => {
     const withTeam = compile(`<document><team><member id="a" name="A"/></team>
       <section id="s"><title>S</title>x<comment by="zed">hm</comment></section></document>`);
     expect(warnings(withTeam.ctx).some((m) => m.includes('by="zed"'))).toBe(true);
-    const noTeam = compile(`<document><section id="s"><title>S</title>x<comment by="zed">hm</comment></section></document>`);
+    const noTeam = compile(
+      `<document><section id="s"><title>S</title>x<comment by="zed">hm</comment></section></document>`,
+    );
     expect(warnings(noTeam.ctx)).toEqual([]);
   });
 });

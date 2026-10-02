@@ -50,7 +50,10 @@ class DeltaTodo extends HTMLElement {
       text.append(label, " ");
     }
     text.append(...this.childNodes); // move, so refs/math survive
-    this.setAttribute("aria-label", `${t("todo", "Task")}${num ? ` ${num}` : ""}: ${t(status, status)}`);
+    this.setAttribute(
+      "aria-label",
+      `${t("todo", "Task")}${num ? ` ${num}` : ""}: ${t(status, status)}`,
+    );
 
     const meta = document.createElement("div");
     meta.className = "todo-meta";

@@ -65,7 +65,9 @@ describe("show", () => {
     const { graph } = build(SRC);
     const text = showText(showData(graph, "t", rel, true)!);
     expect(text).toContain("theorem 1.1 t [sketch]");
-    expect(text).toContain(`── proof p.dlt:11\n<proof of="t" status="sketch">Apply <ref to="a"/> twice.</proof>`);
+    expect(text).toContain(
+      `── proof p.dlt:11\n<proof of="t" status="sketch">Apply <ref to="a"/> twice.</proof>`,
+    );
     expect(text).toContain("── context: the statements this proof may use (1)");
     expect(text).toContain("If $x < y$ and $y < z$ then $x < z$.");
     expect(text).not.toContain("Immediate."); // the parent's proof is not context
@@ -90,7 +92,22 @@ describe("outline, uses, frontier", () => {
     lemma 1.2 o [open] p.dlt:12
 `);
     expect(outlineJson(graph, rel)).toMatchObject({
-      files: [{ file: "p.dlt", entries: [{ tag: "section", id: "s", children: [{ id: "a", own: "verified", eff: "verified", line: 3 }, { id: "t" }, { id: "o" }] }] }],
+      files: [
+        {
+          file: "p.dlt",
+          entries: [
+            {
+              tag: "section",
+              id: "s",
+              children: [
+                { id: "a", own: "verified", eff: "verified", line: 3 },
+                { id: "t" },
+                { id: "o" },
+              ],
+            },
+          ],
+        },
+      ],
     });
   });
 
@@ -109,7 +126,9 @@ describe("lint", () => {
   it("reports a clean graph as clean, except a verification marked by hand", () => {
     const { graph, diagnostics } = build(SRC);
     const findings = lintFindings(graph, diagnostics, rel);
-    expect(findings.map((f) => [f.severity, f.kind, f.ids])).toEqual([["warning", "unpinned", ["a"]]]);
+    expect(findings.map((f) => [f.severity, f.kind, f.ids])).toEqual([
+      ["warning", "unpinned", ["a"]],
+    ]);
     expect(lintText(findings.filter((f) => f.kind !== "unpinned"))).toBe("no problems found\n");
   });
 

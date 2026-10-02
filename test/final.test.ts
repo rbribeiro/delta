@@ -4,9 +4,12 @@ import { compile as compileWith } from "./helpers";
 const compile = (src: string, final: boolean) => compileWith(src, { final });
 
 /** The rendered document only: no inlined CSS/JS (whose comments mention tags) and no <template> snapshots. */
-const body = (html: string): string => html.slice(html.indexOf("<delta-document"), html.indexOf("</delta-document>"));
+const body = (html: string): string =>
+  html.slice(html.indexOf("<delta-document"), html.indexOf("</delta-document>"));
 const nums = (html: string): string[] =>
-  [...body(html).matchAll(/<delta-(theorem|equation|lemma)[^>]*\bnum="([^"]+)"/g)].map((m) => `${m[1]}:${m[2]}`);
+  [...body(html).matchAll(/<delta-(theorem|equation|lemma)[^>]*\bnum="([^"]+)"/g)].map(
+    (m) => `${m[1]}:${m[2]}`,
+  );
 
 const MARKED = `<document>
   <team><member id="ai" name="Claude" kind="agent"/></team>
@@ -40,7 +43,18 @@ describe("--final", () => {
   it("strips comments, tasks, the panel and the team; unwraps drafts; accepts changes; drops the marks", () => {
     const { html } = compile(MARKED, true);
     const doc = body(html);
-    for (const tag of ["comment", "reply", "todo", "review", "team", "member", "draft", "change", "old", "new"]) {
+    for (const tag of [
+      "comment",
+      "reply",
+      "todo",
+      "review",
+      "team",
+      "member",
+      "draft",
+      "change",
+      "old",
+      "new",
+    ]) {
       expect(doc, tag).not.toContain(`<delta-${tag}`);
     }
     expect(html).not.toContain('id="delta-review"');
@@ -84,9 +98,12 @@ describe("--final", () => {
   });
 
   it("is silent when everything is resolved, done and verified", () => {
-    const { ctx, html } = compile(`<document><section id="s"><title>S</title>
+    const { ctx, html } = compile(
+      `<document><section id="s"><title>S</title>
       <lemma status="verified" verified-by="rb">x<comment by="a" status="resolved">ok</comment></lemma>
-      <todo for="a" status="done">did</todo></section></document>`, true);
+      <todo for="a" status="done">did</todo></section></document>`,
+      true,
+    );
     expect(ctx.diagnostics).toEqual([]);
     expect(html).not.toContain("<delta-comment");
   });

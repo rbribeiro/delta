@@ -2,7 +2,14 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { COUNTER_RESETS, ENVIRONMENTS } from "../src/language/environments";
 import { STRINGS } from "../src/language/strings";
-import { AID_TAGS, BLOCK_TAGS, ENVIRONMENT_TAGS, HEADING_TAGS, PROOF_TAGS, RESULT_TAGS } from "../src/language/tags";
+import {
+  AID_TAGS,
+  BLOCK_TAGS,
+  ENVIRONMENT_TAGS,
+  HEADING_TAGS,
+  PROOF_TAGS,
+  RESULT_TAGS,
+} from "../src/language/tags";
 import { TRUST, TRUST_OF } from "../src/language/trust";
 import { PALETTE } from "../src/language/palette";
 
@@ -22,12 +29,14 @@ describe("the environment vocabulary agrees everywhere", () => {
   }
 
   it("numbers every box environment and heading", () => {
-    for (const tag of ENVIRONMENT_TAGS) if (!PROOF_TAGS.has(tag)) expect(ENVIRONMENTS[tag], tag).toBeDefined();
+    for (const tag of ENVIRONMENT_TAGS)
+      if (!PROOF_TAGS.has(tag)) expect(ENVIRONMENTS[tag], tag).toBeDefined();
     for (const tag of HEADING_TAGS) expect(ENVIRONMENTS[tag], tag).toBeDefined();
   });
 
   it("treats every environment and heading as a block (for <change>)", () => {
-    for (const tag of [...ENVIRONMENT_TAGS, ...HEADING_TAGS]) expect(BLOCK_TAGS.has(tag), tag).toBe(true);
+    for (const tag of [...ENVIRONMENT_TAGS, ...HEADING_TAGS])
+      expect(BLOCK_TAGS.has(tag), tag).toBe(true);
   });
 
   it("restarts every section-numbered counter at a new section", () => {
@@ -39,7 +48,8 @@ describe("the environment vocabulary agrees everywhere", () => {
   });
 
   it("has a result's every aid labelled", () => {
-    for (const tag of AID_TAGS) for (const block of Object.values(STRINGS)) expect(block[tag], tag).toBeDefined();
+    for (const tag of AID_TAGS)
+      for (const block of Object.values(STRINGS)) expect(block[tag], tag).toBeDefined();
     for (const tag of RESULT_TAGS) expect(ENVIRONMENT_TAGS.has(tag), tag).toBe(true);
   });
 });

@@ -1,5 +1,11 @@
 import { elements, hasTag, nearest, titleOf, walk, type ElementNode, type Node } from "./ast";
-import { warn, type CompileContext, type ReviewHeading, type ReviewItem, type ReviewReply } from "./context";
+import {
+  warn,
+  type CompileContext,
+  type ReviewHeading,
+  type ReviewItem,
+  type ReviewReply,
+} from "./context";
 import { stringsFor } from "../language/strings";
 import { HEADING_LEVEL, HEADING_TAGS, OPAQUE, RAW_TAGS } from "../language/tags";
 import { ensureHeadingId, uniqueSlug, type SlugState } from "./toc";
@@ -87,7 +93,12 @@ function collectReview(
     if (!h) return undefined;
     const titleEl = titleOf(h);
     const id = ensureHeadingId(h, used, state);
-    return { level: HEADING_LEVEL[h.tag], num: h.attrs.num ?? "", id, title: titleEl ? titleEl.children : [] };
+    return {
+      level: HEADING_LEVEL[h.tag],
+      num: h.attrs.num ?? "",
+      id,
+      title: titleEl ? titleEl.children : [],
+    };
   };
 
   walk(doc, (el, ancestors) => {
@@ -120,7 +131,12 @@ function commentItem(el: ElementNode, r: Reader): ReviewItem {
   const body: Node[] = [];
   for (const c of el.children) {
     if (c.type === "element" && c.tag === "reply") {
-      replies.push({ by: c.attrs.by, date: c.attrs.date, text: r.plain(c.children), body: c.children });
+      replies.push({
+        by: c.attrs.by,
+        date: c.attrs.date,
+        text: r.plain(c.children),
+        body: c.children,
+      });
     } else body.push(c);
   }
   return {
@@ -170,7 +186,12 @@ function changeItem(el: ElementNode, r: Reader): ReviewItem {
     date: el.attrs.date,
     changeKind: kind,
     note: el.attrs.note,
-    text: kind === "replace" ? `${oldText} ⟶ ${newText}` : kind === "delete" ? `− ${oldText}` : `+ ${newText}`,
+    text:
+      kind === "replace"
+        ? `${oldText} ⟶ ${newText}`
+        : kind === "delete"
+          ? `− ${oldText}`
+          : `+ ${newText}`,
     body: el.children,
   };
 }
@@ -188,14 +209,19 @@ function statusItem(el: ElementNode, r: Reader): ReviewItem | undefined {
   const target = el.tag === "proof" ? proofTarget(el) : undefined;
   return {
     kind: "status",
-    id: r.assignId(el, el.attrs.num ? `${el.tag}-${el.attrs.num}` : target ? `proof-of-${target}` : ""),
+    id: r.assignId(
+      el,
+      el.attrs.num ? `${el.tag}-${el.attrs.num}` : target ? `proof-of-${target}` : "",
+    ),
     tag: el.tag,
     num: el.attrs.num,
     status: status ?? "unmarked",
     by,
     verifiedBy,
     note: el.attrs.note,
-    text: [name, titleText && `(${titleText})`, excerpt && `— ${excerpt}`].filter(Boolean).join(" "),
+    text: [name, titleText && `(${titleText})`, excerpt && `— ${excerpt}`]
+      .filter(Boolean)
+      .join(" "),
     body: titleEl ? titleEl.children : [],
   };
 }

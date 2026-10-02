@@ -40,7 +40,9 @@ describe("reader aids on a result", () => {
     expect(html).toContain('<delta-obstacle collapsed="true">');
     // math rendered and the ref resolved inside the aids
     expect(html).toMatch(/<delta-intuition[^>]*>[^]*class="katex"/);
-    expect(html).toMatch(/<delta-strategy[^>]*>[^]*<delta-ref to="lem:coupling" data-target-num="1\.1"/);
+    expect(html).toMatch(
+      /<delta-strategy[^>]*>[^]*<delta-ref to="lem:coupling" data-target-num="1\.1"/,
+    );
   });
 
   it("is not numbered and never registers as a ref target", () => {
@@ -54,7 +56,9 @@ describe("reader aids on a result", () => {
   });
 
   it("keeps an author's collapsed", () => {
-    const { html } = compile(doc(`<lemma id="l">x<strategy collapsed="false">s</strategy></lemma>`));
+    const { html } = compile(
+      doc(`<lemma id="l">x<strategy collapsed="false">s</strategy></lemma>`),
+    );
     expect(html).toContain('<delta-strategy collapsed="false">');
   });
 
@@ -74,15 +78,21 @@ describe("placement", () => {
 </section>
 </document>`);
     const err = ctx.diagnostics.find((d) => d.severity === "error");
-    expect(err?.message).toMatch(/<strategy> must be a direct child of a numbered result .*found inside <section>/);
+    expect(err?.message).toMatch(
+      /<strategy> must be a direct child of a numbered result .*found inside <section>/,
+    );
     expect(err?.pos?.line).toBe(3);
   });
 
   it("refuses an aid directly inside a proof", () => {
-    const ctx = attempt(doc(`<lemma id="l">x</lemma>
-      <proof of="l"><intuition>no</intuition></proof>`));
+    const ctx = attempt(
+      doc(`<lemma id="l">x</lemma>
+      <proof of="l"><intuition>no</intuition></proof>`),
+    );
     expect(messages(ctx, "error")).toEqual([
-      expect.stringMatching(/<intuition> must be a direct child .*or of a <step>; found inside <proof>/),
+      expect.stringMatching(
+        /<intuition> must be a direct child .*or of a <step>; found inside <proof>/,
+      ),
     ]);
   });
 
@@ -93,17 +103,23 @@ describe("placement", () => {
   });
 
   it("looks through collaboration wrappers", () => {
-    const ctx = attempt(doc(`<lemma id="l">x<change by="a"><new><intuition>i</intuition></new></change></lemma>`));
+    const ctx = attempt(
+      doc(`<lemma id="l">x<change by="a"><new><intuition>i</intuition></new></change></lemma>`),
+    );
     expect(messages(ctx, "error")).toEqual([]);
   });
 
   it("rejects an id on an aid", () => {
     const ctx = attempt(doc(`<lemma id="l">x<intuition id="i">i</intuition></lemma>`));
-    expect(messages(ctx, "error")).toEqual([expect.stringMatching(/<intuition> cannot carry an id/)]);
+    expect(messages(ctx, "error")).toEqual([
+      expect.stringMatching(/<intuition> cannot carry an id/),
+    ]);
   });
 
   it("warns on two of the same aid", () => {
-    const { ctx } = compile(doc(`<lemma id="l">x<intuition>a</intuition><intuition>b</intuition></lemma>`));
+    const { ctx } = compile(
+      doc(`<lemma id="l">x<intuition>a</intuition><intuition>b</intuition></lemma>`),
+    );
     expect(messages(ctx, "warning")).toEqual([expect.stringMatching(/more than one <intuition>/)]);
   });
 });
@@ -125,13 +141,21 @@ describe('status="open"', () => {
 describe("across chapters", () => {
   it("resolves a ref in a strategy to a result in another file", () => {
     const dir = mkdtempSync(join(tmpdir(), "delta-aids-"));
-    writeFileSync(join(dir, "a.dlt"), `<document><section id="a"><title>A</title>
-      <lemma id="lem:a">Base.</lemma></section></document>`);
-    writeFileSync(join(dir, "b.dlt"), `<document><section id="b"><title>B</title>
-      <theorem id="thm:b">Main.<strategy>Use <ref to="lem:a"/>.</strategy></theorem></section></document>`);
+    writeFileSync(
+      join(dir, "a.dlt"),
+      `<document><section id="a"><title>A</title>
+      <lemma id="lem:a">Base.</lemma></section></document>`,
+    );
+    writeFileSync(
+      join(dir, "b.dlt"),
+      `<document><section id="b"><title>B</title>
+      <theorem id="thm:b">Main.<strategy>Use <ref to="lem:a"/>.</strategy></theorem></section></document>`,
+    );
     const r = compileProject({ inputs: [join(dir, "a.dlt"), join(dir, "b.dlt")], outDir: "out" });
     expect(r.diagnostics).toEqual([]);
     const b = r.outputs.find((o) => o.path.endsWith("b.html"))!.html;
-    expect(b).toMatch(/<delta-strategy[^>]*>Use <delta-ref to="lem:a"[^>]*data-target-href="a\.html#lem:a"/);
+    expect(b).toMatch(
+      /<delta-strategy[^>]*>Use <delta-ref to="lem:a"[^>]*data-target-href="a\.html#lem:a"/,
+    );
   });
 });

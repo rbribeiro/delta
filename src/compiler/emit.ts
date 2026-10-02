@@ -12,14 +12,14 @@ const DEFAULT_TYPE = "article";
 
 /**
  * Serializes the AST into a standalone HTML file. Every tag becomes `<delta-tag>`
- * — the compiler ships data (num attributes, ids, pre-rendered math) and the inlined runtime renders them. 
+ * — the compiler ships data (num attributes, ids, pre-rendered math) and the inlined runtime renders them.
  * All CSS/JS/fonts are inlined; the output references no external resources. KaTeX CSS is included only when the
  * output carries math — rendered in this file, or arriving via a cross-file ref/cite snapshot or a project-wide ToC title.
- * 
+ *
  * @param doc - the root AST node of the document to emit
  * @param ctx - the compilation context, which contains information about the document and its dependencies
  * @param globalById - id → element across every file of the build (one file's ids on a single-file build)
- * 
+ *
  * @returns - the serialized HTML string
  */
 export function emit(
@@ -81,7 +81,10 @@ export function emit(
   // use window.Delta; each registers its own delta-* custom elements.
   const packScripts = ctx.imports.length
     ? ctx.imports
-        .map((i) => `<script>\n/* pack: ${i.name ?? basename(dirname(i.source))} */\n${i.js}\n</script>`)
+        .map(
+          (i) =>
+            `<script>\n/* pack: ${i.name ?? basename(dirname(i.source))} */\n${i.js}\n</script>`,
+        )
         .join("\n") + "\n"
     : "";
 
@@ -110,24 +113,20 @@ ${packScripts}
 `;
 }
 
-
 /**
- * 
+ *
  * Builds an inert `<template data-delta-pop="id">…</template>` at the end of the page
- * for every element referenced by a `<ref>`/`<cite>`/`<solution of>`/`<proof of>` (recorded in `ctx.referencedIds`). 
+ * for every element referenced by a `<ref>`/`<cite>`/`<solution of>`/`<proof of>` (recorded in `ctx.referencedIds`).
  * The runtime clones a template into the pop-over preview, so no fetch is needed. `globalById` maps every
  * element ID to its AST node across all files, so copying a node from another file still works.
  * Returns an empty string when nothing is referenced.
- * 
+ *
  * @param ctx - the compilation context, which contains information about the document and its dependencies
  * @param globalById - id → element across every file of the build
- * 
+ *
  * @returns - the serialized HTML string of the templates for referenced IDs or empty string if no IDs are referenced
  */
-function renderTemplates(
-  ctx: CompileContext,
-  globalById: Map<string, ElementNode>,
-): string {
+function renderTemplates(ctx: CompileContext, globalById: Map<string, ElementNode>): string {
   if (ctx.referencedIds.size === 0) return "";
   const out: string[] = [];
   for (const id of ctx.referencedIds) {
@@ -150,7 +149,7 @@ function renderTemplates(
 
 /**
  * Builds an inert `<script type="application/json" id="delta-toc">…</script>` element containing the table of contents data. The runtime reads this JSON to render the `<delta-toc>` component. Returns an empty string when there are no entries in the table of contents.
- * 
+ *
  * @param ctx - the compiler context
  * @returns - the serialized stringfied array of objects representing the table of contents as a `<script type="application/json" id="delta-toc">` element, or an empty string if there are no entries in the table of contents
  */
@@ -210,9 +209,16 @@ function renderReviewIsland(doc: ElementNode, ctx: CompileContext): string {
         on: i.on,
         text: i.text,
         html: ser(i.body),
-        replies: i.replies?.map((r) => compact({ by: r.by, date: r.date, text: r.text, html: ser(r.body) })),
+        replies: i.replies?.map((r) =>
+          compact({ by: r.by, date: r.date, text: r.text, html: ser(r.body) }),
+        ),
         heading: i.heading
-          ? { level: i.heading.level, num: i.heading.num, id: i.heading.id, title: ser(i.heading.title) }
+          ? {
+              level: i.heading.level,
+              num: i.heading.num,
+              id: i.heading.id,
+              title: ser(i.heading.title),
+            }
           : undefined,
         file: i.file,
       }),
@@ -233,7 +239,8 @@ function jsonIsland(id: string, data: unknown): string {
 /** Drops undefined-valued keys so the island JSON stays small. */
 function compact<T extends Record<string, unknown>>(obj: T): Partial<T> {
   const out: Partial<T> = {};
-  for (const [k, v] of Object.entries(obj)) if (v !== undefined) (out as Record<string, unknown>)[k] = v;
+  for (const [k, v] of Object.entries(obj))
+    if (v !== undefined) (out as Record<string, unknown>)[k] = v;
   return out;
 }
 
@@ -241,8 +248,7 @@ function compact<T extends Record<string, unknown>>(obj: T): Partial<T> {
 function containsMath(nodes: Node[]): boolean {
   return nodes.some(
     (n) =>
-      (n.type === "raw" && n.kind === "math") ||
-      (n.type === "element" && containsMath(n.children)),
+      (n.type === "raw" && n.kind === "math") || (n.type === "element" && containsMath(n.children)),
   );
 }
 

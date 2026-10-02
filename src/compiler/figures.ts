@@ -4,7 +4,6 @@ import { elements, type ElementNode } from "./ast";
 import { addDep, warn, type CompileContext } from "./context";
 import { isRemote } from "./files";
 
-
 const MIME: Record<string, string> = {
   ".png": "image/png",
   ".jpg": "image/jpeg",

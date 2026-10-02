@@ -1,7 +1,7 @@
 /******************************************************************************
- * The mutable context threaded through every pass and into the emitter. 
- * Passes communicate through it (and through node attrs). Nothing else is shared. 
-**** ***********************/
+ * The mutable context threaded through every pass and into the emitter.
+ * Passes communicate through it (and through node attrs). Nothing else is shared.
+ **** ***********************/
 
 import { resolve } from "node:path";
 import type { ElementNode, Node, Position } from "./ast";
@@ -124,9 +124,9 @@ export interface CompileContext {
   /** Output basename for this file (e.g. "chapter1.html"), set by the pipeline runner for every build. */
   outName?: string;
   diagnostics: Diagnostic[];
-  /** id → numbering info; written by numbering, read by the reference pass. 
+  /** id → numbering info; written by numbering, read by the reference pass.
    * Uses Map that is more efficient than Record<string, LabelEntry> for large documents with many labels.
-  */
+   */
   registry: Map<string, LabelEntry>;
   /** Target ids something in this file points at: a `<ref>`/`<solution of>`/`<proof of>` (references.ts),
    *  a `<cite>` (bibliography.ts) or a `\ref{}` inside math (math.ts). Emit snapshots each into a

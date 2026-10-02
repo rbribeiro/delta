@@ -38,7 +38,11 @@ const GAP_Y = 64;
 const PAD = 12;
 const SWEEPS = 8;
 
-export function layoutProofMaps(doc: ElementNode, ctx: CompileContext, graph: ProofGraph | undefined): void {
+export function layoutProofMaps(
+  doc: ElementNode,
+  ctx: CompileContext,
+  graph: ProofGraph | undefined,
+): void {
   let n = 0; // per document, so the arrow marker ids are stable from build to build
   for (const el of [...elements(doc)]) {
     if (el.tag !== "proof-map" || !graph) continue;
@@ -47,7 +51,8 @@ export function layoutProofMaps(doc: ElementNode, ctx: CompileContext, graph: Pr
       error(ctx, `<proof-map of="${of}">: no result with that id`, el.pos);
       continue;
     }
-    const ids = of === undefined ? [...graph.nodes.keys()] : [...ancestors(graph, of).reverse(), of];
+    const ids =
+      of === undefined ? [...graph.nodes.keys()] : [...ancestors(graph, of).reverse(), of];
     if (ids.length === 0) {
       warn(ctx, "<proof-map>: the document has no results with an id to draw", el.pos);
       continue;
@@ -123,7 +128,8 @@ function layOut(ids: string[], graph: ProofGraph): Layout {
   const layers: Slot[][] = [];
   const slot = (s: Slot) => ((layers[s.layer] ??= []).push(s), s);
   const slots = new Map<string, Slot>();
-  for (const id of ids) slots.set(id, slot({ id, dummy: false, layer: layer.get(id)!, x: 0, w: NODE_W }));
+  for (const id of ids)
+    slots.set(id, slot({ id, dummy: false, layer: layer.get(id)!, x: 0, w: NODE_W }));
   const chains: Slot[][] = [];
   for (const v of ids) {
     for (const u of parentsOf(v)) {
@@ -257,7 +263,9 @@ function drawBox(node: GraphNode, s: Slot, t: Record<string, string>): ElementNo
       // Hover text: own → effective trust, in the document's language.
       title:
         (node.stale ? `${t.stale} · ` : "") +
-        (node.own === node.eff ? (t[node.eff] ?? node.eff) : `${t[node.own] ?? node.own} → ${t[node.eff] ?? node.eff}`),
+        (node.own === node.eff
+          ? (t[node.eff] ?? node.eff)
+          : `${t[node.own] ?? node.own} → ${t[node.eff] ?? node.eff}`),
       ...(node.cyclic ? { "data-cyclic": "true" } : {}),
       ...(node.stale ? { "data-stale": "true" } : {}),
       style: `left:${f(s.x)}px;top:${f(top(s))}px;width:${NODE_W}px;height:${NODE_H}px`,

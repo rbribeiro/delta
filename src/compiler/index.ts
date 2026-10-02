@@ -1,6 +1,18 @@
-import { createContext, hasErrors, type CompileContext, type Diagnostic, type ReviewData } from "./context";
+import {
+  createContext,
+  hasErrors,
+  type CompileContext,
+  type Diagnostic,
+  type ReviewData,
+} from "./context";
 import type { ProofGraph } from "./graph";
-import { createShared, outNameFor, runPipeline, type CompileOptions, type FileUnit } from "./pipeline";
+import {
+  createShared,
+  outNameFor,
+  runPipeline,
+  type CompileOptions,
+  type FileUnit,
+} from "./pipeline";
 
 export type { CompileOptions, TraceEvent } from "./pipeline";
 
@@ -24,7 +36,11 @@ export interface CompileResult {
  * Compiles a source string in the Delta XML dialect to HTML, using (and filling) the given
  * context. Returns the HTML, or undefined when compilation failed (`hasErrors(ctx)` is then true).
  */
-export function compileSource(source: string, ctx: CompileContext, options: CompileOptions = {}): string | undefined {
+export function compileSource(
+  source: string,
+  ctx: CompileContext,
+  options: CompileOptions = {},
+): string | undefined {
   return runOne({ ctx, outName: outNameFor(ctx.file), source, doc: null }, options).html;
 }
 

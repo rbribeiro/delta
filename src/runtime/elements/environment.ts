@@ -9,7 +9,14 @@
 
 import { nameOf } from "../i18n";
 import { BOX_TAGS, ENVIRONMENT_TAGS, PROOF_TAGS } from "../../language/tags";
-import { applyCollapsible, applyStatus, kindOf, numberedName, renderMeta, takeTitle } from "./shared";
+import {
+  applyCollapsible,
+  applyStatus,
+  kindOf,
+  numberedName,
+  renderMeta,
+  takeTitle,
+} from "./shared";
 import { buildLens } from "./aid";
 import { stepLevels } from "./proofstructure";
 

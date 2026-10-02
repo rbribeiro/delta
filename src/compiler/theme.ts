@@ -42,7 +42,7 @@ export function isBuiltinThemeName(value: string): boolean {
 /**
  * Resolves `<document theme="…">` and stashes the CSS on `ctx.userCss` so the emitter can inline it
  * at the end of the `<style>` block so it overrides the design system and custom element styles.
- * 
+ *
  * @param doc - the root element of the document
  * @param ctx - the compilation context
  * @returns void
@@ -104,7 +104,11 @@ export function resolveTheme(doc: ElementNode, ctx: CompileContext): void {
   }
 
   if (EXTERNAL_REF.test(css)) {
-    warn(ctx, `theme '${themeAttr}' references an external resource; output may not work offline`, doc.pos);
+    warn(
+      ctx,
+      `theme '${themeAttr}' references an external resource; output may not work offline`,
+      doc.pos,
+    );
   }
   ctx.userCss = css;
 }

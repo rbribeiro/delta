@@ -17,7 +17,9 @@ describe("#delta-review island", () => {
   });
 
   it("carries the team when a <team> is declared", () => {
-    const { html } = compile(`<document>${TEAM}<section id="s"><title>S</title>x<comment by="ai">n</comment></section></document>`);
+    const { html } = compile(
+      `<document>${TEAM}<section id="s"><title>S</title>x<comment by="ai">n</comment></section></document>`,
+    );
     const data = island(html);
     expect(data?.team).toEqual([
       { id: "rb", name: "Rodrigo", kind: "human", color: "blue" },
@@ -27,7 +29,9 @@ describe("#delta-review island", () => {
   });
 
   it("escapes `<` so a member name cannot break out of the script", () => {
-    const { html } = compile(`<document><team><member id="a" name="A &lt;b&gt;"/></team><section id="s"><title>S</title>x<comment by="a">n</comment></section></document>`);
+    const { html } = compile(
+      `<document><team><member id="a" name="A &lt;b&gt;"/></team><section id="s"><title>S</title>x<comment by="a">n</comment></section></document>`,
+    );
     const raw = html.match(/id="delta-review">(.*?)<\/script>/s)?.[1] ?? "";
     expect(raw).toContain("\\u003c");
     expect(raw).not.toContain("<b>");
@@ -35,7 +39,9 @@ describe("#delta-review island", () => {
   });
 
   it("localizes the collaboration labels (pt: Anotação, not Comentário — that is <remark>)", () => {
-    const pt = compile(`<document lang="pt-BR"><title>T</title><section id="s"><title>S</title>x</section></document>`).html;
+    const pt = compile(
+      `<document lang="pt-BR"><title>T</title><section id="s"><title>S</title>x</section></document>`,
+    ).html;
     expect(pt).toContain('"comment":"Anotação"');
     expect(pt).toContain('"remark":"Comentário"');
     expect(pt).toContain('"todo":"Tarefa"');
@@ -44,7 +50,9 @@ describe("#delta-review island", () => {
   });
 
   it("keeps the offline invariant with collaboration markup present", () => {
-    const { html } = compile(`<document>${TEAM}<section id="s"><title>S</title>x<comment by="ai">$a$</comment></section></document>`);
+    const { html } = compile(
+      `<document>${TEAM}<section id="s"><title>S</title>x<comment by="ai">$a$</comment></section></document>`,
+    );
     expect(html).not.toMatch(/(src|href)\s*=\s*["']https?:/i);
     expect(html).not.toMatch(/<link/i);
     for (const m of html.matchAll(/url\(\s*([^)]*)\)/g)) {
@@ -71,17 +79,43 @@ describe("buildReview", () => {
     const { ctx } = compile(DOC);
     expect(ctx.review.map((i) => i.kind)).toEqual(["comment", "todo", "change", "status"]);
     const [c, td, ch, p] = ctx.review;
-    expect(c).toMatchObject({ id: "c", num: "1", status: "open", by: "ai", date: "2026-09-12", text: "See Lemma 1.1 and $a < b$." });
+    expect(c).toMatchObject({
+      id: "c",
+      num: "1",
+      status: "open",
+      by: "ai",
+      date: "2026-09-12",
+      text: "See Lemma 1.1 and $a < b$.",
+    });
     expect(c.replies).toHaveLength(1);
     expect(c.replies?.[0]).toMatchObject({ by: "rb", text: "ok" });
-    expect(td).toMatchObject({ id: "todo-1", num: "1", status: "open", priority: "high", for: "ai", text: "do $$\\int f$$" });
-    expect(ch).toMatchObject({ id: "change-1", status: "pending", changeKind: "replace", text: "a ⟶ b" });
-    expect(p).toMatchObject({ tag: "proof", id: "proof-of-l", status: "sketch", by: "ai", text: "Proof — p" });
+    expect(td).toMatchObject({
+      id: "todo-1",
+      num: "1",
+      status: "open",
+      priority: "high",
+      for: "ai",
+      text: "do $$\\int f$$",
+    });
+    expect(ch).toMatchObject({
+      id: "change-1",
+      status: "pending",
+      changeKind: "replace",
+      text: "a ⟶ b",
+    });
+    expect(p).toMatchObject({
+      tag: "proof",
+      id: "proof-of-l",
+      status: "sketch",
+      by: "ai",
+      text: "Proof — p",
+    });
   });
 
   it("records the nearest enclosing heading, slugging an id onto it only when needed", () => {
     const { ctx, html } = compile(DOC);
-    for (const i of ctx.review) expect(i.heading).toMatchObject({ level: 3, num: "1.1", id: "beta" });
+    for (const i of ctx.review)
+      expect(i.heading).toMatchObject({ level: 3, num: "1.1", id: "beta" });
     expect(html).toContain('<delta-subsection num="1.1" id="beta">'); // num first: numbering ran before the slug
     // the empty section holds no item and there is no <toc>: it keeps no id
     expect(html).toMatch(/<delta-section num="2">/);
@@ -98,12 +132,16 @@ describe("buildReview", () => {
   });
 
   it("warns when on= names no id", () => {
-    const { ctx } = compile(`<document><section id="s"><title>S</title><comment on="ghost" by="x">n</comment></section></document>`);
+    const { ctx } = compile(
+      `<document><section id="s"><title>S</title><comment on="ghost" by="x">n</comment></section></document>`,
+    );
     expect(ctx.diagnostics.some((d) => d.message.includes('on="ghost"'))).toBe(true);
   });
 
   it("collects items from documents without a <review> too (the CLI reads ctx.review)", () => {
-    const { ctx } = compile(`<document><section id="s"><title>S</title><todo for="x">t</todo></section></document>`);
+    const { ctx } = compile(
+      `<document><section id="s"><title>S</title><todo for="x">t</todo></section></document>`,
+    );
     expect(ctx.review).toHaveLength(1);
   });
 });
@@ -120,11 +158,15 @@ describe("plain text of a block", () => {
 
 describe("island gating", () => {
   it("ships no island into a document that shares a team but has no items and no panel", () => {
-    const { html } = compile(`<document><team><member id="a" name="A"/></team><section id="s"><title>S</title>x</section></document>`);
+    const { html } = compile(
+      `<document><team><member id="a" name="A"/></team><section id="s"><title>S</title>x</section></document>`,
+    );
     expect(html).not.toContain('id="delta-review"');
   });
   it("ships no island for items without a team (chips fall back to free text)", () => {
-    const { html } = compile(`<document><section id="s"><title>S</title>x<comment by="a">n</comment></section></document>`);
+    const { html } = compile(
+      `<document><section id="s"><title>S</title>x<comment by="a">n</comment></section></document>`,
+    );
     expect(html).not.toContain('id="delta-review"');
   });
 });

@@ -2,7 +2,13 @@ import type { ProofGraph } from "./graph";
 import { join } from "node:path";
 import type { ProjectConfig } from "./config";
 import { createContext, hasErrors, type Diagnostic, type ReviewData } from "./context";
-import { createShared, outNameFor, runPipeline, type CompileOptions, type FileUnit } from "./pipeline";
+import {
+  createShared,
+  outNameFor,
+  runPipeline,
+  type CompileOptions,
+  type FileUnit,
+} from "./pipeline";
 
 export { outNameFor } from "./pipeline";
 
@@ -57,7 +63,9 @@ export function compileProject(config: ProjectConfig, options: CompileOptions = 
   const deps = [...new Set(ctxs.flatMap((c) => [...c.deps]))];
   if (!ok) return { outputs: [], diagnostics, deps, graph: shared.graph };
   return {
-    outputs: files.flatMap((f) => (f.html === undefined ? [] : [{ path: join(config.outDir, f.outName), html: f.html }])),
+    outputs: files.flatMap((f) =>
+      f.html === undefined ? [] : [{ path: join(config.outDir, f.outName), html: f.html }],
+    ),
     diagnostics,
     deps,
     review: { team: [...shared.team.values()], items: shared.reviewItems },

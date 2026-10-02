@@ -8,7 +8,8 @@ function build(src: string) {
   return { ...r, html: r.html("p.html"), graph: r.graph! };
 }
 
-const doc = (body: string) => `<document lang="pt-BR"><section id="s"><title>S</title>${body}</section></document>`;
+const doc = (body: string) =>
+  `<document lang="pt-BR"><section id="s"><title>S</title>${body}</section></document>`;
 
 const PROOF = doc(`
   <lemma id="lem:a">A.</lemma>
@@ -57,7 +58,11 @@ describe("structured proofs", () => {
   });
 
   it("reject misplaced pieces", () => {
-    const { diagnostics } = build(doc(`<step><claim>x</claim></step><lemma id="l">L.</lemma><proof of="l"><hyp id="h">no</hyp><step><proof>p</proof></step></proof>`));
+    const { diagnostics } = build(
+      doc(
+        `<step><claim>x</claim></step><lemma id="l">L.</lemma><proof of="l"><hyp id="h">no</hyp><step><proof>p</proof></step></proof>`,
+      ),
+    );
     const errors = diagnostics.filter((d) => d.severity === "error").map((d) => d.message);
     expect(errors).toEqual([
       "<step> must be directly inside a <proof> (a step's own <proof> included); found inside <section>",
@@ -77,10 +82,15 @@ describe("hypotheses", () => {
 
   it("carry, for their preview, where the proof uses them and why they are needed", () => {
     const { html } = build(PROOF);
-    const uses = (id: string) => html.match(new RegExp(`<delta-hyp id="${id}"[^]*?(<delta-hyp-uses>[^]*?</delta-hyp-uses>)`))![1];
+    const uses = (id: string) =>
+      html.match(
+        new RegExp(`<delta-hyp id="${id}"[^]*?(<delta-hyp-uses>[^]*?</delta-hyp-uses>)`),
+      )![1];
     expect(uses("h:1")).toMatch(/<delta-hyp-used><delta-ref to="st:1"/);
     expect(uses("h:2")).toMatch(/<delta-hyp-used><delta-ref to="thm:t-step-2\.1"/);
-    expect(uses("h:2")).toMatch(/<delta-hyp-needed><delta-ref to="h:2-counterexample-1" data-target-num="1\.1" data-target-tag="counterexample">/);
+    expect(uses("h:2")).toMatch(
+      /<delta-hyp-needed><delta-ref to="h:2-counterexample-1" data-target-num="1\.1" data-target-tag="counterexample">/,
+    );
   });
 
   it("are flagged by lint when the proof never uses them; so are bad counterexamples and unproved steps", () => {
@@ -99,22 +109,26 @@ describe("hypotheses", () => {
 
 describe("collaboration wrappers", () => {
   it("numbers a step inserted with <change>, and finds a claim changed with <change>", () => {
-    const { diagnostics, html } = build(doc(`<lemma id="l">x</lemma>
+    const { diagnostics, html } = build(
+      doc(`<lemma id="l">x</lemma>
       <proof of="l">
         <step><claim>a</claim></step>
         <change by="ai"><new><step><claim>b</claim></step></new></change>
         <draft><step><change><old><claim>c0</claim></old><new><claim>c</claim></new></change></step></draft>
-      </proof>`));
+      </proof>`),
+    );
     expect(diagnostics.filter((d) => d.severity === "error")).toEqual([]);
     expect(html).toContain('<delta-step num="2" depth="1" id="l-step-2">');
     expect(html).toContain('<delta-step num="3" depth="1" id="l-step-3">');
   });
 
   it("numbers nothing inside <old> or a comment, so review and final agree", () => {
-    const { diagnostics, html } = build(doc(`<theorem id="t">Assume
+    const { diagnostics, html } = build(
+      doc(`<theorem id="t">Assume
       <change by="a"><old><hyp id="h0">x</hyp></old><new><hyp id="h1">y</hyp></new></change>
       <comment by="a"><hyp id="hc">z</hyp></comment> and <hyp id="h2">w</hyp>.</theorem>
-      <proof of="t"><change by="a"><old><step><claim>gone</claim></step></old></change>By <ref to="h2"/>.</proof>`));
+      <proof of="t"><change by="a"><old><step><claim>gone</claim></step></old></change>By <ref to="h2"/>.</proof>`),
+    );
     expect(diagnostics.filter((d) => d.severity === "error")).toEqual([]);
     expect(html).toMatch(/<delta-hyp id="h1" num="H1"/);
     expect(html).toMatch(/<delta-hyp id="h2" num="H2"/);
@@ -124,9 +138,11 @@ describe("collaboration wrappers", () => {
 
 describe("several proofs of one result", () => {
   it("gives the second proof's steps their own ids", () => {
-    const { diagnostics, html } = build(doc(`<lemma id="t">x</lemma>
+    const { diagnostics, html } = build(
+      doc(`<lemma id="t">x</lemma>
       <proof of="t"><step><claim>a</claim></step></proof>
-      <proof of="t"><step><claim>b</claim></step></proof>`));
+      <proof of="t"><step><claim>b</claim></step></proof>`),
+    );
     expect(diagnostics).toEqual([]);
     expect(html).toContain('id="t-step-1"');
     expect(html).toContain('id="t-proof2-step-1"');
@@ -146,11 +162,13 @@ describe("several proofs of one result", () => {
 });
 
 describe("a proof without `of`", () => {
-  it("proves the result right before it, and still reads plain \"Proof.\"", () => {
-    const { graph, html } = build(doc(`<lemma id="a">A.</lemma>
+  it('proves the result right before it, and still reads plain "Proof."', () => {
+    const { graph, html } = build(
+      doc(`<lemma id="a">A.</lemma>
       <theorem id="t">T.</theorem>
       <comment by="x">later</comment>
-      <proof>By <ref to="a"/>.<step><claim>c</claim></step></proof>`));
+      <proof>By <ref to="a"/>.<step><claim>c</claim></step></proof>`),
+    );
     expect(graph.nodes.get("t")!.parents).toEqual(["a"]);
     expect(graph.nodes.get("t")!.own).toBe("sketch");
     expect(html).toContain('<delta-proof data-of="t"');
@@ -159,15 +177,19 @@ describe("a proof without `of`", () => {
   });
 
   it("links through a <change>, and a second proof right after the first", () => {
-    const { graph } = build(doc(`<theorem id="t">T.</theorem>
+    const { graph } = build(
+      doc(`<theorem id="t">T.</theorem>
       <change by="x"><new><proof>One.</proof></new></change>
-      <proof>Another.</proof>`));
+      <proof>Another.</proof>`),
+    );
     expect(graph.nodes.get("t")!.proofs).toHaveLength(2);
   });
 
   it("is not linked when something else comes first", () => {
-    const { graph, html } = build(doc(`<theorem id="t">T.</theorem><p>Some remark.</p><proof>P.</proof>
-      <lemma id="l">L.</lemma> Prose. <proof>Q.</proof>`));
+    const { graph, html } = build(
+      doc(`<theorem id="t">T.</theorem><p>Some remark.</p><proof>P.</proof>
+      <lemma id="l">L.</lemma> Prose. <proof>Q.</proof>`),
+    );
     expect(graph.nodes.get("t")!.proofs).toEqual([]);
     expect(graph.nodes.get("l")!.proofs).toEqual([]);
     expect(html).not.toContain("data-of=");
@@ -176,9 +198,11 @@ describe("a proof without `of`", () => {
 
 describe("aids on a step", () => {
   it("are allowed, folded, and never an edge", () => {
-    const { diagnostics, graph, html } = build(doc(`<lemma id="a">A.</lemma><lemma id="l">L.</lemma>
+    const { diagnostics, graph, html } = build(
+      doc(`<lemma id="a">A.</lemma><lemma id="l">L.</lemma>
       <proof of="l"><step><claim>c</claim><intuition>see <ref to="a"/></intuition>
-        <change by="x"><new><strategy>s</strategy></new></change><proof>p</proof></step></proof>`));
+        <change by="x"><new><strategy>s</strategy></new></change><proof>p</proof></step></proof>`),
+    );
     expect(diagnostics).toEqual([]);
     expect(html).toContain('<delta-intuition collapsed="true">');
     expect(html).toContain('<delta-strategy collapsed="true">');
@@ -186,8 +210,12 @@ describe("aids on a step", () => {
   });
 
   it("warns on two of the same, and still refuses an aid directly in a proof", () => {
-    const { diagnostics } = build(doc(`<lemma id="l">L.</lemma>
-      <proof of="l"><step><claim>c</claim><intuition>a</intuition><intuition>b</intuition></step></proof>`));
-    expect(diagnostics.map((d) => d.message)).toEqual([expect.stringMatching(/<step> has more than one <intuition>/)]);
+    const { diagnostics } = build(
+      doc(`<lemma id="l">L.</lemma>
+      <proof of="l"><step><claim>c</claim><intuition>a</intuition><intuition>b</intuition></step></proof>`),
+    );
+    expect(diagnostics.map((d) => d.message)).toEqual([
+      expect.stringMatching(/<step> has more than one <intuition>/),
+    ]);
   });
 });

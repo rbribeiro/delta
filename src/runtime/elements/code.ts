@@ -41,7 +41,10 @@ class DeltaCode extends HTMLElement {
     const label = document.createElement("span");
     label.className = "code-lang";
     label.textContent = (lang || t("code", "Code")).toUpperCase();
-    head.append(label, copyButton("code-copy", t("copy", "Copy"), () => source));
+    head.append(
+      label,
+      copyButton("code-copy", t("copy", "Copy"), () => source),
+    );
     this.append(head, body);
 
     // A numbered block gets a "Code 1.2" caption underneath.

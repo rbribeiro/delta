@@ -100,7 +100,10 @@ describe("resolveImports", () => {
       join(pkg, "package.json"),
       JSON.stringify({ name: "delta-temp-pack", delta: { js: "index.js" } }),
     );
-    writeFileSync(join(pkg, "index.js"), `customElements.define("delta-temp", class extends HTMLElement {});`);
+    writeFileSync(
+      join(pkg, "index.js"),
+      `customElements.define("delta-temp", class extends HTMLElement {});`,
+    );
 
     const ctx = createContext(join(root, "doc.dlt"));
     const doc = parse(preprocess(`<document><import src="delta-temp-pack" /></document>`), ctx);
@@ -115,18 +118,17 @@ describe("resolveImports", () => {
   it("errors a bare specifier that is not installed", () => {
     const { ctx } = resolved(`<document><import src="delta-not-installed" /></document>`);
     expect(ctx.imports).toHaveLength(0);
-    expect(
-      ctx.diagnostics.some((d) => d.severity === "error" && /not found/.test(d.message)),
-    ).toBe(true);
+    expect(ctx.diagnostics.some((d) => d.severity === "error" && /not found/.test(d.message))).toBe(
+      true,
+    );
   });
 
   it("warns about external references inside a pack but still inlines it", () => {
     const { ctx } = resolved(`<document><import src="fixtures/pack-remote" /></document>`);
     expect(ctx.imports).toHaveLength(1);
     expect(
-      ctx.diagnostics.filter(
-        (d) => d.severity === "warning" && /external resource/.test(d.message),
-      ).length,
+      ctx.diagnostics.filter((d) => d.severity === "warning" && /external resource/.test(d.message))
+        .length,
     ).toBeGreaterThanOrEqual(1);
   });
 });

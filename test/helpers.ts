@@ -43,7 +43,10 @@ export function parsed(src: string, file = "test.dlt"): { doc: ElementNode; ctx:
 }
 
 /** Parsed and numbered, for the passes that read the registry (references, toc, math). */
-export function numbered(src: string, file = "test.dlt"): { doc: ElementNode; ctx: CompileContext } {
+export function numbered(
+  src: string,
+  file = "test.dlt",
+): { doc: ElementNode; ctx: CompileContext } {
   const out = parsed(src, file);
   numberDocument(out.doc, out.ctx);
   return out;
@@ -59,9 +62,18 @@ export function warnings(ctx: CompileContext): string[] {
  * for the tests that need real files (source spans, includes, several outputs). `html(name)`
  * is the output for one file ("p.html"), or "" when there is none.
  */
-export function compileFiles(files: Record<string, string>): ProjectResult & { dir: string; html: (name: string) => string } {
+export function compileFiles(
+  files: Record<string, string>,
+): ProjectResult & { dir: string; html: (name: string) => string } {
   const dir = mkdtempSync(join(tmpdir(), "delta-test-"));
   for (const [name, src] of Object.entries(files)) writeFileSync(join(dir, name), src);
-  const result = compileProject({ inputs: Object.keys(files).map((n) => join(dir, n)), outDir: dir });
-  return { ...result, dir, html: (name) => result.outputs.find((o) => o.path.endsWith(name))?.html ?? "" };
+  const result = compileProject({
+    inputs: Object.keys(files).map((n) => join(dir, n)),
+    outDir: dir,
+  });
+  return {
+    ...result,
+    dir,
+    html: (name) => result.outputs.find((o) => o.path.endsWith(name))?.html ?? "",
+  };
 }

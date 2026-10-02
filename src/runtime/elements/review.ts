@@ -31,8 +31,18 @@ import {
 
 const KINDS = ["comment", "todo", "change", "status"] as const;
 type Kind = (typeof KINDS)[number];
-const GROUP_KEY: Record<Kind, string> = { comment: "annotations", todo: "tasks", change: "changes", status: "blocks" };
-const GROUP_FALLBACK: Record<Kind, string> = { comment: "Comments", todo: "Tasks", change: "Changes", status: "Blocks" };
+const GROUP_KEY: Record<Kind, string> = {
+  comment: "annotations",
+  todo: "tasks",
+  change: "changes",
+  status: "blocks",
+};
+const GROUP_FALLBACK: Record<Kind, string> = {
+  comment: "Comments",
+  todo: "Tasks",
+  change: "Changes",
+  status: "Blocks",
+};
 const PREFIX: Record<Kind, string> = { comment: "C", todo: "T", change: "Δ", status: "" };
 const MODES: ChangesMode[] = ["markup", "final", "original"];
 
@@ -57,7 +67,9 @@ class DeltaReview extends HTMLElement {
     title.className = "review-title";
     title.append(...(heading?.nodes ?? [t("reviewPanel", "Review")]));
     // "Copy as text": the items the filters leave visible, to paste into a chat with an agent.
-    const copy = copyButton("review-copy", t("copyText", "Copy as text"), () => visible().map(asText).join("\n"));
+    const copy = copyButton("review-copy", t("copyText", "Copy as text"), () =>
+      visible().map(asText).join("\n"),
+    );
     hd.append(title, copy);
 
     // -- summary ----------------------------------------------------------------
@@ -71,18 +83,27 @@ class DeltaReview extends HTMLElement {
       s.append(b, ` ${label}`);
       summary.append(s);
     };
-    stat(items.filter((i) => i.kind === "comment" && i.status === "open").length, t("openComments", "open comments"));
-    stat(items.filter((i) => i.kind === "todo" && i.status !== "done").length, t("openTasks", "open tasks"));
+    stat(
+      items.filter((i) => i.kind === "comment" && i.status === "open").length,
+      t("openComments", "open comments"),
+    );
+    stat(
+      items.filter((i) => i.kind === "todo" && i.status !== "done").length,
+      t("openTasks", "open tasks"),
+    );
     stat(items.filter((i) => i.kind === "change").length, t("pendingChanges", "pending changes"));
     const perStatus = new Map<string, number>();
-    for (const i of items) if (i.kind === "status") perStatus.set(i.status, (perStatus.get(i.status) ?? 0) + 1);
+    for (const i of items)
+      if (i.kind === "status") perStatus.set(i.status, (perStatus.get(i.status) ?? 0) + 1);
     for (const [status, n] of perStatus) stat(n, t(status, status));
 
     // -- switches -----------------------------------------------------------------
     const controls = document.createElement("div");
     controls.className = "review-controls";
     const annotations = button("review-switch", t("annotations", "Annotations"));
-    annotations.addEventListener("click", () => reviewState.setAnnotations(!reviewState.annotations));
+    annotations.addEventListener("click", () =>
+      reviewState.setAnnotations(!reviewState.annotations),
+    );
     const seg = document.createElement("div");
     seg.className = "review-seg";
     seg.setAttribute("role", "group");
@@ -100,7 +121,8 @@ class DeltaReview extends HTMLElement {
     controls.append(annotations, seg);
     const syncControls = (): void => {
       annotations.setAttribute("aria-pressed", String(reviewState.annotations));
-      for (const b of modeButtons) b.classList.toggle("is-active", b.dataset.mode === reviewState.changes);
+      for (const b of modeButtons)
+        b.classList.toggle("is-active", b.dataset.mode === reviewState.changes);
     };
     syncControls();
     document.addEventListener(REVIEW_EVENT, syncControls);
@@ -116,7 +138,12 @@ class DeltaReview extends HTMLElement {
       for (const id of [i.by, i.for, i.verifiedBy]) if (id) people.add(id);
       statuses.add(i.status);
     }
-    const chipButton = (cls: string, content: Node | string, set: Set<string>, key: string): void => {
+    const chipButton = (
+      cls: string,
+      content: Node | string,
+      set: Set<string>,
+      key: string,
+    ): void => {
       const b = button(`review-filter ${cls}`, content);
       b.dataset[cls === "review-filter-member" ? "member" : "status"] = key;
       b.addEventListener("click", () => {
@@ -127,7 +154,8 @@ class DeltaReview extends HTMLElement {
       });
       filters.append(b);
     };
-    for (const id of people) chipButton("review-filter-member", memberChip(id) ?? id, activeMembers, id);
+    for (const id of people)
+      chipButton("review-filter-member", memberChip(id) ?? id, activeMembers, id);
     for (const s of statuses) chipButton("review-filter-status", t(s, s), activeStatuses, s);
 
     // -- list ------------------------------------------------------------------------
@@ -136,7 +164,8 @@ class DeltaReview extends HTMLElement {
     const visible = (): ReviewItemData[] =>
       items.filter(
         (i) =>
-          (activeMembers.size === 0 || [i.by, i.for, i.verifiedBy].some((id) => id && activeMembers.has(id))) &&
+          (activeMembers.size === 0 ||
+            [i.by, i.for, i.verifiedBy].some((id) => id && activeMembers.has(id))) &&
           (activeStatuses.size === 0 || activeStatuses.has(i.status)),
       );
     const render = (): void => {
@@ -182,7 +211,10 @@ function row(i: ReviewItemData): HTMLElement {
   jump.href = i.file ? `${i.file}#${i.id}` : `#${i.id}`;
   const num = document.createElement("span");
   num.className = "review-num";
-  num.textContent = i.kind === "status" ? `${t(i.tag, i.tag)}${i.num ? ` ${i.num}` : ""}` : `${PREFIX[i.kind]}${i.num ?? ""}`;
+  num.textContent =
+    i.kind === "status"
+      ? `${t(i.tag, i.tag)}${i.num ? ` ${i.num}` : ""}`
+      : `${PREFIX[i.kind]}${i.num ?? ""}`;
   jump.append(num);
   linkJump(jump, i.id, i.file);
   hd.append(jump);
@@ -279,7 +311,9 @@ function row(i: ReviewItemData): HTMLElement {
 /** A one-line plain rendering for "Copy as text" (the island's `text` fields). */
 function asText(i: ReviewItemData): string {
   const head = i.kind === "status" ? "" : `${PREFIX[i.kind]}${i.num ?? ""} `;
-  const who = [i.by && `${t("by", "by")} ${i.by}`, i.for && `${t("for", "for")} ${i.for}`].filter(Boolean).join(", ");
+  const who = [i.by && `${t("by", "by")} ${i.by}`, i.for && `${t("for", "for")} ${i.for}`]
+    .filter(Boolean)
+    .join(", ");
   const where = i.heading ? ` (§${i.heading.num || ""})` : "";
   const lines = [`${head}[${t(i.status, i.status)}]${who ? ` ${who}` : ""}: ${i.text}${where}`];
   if (i.note) lines.push(`    ${t("note", "Note")}: ${i.note}`);

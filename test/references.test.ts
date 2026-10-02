@@ -46,7 +46,9 @@ describe("resolveReferences", () => {
     const { ctx } = resolved(
       `<document><section id="s"><title>S</title><ref/></section></document>`,
     );
-    expect(ctx.diagnostics.some((d) => d.severity === "warning" && /to/.test(d.message))).toBe(true);
+    expect(ctx.diagnostics.some((d) => d.severity === "warning" && /to/.test(d.message))).toBe(
+      true,
+    );
   });
 });
 

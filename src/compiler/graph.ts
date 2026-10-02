@@ -1,6 +1,13 @@
 import { element as el, textContent, titleOf, type ElementNode } from "./ast";
 import type { LabelEntry } from "./context";
-import { AID_TAGS, HEADING_TAGS, LITERAL_TAGS, MATH_REF, OPAQUE, RESULT_TAGS } from "../language/tags";
+import {
+  AID_TAGS,
+  HEADING_TAGS,
+  LITERAL_TAGS,
+  MATH_REF,
+  OPAQUE,
+  RESULT_TAGS,
+} from "../language/tags";
 import { TRUST_OF, trustRank, weaker, type Trust } from "../language/trust";
 import { checkedHash } from "./graph-hash";
 import { collapseSpace, flow, proofTarget } from "./paper";
@@ -145,11 +152,20 @@ export function buildGraph(files: GraphInput[], registry: Map<string, LabelEntry
  * Walk 1: the nodes (results with an id), the outline, the hypotheses, the unproved steps,
  * and for every id the result that owns it. Returns each result's proofs, in input order.
  */
-function collectNodes(graph: ProofGraph, files: GraphInput[], locOf: Locate): Map<string, ElementNode[]> {
+function collectNodes(
+  graph: ProofGraph,
+  files: GraphInput[],
+  locOf: Locate,
+): Map<string, ElementNode[]> {
   const proofsOf = new Map<string, ElementNode[]>();
   const counterexamples: ElementNode[] = [];
 
-  const collect = (el: ElementNode, into: OutlineEntry[], owner: string | undefined, fallback: string): void => {
+  const collect = (
+    el: ElementNode,
+    into: OutlineEntry[],
+    owner: string | undefined,
+    fallback: string,
+  ): void => {
     if (OPAQUE.has(el.tag)) return;
     const id = el.attrs.id;
     if (id !== undefined && !graph.byId.has(id)) graph.byId.set(id, el);
@@ -173,10 +189,24 @@ function collectNodes(graph: ProofGraph, files: GraphInput[], locOf: Locate): Ma
         hash: "",
         stale: false,
       });
-      into.push({ tag: el.tag, id, num: el.attrs.num ?? "", title: titleText(el), loc, children: [] });
+      into.push({
+        tag: el.tag,
+        id,
+        num: el.attrs.num ?? "",
+        title: titleText(el),
+        loc,
+        children: [],
+      });
       owner = id;
     } else if (HEADING_TAGS.has(el.tag)) {
-      const entry: OutlineEntry = { tag: el.tag, id, num: el.attrs.num ?? "", title: titleText(el), loc: locOf(el, fallback), children: [] };
+      const entry: OutlineEntry = {
+        tag: el.tag,
+        id,
+        num: el.attrs.num ?? "",
+        title: titleText(el),
+        loc: locOf(el, fallback),
+        children: [],
+      };
       into.push(entry);
       nextInto = entry.children;
     } else if (el.tag === "proof" && proofTarget(el) !== undefined) {
@@ -185,14 +215,36 @@ function collectNodes(graph: ProofGraph, files: GraphInput[], locOf: Locate): Ma
       list.push(el);
       proofsOf.set(of, list);
       owner = of;
-    } else if (el.tag === "hyp" && id !== undefined && owner !== undefined && !graph.hypotheses.has(id)) {
-      graph.hypotheses.set(id, { id, num: el.attrs.num ?? "", owner, el, loc: locOf(el, fallback), uses: [], counterexamples: [] });
+    } else if (
+      el.tag === "hyp" &&
+      id !== undefined &&
+      owner !== undefined &&
+      !graph.hypotheses.has(id)
+    ) {
+      graph.hypotheses.set(id, {
+        id,
+        num: el.attrs.num ?? "",
+        owner,
+        el,
+        loc: locOf(el, fallback),
+        uses: [],
+        counterexamples: [],
+      });
     } else if (el.tag === "counterexample" && el.attrs.breaks) {
       counterexamples.push(el);
-    } else if (el.tag === "step" && !flow(el).some((c) => c.type === "element" && c.tag === "proof")) {
-      graph.unprovedSteps.push({ id: id ?? "", num: el.attrs.num ?? "", owner, loc: locOf(el, fallback) });
+    } else if (
+      el.tag === "step" &&
+      !flow(el).some((c) => c.type === "element" && c.tag === "proof")
+    ) {
+      graph.unprovedSteps.push({
+        id: id ?? "",
+        num: el.attrs.num ?? "",
+        owner,
+        loc: locOf(el, fallback),
+      });
     }
-    if (id !== undefined && owner !== undefined && !graph.owners.has(id)) graph.owners.set(id, owner);
+    if (id !== undefined && owner !== undefined && !graph.owners.has(id))
+      graph.owners.set(id, owner);
     for (const c of el.children) if (c.type === "element") collect(c, nextInto, owner, fallback);
   };
   for (const f of files) {
@@ -211,7 +263,11 @@ function collectNodes(graph: ProofGraph, files: GraphInput[], locOf: Locate): Ma
 }
 
 /** Gives each node its proofs and its own trust; a proof of something not in the graph is stray. */
-function attachProofs(graph: ProofGraph, proofsOf: Map<string, ElementNode[]>, locOf: Locate): void {
+function attachProofs(
+  graph: ProofGraph,
+  proofsOf: Map<string, ElementNode[]>,
+  locOf: Locate,
+): void {
   for (const node of graph.nodes.values()) {
     node.proofs = proofsOf.get(node.id) ?? [];
     if (node.tag === "definition") node.own = "verified";
@@ -219,19 +275,31 @@ function attachProofs(graph: ProofGraph, proofsOf: Map<string, ElementNode[]>, l
     else node.own = TRUST_OF[node.proofs[0].attrs.status ?? ""] ?? "sketch";
   }
   for (const [of, proofs] of proofsOf) {
-    if (!graph.nodes.has(of)) for (const p of proofs) graph.strayProofs.push({ of, loc: locOf(p, "") });
+    if (!graph.nodes.has(of))
+      for (const p of proofs) graph.strayProofs.push({ of, loc: locOf(p, "") });
   }
 }
 
 /** Walk 2: every ref → an edge (or a hypothesis use, or a dangling ref). */
-function collectEdges(graph: ProofGraph, files: GraphInput[], registry: Map<string, LabelEntry>, locOf: Locate): void {
+function collectEdges(
+  graph: ProofGraph,
+  files: GraphInput[],
+  registry: Map<string, LabelEntry>,
+  locOf: Locate,
+): void {
   const edge = (u: string, v: string): void => {
     const from = graph.nodes.get(u)!;
     const to = graph.nodes.get(v)!;
     if (!to.parents.includes(u)) to.parents.push(u);
     if (!from.children.includes(v)) from.children.push(v);
   };
-  const use = (target: string, at: ElementNode, node: string | undefined, fallback: string, where: ElementNode | undefined): void => {
+  const use = (
+    target: string,
+    at: ElementNode,
+    node: string | undefined,
+    fallback: string,
+    where: ElementNode | undefined,
+  ): void => {
     if (!registry.has(target)) {
       graph.dangling.push({ to: target, loc: locOf(at, fallback) });
       return;
@@ -247,9 +315,18 @@ function collectEdges(graph: ProofGraph, files: GraphInput[], registry: Map<stri
     if (u !== undefined && u !== node && graph.nodes.has(u)) edge(u, node);
   };
   /** `where`: inside a proof, the innermost step (or the proof itself), for hypothesis uses. */
-  const scan = (el: ElementNode, node: string | undefined, fallback: string, where: ElementNode | undefined): void => {
+  const scan = (
+    el: ElementNode,
+    node: string | undefined,
+    fallback: string,
+    where: ElementNode | undefined,
+  ): void => {
     if (OPAQUE.has(el.tag) || LITERAL_TAGS.has(el.tag)) return;
-    if (RESULT_TAGS.has(el.tag) && el.attrs.id !== undefined && graph.nodes.get(el.attrs.id)?.el === el) {
+    if (
+      RESULT_TAGS.has(el.tag) &&
+      el.attrs.id !== undefined &&
+      graph.nodes.get(el.attrs.id)?.el === el
+    ) {
       node = el.attrs.id;
       where = undefined;
     } else if (el.tag === "proof" && proofTarget(el) !== undefined) {
@@ -263,7 +340,8 @@ function collectEdges(graph: ProofGraph, files: GraphInput[], registry: Map<stri
     if (el.tag === "ref" && el.attrs.to) use(el.attrs.to, el, node, fallback, where);
     for (const c of el.children) {
       if (c.type === "element") scan(c, node, fallback, where);
-      else if (c.type === "text") for (const m of c.text.matchAll(MATH_REF)) use(m[2], el, node, fallback, where);
+      else if (c.type === "text")
+        for (const m of c.text.matchAll(MATH_REF)) use(m[2], el, node, fallback, where);
     }
   };
   for (const f of files) scan(f.doc, undefined, f.ctx.file, undefined);
@@ -297,14 +375,23 @@ export function annotateHypotheses(graph: ProofGraph): void {
         el(
           "hyp-used",
           {},
-          h.uses.map((w) => (w.tag === "step" && w.attrs.id ? el("ref", { to: w.attrs.id }) : el("hyp-in-proof"))),
+          h.uses.map((w) =>
+            w.tag === "step" && w.attrs.id ? el("ref", { to: w.attrs.id }) : el("hyp-in-proof"),
+          ),
         ),
       );
     } else if (proved) {
       parts.push(el("hyp-unused"));
     }
     const ces = h.counterexamples.filter((c) => c.attrs.id);
-    if (ces.length) parts.push(el("hyp-needed", {}, ces.map((c) => el("ref", { to: c.attrs.id }))));
+    if (ces.length)
+      parts.push(
+        el(
+          "hyp-needed",
+          {},
+          ces.map((c) => el("ref", { to: c.attrs.id })),
+        ),
+      );
     if (parts.length) h.el.children.push(el("hyp-uses", {}, parts));
   }
 }

@@ -37,6 +37,9 @@ documented in [BUILDING.md](BUILDING.md).
 
 ## Conventions
 
+- **Formatting is Prettier's job.** Run `npm run format` before you commit (it rewrites the
+  TS/JS/JSON in place; publishing fails on unformatted code). Stylesheets and Markdown are
+  formatted by hand: the token tables in `base.css` are aligned in columns on purpose.
 - **ESM throughout**, `verbatimModuleSyntax` on — use `import type` for type-only
   imports.
 - Relative imports are **extension-less** (tsx / esbuild / vitest resolve them).

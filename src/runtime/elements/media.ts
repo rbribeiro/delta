@@ -55,7 +55,9 @@ function youtubeId(input: string | null): string | null {
     if (u.searchParams.has("v")) return u.searchParams.get("v");
     const m = u.pathname.match(/\/(?:embed|shorts)\/([\w-]{11})/);
     if (m) return m[1];
-  } catch { /* not a URL — fall through */ }
+  } catch {
+    /* not a URL — fall through */
+  }
   return "";
 }
 

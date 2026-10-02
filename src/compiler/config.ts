@@ -37,7 +37,7 @@ export interface ConfigResult {
 }
 
 /**
- * Reads and validates a `project.toml`. 
+ * Reads and validates a `project.toml`.
  *
  *   inputs   = ["intro.dlt", "ch1.dlt"]  # ordered, required, relative to the toml
  *   out      = "dist"                     # output directory, optional (default ".")

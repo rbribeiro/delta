@@ -24,7 +24,6 @@ interface TocItem {
   file?: string;
 }
 
-
 class DeltaToc extends HTMLElement {
   connectedCallback(): void {
     if (this.dataset.deltaReady) return;

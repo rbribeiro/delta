@@ -19,6 +19,8 @@ describe("base.css dark mode", () => {
   // CSS cannot share one declaration list between `[data-mode="dark"]` and the
   // `[data-mode="auto"]` + prefers-color-scheme case, so base.css writes it twice.
   it("keeps the dark and auto blocks identical", () => {
-    expect(declarations(base, '[data-mode="auto"]')).toEqual(declarations(base, '[data-mode="dark"]'));
+    expect(declarations(base, '[data-mode="auto"]')).toEqual(
+      declarations(base, '[data-mode="dark"]'),
+    );
   });
 });

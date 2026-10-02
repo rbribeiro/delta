@@ -5,9 +5,7 @@ import { findMathEnd, preprocess, preprocessMapped } from "../src/compiler/prepr
 
 describe("preprocess", () => {
   it("escapes <, > and & inside inline math", () => {
-    expect(preprocess("Let $a < b & c > d$ hold.")).toBe(
-      "Let $a &lt; b &amp; c &gt; d$ hold.",
-    );
+    expect(preprocess("Let $a < b & c > d$ hold.")).toBe("Let $a &lt; b &amp; c &gt; d$ hold.");
   });
 
   it("escapes inside display math", () => {

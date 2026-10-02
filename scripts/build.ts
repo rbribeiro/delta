@@ -21,7 +21,10 @@ const STYLES = "src/styles";
  *  falling back to a system serif. Unlayered, so it applies document-wide; the
  *  output still references nothing external (guarded by test/emit.test.ts). */
 function fontFaces(): string {
-  const dir = join(dirname(require.resolve("@fontsource-variable/newsreader/package.json")), "files");
+  const dir = join(
+    dirname(require.resolve("@fontsource-variable/newsreader/package.json")),
+    "files",
+  );
   const face = (style: string, file: string) => {
     const data = readFileSync(join(dir, file)).toString("base64");
     return (

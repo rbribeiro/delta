@@ -1,0 +1,14 @@
+# Prettier formats the code: TypeScript, JavaScript, JSON. It does not touch:
+
+# generated or built files
+dist/
+docs/
+src/generated/
+site/packs/*/dist/
+**/*.html
+package-lock.json
+
+# hand-formatted on purpose: the stylesheets align their token tables in columns, and
+# the Markdown docs wrap prose by hand
+*.css
+*.md

@@ -15,7 +15,11 @@ import { trustRank } from "./language/trust";
  * `text` with the opening tag at `span` rewritten: each attribute in `attrs` replaces the
  * existing value (either quote style), or is appended at the end of the tag.
  */
-export function setAttributes(text: string, span: SourceSpan, attrs: Record<string, string>): string {
+export function setAttributes(
+  text: string,
+  span: SourceSpan,
+  attrs: Record<string, string>,
+): string {
   let tag = text.slice(span.start, span.inner);
   for (const [name, value] of Object.entries(attrs)) {
     const quoted = `"${escapeAttr(value)}"`;
@@ -55,24 +59,37 @@ export interface Verification {
  * warning: the effective status stays lower until the base is verified too. Returns the
  * reason instead when there is nothing to sign: an unknown id, a definition, no proof.
  */
-export function verify(graph: ProofGraph, id: string, by?: string): Verification | { error: string } {
+export function verify(
+  graph: ProofGraph,
+  id: string,
+  by?: string,
+): Verification | { error: string } {
   const node = graph.nodes.get(id);
-  if (!node) return { error: graph.byId.has(id) ? `"${id}" is not a result` : `no element with id "${id}"` };
-  if (node.tag === "definition") return { error: `${id} is a definition: there is nothing to verify` };
+  if (!node)
+    return { error: graph.byId.has(id) ? `"${id}" is not a result` : `no element with id "${id}"` };
+  if (node.tag === "definition")
+    return { error: `${id} is a definition: there is nothing to verify` };
   const proof = node.proofs[0];
   if (!proof) return { error: `${id} has no proof yet` };
   if (!proof.src) return { error: `cannot locate the proof of ${id} in its source` };
 
   const warnings: string[] = [];
-  if (node.proofs.length > 1) warnings.push(`${id} has ${node.proofs.length} proofs; verifying the first`);
+  if (node.proofs.length > 1)
+    warnings.push(`${id} has ${node.proofs.length} proofs; verifying the first`);
   for (const p of node.parents) {
     const up = graph.nodes.get(p)!;
     if (trustRank(up.eff) < trustRank("verified")) {
-      warnings.push(`${id} uses ${p}, which is ${up.eff}: its effective status stays ${up.eff} until that is verified`);
+      warnings.push(
+        `${id} uses ${p}, which is ${up.eff}: its effective status stays ${up.eff} until that is verified`,
+      );
     }
   }
 
-  const attrs: Record<string, string> = { status: "verified", ...(by ? { "verified-by": by } : {}), against: node.hash };
+  const attrs: Record<string, string> = {
+    status: "verified",
+    ...(by ? { "verified-by": by } : {}),
+    against: node.hash,
+  };
   const { file, start } = proof.src;
   const text = readFileSync(file, "utf8");
   writeFileSync(file, setAttributes(text, proof.src, attrs));

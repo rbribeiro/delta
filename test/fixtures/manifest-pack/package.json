@@ -4,6 +4,8 @@
   "delta": {
     "js": "browser.js",
     "css": "pack.css",
-    "tags": ["widget"]
+    "tags": [
+      "widget"
+    ]
   }
 }
