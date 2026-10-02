@@ -221,8 +221,8 @@ e completo.</hint> tem a propriedade desejada.
         </header>
         <row>
           <column mono="true">lang</column>
-          <column mono="true">python, xml, bash, …</column>
-          <column>A linguagem do destaque. Sem ela, o texto sai sem cor</column>
+          <column mono="true">xml, bash, python, javascript, typescript, css, toml, text</column>
+          <column>A linguagem do destaque (também pelos apelidos <c>dlt</c>, <c>html</c>, <c>sh</c>, <c>py</c>, <c>js</c>, <c>ts</c>). Sem ela, o texto sai sem cor; uma linguagem desconhecida avisa e sai sem cor</column>
         </row>
         <row>
           <column mono="true">lines</column>

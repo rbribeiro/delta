@@ -9,7 +9,7 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { parse } from "smol-toml";
+import { parseToml } from "./compiler/toml";
 
 /** A `[table]` / `[[table]]` header at the start of a line — packages must go *before* the first. */
 const TABLE_HEADER = /^\s*\[/m;
@@ -23,7 +23,7 @@ function quote(s: string): string {
 
 /** The current top-level `packages` list, via a real parse; throws if it is malformed. */
 function currentPackages(text: string): string[] {
-  const data = parse(text) as Record<string, unknown>;
+  const data = parseToml(text);
   const p = data.packages;
   if (p === undefined) return [];
   if (!Array.isArray(p) || !p.every((x) => typeof x === "string")) {

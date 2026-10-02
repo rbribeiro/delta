@@ -66,14 +66,9 @@
     "prepublishOnly": "npm run format:check && npm run typecheck && npm test"
   },
   "dependencies": {
-    "highlight.js": "^11.11.1",
-    "katex": "^0.17.0",
-    "saxes": "^6.0.0",
-    "smol-toml": "^1.7.0"
+    "katex": "^0.17.0"
   },
   "devDependencies": {
-    "@fontsource-variable/newsreader": "^5.2.10",
-    "@types/katex": "^0.16.8",
     "@types/node": "^25.9.3",
     "esbuild": "^0.28.1",
     "happy-dom": "^20.14.5",

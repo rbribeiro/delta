@@ -111,6 +111,13 @@
   --delta-code-fg:      oklch(0.94 0.005 75);
   --delta-code-line:    oklch(0.32 0.008 75);
   --delta-code-mute:    oklch(0.62 0.012 75);
+  /* Syntax colours inside a code block (components/code.css): keywords and tags, strings,
+     numbers, comments, and names (what is defined, called or built in). */
+  --delta-code-keyword: oklch(0.86 0.085 92);
+  --delta-code-string:  oklch(0.85 0.062 150);
+  --delta-code-number:  oklch(0.84 0.06 22);
+  --delta-code-comment: oklch(0.58 0.012 75);
+  --delta-code-name:    oklch(0.84 0.05 270);
 
   /* -- chrome: the environment box (components/theorems.css). Separate from the
      generic surfaces so a theme can restyle theorem/definition/example boxes
@@ -695,11 +702,11 @@ table.t .mono { font-family: var(--delta-mono); font-size: 13px; }
   margin-right: 9px;
   vertical-align: 1px;
 }
-.code .k { color: oklch(0.86 0.085 92); }
-.code .s { color: oklch(0.85 0.062 150); }
-.code .n { color: oklch(0.84 0.06 22); }
-.code .c { color: oklch(0.58 0.012 75); font-style: italic; }
-.code .f { color: oklch(0.84 0.05 270); }
+.code .k { color: var(--delta-code-keyword); }
+.code .s { color: var(--delta-code-string); }
+.code .n { color: var(--delta-code-number); }
+.code .c { color: var(--delta-code-comment); font-style: italic; }
+.code .f { color: var(--delta-code-name); }
 .code .op{ color: oklch(0.86 0.01 75); }
 .code .l {
   color: var(--delta-code-mute);

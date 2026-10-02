@@ -1,6 +1,6 @@
 /**
  * <code lang="…"> — the highlighted display block. The compiler ships the
- * highlight.js spans (src/compiler/code.ts); this element builds the chrome: a
+ * token spans (src/compiler/highlight.ts); this element builds the chrome: a
  * header (language label + copy button), an optional line-number gutter, and
  * collapsible folding. Inline <c> is styled by CSS alone and needs no element.
  */

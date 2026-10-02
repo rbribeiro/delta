@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { parse, TomlError } from "smol-toml";
+import { parseToml, TomlError } from "./toml";
 import type { Diagnostic } from "./context";
 import { isBuiltinThemeName } from "./theme";
 
@@ -71,7 +71,7 @@ export function loadProjectConfig(tomlPath: string): ConfigResult {
 
   let data: unknown;
   try {
-    data = parse(text);
+    data = parseToml(text);
   } catch (e) {
     const where = e instanceof TomlError ? ` (line ${e.line}, column ${e.column})` : "";
     return fail(`invalid TOML${where}: ${e instanceof Error ? e.message : String(e)}`);

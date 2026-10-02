@@ -7,7 +7,7 @@ describe("<code>", () => {
     expect(page.$(".code-lang")!.textContent).toBe("PYTHON");
     expect(page.$(".code-copy")!.textContent).toBe("Copy");
     expect(page.$(".code-cap .lbl")!.textContent).toBe("Code 3");
-    expect(page.$(".code-src code .hljs-built_in")!.textContent).toBe("print");
+    expect(page.$(".code-src code .tok-builtin")!.textContent).toBe("print");
   });
 
   it("copies its source and says so", async () => {

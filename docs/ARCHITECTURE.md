@@ -163,11 +163,13 @@ src/
     ast.ts                     ElementNode / TextNode / RawNode + elements, textContent, hasTag, titleOf
     context.ts                 CompileContext: diagnostics, registry, flags; createContext, error, warn
     preprocess.ts              escape < > & inside math/raw regions (pre-parse); escapeHtml
-    parse.ts                   strict XML → generic AST (saxes)
+    xml.ts                     the strict XML parser (Delta's own): tree + source spans, every error reported
+    parse.ts                   preprocess + xml.ts → the AST, spans and diagnostics in the author's coordinates
     files.ts                   isRemote, readUserFile (+addDep), withFile (diagnostics attributed to another file)
     include.ts                 splice <include> files into one tree (cycle detection)
     document.ts                project.toml [document] defaults onto <document>; ctx.lang
-    config.ts                  project.toml parsing (smol-toml)
+    config.ts                  project.toml → ProjectConfig (keys, paths, diagnostics)
+    toml.ts                    the TOML subset project.toml uses (Delta's own parser)
     paper.ts                   the tree as the paper reads it: flow, changeParts, proofTarget, plainText
     final.ts                   --final: strip marks, accept changes (the clean publication)
     team.ts                    <team>/<member> → ctx.team (node removed)
@@ -182,7 +184,8 @@ src/
     graph-hash.ts              the hash a verification is pinned to (what counts as changing a proof)
     proofmap.ts                <proof-map> → a laid-out SVG of the graph (layered layout, at compile time)
     math.ts                    compile-time KaTeX (+ \ref{} inside math)
-    code.ts                    compile-time highlight.js for <code lang>
+    code.ts                    <code lang> blocks: dedent + highlight
+    highlight.ts               the syntax highlighter (Delta's own): one small grammar per language
     toc.ts                     heading tree + auto-slug ids (single + project)
     review.ts                  collects comments/tasks/changes/status blocks → ctx.review
     references.ts              <ref to> → data-target-num/tag; marks targets for snapshotting

@@ -1,23 +1,11 @@
-import { createRequire } from "node:module";
-import type { HLJSApi } from "highlight.js";
 import { textContent, type ElementNode, type Node, type Position } from "./ast";
 import { warn, type CompileContext } from "./context";
 import { RAW_TAGS } from "../language/tags";
+import { highlight } from "./highlight";
 import { escapeHtml } from "./preprocess";
 
 /** The highlighted display block. Inline `<c>` stays literal (styled by CSS only). */
 const CODE_TAG = "code";
-
-const require = createRequire(import.meta.url);
-let hljsApi: HLJSApi | undefined;
-
-/**
- * highlight.js with every language, loaded on the first `<code lang>`: importing it costs
- * ~150 ms, more than compiling a typical document, and most documents have no code.
- */
-function hljs(): HLJSApi {
-  return (hljsApi ??= require("highlight.js") as HLJSApi);
-}
 
 /**
  * Strips leading and trailing empty lines and dedents the code block by the minimum indentation of all non-empty lines.
@@ -36,11 +24,11 @@ function dedent(source: string): string {
 }
 
 /**
- * Highlights all `<code>` blocks in the given document using highlight.js. If the language is not specified or unknown,
- * the code will be escaped and displayed as-is. Warnings are issued for unknown languages or errors during highlighting.
+ * Highlights every `<code>` block in the document (highlight.ts). A block with no `lang`, or
+ * an unknown one (a warning), is escaped and shown as plain text.
  *
  * @param doc - the root ElementNode to start highlighting from
- * @param ctx - the compilation context for warnings and errors
+ * @param ctx - the compilation context for warnings
  */
 export function highlightCode(doc: ElementNode, ctx: CompileContext): void {
   walk(doc);
@@ -50,7 +38,7 @@ export function highlightCode(doc: ElementNode, ctx: CompileContext): void {
     if (el.tag === CODE_TAG) {
       const source = dedent(textContent(el));
       // Replace the children of the `<code>` element with a single highlighted node.
-      el.children = [highlight(source, el.attrs.lang, el.pos)];
+      el.children = [highlighted(source, el.attrs.lang, el.pos)];
       return;
     }
     if (RAW_TAGS.has(el.tag)) return;
@@ -58,19 +46,9 @@ export function highlightCode(doc: ElementNode, ctx: CompileContext): void {
     for (const child of el.children) if (child.type === "element") walk(child);
   }
 
-  function highlight(source: string, lang: string | undefined, pos?: Position): Node {
-    if (!lang) return { type: "raw", html: escapeHtml(source) };
-    if (!hljs().getLanguage(lang)) {
-      warn(ctx, `code: unknown language "${lang}"`, pos);
-      return { type: "raw", html: escapeHtml(source) };
-    }
-    try {
-      // Highlight the code using highlight.js and return a raw node with the highlighted HTML.
-      // This allows the highlighted code to be inserted directly into the output without further escaping.
-      return { type: "raw", html: hljs().highlight(source, { language: lang }).value };
-    } catch (e) {
-      warn(ctx, `code: ${e instanceof Error ? e.message : String(e)}`, pos);
-      return { type: "raw", html: escapeHtml(source) };
-    }
+  function highlighted(source: string, lang: string | undefined, pos?: Position): Node {
+    const html = lang ? highlight(source, lang) : undefined;
+    if (lang && html === undefined) warn(ctx, `code: unknown language "${lang}"`, pos);
+    return { type: "raw", html: html ?? escapeHtml(source) };
   }
 }

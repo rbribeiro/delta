@@ -1,9 +1,6 @@
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { createRequire } from "node:module";
-import { dirname, join } from "node:path";
+import { join } from "node:path";
 import { build } from "esbuild";
-
-const require = createRequire(import.meta.url);
 
 /**
  * Two-step build. The `assets` step bundles the browser runtime into an IIFE
@@ -18,13 +15,12 @@ const STYLES = "src/styles";
 /** Newsreader — the design's primary serif (--delta-serif lists it first) —
  *  inlined as @font-face with the variable woff2 (weight + optical size)
  *  embedded as a data: URI, so documents render in it offline instead of
- *  falling back to a system serif. Unlayered, so it applies document-wide; the
- *  output still references nothing external (guarded by test/emit.test.ts). */
+ *  falling back to a system serif. The two files live in src/styles/fonts (SIL
+ *  Open Font License, see the LICENSE beside them). Unlayered, so it applies
+ *  document-wide; the output still references nothing external (guarded by
+ *  test/emit.test.ts). */
 function fontFaces(): string {
-  const dir = join(
-    dirname(require.resolve("@fontsource-variable/newsreader/package.json")),
-    "files",
-  );
+  const dir = join(STYLES, "fonts");
   const face = (style: string, file: string) => {
     const data = readFileSync(join(dir, file)).toString("base64");
     return (

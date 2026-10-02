@@ -37,8 +37,8 @@ compiles, type-checks or tests. `buildAssets()` writes four constants:
   [src/runtime/index.ts](../src/runtime/index.ts) into a single **minified IIFE** string
   (`format: "iife"`, `target: "es2020"`, `bundle: true`, `write: false`). The emitter drops
   this verbatim into a `<script>` at the end of `<body>`.
-- **`CORE_CSS`** -- the `@font-face` rules for Newsreader (the body font, its woff2 files
-  inlined as `data:` URIs from `@fontsource-variable/newsreader`), then `src/styles/base.css`,
+- **`CORE_CSS`** -- the `@font-face` rules for Newsreader (the body font; the two woff2 files
+  in `src/styles/fonts/` inlined as `data:` URIs), then `src/styles/base.css`,
   then **every** `src/styles/components/*.css` (read in sorted filename order), concatenated
   into one string. `src/styles/staged/` is not read. The `@layer` declaration at
   the top of `base.css` fixes the cascade order, so concatenation order beyond "base first"
@@ -117,14 +117,13 @@ runtime/CSS. In `test:watch`, the assets are rebuilt once per start, not on ever
 
 ## Dependencies
 
-- **Runtime** (`dependencies`): `katex` (compile-time math rendering), `highlight.js`
-  (compile-time code highlighting, loaded on the first `<code lang>`), `saxes` (strict XML
-  parsing), `smol-toml` (`project.toml` parsing).
-- **Build / dev** (`devDependencies`): `esbuild` (bundling), `@fontsource-variable/newsreader`
-  (the body font, inlined into `CORE_CSS` at build time), `tsx` (run TS directly),
+- **Runtime** (`dependencies`): `katex` (compile-time math rendering). That is all: the XML
+  parser (`src/compiler/xml.ts`), the `project.toml` parser (`src/compiler/toml.ts`) and the
+  syntax highlighter (`src/compiler/highlight.ts`) are Delta's own, and the body font is
+  vendored in `src/styles/fonts/`.
+- **Build / dev** (`devDependencies`): `esbuild` (bundling), `tsx` (run TS directly),
   `typescript` (type-checking), `vitest` (tests), `happy-dom` (the runtime tests' DOM),
-  `prettier` (formatting),
-  `@types/*`.
+  `prettier` (formatting), `@types/node`.
 
 ## A typical loop
 
