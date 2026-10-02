@@ -1,8 +1,10 @@
 import { basename, dirname } from "node:path";
-import { elements, hasTag, textContent, titleOf, type ElementNode, type Node } from "./ast";
+import { elements, hasTag, titleOf, type ElementNode, type Node } from "./ast";
 import type { CompileContext } from "./context";
-import { escapeHtml } from "./preprocess";
+import { OPAQUE } from "./numbering";
+import { escapeAttr, escapeHtml } from "./preprocess";
 import { katexCss } from "./katex-css";
+import { plainText } from "./review";
 import { resolveLang, stringsFor } from "./strings";
 import { CORE_CSS, RUNTIME_JS, THEMES } from "../generated/assets";
 
@@ -26,8 +28,12 @@ export function emit(
   ctx: CompileContext,
   globalById?: Map<string, ElementNode>,
 ): string {
+  const strings = stringsFor(resolveLang(ctx.lang));
   const titleEl = titleOf(doc);
-  const title = titleEl ? textContent(titleEl).trim() : basename(ctx.file).replace(/\.dlt$/, "");
+  // plainText, not textContent: the rendered math in a title reads back as its `$…$` source.
+  const title = titleEl
+    ? plainText(titleEl.children, ctx, (tag) => strings[tag] ?? tag)
+    : basename(ctx.file).replace(/\.dlt$/, "");
 
   // `type` selects the @layer delta.theme overrides (article is the default).
   const type = doc.attrs.type ?? DEFAULT_TYPE;
@@ -36,7 +42,7 @@ export function emit(
   // Localized UI strings for the document's language, inlined as an inert data
   // island the runtime reads via t(). `<` is escaped so a string can't break out
   // of the </script>.
-  const i18n = JSON.stringify(stringsFor(resolveLang(ctx.lang))).replace(/</g, "\\u003c");
+  const i18n = JSON.stringify(strings).replace(/</g, "\\u003c");
 
   const body = serialize(doc);
   // Snapshot every <ref> target into an inert <template> so the runtime can clone
@@ -129,7 +135,7 @@ function renderTemplates(
   if (ctx.referencedIds.size === 0) return "";
   const byId = globalById ?? new Map<string, ElementNode>();
   if (!globalById) {
-    for (const el of elements(doc)) {
+    for (const el of elements(doc, OPAQUE)) {
       const id = el.attrs.id;
       if (id && !byId.has(id)) byId.set(id, el);
     }
@@ -167,7 +173,7 @@ function renderTocIsland(ctx: CompileContext): string {
     level: e.level,
     id: e.id,
     num: e.num,
-    title: e.title.map(serialize).join(""),
+    title: e.title.map((n) => serialize(n)).join(""),
     // Present only for a project-wide entry whose section lives in another output.
     ...(e.file ? { file: e.file } : {}),
   }));
@@ -188,7 +194,7 @@ function renderReviewIsland(doc: ElementNode, ctx: CompileContext): string {
   const ownItems = ctx.review.some((i) => !i.file);
   if (!hasPanel && !(ctx.team.size > 0 && ownItems)) return "";
 
-  const ser = (nodes: Node[]): string => nodes.map(serialize).join("");
+  const ser = (nodes: Node[]): string => nodes.map((n) => serialize(n)).join("");
   const data: Record<string, unknown> = { team: [...ctx.team.values()] };
   if (hasPanel) {
     // A project-wide panel may carry bodies/titles with math rendered in another file.
@@ -244,7 +250,8 @@ function containsMath(nodes: Node[]): boolean {
   );
 }
 
-function serialize(node: Node): string {
+/** `inOld`: inside a `<change>`'s `<old>`, ids are dropped so the page has one element per id (the new one). */
+function serialize(node: Node, inOld = false): string {
   switch (node.type) {
     case "text":
       return escapeHtml(node.text);
@@ -253,14 +260,12 @@ function serialize(node: Node): string {
     case "element": {
       const tag = `delta-${node.tag}`;
       const attrs = Object.entries(node.attrs)
+        .filter(([k]) => !(inOld && k === "id"))
         .map(([k, v]) => ` ${k}="${escapeAttr(v)}"`)
         .join("");
+      const bare = inOld || node.tag === "old";
       // Custom elements cannot self-close in HTML; always emit an explicit close tag.
-      return `<${tag}${attrs}>${node.children.map(serialize).join("")}</${tag}>`;
+      return `<${tag}${attrs}>${node.children.map((c) => serialize(c, bare)).join("")}</${tag}>`;
     }
   }
-}
-
-function escapeAttr(s: string): string {
-  return escapeHtml(s).replace(/"/g, "&quot;");
 }

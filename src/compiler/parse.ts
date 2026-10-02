@@ -8,8 +8,15 @@ import { preprocessMapped } from "./preprocess";
  * and giving every element its exact `src` span in that text (what `delta show` prints).
  */
 export function parseSource(source: string, ctx: CompileContext): ElementNode | null {
-  const { text, map } = preprocessMapped(source);
+  const { text, map, problems } = preprocessMapped(source);
   ctx.sources.set(ctx.file, source);
+  // A forgotten `\$` is an error at the dollar itself, like a bare `<`.
+  for (const p of problems) {
+    const before = source.slice(0, p.at);
+    const line = before.split("\n").length;
+    const column = p.at - before.lastIndexOf("\n");
+    error(ctx, p.message, { line, column, file: ctx.file });
+  }
   return parse(text, ctx, map);
 }
 

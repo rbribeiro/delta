@@ -187,7 +187,7 @@ delta review artigo.dlt --status open --for claude
       fórmula) no enunciado ou na demonstração de um resultado <em>v</em> para outro
       resultado <em>u</em> vira a aresta <em>u</em> → <em>v</em>. Uma referência a uma equação ou figura conta para o
       resultado que a contém. Referências dentro de <c><intuition></c>,
-      <c><strategy></c>, <c><obstacle></c> e <c><heuristic></c> são narrativa e não
+      <c><strategy></c> e <c><obstacle></c> são narrativa e não
       viram aresta. Os nós são os resultados e definições que têm <c>id</c>, em todos os
       arquivos do projeto.
 

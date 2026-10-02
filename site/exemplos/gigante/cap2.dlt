@@ -12,10 +12,13 @@
     O grafo $G(n, p)$ tem $n$ vértices, e cada uma das $\binom{n}{2}$ arestas aparece
     independentemente com probabilidade $p$. Aqui $p = c/n$, com $c > 0$ fixo.
 
-    <heuristic>Cada vértice tem, em média, cerca de $c$ vizinhos. Explorar uma
-    componente a partir de um vértice é, portanto, algo como um processo de ramificação
-    com $c$ filhos em média. Ele morre se $c < 1$ e pode sobreviver se $c > 1$. Por isso
-    se espera uma transição de fase em $c = 1$.</heuristic>
+    <remark>
+      <title>Heurística</title>
+      Cada vértice tem, em média, cerca de $c$ vizinhos. Explorar uma
+      componente a partir de um vértice é, portanto, algo como um processo de ramificação
+      com $c$ filhos em média. Ele morre se $c < 1$ e pode sobreviver se $c > 1$. Por isso
+      se espera uma transição de fase em $c = 1$.
+    </remark>
 
     <section id="sec:exploracao">
       <title>Exploração e acoplamento</title>
@@ -111,10 +114,10 @@
             </step>
             <step>
               <claim>$\operatorname{Var} Y = o(n^2)$.</claim>
+              <intuition>Para dois vértices $u$ e $v$, as explorações de $C(u)$ e $C(v)$
+              quase não se tocam enquanto ambas são pequenas. Por isso os eventos "$u$
+              grande" e "$v$ grande" são quase independentes.</intuition>
               <proof>
-                <heuristic>Para dois vértices $u$ e $v$, as explorações de $C(u)$ e $C(v)$
-                quase não se tocam enquanto ambas são pequenas. Por isso os eventos "$u$
-                grande" e "$v$ grande" são quase independentes.</heuristic>
                 Explore $C(u)$ até $K \log n$ vértices; condicionado a isso, a exploração de
                 $C(v)$ no grafo restante é acoplada como em <ref to="lem:acoplamento"/> com
                 $n$ trocado por $n - K\log n$. Então

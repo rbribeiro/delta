@@ -146,12 +146,11 @@
      resting on something weaker than itself, an unused hypothesis. */
   --delta-proof-alert:      var(--delta-warn);
 
-  /* Reader AIDS on a result — the dot and the drawer rule of each kind
+  /* Reader AIDS on a result or a step — the dot and the drawer rule of each kind
      (components/understanding.css). */
   --delta-aid-intuition:    var(--delta-accent-ink);
   --delta-aid-strategy:     var(--delta-ink-soft);
   --delta-aid-obstacle:     var(--delta-warn);
-  --delta-aid-heuristic:    var(--delta-mute);
 
   /* The quiet figures: heading numbers and equation numbers. One token, because
      they are the same typographic gesture — a number set back from its content. */

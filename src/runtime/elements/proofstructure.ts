@@ -2,7 +2,8 @@
  * Structured proofs and hypotheses (the compiler's structure.ts numbered them):
  *
  * - <step num="1.2"> — a numbered claim with its own folding proof. The number is put in
- *   front of the claim.
+ *   front of the claim; the step's aids (<intuition>, <strategy>, <obstacle>) become dots
+ *   after it, opening a drawer under the claim (aid.ts `buildLens`).
  * - <hyp num="H1"> — a hypothesis in a statement, labelled "(H1)". Its <hyp-uses> child
  *   (where the proof uses it, or that it doesn't; its counterexamples) is hidden in the
  *   page and shown only in a ref's preview of the hypothesis. The labels come from t().
@@ -11,6 +12,7 @@
  */
 
 import { t } from "../i18n";
+import { buildLens } from "./aid";
 import { setFolded } from "./shared";
 
 class DeltaStep extends HTMLElement {
@@ -20,8 +22,17 @@ class DeltaStep extends HTMLElement {
     const num = document.createElement("span");
     num.className = "step-num";
     num.textContent = this.getAttribute("num") ?? "";
-    const claim = this.querySelector(":scope > delta-step-claim");
+    // The step's own claim: possibly inside a <change><new>, never a nested step's.
+    const claim = [...this.querySelectorAll("delta-step-claim")].find(
+      (c) => c.closest("delta-step") === this,
+    );
     (claim ?? this).prepend(num, " ");
+    // Its aids (<intuition>, …): dots after the claim, drawer between claim and proof.
+    const lens = buildLens(this);
+    if (lens && claim) {
+      claim.append(" ", lens.dots);
+      claim.after(lens.drawer);
+    }
   }
 }
 

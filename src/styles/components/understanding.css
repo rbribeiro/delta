@@ -1,16 +1,15 @@
-/* understanding.css — reader aids on a result (<intuition>, <strategy>, <obstacle>,
-   <heuristic>) and planned results (status="open"). LIVE: buildLens (runtime/elements/
+/* understanding.css — reader aids on a result or a proof step (<intuition>, <strategy>,
+   <obstacle>) and planned results (status="open"). LIVE: buildLens (runtime/elements/
    aid.ts) leaves .lens-dots on the box's top border and hangs a .lens-drawer after the
-   box, one .lens-panel open at a time; an aid outside a box gets an .aid-label and folds
-   with the shared collapsible. Kept low-key: the box is the statement and nothing else,
-   and an aid as long as the proof extends the page, not the box. Tokens via var(--delta-*). */
+   box, one .lens-panel open at a time; on a step the dots follow the claim and the drawer
+   sits under it. Kept low-key: the box is the statement and nothing else, and an aid as
+   long as the proof extends the page, not the box. Tokens via var(--delta-*). */
 
 @layer delta.components {
 
 delta-intuition,
 delta-strategy,
-delta-obstacle,
-delta-heuristic {
+delta-obstacle {
   display: block;
 }
 
@@ -18,7 +17,6 @@ delta-heuristic {
 [data-aid="intuition"] { --aid-hue: var(--delta-aid-intuition); }
 [data-aid="strategy"]  { --aid-hue: var(--delta-aid-strategy); }
 [data-aid="obstacle"]  { --aid-hue: var(--delta-aid-obstacle); }
-[data-aid="heuristic"] { --aid-hue: var(--delta-aid-heuristic); }
 
 /* -- Dots: on the box's top border, opposite the label ---------------- */
 .lens-dots {
@@ -56,7 +54,6 @@ delta-heuristic {
   transition: transform var(--delta-dur-fast) var(--delta-ease),
               background var(--delta-dur-fast) var(--delta-ease);
 }
-.lens-dot[data-aid="heuristic"]::before { border-style: dashed; background: var(--delta-paper); }
 .lens-dot:hover::before { transform: scale(1.25); }
 .lens-dot[aria-expanded="true"]::before { background: var(--aid-hue); transform: scale(1.25); }
 .lens-dot:focus-visible {
@@ -112,7 +109,6 @@ delta-heuristic {
   border-left: 2px solid var(--aid-hue);
   padding-left: 12px;
 }
-.lens-panel[data-aid="heuristic"] { border-left-style: dashed; }
 .lens-head {
   display: flex;
   justify-content: space-between;
@@ -140,13 +136,13 @@ delta-heuristic {
 
 /* -- In a ref pop-over the box is flattened (reference.css), so there is no
    border to sit on: the dots join the flow as a row under the statement, and
-   the drawer spans the card. */
+   the drawer spans the card. No negative inline margin: the body is a scroller and
+   would clip the bead's left end. */
 .xref-pop-body .lens-dots {
   position: static;
   transform: none;
   width: fit-content;
   margin-top: 8px;
-  margin-left: -4px;
 }
 .xref-pop-body .lens-drawer {
   margin: 8px 0 0;
@@ -156,27 +152,21 @@ delta-heuristic {
 /* Tooltips would be clipped by the card's scroller; the drawer names the aid anyway. */
 .xref-pop-body .lens-dot::after { display: none; }
 
-/* -- An aid outside a box (a heuristic in a proof or in body text) ------ */
-.aid {
-  margin: 14px 0;
-  padding: 6px 0 6px 14px;
-  border-left: 2px dashed var(--delta-rule);
-  font-size: 0.94em;
-  color: var(--delta-ink-soft);
+/* -- On a proof step: no box to sit on, so the dots follow the claim inline and the
+   drawer hangs under the claim, indented like the step's own proof (proofstructure.css). */
+delta-step-claim > .lens-dots {
+  position: static;
+  transform: none;
+  display: inline-flex;
+  vertical-align: middle;
+  background: none;
 }
-.aid-label {
-  display: block;
-  width: fit-content;
-  font-family: var(--delta-sans);
-  font-size: 10px;
-  letter-spacing: var(--delta-tracking-cap);
-  text-transform: uppercase;
-  color: var(--delta-mute);
+delta-step > .lens-drawer,
+delta-step > * > .lens-drawer {
+  margin: 0.25em 0 0.5em 2.2em;
+  border-top: var(--delta-hairline) solid var(--delta-rule-soft);
+  border-radius: var(--delta-radius-sm);
 }
-.aid.is-collapsed { padding-block: 0; }
-.aid:not(.is-collapsed) > .aid-label { margin-bottom: 4px; }
-.aid-label.collapse-toggle::before { font-size: 1em; }
-.aid-note { font-style: italic; text-transform: none; letter-spacing: 0; }
 
 /* -- Planned results (status="open"): a hollow, dashed box ------------- */
 .box[data-status="open"] {

@@ -129,3 +129,27 @@ describe("numbering", () => {
     expect(numOf(doc, "c3")).toBe("2.1"); // reset by the new section
   });
 });
+
+describe("counter resets", () => {
+  it("lets an unnumbered section restart nothing (LaTeX's \\section*)", () => {
+    const { doc } = numbered(
+      `<document>
+        <section id="s1"><theorem id="a"/><equation id="e1">x</equation></section>
+        <section id="s2" numbered="false"><theorem id="b"/><equation id="e2">y</equation></section>
+      </document>`,
+    );
+    expect(numOf(doc, "b")).toBe("1.2");
+    expect(numOf(doc, "e2")).toBe("1.2");
+  });
+
+  it("is transitive: a new chapter restarts what its sections restart", () => {
+    const { doc } = numbered(
+      `<document type="book">
+        <chapter id="c1"><section id="s"><theorem id="t1"/><equation id="e1">x</equation><equation id="e2">y</equation></section></chapter>
+        <chapter id="c2"><theorem id="t2"/><equation id="e3">z</equation></chapter>
+      </document>`,
+    );
+    expect(numOf(doc, "t2")).toBe("1");
+    expect(numOf(doc, "e3")).toBe("1");
+  });
+});

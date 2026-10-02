@@ -160,3 +160,28 @@ describe("delta agent-guide", () => {
     for (const [, cmd] of r.stdout.matchAll(/delta ([a-z-]+)/g)) expect(help).toContain(`delta ${cmd}`);
   });
 });
+
+describe("delta review", () => {
+  it("defaults to ./project.toml, like the other commands", () => {
+    const dir = mkdtempSync(join(tmpdir(), "delta-cli-review-"));
+    writeFileSync(join(dir, "project.toml"), 'inputs = ["p.dlt"]\nout = "out"\n');
+    writeFileSync(join(dir, "p.dlt"), `<document><section id="s"><title>S</title><todo for="a">x</todo></section></document>`);
+    const r = deltaIn(dir, "review", "--json");
+    expect(r.status).toBe(0);
+    expect(r.stdout).toContain('"kind": "todo"');
+  });
+});
+
+describe("delta verify on a proof without `of`", () => {
+  it("finds and signs the proof that follows the result", () => {
+    const dir = mkdtempSync(join(tmpdir(), "delta-cli-verify-implicit-"));
+    writeFileSync(join(dir, "project.toml"), 'inputs = ["p.dlt"]\nout = "out"\n');
+    writeFileSync(join(dir, "p.dlt"), `<document><section id="s"><title>S</title>
+  <lemma id="a">A.</lemma>
+  <proof/>
+</section></document>`);
+    const r = deltaIn(dir, "verify", "a", "--by", "rodrigo");
+    expect(r.status).toBe(0);
+    expect(readFileSync(join(dir, "p.dlt"), "utf8")).toMatch(/<proof status="verified" verified-by="rodrigo" against="\w+"\/>/);
+  });
+});

@@ -10,8 +10,8 @@ THE MODEL
 A proof is a graph of results. The nodes are theorems, lemmas, propositions, corollaries,
 conjectures, claims and definitions that have an id. There is an edge u -> v when the
 statement or the proof of v refers to u (<ref to="u"/>, or \\ref{u} in math). A ref to an
-equation counts for the result that contains it. Refs inside <intuition>, <strategy>,
-<obstacle> and <heuristic> are commentary and create no edge.
+equation counts for the result that contains it. Refs inside <intuition>, <strategy> and
+<obstacle> are commentary and create no edge.
 
 Trust: open < heuristic < sketch < verified < formalized. A result's own trust is its
 proof's status (open when it has no proof). Its effective trust is the weakest of its own
@@ -45,10 +45,12 @@ WRITING A RESULT
 - Long proofs go in steps, nested as deep as needed:
     <step id="st:1"><claim>...</claim><proof>...</proof></step>
 - Inside the result: <intuition> (why it is true), <strategy> (how the proof goes),
-  <obstacle> (where it is hard). Use <heuristic> for a non-rigorous argument, never as
-  the proof.
+  <obstacle> (where it is hard). A <step> may carry its own, after its <claim>. A
+  non-rigorous argument is a <proof status="heuristic">, never a verified one.
+- Write <proof of="id">. A proof without of proves the result right before it, which
+  breaks silently if text lands in between.
 - Math: $...$ inline, $$...$$ or <equation id="..."> for display. Inside math write a bare
-  < and &, never &lt;.
+  < and &, never &lt;. A literal dollar is \\$; a lone $ is a compile error.
 
 COLLABORATING
 - Sign everything you write with by="<your id>". If the document has a <team>, use your

@@ -1,4 +1,4 @@
-import type { ElementNode, Node } from "./ast";
+import { elements, type ElementNode, type Node } from "./ast";
 import { warn, type CompileContext } from "./context";
 import { RAW_TAGS } from "./preprocess";
 import { changeParts } from "./collab";
@@ -10,11 +10,13 @@ import { changeParts } from "./collab";
  *   <comment>, <todo>, <review>, <team>   removed (a comment's replies go with it)
  *   <draft>                              unwrapped (its prose stays)
  *   <change>                             accepted: <new> (or the bare insertion) stays, <old> goes
- *   status / by / verified-by            removed from every element
+ *   status / by / verified-by / against  removed from every element (`stripReviewMarks`)
  *
  * Runs right after includes, BEFORE bibliography and numbering — so a `<cite>` quoted
  * inside a dropped comment never numbers a paper, and nothing stripped ever consumed a
  * counter (numbering.ts's OPAQUE set already keeps a review build's numbers identical).
+ * The block marks go later, at the start of render: the proof graph reads a proof's
+ * `status` as its trust, and a final build's proof map must still show it.
  * A no-op unless `ctx.final`. Returns what it found; with `report` it warns once with the
  * counts ("final build: 3 open comments, …") so the author knows the paper is not done.
  */
@@ -99,11 +101,21 @@ function strip(el: ElementNode, stats: FinalStats): void {
     }
     const status = child.attrs.status;
     if (status !== undefined && status !== "verified" && status !== "formalized") stats.unverified++;
-    delete child.attrs.status;
-    delete child.attrs.by;
-    delete child.attrs["verified-by"];
     strip(child, stats);
     out.push(child);
   }
   el.children = out;
+}
+
+/** The marks a published paper does not show. */
+const REVIEW_MARKS = ["status", "by", "verified-by", "against"];
+
+/**
+ * `--final` only: drops `status`, `by`, `verified-by` and `against` from every element.
+ * After the proof graph, which reads a proof's status as its trust (and after `markStale`,
+ * so a "stale" it wrote goes too).
+ */
+export function stripReviewMarks(doc: ElementNode, ctx: CompileContext): void {
+  if (!ctx.final) return;
+  for (const el of elements(doc)) for (const mark of REVIEW_MARKS) delete el.attrs[mark];
 }

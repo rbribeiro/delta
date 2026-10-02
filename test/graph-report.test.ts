@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { compileProject } from "../src/compiler/project";
+import { AID_TAGS } from "../src/compiler/understanding";
 import {
   frontierText,
   lintFindings,
@@ -55,7 +56,7 @@ describe("sliceOf", () => {
 
   it("cuts the narrative aids out of a statement, lines and all", () => {
     const { graph } = build(SRC);
-    const s = sliceOf(graph, graph.nodes.get("a")!.el, rel, new Set(["intuition", "strategy", "obstacle", "heuristic"]))!;
+    const s = sliceOf(graph, graph.nodes.get("a")!.el, rel, AID_TAGS)!;
     expect(s.source).toBe(`<lemma id="a">
   <title>Base</title>
   If $x < y$ and $y < z$ then $x < z$.

@@ -209,7 +209,9 @@ describe("<change> / <old> / <new>", () => {
       <change by="x"><old>$x < 0$ <equation id="gone">a</equation></old><new>$x > 0$</new></change>
       <equation id="kept">b</equation>`));
     expect((html.match(/class="katex"/g) ?? []).length).toBeGreaterThanOrEqual(2);
-    expect(html).toMatch(/<delta-equation id="gone">/);
+    // Kept in the page (the "original" view shows it), but without its id: one element per id.
+    expect(html).toMatch(/<delta-old><span class="katex">[^]*<delta-equation><span class="katex/);
+    expect(html).not.toContain('id="gone"');
     expect(html).toContain('<delta-equation id="kept" num="1.1">');
     expect(ctx.registry.has("gone")).toBe(false);
     expect(warnings(ctx)).toEqual([]);

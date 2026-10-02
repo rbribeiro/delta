@@ -31,7 +31,7 @@ export function freshNumbering(): NumberingState {
  * and the final one. The element itself is still assigned/registered (comments and
  * tasks carry their own counters).
  */
-const OPAQUE = new Set(["comment", "todo", "old"]);
+export const OPAQUE = new Set(["comment", "todo", "old"]);
 
 export function numberDocument(
   doc: ElementNode,
@@ -59,8 +59,16 @@ export function numberDocument(
           : "";
       el.attrs.num = `${prefix}${next}`;
       display[spec.counter] = el.attrs.num;
+    } else return; // numbered="false" took no number: nothing restarts (LaTeX's \section*)
+    reset(spec.counter);
+  };
+
+  /** Zeroes what `counter` resets, and what those reset in turn (a chapter restarts theorems too). */
+  const reset = (counter: string): void => {
+    for (const child of COUNTER_RESETS[counter] ?? []) {
+      counters[child] = 0;
+      reset(child);
     }
-    for (const reset of COUNTER_RESETS[spec.counter] ?? []) counters[reset] = 0;
   };
 
   const register = (el: ElementNode): void => {

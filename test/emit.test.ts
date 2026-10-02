@@ -249,3 +249,25 @@ describe("emit", () => {
     }
   });
 });
+
+describe("ids inside <old>", () => {
+  const SRC = `<document><section id="s"><title>S</title>
+    <change by="a"><old><theorem id="t">OLD</theorem></old><new><theorem id="t">NEW</theorem></new></change>
+    <ref to="t"/></section></document>`;
+
+  it("previews the new version and leaves one element with the id", () => {
+    const { html } = compile(SRC);
+    const tpl = html.match(/<template data-delta-pop="t">([^]*?)<\/template>/)?.[1] ?? "";
+    expect(tpl).toContain("NEW");
+    expect(tpl).not.toContain("OLD");
+    const page = html.slice(html.indexOf("<delta-document"), html.indexOf("</delta-document>"));
+    expect(page.match(/ id="t"/g)).toHaveLength(1);
+  });
+});
+
+describe("the page <title>", () => {
+  it("keeps math as its source", () => {
+    const { html } = compile(`<document><title>On $x^2$ &amp; more</title><section id="s"><title>S</title>x</section></document>`);
+    expect(html).toContain("<title>On $x^2$ &amp; more</title>");
+  });
+});

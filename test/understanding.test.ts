@@ -23,7 +23,6 @@ const GIANT = `<theorem id="thm:giant">
   <intuition>Exploration looks like a Poisson($c$) tree.</intuition>
   <strategy>Couple (<ref to="lem:coupling"/>), then sprinkle.</strategy>
   <obstacle>The coupling only holds while the explored set is $o(n)$.</obstacle>
-  <heuristic>Each vertex has about $c$ new neighbours.</heuristic>
 </theorem>
 <lemma id="lem:coupling" status="open">Coupling with a branching process.</lemma>
 See <ref to="thm:giant"/>.`;
@@ -32,14 +31,13 @@ const doc = (body: string, type = "article"): string =>
   `<document type="${type}"><section id="s"><title>S</title>${body}</section></document>`;
 
 describe("reader aids on a result", () => {
-  it("compiles all four with math and refs, all folded by default", () => {
+  it("compiles all three with math and refs, all folded by default", () => {
     const { html, ctx } = compile(doc(GIANT));
     expect(messages(ctx, "error")).toEqual([]);
     expect(messages(ctx, "warning")).toEqual([]);
     expect(html).toContain('<delta-intuition collapsed="true">');
     expect(html).toContain('<delta-strategy collapsed="true">');
     expect(html).toContain('<delta-obstacle collapsed="true">');
-    expect(html).toContain('<delta-heuristic collapsed="true">');
     // math rendered and the ref resolved inside the aids
     expect(html).toMatch(/<delta-intuition[^>]*>[^]*class="katex"/);
     expect(html).toMatch(/<delta-strategy[^>]*>[^]*<delta-ref to="lem:coupling" data-target-num="1\.1"/);
@@ -64,7 +62,7 @@ describe("reader aids on a result", () => {
     const { html } = compile(doc(GIANT));
     const tpl = html.match(/<template data-delta-pop="thm:giant">([^]*?)<\/template>/)?.[1] ?? "";
     expect(tpl).toContain("a giant component exists");
-    for (const aid of ["intuition", "strategy", "obstacle", "heuristic"]) expect(tpl).toContain(`<delta-${aid}`);
+    for (const aid of ["intuition", "strategy", "obstacle"]) expect(tpl).toContain(`<delta-${aid}`);
   });
 });
 
@@ -80,18 +78,18 @@ describe("placement", () => {
     expect(err?.pos?.line).toBe(3);
   });
 
-  it("refuses an aid inside a proof, but allows a heuristic there and in body text", () => {
+  it("refuses an aid directly inside a proof", () => {
     const ctx = attempt(doc(`<lemma id="l">x</lemma>
-      <proof of="l"><intuition>no</intuition><heuristic>fine</heuristic></proof>
-      <heuristic>also fine</heuristic>`));
+      <proof of="l"><intuition>no</intuition></proof>`));
     expect(messages(ctx, "error")).toEqual([
-      expect.stringMatching(/<intuition> must be a direct child .*found inside <proof>/),
+      expect.stringMatching(/<intuition> must be a direct child .*or of a <step>; found inside <proof>/),
     ]);
   });
 
-  it("makes a standalone heuristic a folded collapsible", () => {
-    const { html } = compile(doc(`<lemma id="l">x</lemma><proof of="l"><heuristic>h</heuristic></proof>`));
-    expect(html).toContain('<delta-heuristic collapsed="true" collapsible="true">');
+  it("treats <heuristic> like any tag it does not know (the element was removed)", () => {
+    const { html, ctx } = compile(doc(`<lemma id="l">x</lemma><heuristic>h</heuristic>`));
+    expect(ctx.diagnostics).toEqual([]);
+    expect(html).toContain("<delta-heuristic>h</delta-heuristic>");
   });
 
   it("looks through collaboration wrappers", () => {

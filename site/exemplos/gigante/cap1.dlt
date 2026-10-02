@@ -44,7 +44,8 @@
         Em particular, $\rho(c) > 0$ se e só se $c > 1$.
         <intuition>O processo morre exatamente quando a subárvore de cada filho da raiz
         morre. Com $\mathrm{Poisson}(c)$ filhos, isso acontece com probabilidade
-        $e^{-c\rho}$.</intuition>
+        $e^{-c\rho}$. Pense em $f$ como uma curva convexa que termina em $(1,1)$: se ela
+        chega lá mais inclinada que a diagonal, precisou cruzá-la antes.</intuition>
         <strategy>Escreva $q = 1 - \rho$ como ponto fixo da função geradora
         $f(s) = e^{c(s-1)}$ e use a convexidade de $f$.</strategy>
         <obstacle>A equação tem sempre a raiz trivial $\rho = 0$. O trabalho está em
@@ -57,8 +58,6 @@
         $q = \mathbb{P}(\text{extinção})$. Por continuidade, $f(q) = q$. Se $q'$ é
         outro ponto fixo em $[0,1]$, indução dá $f^{(n)}(0) \le q'$, logo $q \le q'$:
         $q$ é o menor ponto fixo.
-        <heuristic>Pense em $f$ como uma curva convexa que termina em $(1,1)$. Se ela
-        chega lá mais inclinada que a diagonal, precisou cruzá-la antes.</heuristic>
         A função $f$ é convexa, com $f(0) = e^{-c} > 0$ e $f'(1) = c$. Se $c \le 1$, então
         $f(s) > s$ em $[0, 1)$ e $q = 1$. Se $c > 1$, então $f(s) < s$ logo abaixo de $1$,
         e o teorema do valor intermediário dá um ponto fixo em $(0, 1)$. Assim $q < 1$,

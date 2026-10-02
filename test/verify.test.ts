@@ -101,3 +101,31 @@ describe("setAttributes", () => {
     );
   });
 });
+
+describe("setAttributes on a self-closing tag", () => {
+  it("keeps the tag self-closing and well-formed", () => {
+    for (const tag of [`<proof of="x"/>`, `<proof of="x" />`]) {
+      const text = `a ${tag} z`;
+      const start = text.indexOf(tag);
+      const span = { file: "x", start, end: start + tag.length, inner: start + tag.length, innerEnd: start + tag.length };
+      expect(setAttributes(text, span, { status: "verified" })).toBe(`a ${tag.replace(/\s*\/>$/, "")} status="verified"${tag.endsWith(" />") ? " />" : "/>"} z`);
+    }
+  });
+});
+
+describe("a proof with included content", () => {
+  const build = (body: string) => {
+    const dir = mkdtempSync(join(tmpdir(), "delta-verify-inc-"));
+    writeFileSync(join(dir, "body.dlt"), `<document>${body}<intuition>never hashed</intuition></document>`);
+    writeFileSync(join(dir, "p.dlt"), `<document><section id="s"><title>S</title>
+<lemma id="l">L.<intuition>i</intuition></lemma>
+<proof of="l">Start. <include src="body.dlt"/> End.</proof></section></document>`);
+    const r = compileProject({ inputs: [join(dir, "p.dlt")], outDir: dir });
+    return r.graph!.nodes.get("l")!.hash;
+  };
+
+  it("hashes the included file, so editing it unpins a verification", () => {
+    expect(build("Middle.")).not.toBe(build("Middle, edited."));
+    expect(build("Middle.")).toBe(build("Middle.  "));
+  });
+});

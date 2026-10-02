@@ -251,7 +251,7 @@ COUNTER_RESETS = { chapter: ["section"], section: ["subsection", "theorem", "equ
         <row><column mono="true">citedPapers</column><column><c>numberCitations</c> (compartilhado)</column><column><c>fillProjectBibliography</c></column></row>
         <row><column mono="true">team</column><column><c>collectTeam</c> (compartilhado)</column><column><c>resolveCollab</c>; <c>emit</c>: a ilha <c>#delta-review</c></column></row>
         <row><column mono="true">review</column><column><c>buildProjectReview</c></column><column><c>emit</c>: a ilha <c>#delta-review</c>; a CLI (<c>delta review</c>)</column></row>
-        <row><column mono="true">final</column><column>as funções de entrada (a flag <c>--final</c>)</column><column><c>finalizeReview</c>, <c>summarizeFinal</c></column></row>
+        <row><column mono="true">final</column><column>as funções de entrada (a flag <c>--final</c>)</column><column><c>finalizeReview</c>, <c>summarizeFinal</c>, <c>stripReviewMarks</c></column></row>
         <row><column mono="true">deps</column><column><c>addDep</c>, em todo passo que lê um arquivo do autor</column><column>a CLI: é o conjunto que o <c>--watch</c> vigia</column></row>
       </table>
 
@@ -263,7 +263,8 @@ COUNTER_RESETS = { chapter: ["section"], section: ["subsection", "theorem", "equ
       embute o que ela mesma referencia.
 
       O que é do projeto e não de um arquivo mora no <c>Shared</c> (<c>pipeline.ts</c>): além
-      dos quatro mapas acima, o estado dos contadores (<c>numbering</c>), os mapas
+      dos quatro mapas acima, o estado dos contadores (<c>numbering</c>), os contadores de
+      ids automáticos (<c>autoIds</c>: a 2ª prova de um resultado, os contraexemplos), os mapas
       <c>globalById</c> e <c>idToFile</c>, o arquivo que renderiza a bibliografia
       (<c>bibOut</c>), e um contexto do próprio projeto (<c>project</c>), onde ficam os pacotes
       do <c>project.toml</c> e os diagnósticos que não são de arquivo nenhum.
@@ -293,9 +294,11 @@ COUNTER_RESETS = { chapter: ["section"], section: ["subsection", "theorem", "equ
           texto já montado.
         </item>
         <item>
-          Os contadores em <c>COUNTER_RESETS[contador]</c> voltam a zero. Isto acontece
-          <b>mesmo</b> quando a seção é <c>numbered="false"</c> ou tem <c>num</c> explícito:
-          uma seção nova é uma seção nova.
+          Os contadores em <c>COUNTER_RESETS[contador]</c> voltam a zero, e também os que
+          <b>eles</b> zeram: um capítulo novo zera a seção e, por ela, teoremas e equações.
+          Isto acontece quando o elemento ganhou número (ou tem <c>num</c> explícito). Uma
+          seção <c>numbered="false"</c> não consome número e não zera nada, como o
+          <c>\section*</c> do LaTeX: os teoremas dela seguem a contagem da seção anterior.
         </item>
       </list>
 

@@ -39,8 +39,8 @@ attrs. It carries `diagnostics`, `registry` (id → `{tag, num}`), `referencedId
 `final` and `deps`. The who-writes / who-reads matrix is in the site page; the rule it proves
 is that every read comes *after* its write in pipeline order. In a project, four of those
 maps (`registry`, `papers`, `citedPapers`, `team`) are the **same instance** in every file's
-context; the rest of the project-wide state (`numbering`, `globalById`, `idToFile`, `bibOut`,
-the project's own context) lives in `Shared` (see below).
+context; the rest of the project-wide state (`numbering`, `autoIds`, `globalById`, `idToFile`,
+`bibOut`, `graph`, the project's own context) lives in `Shared` (see below).
 
 ### The data-driven environments table ([environments.ts](../src/compiler/environments.ts))
 
@@ -48,9 +48,10 @@ All LaTeX-style numbering is data. Each numbered tag maps to a `counter` and an 
 `prefixWith` counter (`theorem` → `"1.2"`: section 1, theorem 2; the prefix is skipped while
 the parent counter is still 0). Each theorem-like environment has its own counter;
 `equation`/`equations` share one, as do `video`/`youtube`. `COUNTER_RESETS` says which
-counters restart when a parent increments; its keys and values are counter names. The
-numbering pass is a generic engine over this table, so adding an environment is one row
-(plus its label in `strings.ts` and its tag in the runtime).
+counters restart when a parent increments (transitively: a chapter restarts sections and,
+through them, theorems; an unnumbered element restarts nothing); its keys and values are
+counter names. The numbering pass is a generic engine over this table, so adding an
+environment is one row (plus its label in `strings.ts` and its tag in the runtime).
 
 ## The pipeline ([pipeline.ts](../src/compiler/pipeline.ts))
 
@@ -67,10 +68,10 @@ rely on everything earlier steps did in *every* file. The step name is the funct
 | Phase | Steps (in order) | Notes |
 |---|---|---|
 | `load` | `resolvePackages`ᵃ, `readSource`, `parse`, `resolveIncludes`, `applyDocumentDefaults`, `finalizeReview`, `collectTeam`, `expandAnimated`, `expandCover` | **bails** after this phase if any context has an error |
-| `collab` | `resolveCollab`, `summarizeFinal`ᵃ | runs once every file's team is known |
+| `collab` | `resolveCollab`, `linkProofs`, `structureProofs`, `checkUnderstanding`, `summarizeFinal`ᵃ | runs once every file's team is known |
 | `bibliography` | `loadBibliography`, `numberCitations`, `fillProjectBibliography`ᵃ | before numbering, so spliced `<paper>` nodes flow through later passes |
-| `numbering` | `numberDocument`, `buildIdMaps`ᵃ | one `NumberingState` runs through the files in order |
-| `render` | `renderMath`, `highlightCode`, `buildProjectToc`ᵃ, `buildProjectReview`ᵃ, `resolveReferences`, `annotateCrossFileRefs`, `annotateCrossFileCites`, `inlineFigures`, `resolveTheme`, `resolveImports`, `resolveLineBreaks` | everything that needs the registry, then everything inlined |
+| `numbering` | `numberDocument`, `buildIdMaps`ᵃ, `buildGraph`ᵃ | one `NumberingState` runs through the files in order |
+| `render` | `stripReviewMarks`, `layoutProofMaps`, `renderMath`, `highlightCode`, `buildProjectToc`ᵃ, `buildProjectReview`ᵃ, `resolveReferences`, `annotateCrossFileRefs`, `annotateCrossFileCites`, `inlineFigures`, `resolveTheme`, `resolveImports`, `resolveLineBreaks` | everything that needs the registry, then everything inlined |
 | `emit` | `emit` | one standalone HTML per file |
 
 ᵃ project-wide (`all`); the rest are per file (`each`). `test/pipeline.test.ts` pins this list

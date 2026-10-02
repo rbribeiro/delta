@@ -71,6 +71,7 @@ export function popover(
     const roomAbove = tr.top - gap - EDGE;
 
     content.style.maxHeight = ""; // measure the natural height (un-cap after a resize)
+    content.classList.remove("is-capped");
     let cr = content.getBoundingClientRect();
 
     // Flip above when it doesn't fit below and there is more room above —
@@ -81,6 +82,7 @@ export function popover(
       // Cap to the available room; content with a scroll container (.floating-body,
       // .xref-pop-body) scrolls internally instead of leaving the viewport.
       content.style.maxHeight = `${Math.max(0, Math.floor(room))}px`;
+      content.classList.add("is-capped"); // the shell scrolls (popover.css)
       cr = content.getBoundingClientRect();
     }
     content.classList.toggle("is-above", above);
@@ -101,6 +103,11 @@ export function popover(
   }
 
   const onScrollResize = (): void => position();
+  // Content that changes size while open (a ref preview unfolding an aid) re-anchors,
+  // so a bubble above its trigger grows upward instead of over it. position() settles
+  // the size it sets, so this does not loop.
+  const sizeWatch =
+    typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => isOpen && position()) : null;
   const onKeydown = (e: KeyboardEvent): void => {
     if (e.key === "Escape") close();
   };
@@ -120,6 +127,7 @@ export function popover(
     window.addEventListener("scroll", onScrollResize, { capture: true, passive: true });
     window.addEventListener("resize", onScrollResize);
     document.addEventListener("keydown", onKeydown);
+    sizeWatch?.observe(content);
     // Defer outside-click wiring so the opening click doesn't immediately close it.
     setTimeout(() => document.addEventListener("pointerdown", onPointerDown), 0);
 
@@ -135,12 +143,13 @@ export function popover(
     } else {
       content.classList.remove("is-open");
     }
-    content.classList.remove("is-above");
+    content.classList.remove("is-above", "is-capped");
 
     window.removeEventListener("scroll", onScrollResize, { capture: true } as EventListenerOptions);
     window.removeEventListener("resize", onScrollResize);
     document.removeEventListener("keydown", onKeydown);
     document.removeEventListener("pointerdown", onPointerDown);
+    sizeWatch?.disconnect();
 
     isOpen = false;
     if (closeOpen === close) closeOpen = null;

@@ -44,7 +44,7 @@ const HELP = [
   "usage: delta build <file.dlt> [-o out.html] [--watch] [--final]",
   "       delta build <a.dlt> <b.dlt> ... [-o out-dir] [--watch] [--final]   # multi-file project",
   "       delta build <project.toml> [-o out-dir] [--watch] [--final]        # project file",
-  "       delta review <file.dlt | project.toml> [--json] [--status s] [--for id] [--by id] [--kind k]",
+  "       delta review [input] [--json] [--status s] [--for id] [--by id] [--kind k]",
   "       delta outline [input] [--json]                           # sections and results, with status",
   "       delta show <id> [input] [--context] [--json]             # one result's source (+ its parents' statements)",
   "       delta uses <id> [input] [--json]                         # everything downstream of a result",
@@ -251,7 +251,7 @@ function buildMain(args: string[]): void {
 }
 
 /**
- * `delta review <file.dlt | project.toml> [--json] [--status s] [--for id] [--by id] [--kind k]` —
+ * `delta review [input] [--json] [--status s] [--for id] [--by id] [--kind k]` —
  * prints the paper's collaboration state (comments, tasks, changes, status blocks) as text or
  * JSON on stdout; diagnostics go to stderr. The agent-facing view: no browser needed.
  */
@@ -269,7 +269,10 @@ function reviewMain(args: string[]): void {
     else if (arg.startsWith("-")) usage();
     else inputs.push(arg);
   }
-  if (inputs.length === 0) usage();
+  if (inputs.length === 0) {
+    if (!existsSync("project.toml")) usage();
+    inputs.push("project.toml");
+  }
 
   let data: ReviewData | undefined;
   let diagnostics: Diagnostic[];

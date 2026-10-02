@@ -1,7 +1,10 @@
 import { createHash } from "node:crypto";
+import { dirname, resolve } from "node:path";
 import { textContent, titleOf, type ElementNode } from "./ast";
 import type { LabelEntry } from "./context";
-import { AID_TAGS, RESULT_TAGS } from "./understanding";
+import { OPAQUE } from "./numbering";
+import { proofTarget } from "./structure";
+import { AID_TAGS, RESULT_TAGS, flow } from "./understanding";
 
 /**
  * The proof graph: which results a result's statement or proof leans on, and how much
@@ -10,10 +13,10 @@ import { AID_TAGS, RESULT_TAGS } from "./understanding";
  *
  * - nodes are the numbered results and definitions that carry an `id`;
  * - a `<ref to="u">` (or `\ref{u}` / `\eqref{u}` in math) inside the statement or the
- *   `<proof of>` of v gives the edge u → v. A ref to an equation or figure counts for
- *   the result that contains it. Refs inside `<intuition>`, `<strategy>`, `<obstacle>`
- *   and `<heuristic>` are narrative, not reasoning, and give no edge. Refs inside a
- *   proof's `<step>`s count for the result the proof proves. A ref to a hypothesis
+ *   proof of v (its `of`, or the result right before it: `proofTarget`) gives the edge
+ *   u → v. A ref to an equation or figure counts for the result that contains it. Refs
+ *   inside `<intuition>`, `<strategy>` and `<obstacle>` are narrative, not reasoning, and
+ *   give no edge. Refs inside a proof's `<step>`s count for the result the proof proves. A ref to a hypothesis
  *   (`<hyp>`) is not an edge either: it records where the hypothesis is used;
  * - trust is ordered `open < heuristic < sketch < verified < formalized`. A node's own
  *   trust is its proof's status (`open` with no proof; definitions are `verified`), and
@@ -130,8 +133,6 @@ export interface GraphInput {
 }
 
 const CONTAINERS = new Set(["chapter", "section", "subsection", "subsubsection"]);
-/** Not reasoning, never numbered: skipped entirely (as numbering.ts does). */
-const OPAQUE = new Set(["comment", "todo", "old"]);
 /** Literal code: a `\ref` in it is text. */
 const LITERAL = new Set(["code", "c"]);
 const MATH_REF = /\\(?:eq)?ref\{([^}]*)\}/g;
@@ -187,16 +188,17 @@ export function buildGraph(files: GraphInput[], registry: Map<string, LabelEntry
       const entry: OutlineEntry = { tag: el.tag, id, num: el.attrs.num ?? "", title: titleText(el), loc: locOf(el, fallback), children: [] };
       into.push(entry);
       nextInto = entry.children;
-    } else if (el.tag === "proof" && el.attrs.of !== undefined) {
-      const list = proofsOf.get(el.attrs.of) ?? [];
+    } else if (el.tag === "proof" && proofTarget(el) !== undefined) {
+      const of = proofTarget(el)!;
+      const list = proofsOf.get(of) ?? [];
       list.push(el);
-      proofsOf.set(el.attrs.of, list);
-      owner = el.attrs.of;
+      proofsOf.set(of, list);
+      owner = of;
     } else if (el.tag === "hyp" && id !== undefined && owner !== undefined && !graph.hypotheses.has(id)) {
       graph.hypotheses.set(id, { id, num: el.attrs.num ?? "", owner, el, loc: locOf(el, fallback), uses: [], counterexamples: [] });
     } else if (el.tag === "counterexample" && el.attrs.breaks) {
       counterexamples.push(el);
-    } else if (el.tag === "step" && !el.children.some((c) => c.type === "element" && c.tag === "proof")) {
+    } else if (el.tag === "step" && !flow(el).some((c) => c.type === "element" && c.tag === "proof")) {
       graph.unprovedSteps.push({ id: id ?? "", num: el.attrs.num ?? "", owner, loc: locOf(el, fallback) });
     }
     if (id !== undefined && owner !== undefined && !ownerOf.has(id)) ownerOf.set(id, owner);
@@ -252,8 +254,8 @@ export function buildGraph(files: GraphInput[], registry: Map<string, LabelEntry
     if (RESULT_TAGS.has(el.tag) && el.attrs.id !== undefined && graph.nodes.get(el.attrs.id)?.el === el) {
       node = el.attrs.id;
       where = undefined;
-    } else if (el.tag === "proof" && el.attrs.of !== undefined) {
-      node = graph.nodes.has(el.attrs.of) ? el.attrs.of : undefined;
+    } else if (el.tag === "proof" && proofTarget(el) !== undefined) {
+      node = graph.nodes.has(proofTarget(el)!) ? proofTarget(el) : undefined;
       where = el;
     } else if (el.tag === "step") {
       where = el;
@@ -311,29 +313,54 @@ const UNCHECKED = new Set([...AID_TAGS, "title", "comment", "todo"]);
 /**
  * The content of `el` as written (between its tags, so the proof's own `status`, `by` and
  * `against` never count), minus UNCHECKED elements at any depth, with every run of
- * whitespace collapsed: reflowing a paragraph changes nothing, any other edit does.
+ * whitespace collapsed: reflowing a paragraph changes nothing, any other edit does. An
+ * `<include src>` counts as the included file's text, so editing that file is an edit too.
  */
 export function normalizedContent(graph: ProofGraph, el: ElementNode): string {
   const span = el.src;
-  const text = span && graph.sources.get(span.file);
-  if (!span || text === undefined) return "";
-  const cuts: [number, number][] = [];
+  if (!span || !graph.sources.has(span.file)) return "";
+  // Cuts per file: an included child's offsets are in its own file.
+  const cuts = new Map<string, [number, number][]>();
   const collect = (e: ElementNode): void => {
     for (const c of e.children) {
       if (c.type !== "element") continue;
-      if (UNCHECKED.has(c.tag) && c.src) cuts.push([c.src.start, c.src.end]);
-      else collect(c);
+      if (UNCHECKED.has(c.tag) && c.src) {
+        const list = cuts.get(c.src.file) ?? [];
+        list.push([c.src.start, c.src.end]);
+        cuts.set(c.src.file, list);
+      } else collect(c);
     }
   };
   collect(el);
+  return sourceText(graph, cuts, span.file, span.inner, span.innerEnd, []).replace(/\s+/g, " ").trim();
+}
+
+const INCLUDE_TAG = /<include\b[^>]*?\bsrc\s*=\s*(["'])(.*?)\1[^>]*>/g;
+
+/** `file`'s text in [from, to) minus its cuts, each `<include src>` replaced by that file's text. */
+function sourceText(
+  graph: ProofGraph,
+  cuts: Map<string, [number, number][]>,
+  file: string,
+  from: number,
+  to: number,
+  stack: string[],
+): string {
+  const text = graph.sources.get(file);
+  if (text === undefined || stack.includes(file)) return "";
   let out = "";
-  let at = span.inner;
-  for (const [s, e] of cuts) {
+  let at = from;
+  const inRange = (cuts.get(file) ?? []).filter(([s, e]) => s >= from && e <= to).sort((x, y) => x[0] - y[0]);
+  for (const [s, e] of inRange) {
     out += text.slice(at, s) + " ";
     at = e;
   }
-  out += text.slice(at, span.innerEnd);
-  return out.replace(/\s+/g, " ").trim();
+  out += text.slice(at, to);
+  return out.replace(INCLUDE_TAG, (_tag, _q, src: string) => {
+    const inc = resolve(dirname(file), src);
+    const incText = graph.sources.get(inc);
+    return incText === undefined ? "" : ` ${sourceText(graph, cuts, inc, 0, incText.length, [...stack, file])} `;
+  });
 }
 
 /**

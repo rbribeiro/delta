@@ -117,3 +117,14 @@ describe("emit with a table of contents", () => {
     expect(html).toContain("<delta-title>Table of Contents</delta-title>");
   });
 });
+
+describe("what the ToC leaves out", () => {
+  it("skips deleted and commented-out headings", () => {
+    const { ctx } = built(`<document><toc/>
+      <section id="a"><title>Kept</title>x</section>
+      <change by="r"><old><section><title>Deleted</title>y</section></old></change>
+      <comment by="r"><section><title>In comment</title>z</section></comment>
+    </document>`);
+    expect(ctx.toc.map((e) => e.id)).toEqual(["a"]);
+  });
+});

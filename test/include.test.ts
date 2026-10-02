@@ -1,3 +1,7 @@
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { compileProject } from "../src/compiler/project";
 import { describe, expect, it } from "vitest";
 import { elements, type ElementNode } from "../src/compiler/ast";
 import { createContext, type CompileContext } from "../src/compiler/context";
@@ -106,5 +110,18 @@ describe("compileSource with includes", () => {
         (d) => d.severity === "error" && /Can't resolve include target-id/.test(d.message),
       ),
     ).toBe(true);
+  });
+});
+
+describe("paths inside an included file", () => {
+  it("resolve from that file's folder for a <bibliography src>", () => {
+    const dir = mkdtempSync(join(tmpdir(), "delta-inc-bib-"));
+    mkdirSync(join(dir, "sub"));
+    writeFileSync(join(dir, "sub", "refs.ref"), `<papers><paper id="p"><title>P</title><author>A</author><year>2000</year></paper></papers>`);
+    writeFileSync(join(dir, "sub", "part.dlt"), `<document><bibliography src="refs.ref"/></document>`);
+    writeFileSync(join(dir, "main.dlt"), `<document><section id="s"><title>S</title><cite paper="p"/></section><include src="sub/part.dlt"/></document>`);
+    const r = compileProject({ inputs: [join(dir, "main.dlt")], outDir: dir });
+    expect(r.diagnostics).toEqual([]);
+    expect(r.outputs[0].html).toContain('data-cite-nums="1"');
   });
 });

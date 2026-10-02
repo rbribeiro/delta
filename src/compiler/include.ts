@@ -4,8 +4,9 @@ import { error, type CompileContext } from "./context";
 import { isRemote, readUserFile, withFile } from "./files";
 import { parseSource } from "./parse";
 
-// figure, video and audio are the only tags that can have a relative src that needs to be rewritten to be relative to the master document.
-const ASSET_TAGS = new Set(["figure", "video", "audio"]);
+// Tags whose relative `src` is written from the included file's folder, so it is rewritten to be
+// relative to the master document (which resolves it later).
+const ASSET_TAGS = new Set(["figure", "video", "audio", "bibliography", "import"]);
 
 /**
  * Resolves `<include>` nodes in `doc` by reading the referenced files, parsing them, and splicing their children in place of the `<include>`. Relative asset paths are rewritten relative to the master document. Cycles are detected and reported as errors.
@@ -99,5 +100,7 @@ function rewriteAsset(el: ElementNode, dir: string, masterDir: string): void {
   if (dir === masterDir || !ASSET_TAGS.has(el.tag)) return;
   const src = el.attrs.src;
   if (!src || src.startsWith("data:") || src.startsWith("/") || isRemote(src)) return;
+  // A bare `<import src="pack">` names an installed package, not a path.
+  if (el.tag === "import" && !/^\.\.?\//.test(src)) return;
   el.attrs.src = relative(masterDir, resolve(dir, src)).split(sep).join("/");
 }

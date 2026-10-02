@@ -116,8 +116,8 @@
           <column>O que pede atenção numa prova: verificação desatualizada, ciclo, resultado apoiado em algo mais fraco, hipótese sem uso</column>
         </row>
         <row>
-          <column mono="true">--delta-aid-intuition, -strategy, -obstacle, -heuristic</column>
-          <column>Os pontinhos e a gaveta de intuição, estratégia, obstáculo e heurística</column>
+          <column mono="true">--delta-aid-intuition, -strategy, -obstacle</column>
+          <column>Os pontinhos e a gaveta de intuição, estratégia e obstáculo</column>
         </row>
         <row>
           <column mono="true">--delta-tone-theorem, -definition, -example, -remark, -exercise</column>

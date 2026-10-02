@@ -88,8 +88,10 @@ Pipeline (both `compileSource` and `compileProject`): `… → resolveIncludes �
   without an `id` get `<tag>-<num>` so the panel can jump. Validates `on=`.
 - `final.ts` `finalizeReview` (`--final` only, before bibliography and numbering): drops
   `comment`/`todo`/`review`/`team`, unwraps `draft`, accepts `change` (keeps `<new>` or the
-  bare insertion), strips `status`/`by`/`verified-by`, and warns once: `final build: 3 open
-  comments, 2 open tasks, 4 blocks not verified`.
+  bare insertion), and warns once: `final build: 3 open comments, 2 open tasks, 4 blocks
+  not verified`. `stripReviewMarks` (first step of render) then strips
+  `status`/`by`/`verified-by`/`against`: later, because the proof graph reads a proof's
+  status as its trust and a final build's proof map still shows it.
 - `emit.ts` `renderReviewIsland`: `<script type="application/json" id="delta-review">`
   with `{ team, items? }` — `items` only when the document has a `<review>`. Absent when
   there is neither a team nor a panel, so plain documents are unchanged.
@@ -188,7 +190,7 @@ unknown hypothesis.
 Colours are semantic tokens in `base.css`, never literals or per-component choices:
 `--delta-trust-{open,heuristic,sketch,verified,formalized}` (proof map, legend, trust
 pills), `--delta-proof-alert` (stale, cycles, weaker base, unused hypotheses) and
-`--delta-aid-{intuition,strategy,obstacle,heuristic}` (the aid dots and drawer). They
+`--delta-aid-{intuition,strategy,obstacle}` (the aid dots and drawer). They
 default to the palette, so dark mode and themes follow.
 
 The input defaults to `./project.toml`. Formatting lives in `src/graph-report.ts`. Exact

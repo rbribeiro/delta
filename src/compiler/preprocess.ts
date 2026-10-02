@@ -4,6 +4,11 @@
  * entity-escapes those regions so the document stays well-formed XML. The parser
  * unescapes them again, so later passes see the original characters. `\$` is a
  * literal dollar and never opens math (the math pass unescapes it).
+ *
+ * A `$` with no closing `$` before a blank line (LaTeX's rule: math never crosses a
+ * paragraph), or whose "math" would contain a closing tag `</…`, is a forgotten `\$`:
+ * it is reported at its own line and column (like a bare `<`) and copied as is, so one
+ * stray dollar never swallows the rest of the file.
  */
 
 /** Tags whose text content is taken literally — protected here, never `$`-scanned. */
@@ -16,6 +21,42 @@ export function escapeHtml(s: string): string {
   return s.replace(/[&<>]/g, (c) => ENTITIES[c]);
 }
 
+/** A line break followed by a blank line: a paragraph break, which math never crosses. */
+const BLANK_LINE = /\n[ \t\r]*\n/y;
+
+/**
+ * Where the math opened just before `from` ends: the index of its `closer` (`$` or `$$`),
+ * or -1 when none comes before a blank line or the end of `text`. Any backslash pair is
+ * skipped, so `\$` never closes math and `\\$` does. Shared with the math pass, so both
+ * agree on where every formula ends.
+ */
+export function findMathEnd(text: string, from: number, closer: "$" | "$$"): number {
+  for (let i = from; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === "\\") {
+      i++;
+      continue;
+    }
+    if (ch === "\n") {
+      BLANK_LINE.lastIndex = i;
+      if (BLANK_LINE.test(text)) return -1;
+    }
+    if (text.startsWith(closer, i)) return i;
+  }
+  return -1;
+}
+
+/** A forgotten `\$`, at offset `at` of the author's text (parse.ts turns it into an error). */
+export interface DollarProblem {
+  at: number;
+  message: string;
+}
+
+/** `escapeHtml` plus `"`, for a double-quoted attribute value. */
+export function escapeAttr(s: string): string {
+  return escapeHtml(s).replace(/"/g, "&quot;");
+}
+
 export function preprocess(source: string): string {
   return preprocessMapped(source).text;
 }
@@ -23,11 +64,13 @@ export function preprocess(source: string): string {
 /**
  * `preprocess`, plus `map[j]` = the offset in `source` of output character `j`. Escaping
  * only lengthens text (one `<` becomes `&lt;`), so the map lets the parser report where an
- * element sits in the author's file, which is what `delta show` prints.
+ * element sits in the author's file, which is what `delta show` prints. `problems` lists
+ * every unmatched `$`.
  */
-export function preprocessMapped(source: string): { text: string; map: number[] } {
+export function preprocessMapped(source: string): { text: string; map: number[]; problems: DollarProblem[] } {
   let out = "";
   const map: number[] = [];
+  const problems: DollarProblem[] = [];
   /** Copies `source[from, to)` verbatim. */
   const copy = (from: number, to: number): void => {
     out += source.slice(from, to);
@@ -43,27 +86,8 @@ export function preprocessMapped(source: string): { text: string; map: number[] 
   };
 
   let i = 0;
-  let math: "$" | "$$" | null = null;
-
   while (i < source.length) {
     const ch = source[i];
-
-    if (math) {
-      if (ch === "\\" && source[i + 1] === "$") {
-        copy(i, i + 2);
-        i += 2;
-        continue;
-      }
-      if (ch === "$" && source.startsWith(math, i)) {
-        copy(i, i + math.length);
-        i += math.length;
-        math = null;
-        continue;
-      }
-      esc(i, i + 1);
-      i++;
-      continue;
-    }
 
     if (ch === "\\" && source[i + 1] === "$") {
       copy(i, i + 2);
@@ -72,9 +96,19 @@ export function preprocessMapped(source: string): { text: string; map: number[] 
     }
 
     if (ch === "$") {
-      math = source[i + 1] === "$" ? "$$" : "$";
-      copy(i, i + math.length);
-      i += math.length;
+      const closer = source[i + 1] === "$" ? "$$" : "$";
+      const open = i + closer.length;
+      const end = findMathEnd(source, open, closer);
+      if (end === -1 || source.slice(open, end).includes("</")) {
+        problems.push({ at: i, message: `unmatched ${closer}: write \\$ for a literal dollar` });
+        copy(i, open);
+        i = open;
+        continue;
+      }
+      copy(i, open);
+      esc(open, end);
+      copy(end, end + closer.length);
+      i = end + closer.length;
       continue;
     }
 
@@ -86,7 +120,7 @@ export function preprocessMapped(source: string): { text: string; map: number[] 
     copy(i, i + 1);
     i++;
   }
-  return { text: out, map };
+  return { text: out, map, problems };
 }
 
 /**

@@ -1,11 +1,12 @@
-import type { ElementNode } from "./ast";
+import type { ElementNode, Node } from "./ast";
 import { error, warn, type CompileContext } from "./context";
+import { OPAQUE } from "./numbering";
 import { RAW_TAGS } from "./preprocess";
 
 /**
  * The reader aids of a result — `<intuition>` (why it is true), `<strategy>` (how the
- * proof goes), `<obstacle>` (where the difficulty is) and `<heuristic>` (a non-rigorous
- * argument). Ownership is structural: an aid belongs to the result it is nested in.
+ * proof goes) and `<obstacle>` (where the difficulty is). Ownership is structural: an aid
+ * belongs to the result (or the proof `<step>`) it is nested in.
  *
  * This pass validates placement (a misplaced aid is an error, not a silently dropped
  * block), refuses `id` (aids are never ref targets, and numbering registers every id),
@@ -19,17 +20,28 @@ export const RESULT_TAGS = new Set([
   "theorem", "proposition", "lemma", "corollary", "conjecture", "claim", "definition",
 ]);
 
-/** The aids that hang under a result as dots + drawer; `<heuristic>` also stands alone. */
-export const AID_TAGS = new Set(["intuition", "strategy", "obstacle", "heuristic"]);
+/** The aids that hang under their owner as dots + drawer. */
+export const AID_TAGS = new Set(["intuition", "strategy", "obstacle"]);
 
-/** Where a standalone `<heuristic>` may appear besides a result: proofs and body text. */
-const HEURISTIC_PARENTS = new Set([
-  ...RESULT_TAGS, "proof", "solution",
-  "document", "chapter", "section", "subsection", "subsubsection", "slide",
-]);
+/** What an aid may hang on: a result, or one step of a structured proof. */
+const AID_OWNERS = new Set([...RESULT_TAGS, "step"]);
 
-/** Collaboration wrappers the placement check looks through (`<change><new><intuition>`). */
-const TRANSPARENT = new Set(["change", "new", "old", "draft"]);
+/** Collaboration wrappers the placement checks look through (`<change><new><intuition>`). */
+export const TRANSPARENT = new Set(["change", "new", "old", "draft"]);
+
+/**
+ * `el`'s children as the final paper reads them: `<change>`, `<new>` and `<draft>` are
+ * looked through, `<old>`, comments and tasks are skipped (a `--final` build drops them),
+ * and blank text is dropped. So `flow(proof)` lists a proof's steps even when one is
+ * wrapped in `<change><new>`.
+ */
+export function flow(el: ElementNode): Node[] {
+  return el.children.flatMap((c): Node[] => {
+    if (c.type !== "element") return c.type === "text" && !/\S/.test(c.text) ? [] : [c];
+    if (OPAQUE.has(c.tag)) return [];
+    return TRANSPARENT.has(c.tag) ? flow(c) : [c];
+  });
+}
 
 export function checkUnderstanding(doc: ElementNode, ctx: CompileContext): void {
   walk(doc, [], ctx);
@@ -38,7 +50,7 @@ export function checkUnderstanding(doc: ElementNode, ctx: CompileContext): void 
 function walk(el: ElementNode, ancestors: ElementNode[], ctx: CompileContext): void {
   if (RAW_TAGS.has(el.tag)) return;
   if (AID_TAGS.has(el.tag)) visitAid(el, ownerOf(ancestors), ctx);
-  if (RESULT_TAGS.has(el.tag)) checkDuplicates(el, ctx);
+  if (AID_OWNERS.has(el.tag)) checkDuplicates(el, ctx);
   const next = [...ancestors, el];
   for (const child of el.children) {
     if (child.type === "element") walk(child, next, ctx);
@@ -54,31 +66,23 @@ function ownerOf(ancestors: ElementNode[]): ElementNode | undefined {
 }
 
 function visitAid(el: ElementNode, owner: ElementNode | undefined, ctx: CompileContext): void {
-  const where = owner ? `<${owner.tag}>` : "the document root";
-  if (el.tag === "heuristic") {
-    if (!owner || !HEURISTIC_PARENTS.has(owner.tag)) {
-      error(ctx, `<heuristic> must be inside a numbered result, a <proof> or body text (a section); found inside ${where}`, el.pos);
-    }
-  } else if (!owner || !RESULT_TAGS.has(owner.tag)) {
-    error(ctx, `<${el.tag}> must be a direct child of a numbered result (${[...RESULT_TAGS].join(", ")}); found inside ${where}`, el.pos);
+  if (!owner || !AID_OWNERS.has(owner.tag)) {
+    const where = owner ? `<${owner.tag}>` : "the document root";
+    error(ctx, `<${el.tag}> must be a direct child of a numbered result (${[...RESULT_TAGS].join(", ")}) or of a <step>; found inside ${where}`, el.pos);
   }
   if (el.attrs.id !== undefined) {
     error(ctx, `<${el.tag}> cannot carry an id: it is not a ref target (put the id on its result)`, el.pos);
     delete el.attrs.id;
   }
-
-  const onLens = owner !== undefined && RESULT_TAGS.has(owner.tag);
   // Hidden until asked for, in every document type: the page shows statements.
   el.attrs.collapsed ??= "true";
-  // A standalone aid folds with the shared collapsible, which needs the opt-in even when open.
-  if (!onLens) el.attrs.collapsible = "true";
 }
 
-/** Two intuitions on one result would be two dots with the same name: warn. */
+/** Two intuitions on one result (or step) would be two dots with the same name: warn. */
 function checkDuplicates(el: ElementNode, ctx: CompileContext): void {
   const seen = new Set<string>();
   for (const child of el.children) {
-    if (child.type !== "element" || !AID_TAGS.has(child.tag) || child.tag === "heuristic") continue;
+    if (child.type !== "element" || !AID_TAGS.has(child.tag)) continue;
     if (seen.has(child.tag)) warn(ctx, `<${el.tag}> has more than one <${child.tag}>; merge them into one`, child.pos);
     seen.add(child.tag);
   }

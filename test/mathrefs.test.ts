@@ -65,3 +65,15 @@ describe("\\ref inside math", () => {
     expect(html).not.toMatch(/<link/i);
   });
 });
+
+describe("ids KaTeX would choke on", () => {
+  it("links any id from inside math", () => {
+    for (const id of ["eq:a%b", "eq:a,b", "eq:a_b", "eq:a~b", "eq:a=b", "eq:a&b"]) {
+      const { html, ctx } = compile(`<document><section id="s"><title>S</title>
+        <equation id="${id.replace("&", "&amp;")}">x</equation> See $\\eqref{${id}}$.</section></document>`);
+      expect(ctx.diagnostics).toEqual([]);
+      expect(html).toContain(`data-delta-ref-to="${id.replace("&", "&amp;")}"`);
+      expect(html).toContain('data-delta-ref-num="1.1"');
+    }
+  });
+});

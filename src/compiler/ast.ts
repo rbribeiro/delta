@@ -73,12 +73,15 @@ export function textContent(node: Node): string {
  * Generator function that yields all ElementNode instances in a tree structure, starting from the provided root ElementNode. It traverses the tree depth-first, yielding each ElementNode it encounters.
  * 
  * @param root - An ElementNode from which to start the traversal
+ * @param skip - tags whose descendants are not visited (the element itself is still yielded):
+ *   `elements(doc, OPAQUE)` walks the document the way numbering does
  * @returns Generator<ElementNode> - A generator that yields ElementNode instances
  */
-export function* elements(root: ElementNode): Generator<ElementNode> {
+export function* elements(root: ElementNode, skip?: Set<string>): Generator<ElementNode> {
   yield root;
+  if (skip?.has(root.tag)) return;
   for (const child of root.children) {
-    if (child.type === "element") yield* elements(child);
+    if (child.type === "element") yield* elements(child, skip);
   }
 }
 

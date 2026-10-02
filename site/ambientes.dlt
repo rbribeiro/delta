@@ -89,7 +89,13 @@
 
       A demonstração não ganha caixa nem número: abre com a palavra "Demonstração"
       em itálico e fecha com o quadrado no fim. O atributo <c>of</c> aponta para o
-      resultado que ela demonstra, e o rótulo passa a citá-lo.
+      resultado que ela demonstra, e o rótulo passa a citá-lo. Sem <c>of</c>, como no
+      LaTeX, ela demonstra o resultado que vem logo antes dela (se ele tiver <c>id</c>) e
+      o rótulo fica só "Demonstração". Para o grafo de provas, o <c>delta verify</c> e os
+      ids dos passos as duas formas valem igual. Se houver algo entre os dois (um
+      parágrafo, uma figura), a demonstração não fica ligada a resultado nenhum. Um
+      resultado pode ter mais de uma demonstração; os passos da segunda ganham ids
+      <c>…-proof2-step-1</c>, e a confiança do resultado vem da primeira.
 
       <table numbered="false">
         <header>
@@ -100,7 +106,7 @@
         <row>
           <column mono="true">of</column>
           <column mono="true">id</column>
-          <column>Diz qual resultado esta demonstração prova</column>
+          <column>Diz qual resultado esta demonstração prova. Opcional logo depois do resultado</column>
         </row>
       </table>
 
@@ -121,9 +127,9 @@
       <title>Entendendo um resultado</title>
 
       Um enunciado diz <em>o que</em> vale. Quem lê quer saber também <em>por que</em>
-      vale, como a prova anda e onde ela aperta. Quatro tags dizem isso sem encher a
-      página. Elas vão <em>dentro</em> do resultado a que pertencem, e é o aninhamento
-      que diz de quem são. Nenhuma delas é numerada nem pode receber <c>id</c>.
+      vale, como a prova anda e onde ela aperta. Três tags dizem isso sem encher a
+      página. Elas vão <em>dentro</em> do resultado (ou do passo de uma prova) a que
+      pertencem, e é o aninhamento que diz de quem são. Nenhuma delas é numerada nem pode receber <c>id</c>.
 
       <table numbered="false">
         <header>
@@ -134,28 +140,25 @@
         <row>
           <column mono="true">intuition</column>
           <column>Por que o resultado é verdadeiro, num parágrafo curto</column>
-          <column>Dentro de um resultado</column>
+          <column>Dentro de um resultado ou de um passo</column>
         </row>
         <row>
           <column mono="true">strategy</column>
           <column>Como a prova anda e como os lemas se encaixam (costuma ter <c><ref></c>)</column>
-          <column>Dentro de um resultado</column>
+          <column>Dentro de um resultado ou de um passo</column>
         </row>
         <row>
           <column mono="true">obstacle</column>
           <column>Onde está a dificuldade de verdade, e por que o caminho ingênuo falha</column>
-          <column>Dentro de um resultado</column>
-        </row>
-        <row>
-          <column mono="true">heuristic</column>
-          <column>Um argumento não rigoroso, marcado como tal</column>
-          <column>Num resultado, numa demonstração ou no texto corrido</column>
+          <column>Dentro de um resultado ou de um passo</column>
         </row>
       </table>
 
       "Resultado" aqui quer dizer <c>theorem</c>, <c>proposition</c>, <c>lemma</c>,
-      <c>corollary</c>, <c>conjecture</c>, <c>claim</c> ou <c>definition</c>. Uma tag fora
-      do lugar é erro de compilação, com arquivo e linha.
+      <c>corollary</c>, <c>conjecture</c>, <c>claim</c> ou <c>definition</c>; "passo" é um
+      <c><step></c> de uma prova estruturada (veja abaixo). Uma tag fora do lugar é erro de
+      compilação, com arquivo e linha. Um argumento não rigoroso não é uma tag: é uma
+      demonstração com <c>status="heuristic"</c>.
 
       <code lang="xml" numbered="false">
 <theorem id="thm:bolzano-weierstrass">
@@ -189,13 +192,6 @@
         <obstacle>Escolher a metade não basta. É preciso escolher índices
         <em>crescentes</em>, um em cada intervalo.</obstacle>
       </theorem>
-
-      Uma <c><heuristic></c> fora de uma caixa (numa demonstração ou no texto) vira um
-      bloco pequeno, com a indicação "não rigoroso", que começa fechado:
-
-      <heuristic>Se a sequência não tivesse ponto de acumulação, cada ponto do intervalo
-      teria uma vizinhança com poucos termos. Um número finito dessas vizinhanças cobriria
-      tudo, o que é impossível com infinitos termos.</heuristic>
 
       Ao passar o mouse numa <c><ref></c> para um resultado, a prévia mostra o
       enunciado com os mesmos pontinhos, todos fechados: dá para abrir qualquer um ali mesmo.
@@ -235,7 +231,10 @@
       </code>
 
       Dentro de um passo, <c><claim></c> é a afirmação do passo; fora dele continua sendo
-      o ambiente numerado "Afirmação" de sempre.
+      o ambiente numerado "Afirmação" de sempre. Um passo também pode levar
+      <c><intuition></c>, <c><strategy></c> e <c><obstacle></c>, logo depois da
+      afirmação: os pontinhos aparecem no fim dela, e a gaveta abre entre a afirmação e a
+      prova do passo.
 
       Cada <c><hyp></c> no enunciado ganha um rótulo, (H1), (H2), …, e uma
       <c><ref></c> para ela diz "(H1)". A prévia de uma hipótese mostra em que passos a
@@ -255,6 +254,8 @@
         </step>
         <step>
           <claim>$x \ge 1$.</claim>
+          <intuition>Os inteiros positivos começam em $1$: não há inteiro entre $0$ e
+          $1$.</intuition>
           <proof>
             <step>
               <claim>$|x| \ge 1$.</claim>

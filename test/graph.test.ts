@@ -46,9 +46,9 @@ describe("edges", () => {
       <lemma id="a">A.</lemma>
       <theorem id="t">T, see <ref to="s"/>.
         <intuition><ref to="a"/></intuition><strategy><ref to="a"/></strategy>
-        <obstacle><ref to="a"/></obstacle><heuristic><ref to="a"/></heuristic>
+        <obstacle><ref to="a"/></obstacle>
       </theorem>
-      <proof of="t">Done.<heuristic>like <ref to="a"/></heuristic><comment by="x">see <ref to="a"/></comment></proof>`);
+      <proof of="t">Done.<comment by="x">see <ref to="a"/></comment></proof>`);
     expect(parents(graph, "t")).toEqual([]);
   });
 

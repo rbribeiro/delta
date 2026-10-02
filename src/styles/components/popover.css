@@ -21,7 +21,15 @@
   border: var(--delta-hairline) solid var(--delta-rule);
   border-radius: var(--delta-radius-lg);
   box-shadow: var(--delta-shadow-lift);
+  /* Not the UA's `[popover] { overflow: auto }`: that clips the caret, and the caret
+     below an .is-above bubble counted as scrollable overflow — a stray scrollbar. */
+  overflow: visible;
 }
+/* Delta.popover capped the height to the room left: only then does the shell scroll,
+   and the caret (clipped by the scroller anyway) steps aside. :where keeps a
+   component's own overflow (e.g. .floating-panel) in charge. */
+.delta-pop:where(.is-capped) { overflow-y: auto; }
+.delta-pop.is-capped::after { display: none; }
 .delta-pop > :first-child { margin-top: 0; }
 .delta-pop > :last-child  { margin-bottom: 0; }
 

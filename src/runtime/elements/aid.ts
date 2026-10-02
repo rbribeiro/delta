@@ -1,5 +1,5 @@
 /**
- * Reader aids on a result — <intuition>, <strategy>, <obstacle>, <heuristic>:
+ * Reader aids on a result or a proof step — <intuition>, <strategy>, <obstacle>:
  *
  *   <lemma id="lem:escape">…statement…
  *     <intuition>Why it is true.</intuition>
@@ -10,15 +10,14 @@
  * (called by the environment) leaves a small cluster of coloured dots on the box's top
  * border, opposite the label, and moves the aids into a drawer that hangs *under* the
  * box. A dot opens its aid in the drawer (one at a time); the box keeps the size of its
- * statement. Outside a box (a <heuristic> in a proof or in body text) an aid is a small
- * labelled block that folds with the shared collapsible. The compiler validated
+ * statement. A <step> has no box: its dots follow the step's claim and its drawer hangs
+ * between the claim and the step's proof (proofstructure.ts). The compiler validated
  * placement and stamped `collapsed` (every aid hidden unless the author opened it).
  */
 
 import { t } from "../i18n";
-import { applyCollapsible } from "./shared";
 
-const AIDS = ["intuition", "strategy", "obstacle", "heuristic"];
+const AIDS = ["intuition", "strategy", "obstacle"];
 const SELECTOR = AIDS.map((a) => `:scope > delta-${a}`).join(", ");
 
 const kindOf = (el: Element): string => el.tagName.toLowerCase().replace(/^delta-/, "");
@@ -61,14 +60,13 @@ export function buildLens(host: HTMLElement): Lens | null {
   for (const aid of aids) {
     const kind = kindOf(aid);
     const label = t(kind, kind);
-    const note = kind === "heuristic" ? ` · ${t("notRigorous", "not rigorous")}` : "";
 
     const dot = document.createElement("button");
     dot.type = "button";
     dot.className = "lens-dot";
     dot.dataset.aid = kind;
     dot.dataset.label = label;
-    dot.setAttribute("aria-label", label + note);
+    dot.setAttribute("aria-label", label);
     dot.addEventListener("click", () => show(open === aid ? null : aid));
     buttons.set(aid, dot);
     dots.append(dot);
@@ -81,12 +79,6 @@ export function buildLens(host: HTMLElement): Lens | null {
     const name = document.createElement("span");
     name.className = "lens-name";
     name.textContent = label;
-    if (note) {
-      const em = document.createElement("span");
-      em.className = "aid-note";
-      em.textContent = note;
-      name.append(em);
-    }
     const close = document.createElement("button");
     close.type = "button";
     close.className = "lens-close";
@@ -104,31 +96,4 @@ export function buildLens(host: HTMLElement): Lens | null {
   const inPreview = host.closest(".xref-pop-body") !== null;
   show(inPreview ? null : aids.find((a) => a.getAttribute("collapsed") === "false") ?? null);
   return { dots, drawer };
-}
-
-/** An aid outside a result box: a labelled block ("Heuristic · not rigorous") that folds. */
-class DeltaAid extends HTMLElement {
-  connectedCallback(): void {
-    if (this.dataset.deltaReady) return;
-    this.dataset.deltaReady = "1";
-    if (this.classList.contains("lens-panel")) return; // already placed on a lens
-
-    const kind = kindOf(this);
-    this.classList.add("aid");
-    const label = document.createElement("span");
-    label.className = "aid-label";
-    label.textContent = t(kind, kind);
-    if (kind === "heuristic") {
-      const note = document.createElement("span");
-      note.className = "aid-note";
-      note.textContent = t("notRigorous", "not rigorous");
-      label.append(" · ", note);
-    }
-    this.prepend(label);
-    applyCollapsible(this, label);
-  }
-}
-
-export function defineAids(): void {
-  for (const kind of AIDS) customElements.define(`delta-${kind}`, class extends DeltaAid {});
 }

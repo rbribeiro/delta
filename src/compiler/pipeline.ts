@@ -14,13 +14,13 @@ import { readUserFile } from "./files";
 import { parseSource } from "./parse";
 import { resolveIncludes } from "./include";
 import { applyDocumentDefaults } from "./document";
-import { describeFinal, finalizeReview, sumFinal, type FinalStats } from "./final";
+import { describeFinal, finalizeReview, stripReviewMarks, sumFinal, type FinalStats } from "./final";
 import { collectTeam } from "./team";
 import { expandAnimated } from "./animated";
 import { expandCover } from "./cover";
 import { resolveCollab } from "./collab";
 import { checkUnderstanding } from "./understanding";
-import { structureProofs } from "./structure";
+import { linkProofs, structureProofs } from "./structure";
 import { fillProjectBibliography, loadBibliography, numberCitations } from "./bibliography";
 import { freshNumbering, numberDocument, type NumberingState } from "./numbering";
 import { annotateCrossFileCites, annotateCrossFileRefs, buildIdMaps } from "./crossfile";
@@ -69,6 +69,8 @@ export interface Shared {
   team: Map<string, TeamMember>;
   /** Counters continue file to file, so chapter 2 numbers after chapter 1. */
   numbering: NumberingState;
+  /** Auto-id counters (a result's k-th proof, a hypothesis's counterexamples), project-wide. */
+  autoIds: Map<string, number>;
   /** id → node, project-wide; emit snapshots cross-file pop-over targets from it. */
   globalById: Map<string, ElementNode>;
   /** id → home output name; cross-file links are built from it. */
@@ -189,7 +191,7 @@ export const PIPELINE: Phase[] = [
       },
       {
         name: "finalizeReview",
-        what: "--final only: strip comments/tasks/team, accept changes. Before numbering, so nothing stripped consumes a counter.",
+        what: "--final only: strip comments/tasks/team, accept changes. Before numbering, so nothing stripped consumes a counter. Block marks (status, by) stay for the graph.",
         each: perFile((doc, ctx, s) => {
           s.finalStats.push(finalizeReview(doc, ctx, false));
         }),
@@ -221,13 +223,18 @@ export const PIPELINE: Phase[] = [
         each: perFile(resolveCollab),
       },
       {
+        name: "linkProofs",
+        what: "A <proof> without `of` proves the result right before it: data-of=\"<id>\" (the label stays plain \"Proof.\").",
+        each: perFile(linkProofs),
+      },
+      {
         name: "structureProofs",
-        what: "<step>s numbered 1, 1.2, … (ids for those without), their proofs folded; <hyp>s numbered H1, H2, … per result; placement checked.",
-        each: perFile(structureProofs),
+        what: "<step>s numbered 1, 1.2, … (ids for those without; a result's 2nd proof gets <id>-proof2-step-…), their proofs folded; <hyp>s numbered H1, H2, … per result; placement checked.",
+        each: perFile((doc, ctx, s) => structureProofs(doc, ctx, s.autoIds)),
       },
       {
         name: "checkUnderstanding",
-        what: "<intuition>/<strategy>/<obstacle>/<heuristic>: placement errors, no ids, folded by default.",
+        what: "<intuition>/<strategy>/<obstacle> on a result or a step: placement errors, no ids, folded by default.",
         each: perFile(checkUnderstanding),
       },
       {
@@ -295,6 +302,11 @@ export const PIPELINE: Phase[] = [
     name: "render",
     what: "Resolve everything that needs the registry, and inline every asset.",
     steps: [
+      {
+        name: "stripReviewMarks",
+        what: "--final only: drop status/by/verified-by/against, now that the proof graph has read the trust.",
+        each: perFile(stripReviewMarks),
+      },
       {
         name: "layoutProofMaps",
         what: "<proof-map> → an SVG of edges + positioned boxes, laid out from the graph. First, so the boxes' refs and title math go through the next steps.",
@@ -420,6 +432,7 @@ export function createShared(init: Partial<Shared> & { project: CompileContext }
     citedPapers: [],
     team: new Map(),
     numbering: freshNumbering(),
+    autoIds: new Map(),
     globalById: new Map(),
     idToFile: new Map(),
     finalStats: [],

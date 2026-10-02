@@ -4,6 +4,7 @@ import { RAW_TAGS } from "./preprocess";
 import { resolveLang, stringsFor } from "./strings";
 import { ensureHeadingId, HEADING_LEVEL, uniqueSlug, type SlugState } from "./toc";
 import { changeParts, COLLAB_TAGS } from "./collab";
+import { proofTarget } from "./structure";
 
 /**
  * Collects the collaboration state of a document into `ctx.review`: every `<comment>`,
@@ -166,7 +167,7 @@ function collectReview(
         const excerpt = titleEl ? "" : shorten(plain(el.children), 160);
         item = {
           kind: "status",
-          id: assignId(el, el.attrs.num ? `${el.tag}-${el.attrs.num}` : el.tag === "proof" && el.attrs.of ? `proof-of-${el.attrs.of}` : ""),
+          id: assignId(el, el.attrs.num ? `${el.tag}-${el.attrs.num}` : el.tag === "proof" && proofTarget(el) ? `proof-of-${proofTarget(el)}` : ""),
           tag: el.tag,
           num: el.attrs.num,
           status: status ?? "unmarked",
@@ -207,7 +208,7 @@ function collectReview(
  * read back from KaTeX's TeX annotation as `$…$` / `$$…$$`, a `<ref>` becomes its target's
  * localized label ("Lemma 2.1", straight from the registry), whitespace collapses.
  */
-function plainText(nodes: Node[], ctx: CompileContext, label: (tag: string) => string): string {
+export function plainText(nodes: Node[], ctx: CompileContext, label: (tag: string) => string): string {
   let out = "";
   for (const n of nodes) {
     if (n.type === "text") out += n.text;

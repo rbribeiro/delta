@@ -23,8 +23,10 @@
       Cifrões delimitam matemática dentro do texto corrido, como no LaTeX. Escreva
       <c>$e^{i\pi} + 1 = 0$</c> e o resultado aparece na linha: $e^{i\pi} + 1 = 0$.
 
-      Para um cifrão literal, escape com <c>\$</c>. Um cifrão desemparelhado gera um
-      aviso na compilação, e quase sempre é isso mesmo que você quer saber.
+      Para um cifrão literal, escape com <c>\$</c>, como no LaTeX. Esquecer o escape é erro
+      de compilação, com a linha e a coluna do cifrão, do mesmo jeito que um <c><</c>
+      solto: a matemática não atravessa uma linha em branco nem o fim de uma tag, então um
+      cifrão sem par antes disso não abre fórmula nenhuma.
 
       <box type="tip">
         <title>Sinais de menor e maior são livres dentro da matemática</title>

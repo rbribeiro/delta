@@ -2,8 +2,8 @@ import { dirname, resolve } from "node:path";
 import { elements, hasTag, titleOf, type ElementNode } from "./ast";
 import { warn, type CompileContext } from "./context";
 import { isRemote, readUserFile, withFile } from "./files";
-import { parse } from "./parse";
-import { preprocess } from "./preprocess";
+import { OPAQUE } from "./numbering";
+import { parseSource } from "./parse";
 
 /**
  * Loads the bibliography from the given document (or children `<paper>` elements) and registers the papers in the compiler context.
@@ -37,7 +37,8 @@ export function resolveCitations(doc: ElementNode, ctx: CompileContext): void {
  * @param ctx the compiler context to which we add the referenced paper's id so we can clone the cited paper
  */
 export function numberCitations(doc: ElementNode, ctx: CompileContext): void {
-  for (const el of elements(doc)) {
+  // A cite inside <old>/<comment>/<todo> takes no number, so review and --final agree.
+  for (const el of elements(doc, OPAQUE)) {
     if (el.tag !== "cite") continue;
 
     const ids = parseIds(el.attrs.papers, el.attrs.paper); // merge paper/papers into a deduped id list
@@ -143,7 +144,7 @@ function loadRefFile(src: string, ctx: CompileContext, bib: ElementNode): void {
   }
   // Diagnostics from the .ref point at the .ref.
   withFile(ctx, abs, () => {
-    const root = parse(preprocess(text), ctx);
+    const root = parseSource(text, ctx);
     if (!root) return;
     for (const el of elements(root)) {
       if (el.tag === "paper") addPaper(el, ctx);

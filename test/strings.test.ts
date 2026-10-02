@@ -43,3 +43,12 @@ describe("STRINGS parity", () => {
     }
   });
 });
+
+describe("ref labels", () => {
+  it("names chapters, and calls a YouTube embed a video", () => {
+    expect(stringsFor("pt").chapter).toBe("Capítulo");
+    expect(stringsFor("en").chapter).toBe("Chapter");
+    expect(stringsFor("en").youtube).toBe("Video");
+    expect(stringsFor("pt").youtube).toBe("Vídeo");
+  });
+});

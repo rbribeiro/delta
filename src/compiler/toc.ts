@@ -1,5 +1,6 @@
 import { elements, hasTag, textContent, titleOf, type ElementNode } from "./ast";
 import type { CompileContext, TocEntry } from "./context";
+import { OPAQUE } from "./numbering";
 
 /**
  * Builds the table-of-contents heading tree consumed by `<delta-toc>`. Walks the
@@ -96,7 +97,8 @@ function collectHeadings(
   file?: string,
 ): TocEntry[] {
   const out: TocEntry[] = [];
-  for (const el of elements(doc)) {
+  // A deleted (<old>) or commented-out heading is not part of the paper.
+  for (const el of elements(doc, OPAQUE)) {
     const level = LEVEL[el.tag];
     if (level === undefined) continue;
 

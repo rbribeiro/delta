@@ -1,16 +1,15 @@
 import katex from "katex";
 import { textContent, type ElementNode, type Node, type Position } from "./ast";
 import { error, warn, type CompileContext } from "./context";
-import { RAW_TAGS } from "./preprocess";
+import { RAW_TAGS, escapeAttr, findMathEnd } from "./preprocess";
 
 /** Tags whose content is LaTeX, rendered at compile time. */
 const MATH_TAGS = new Set(["m", "math", "equation", "equations"]);
 
 /** `\ref{id}` / `\eqref{id}` inside math — resolved against ctx.registry at render time. */
 const REF_RE = /\\(eqref|ref)\{([^}]*)\}/g;
-// \htmlData parses its first argument as comma-separated key=value pairs, so these
-// characters in an id would corrupt it.
-const HTML_DATA_UNSAFE = /[,={}]/;
+/** The marker KaTeX renders for the k-th \ref of a formula, swapped for its real attributes. */
+const REF_MARK = /data-delta-ref="(\d+)"/g;
 
 /**
  * Renders all math to HTML at compile time — KaTeX itself never ships to the
@@ -79,11 +78,12 @@ export function renderMath(
       if (ch === "$") {
         const closer = text[i + 1] === "$" ? "$$" : "$";
         const open = i + closer.length;
-        const close = findCloser(text, open, closer);
+        const close = findMathEnd(text, open, closer);
         if (close === -1) {
+          // The preprocessor already reported a stray `$` in the source; this is the safety net.
           warn(ctx, `unbalanced ${closer} — write \\$ for a literal dollar`, pos);
-          plain += ch;
-          i++;
+          plain += closer;
+          i = open;
           continue;
         }
         flush();
@@ -109,19 +109,17 @@ export function renderMath(
   function render(latex: string, displayMode: boolean, pos?: Position): Node {
     ctx.mathUsed = true;
     try {
-      const expanded = expandMathRefs(latex, pos);
-      return {
-        type: "raw",
-        html: katex.renderToString(expanded, {
-          displayMode,
-          // Scoped trust: only the \htmlData spans our \ref expansion emits (inert
-          // data attributes) — no \href/\includegraphics/etc. The matching strict
-          // handler silences KaTeX's "HTML extension" nag for that one feature.
-          trust: (c) => c.command === "\\htmlData",
-          strict: (code: string) => (code === "htmlExtension" ? "ignore" : "warn"),
-        }),
-        kind: "math",
-      };
+      const refs: string[] = [];
+      const expanded = expandMathRefs(latex, refs, pos);
+      const html = katex.renderToString(expanded, {
+        displayMode,
+        // Scoped trust: only the \htmlData spans our \ref expansion emits (inert
+        // data attributes) — no \href/\includegraphics/etc. The matching strict
+        // handler silences KaTeX's "HTML extension" nag for that one feature.
+        trust: (c) => c.command === "\\htmlData",
+        strict: (code: string) => (code === "htmlExtension" ? "ignore" : "warn"),
+      });
+      return { type: "raw", html: html.replace(REF_MARK, (_m, k: string) => refs[Number(k)]), kind: "math" };
     } catch (e) {
       error(ctx, `KaTeX: ${e instanceof Error ? e.message : String(e)}`, pos);
       return { type: "text", text: latex };
@@ -130,10 +128,12 @@ export function renderMath(
 
   /**
    * Expands `\ref{id}` / `\eqref{id}` into the target's number wrapped in a
-   * `\htmlData` marker span the runtime wires up like a <ref>. An unresolved id
+   * `\htmlData{delta-ref=k}` marker span the runtime wires up like a <ref>. The id never
+   * goes through KaTeX (a `%` or `,` in it would break the formula): `refs[k]` holds the
+   * span's real `data-delta-ref-*` attributes, swapped in after rendering. An unresolved id
    * warns and renders as `??` (the LaTeX convention).
    */
-  function expandMathRefs(latex: string, pos?: Position): string {
+  function expandMathRefs(latex: string, refs: string[], pos?: Position): string {
     return latex.replace(REF_RE, (_match, cmd: string, id: string) => {
       const entry = ctx.registry.get(id);
       if (!entry) {
@@ -141,34 +141,12 @@ export function renderMath(
         return "\\text{??}";
       }
       const label = cmd === "eqref" ? `(${entry.num})` : entry.num;
-      if (HTML_DATA_UNSAFE.test(id)) {
-        warn(ctx, `Reference id "${id}" cannot be linked inside math (contains , = { or })`, pos);
-        return `\\text{${label}}`;
-      }
       ctx.referencedIds.add(id); // emit snapshots the target into a <template>
       const home = idToFile?.get(id);
-      const href = home && home !== ctx.outName ? `,delta-ref-href=${home}#${id}` : "";
-      return (
-        `\\htmlData{delta-ref-to=${id},delta-ref-num=${entry.num},` +
-        `delta-ref-tag=${entry.tag}${href}}{\\text{${label}}}`
-      );
+      const attrs: [string, string][] = [["to", id], ["num", entry.num], ["tag", entry.tag]];
+      if (home && home !== ctx.outName) attrs.push(["href", `${home}#${id}`]);
+      refs.push(attrs.map(([k, v]) => `data-delta-ref-${k}="${escapeAttr(v)}"`).join(" "));
+      return `\\htmlData{delta-ref=${refs.length - 1}}{\\text{${label}}}`;
     });
   }
-}
-/**
- * Finds the position of the closing delimiter in a LaTeX string.
- * @param text - the text to search within
- * @param from - the starting position to search from
- * @param closer - the closing delimiter to find
- * @returns the position of the closing delimiter, or -1 if not found
- */
-function findCloser(text: string, from: number, closer: string): number {
-  for (let i = from; i < text.length; i++) {
-    if (text[i] === "\\") {
-      i++;
-      continue;
-    }
-    if (text.startsWith(closer, i)) return i;
-  }
-  return -1;
 }

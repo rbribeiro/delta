@@ -1,6 +1,6 @@
 # Uma prova em construção, escrita em Delta por um humano e um agente: a componente
 # gigante do grafo aleatório de Erdős–Rényi. Cada resultado traz, além do enunciado,
-# uma camada de entendimento (<intuition>, <strategy>, <obstacle>, <heuristic>), e os
+# uma camada de entendimento (<intuition>, <strategy>, <obstacle>, também nos passos de uma prova), e os
 # lemas ainda sem prova aparecem como status="open".
 #
 #   delta build project.toml        # daqui

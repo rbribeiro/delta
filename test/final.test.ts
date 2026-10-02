@@ -78,7 +78,8 @@ describe("--final", () => {
     const { html, ctx } = compile(src, true);
     expect(body(html)).not.toContain("<delta-paper");
     expect(ctx.citedPapers).toEqual([]);
-    expect(body(compile(src, false).html)).toContain("<delta-paper");
+    // The review build agrees: a cite inside a comment numbers nothing (it stays inert).
+    expect(body(compile(src, false).html)).not.toContain("<delta-paper");
   });
 
   it("warns once with what is left undone", () => {
@@ -102,5 +103,28 @@ describe("--final", () => {
     expect(html).toContain("<delta-comment");
     expect(html).toContain("<delta-change");
     expect(ctx.diagnostics.some((d) => d.message.startsWith("final build"))).toBe(false);
+  });
+});
+
+describe("--final and the proof graph", () => {
+  it("still reads the trust of a verified proof (the proof map shows it), then drops the marks", () => {
+    const src = `<document><section id="s"><title>S</title>
+      <lemma id="l">x</lemma><proof of="l" status="verified" verified-by="rb">ok</proof>
+      <proof-map of="l"/></section></document>`;
+    const { html } = compile(src, true);
+    expect(body(html)).toContain('data-eff="verified"');
+    expect(body(html)).not.toContain("status=");
+    expect(body(html)).not.toContain("verified-by=");
+  });
+
+  it("numbers citations the same in review and final builds", () => {
+    const src = `<document>
+      <bibliography><paper id="p"><title>P</title><author>A</author><year>2000</year></paper>
+        <paper id="q"><title>Q</title><author>B</author><year>2001</year></paper></bibliography>
+      <section id="s"><title>S</title><comment by="a"><cite paper="p"/></comment> <cite paper="q"/></section>
+    </document>`;
+    for (const final of [false, true]) {
+      expect(body(compile(src, final).html)).toMatch(/<delta-cite paper="q" data-cite-nums="1"/);
+    }
   });
 });
