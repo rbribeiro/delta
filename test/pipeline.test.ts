@@ -1,6 +1,6 @@
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { compileFile, type CompileOptions, type TraceEvent } from "../src/compiler/index";
 import { PIPELINE } from "../src/compiler/pipeline";
@@ -180,5 +180,24 @@ describe("the trace hook", () => {
     expect(result.outputs).toHaveLength(0);
     expect(result.diagnostics.some((d) => d.severity === "error")).toBe(true);
     expect([...phases]).toEqual(["load"]);
+  });
+});
+
+describe("stopAfter", () => {
+  it("stops right after the named step: the graph exists, the HTML does not", () => {
+    const r = compileFile(resolve("examples/project/ch1-geometry.dlt"), { stopAfter: "buildGraph" });
+    expect(r.graph?.nodes.size).toBeGreaterThan(0);
+    expect(r.html).toBeUndefined();
+  });
+
+  it("accepts a phase name", () => {
+    const steps: string[] = [];
+    compileFile(resolve("examples/project/ch1-geometry.dlt"), { stopAfter: "numbering", trace: (e) => void steps.push(e.step) });
+    expect(steps.at(-1)).toBe("buildGraph");
+    expect(steps).not.toContain("renderMath");
+  });
+
+  it("throws on a name that is neither a step nor a phase", () => {
+    expect(() => compileFile(resolve("examples/project/ch1-geometry.dlt"), { stopAfter: "nope" })).toThrow(/no pipeline step/);
   });
 });

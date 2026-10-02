@@ -103,6 +103,12 @@ when absent. `scripts/trace.ts` uses it to compile a two-file sample and snapsho
 the context and the shared state after every step; that data drives the site's pipeline
 explorer, so the docs never drift from the code.
 
+**Stopping early.** `CompileOptions.stopAfter` names a step or a phase; `runPipeline` returns
+right after it, and no file gets HTML. The CLI's read-only commands use it: the graph
+commands stop after `buildGraph`, `delta review` after `buildProjectReview`, `delta lint`
+after the `render` phase. An unknown name throws, so a renamed step cannot silently turn
+into a full compile.
+
 ### Diagnostics, not exceptions
 
 An author mistake is never a `throw`. A pass records `error(ctx, msg, el.pos)` or
@@ -136,7 +142,9 @@ another output). The same inlining seam is how Delta is **extended**: `<import>`
 
 ```
 src/
-  cli.ts                       executable entry point (argv → compile → write; review/create/install subcommands)
+  cli.ts                       the executable: runs `main(process.argv)` from commands.ts
+  commands.ts                  every `delta` command: parseArgs, resolveInputs, compileInputs (stopAfter), print/write
+  verify.ts                    `delta verify`: checks, then signs a proof in place (setAttributes)
   review-report.ts             `delta review` text/JSON formatting (pure)
   scaffold.ts, install.ts      `delta create`, `delta install`
   language/                    the vocabulary, pure data, imported by compiler AND runtime

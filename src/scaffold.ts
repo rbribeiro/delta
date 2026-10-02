@@ -1,6 +1,6 @@
 /**
  * Scaffolding for the `delta create` CLI command: pure file-template builders that
- * return a `path → contents` map. `cli.ts` writes them to disk. The templates are
+ * return a `path → contents` map. `delta create` (commands.ts) writes them to disk. The templates are
  * intentionally minimal — a `TODO` where the author's content goes, not a worked
  * example — so a reader sees *where* to add their prose, custom CSS, local elements,
  * and installed packages, and no more.

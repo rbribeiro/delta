@@ -88,6 +88,10 @@ npm run dev -- --version
           <column mono="true">delta build project.toml</column>
           <column>O projeto descrito no arquivo: entradas, pasta <c>out</c>, pacotes e padrões do <c><document></c>. Um <c>-o</c> sobrescreve o <c>out</c>.</column>
         </row>
+        <row>
+          <column mono="true">delta build</column>
+          <column>Sem argumentos, o <c>project.toml</c> da pasta atual, como nos outros comandos.</column>
+        </row>
       </table>
 
       <table numbered="false">
@@ -101,7 +105,7 @@ npm run dev -- --version
         </row>
         <row>
           <column mono="true">--project &lt;arquivo&gt;</column>
-          <column>Aponta o <c>project.toml</c> explicitamente. Um único argumento terminado em <c>.toml</c> já é reconhecido como projeto, então isto raramente é necessário.</column>
+          <column>Aponta o <c>project.toml</c> explicitamente. Um único argumento terminado em <c>.toml</c> já é reconhecido como projeto, então isto raramente é necessário. Não se combina com arquivos na linha.</column>
         </row>
         <row>
           <column mono="true">-w, --watch</column>

@@ -125,6 +125,13 @@ export interface CompileOptions {
   final?: boolean;
   /** Observe the pipeline step by step (the docs' pipeline explorer is built from this). */
   trace?: (event: TraceEvent) => void;
+  /**
+   * Stop after this step (or phase) and produce no HTML: the CLI's read-only commands
+   * need the graph or the review list, not a 1 MB page per file. `"buildGraph"` for the
+   * graph commands, `"buildProjectReview"` for `delta review`, `"render"` for everything
+   * except the HTML itself.
+   */
+  stopAfter?: string;
 }
 
 type Pass = (doc: ElementNode, ctx: CompileContext, shared: Shared, file: FileUnit) => void;
@@ -395,10 +402,14 @@ export const PIPELINE: Phase[] = [
  * Runs the pipeline over `files`. Every file's context is pointed at the shared maps first;
  * then each phase's steps run in order (an `each` step over every file before the next step
  * starts). Returns false when a bailing phase ended with an error in any context — the
- * caller then produces no output.
+ * caller then produces no output. With `stopAfter` it returns true right after that step
+ * or phase; no file has HTML then.
  */
 export function runPipeline(files: FileUnit[], shared: Shared, options: CompileOptions = {}): boolean {
-  const trace = options.trace;
+  const { trace, stopAfter } = options;
+  if (stopAfter !== undefined && !PIPELINE.some((p) => p.name === stopAfter || p.steps.some((s) => s.name === stopAfter))) {
+    throw new Error(`stopAfter: no pipeline step or phase named "${stopAfter}"`);
+  }
   for (const f of files) {
     f.ctx.registry = shared.registry;
     f.ctx.papers = shared.papers;
@@ -418,8 +429,10 @@ export function runPipeline(files: FileUnit[], shared: Shared, options: CompileO
         step.all?.(files, shared);
       }
       trace?.({ phase: phase.name, step: step.name, files, shared });
+      if (step.name === stopAfter) return true;
     }
     if (phase.bail && (hasErrors(shared.project) || files.some((f) => hasErrors(f.ctx)))) return false;
+    if (phase.name === stopAfter) return true;
   }
   return true;
 }

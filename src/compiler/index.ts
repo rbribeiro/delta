@@ -55,6 +55,6 @@ function runOne(unit: FileUnit, options: CompileOptions): { html?: string; graph
   });
   const ok = runPipeline([unit], shared, options);
   ctx.diagnostics.push(...shared.project.diagnostics); // the --final summary lands on the caller's ctx
-  // An error in a later phase fails the file too, as it fails a project (cli.ts writeProject).
+  // An error in a later phase fails the file too, as it fails a project.
   return { html: ok && !hasErrors(ctx) ? unit.html : undefined, graph: shared.graph };
 }

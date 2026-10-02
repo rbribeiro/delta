@@ -57,7 +57,7 @@ export function compileProject(config: ProjectConfig, options: CompileOptions = 
   const deps = [...new Set(ctxs.flatMap((c) => [...c.deps]))];
   if (!ok) return { outputs: [], diagnostics, deps, graph: shared.graph };
   return {
-    outputs: files.map((f) => ({ path: join(config.outDir, f.outName), html: f.html! })),
+    outputs: files.flatMap((f) => (f.html === undefined ? [] : [{ path: join(config.outDir, f.outName), html: f.html }])),
     diagnostics,
     deps,
     review: { team: [...shared.team.values()], items: shared.reviewItems },
