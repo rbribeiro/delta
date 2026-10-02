@@ -1,6 +1,6 @@
 import type { ElementNode, Node } from "./ast";
 import type { CompileContext } from "./context";
-import { RAW_TAGS } from "./preprocess";
+import { RAW_TAGS } from "../language/tags";
 
 /**
  * A blank line in the source (a run of two or more newlines, ignoring horizontal

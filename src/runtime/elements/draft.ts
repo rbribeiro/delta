@@ -28,5 +28,5 @@ class DeltaDraft extends HTMLElement {
 }
 
 export function defineDraft(): void {
-  customElements.define("delta-draft", class extends DeltaDraft {});
+  customElements.define("delta-draft", DeltaDraft);
 }

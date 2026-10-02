@@ -1,7 +1,8 @@
-import { elements, titleOf, type ElementNode, type Node } from "./ast";
+import { element as el, elements, titleOf, type ElementNode, type Node } from "./ast";
 import { error, warn, type CompileContext } from "./context";
-import { ancestors, TRUST, type ProofGraph } from "./graph";
-import { resolveLang, stringsFor } from "./strings";
+import { stringsFor } from "../language/strings";
+import { TRUST } from "../language/trust";
+import { ancestors, type GraphNode, type ProofGraph } from "./graph";
 
 /**
  * `<proof-map of="thm:main"/>`: the results a theorem rests on, drawn as a layered graph
@@ -64,27 +65,42 @@ interface Slot {
   w: number;
 }
 
+/** Where everything goes: the slots of each layer, each edge as a chain of slots, the back edges. */
+interface Layout {
+  layers: Slot[][];
+  /** Result id → its slot. */
+  slots: Map<string, Slot>;
+  /** Each forward edge as its chain of slots, parent first. */
+  chains: Slot[][];
+  /** Edges that close a cycle, drawn apart on the right. */
+  back: [string, string][];
+  width: number;
+  height: number;
+}
+
 function render(ids: string[], graph: ProofGraph, ctx: CompileContext, n: number): Node[] {
+  const layout = layOut(ids, graph);
+  const t = stringsFor(ctx.lang);
+  const svgWidth = layout.back.length ? layout.width + GAP_X * 2 : layout.width;
+  const canvas = el("pm-canvas", { style: `width:${f(svgWidth)}px;height:${f(layout.height)}px` }, [
+    { type: "raw", html: drawEdges(layout, svgWidth, n) },
+    ...ids.map((id) => drawBox(graph.nodes.get(id)!, layout.slots.get(id)!, t)),
+  ]);
+  // Legend: only the statuses on this map, in trust order, in the document's language.
+  const present = TRUST.filter((s) => ids.some((id) => graph.nodes.get(id)!.eff === s));
+  const legend = el(
+    "pm-legend",
+    {},
+    present.map((s) => el("pm-key", { "data-eff": s }, [{ type: "text", text: t[s] ?? s }])),
+  );
+  return [canvas, legend];
+}
+
+/** The layered layout: back edges out, layers, dummy slots, barycenter order, coordinates. */
+function layOut(ids: string[], graph: ProofGraph): Layout {
   const inMap = new Set(ids);
   const parentsOf = (id: string) => graph.nodes.get(id)!.parents.filter((p) => inMap.has(p));
-
-  // First the edges that close a cycle (back edges of a depth-first walk up the parents):
-  // they are left out of the layering and drawn apart, so the rest is a DAG.
-  const order = new Map(ids.map((id, i) => [id, i]));
-  const back: [string, string][] = [];
-  const done = new Set<string>();
-  const trail = new Set<string>();
-  const visit = (id: string): void => {
-    if (done.has(id)) return;
-    trail.add(id);
-    for (const p of parentsOf(id)) {
-      if (trail.has(p)) back.push([p, id]);
-      else visit(p);
-    }
-    trail.delete(id);
-    done.add(id);
-  };
-  ids.forEach(visit);
+  const back = backEdges(ids, parentsOf);
   const isBack = (u: string, v: string) => back.some(([a, b]) => a === u && b === v);
 
   // Layers by longest path to the bottom: a result sits one row above its highest user,
@@ -108,7 +124,6 @@ function render(ids: string[], graph: ProofGraph, ctx: CompileContext, n: number
   const slot = (s: Slot) => ((layers[s.layer] ??= []).push(s), s);
   const slots = new Map<string, Slot>();
   for (const id of ids) slots.set(id, slot({ id, dummy: false, layer: layer.get(id)!, x: 0, w: NODE_W }));
-  /** Each forward edge as its chain of slots, parent first. */
   const chains: Slot[][] = [];
   for (const v of ids) {
     for (const u of parentsOf(v)) {
@@ -122,7 +137,36 @@ function render(ids: string[], graph: ProofGraph, ctx: CompileContext, n: number
     }
   }
 
-  // Order within each layer: document order, then barycenter sweeps down and up.
+  orderLayers(layers, chains, new Map(ids.map((id, i) => [id, i])));
+  const width = placeLayers(layers);
+  const height = PAD * 2 + layers.length * NODE_H + (layers.length - 1) * GAP_Y;
+  return { layers, slots, chains, back, width, height };
+}
+
+/**
+ * The edges that close a cycle: back edges of a depth-first walk up the parents. They
+ * are left out of the layering and drawn apart, so the rest is a DAG.
+ */
+function backEdges(ids: string[], parentsOf: (id: string) => string[]): [string, string][] {
+  const back: [string, string][] = [];
+  const done = new Set<string>();
+  const trail = new Set<string>();
+  const visit = (id: string): void => {
+    if (done.has(id)) return;
+    trail.add(id);
+    for (const p of parentsOf(id)) {
+      if (trail.has(p)) back.push([p, id]);
+      else visit(p);
+    }
+    trail.delete(id);
+    done.add(id);
+  };
+  ids.forEach(visit);
+  return back;
+}
+
+/** Order within each layer: document order, then barycenter sweeps down and up to cut crossings. */
+function orderLayers(layers: Slot[][], chains: Slot[][], order: Map<string, number>): void {
   const up = new Map<Slot, Slot[]>();
   const down = new Map<Slot, Slot[]>();
   for (const c of chains) {
@@ -133,8 +177,7 @@ function render(ids: string[], graph: ProofGraph, ctx: CompileContext, n: number
   }
   for (const l of layers) l.sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
   const pos = new Map<Slot, number>();
-  const index = () => layers.forEach((l) => l.forEach((s, i) => pos.set(s, i)));
-  index();
+  layers.forEach((l) => l.forEach((s, i) => pos.set(s, i)));
   const sweep = (range: number[], near: Map<Slot, Slot[]>) => {
     for (const li of range) {
       const bary = (s: Slot) => {
@@ -150,8 +193,10 @@ function render(ids: string[], graph: ProofGraph, ctx: CompileContext, n: number
     sweep(all.slice(1), up);
     sweep(all.slice(0, -1).reverse(), down);
   }
+}
 
-  // Coordinates: each layer laid left to right, then centred on the widest one.
+/** Coordinates: each layer laid left to right, then centred on the widest one. Returns the width. */
+function placeLayers(layers: Slot[][]): number {
   const widthOf = (l: Slot[]) => l.reduce((a, s) => a + s.w, 0) + GAP_X * (l.length - 1);
   const inner = Math.max(...layers.map(widthOf));
   for (const l of layers) {
@@ -161,13 +206,15 @@ function render(ids: string[], graph: ProofGraph, ctx: CompileContext, n: number
       x += s.w + GAP_X;
     }
   }
-  const top = (s: Slot) => PAD + s.layer * (NODE_H + GAP_Y);
-  const cx = (s: Slot) => s.x + s.w / 2;
-  const width = inner + 2 * PAD;
-  const height = PAD * 2 + layers.length * NODE_H + (layers.length - 1) * GAP_Y;
+  return inner + 2 * PAD;
+}
 
-  // Edges: vertical-tangent curves through each dummy point, arrow at the user.
-  const f = (v: number) => Math.round(v * 10) / 10;
+const f = (v: number) => Math.round(v * 10) / 10;
+const top = (s: Slot) => PAD + s.layer * (NODE_H + GAP_Y);
+const cx = (s: Slot) => s.x + s.w / 2;
+
+/** The edges as one SVG: vertical-tangent curves through each dummy point, arrow at the user. */
+function drawEdges(layout: Layout, svgWidth: number, n: number): string {
   const curve = (pts: [number, number][]) =>
     pts.reduce((d, [x, y], i) => {
       if (i === 0) return `M${f(x)} ${f(y)}`;
@@ -175,68 +222,48 @@ function render(ids: string[], graph: ProofGraph, ctx: CompileContext, n: number
       const my = f((py + y) / 2);
       return `${d} C${f(px)} ${my} ${f(x)} ${my} ${f(x)} ${f(y)}`;
     }, "");
-  const paths = chains.map((c) => {
+  const paths = layout.chains.map((c) => {
     const pts: [number, number][] = [[cx(c[0]), top(c[0]) + NODE_H]];
     for (const s of c.slice(1, -1)) pts.push([cx(s), top(s)], [cx(s), top(s) + NODE_H]);
     pts.push([cx(c[c.length - 1]), top(c[c.length - 1]) - 2]);
     return `<path d="${curve(pts)}" marker-end="url(#pm-arrow-${n})"/>`;
   });
-  for (const [u, v] of back) {
-    const a = slots.get(u)!;
-    const b = slots.get(v)!;
+  for (const [u, v] of layout.back) {
+    const a = layout.slots.get(u)!;
+    const b = layout.slots.get(v)!;
     const side = Math.max(a.x + a.w, b.x + b.w) + GAP_X;
     paths.push(
       `<path class="pm-back" d="M${f(a.x + a.w)} ${f(top(a) + NODE_H / 2)} C${f(side)} ${f(top(a) + NODE_H / 2)} ${f(side)} ${f(top(b) + NODE_H / 2)} ${f(b.x + b.w + 2)} ${f(top(b) + NODE_H / 2)}" marker-end="url(#pm-arrow-${n})"/>`,
     );
   }
-  const svgWidth = back.length ? width + GAP_X * 2 : width;
-  const svg =
-    `<svg class="pm-edges" width="${f(svgWidth)}" height="${f(height)}" viewBox="0 0 ${f(svgWidth)} ${f(height)}" aria-hidden="true">` +
+  const h = f(layout.height);
+  return (
+    `<svg class="pm-edges" width="${f(svgWidth)}" height="${h}" viewBox="0 0 ${f(svgWidth)} ${h}" aria-hidden="true">` +
     `<defs><marker id="pm-arrow-${n}" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">` +
-    `<path d="M0 0L8 4L0 8z"/></marker></defs>${paths.join("")}</svg>`;
-
-  // Boxes: a ref (label + preview + jump) and the result's own title.
-  const t = stringsFor(resolveLang(ctx.lang));
-  const boxes: Node[] = ids.map((id) => {
-    const node = graph.nodes.get(id)!;
-    const s = slots.get(id)!;
-    const title = titleOf(node.el);
-    const kids: Node[] = [el("ref", { to: id })];
-    if (title) kids.push(el("pm-title", {}, title.children.map(stripIds)));
-    return el(
-      "pm-node",
-      {
-        "data-eff": node.eff,
-        ...(node.own !== node.eff ? { "data-own": node.own } : {}),
-        // Hover text: own → effective trust, in the document's language.
-        title:
-          (node.stale ? `${t.stale} · ` : "") +
-          (node.own === node.eff ? (t[node.eff] ?? node.eff) : `${t[node.own] ?? node.own} → ${t[node.eff] ?? node.eff}`),
-        ...(node.cyclic ? { "data-cyclic": "true" } : {}),
-        ...(node.stale ? { "data-stale": "true" } : {}),
-        style: `left:${f(s.x)}px;top:${f(top(s))}px;width:${NODE_W}px;height:${NODE_H}px`,
-      },
-      kids,
-    );
-  });
-
-  // Legend: only the statuses on this map, in trust order, in the document's language.
-  const present = TRUST.filter((s) => ids.some((id) => graph.nodes.get(id)!.eff === s));
-  const legend = el(
-    "pm-legend",
-    {},
-    present.map((s) => el("pm-key", { "data-eff": s }, [{ type: "text", text: t[s] ?? s }])),
+    `<path d="M0 0L8 4L0 8z"/></marker></defs>${paths.join("")}</svg>`
   );
-
-  const canvas = el("pm-canvas", { style: `width:${f(svgWidth)}px;height:${f(height)}px` }, [
-    { type: "raw", html: svg },
-    ...boxes,
-  ]);
-  return [canvas, legend];
 }
 
-function el(tag: string, attrs: Record<string, string>, children: Node[] = []): ElementNode {
-  return { type: "element", tag, attrs, children };
+/** One box: a ref (label + preview + jump) and the result's own title, coloured by trust. */
+function drawBox(node: GraphNode, s: Slot, t: Record<string, string>): ElementNode {
+  const title = titleOf(node.el);
+  const kids: Node[] = [el("ref", { to: node.id })];
+  if (title) kids.push(el("pm-title", {}, title.children.map(stripIds)));
+  return el(
+    "pm-node",
+    {
+      "data-eff": node.eff,
+      ...(node.own !== node.eff ? { "data-own": node.own } : {}),
+      // Hover text: own → effective trust, in the document's language.
+      title:
+        (node.stale ? `${t.stale} · ` : "") +
+        (node.own === node.eff ? (t[node.eff] ?? node.eff) : `${t[node.own] ?? node.own} → ${t[node.eff] ?? node.eff}`),
+      ...(node.cyclic ? { "data-cyclic": "true" } : {}),
+      ...(node.stale ? { "data-stale": "true" } : {}),
+      style: `left:${f(s.x)}px;top:${f(top(s))}px;width:${NODE_W}px;height:${NODE_H}px`,
+    },
+    kids,
+  );
 }
 
 /** A deep copy with every `id` dropped, so a copied title never duplicates an anchor. */

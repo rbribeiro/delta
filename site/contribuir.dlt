@@ -66,7 +66,7 @@ npx vitest run -t "resets across"
         </header>
         <row>
           <column>só um número</column>
-          <column>uma linha em <c>environments.ts</c></column>
+          <column>uma linha em <c>environments.ts</c> e a família em <c>tags.ts</c></column>
           <column>um ambiente novo, como <c>remark</c></column>
         </row>
         <row>
@@ -263,26 +263,30 @@ describe("countWords", () => {
 
       <list marker="number">
         <item>
-          Uma linha em <c>src/compiler/environments.ts</c>:
-          <c>porism: { counter: "porism", prefixWith: "section" }</c>. Se ele deve
-          reiniciar a cada seção (quase sempre), acrescente <c>"porism"</c> à lista de
-          <c>section</c> em <c>COUNTER_RESETS</c>. Para contar <b>junto</b> com os teoremas,
-          use <c>counter: "theorem"</c> em vez de um contador próprio.
+          Uma linha em <c>src/language/environments.ts</c>:
+          <c>porism: { counter: "porism", prefixWith: "section" }</c>. Ele reinicia a cada
+          seção sozinho, porque <c>COUNTER_RESETS</c> é derivado de <c>prefixWith</c>. Para contar
+          <b>junto</b> com os teoremas, use <c>counter: "theorem"</c> em vez de um contador próprio.
         </item>
         <item>
-          A tag em <c>ENVIRONMENT_TAGS</c> e em <c>BOX_ENVIRONMENTS</c> (caixa com etiqueta) ou
-          <c>PROOF_ENVIRONMENTS</c> (abertura em itálico), em
-          <c>src/runtime/elements/environment.ts</c>.
+          A família em <c>src/language/tags.ts</c>: <c>RESULT_TAGS</c> se for um enunciado que
+          recebe demonstração e auxílios, senão <c>BOX_TAGS</c> (caixa com etiqueta) ou
+          <c>PROOF_TAGS</c> (abertura em itálico). O runtime define um elemento por tag a partir
+          desses conjuntos.
         </item>
         <item>
-          O nome em cada bloco de idioma de <c>src/compiler/strings.ts</c>
-          (<c>porism: "Porism"</c>, <c>porism: "Porisma"</c>). Sem ele o runtime mostra a tag
-          capitalizada.
+          O nome em cada bloco de idioma de <c>src/language/strings.ts</c>
+          (<c>porism: "Porism"</c>, <c>porism: "Porisma"</c>).
+        </item>
+        <item>
+          <c>delta-porism</c> nas duas listas do topo de
+          <c>src/styles/components/theorems.css</c> (exibição em bloco e o tom da família).
         </item>
         <item>Um caso em <c>test/numbering.test.ts</c>.</item>
       </list>
 
-      Nenhum passo muda. É a razão de a numeração ser uma tabela.
+      Nenhum passo muda. É a razão de a numeração ser uma tabela. Se você esquecer o passo 2,
+      3 ou 4, <c>test/language.test.ts</c> falha e diz qual.
     </subsection>
 
     <subsection id="passo-testes">

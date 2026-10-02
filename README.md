@@ -49,7 +49,7 @@ renders the chrome** (headers, collapsing, pop-overs). KaTeX itself never ships 
 the browser, only its CSS with fonts embedded as `data:` URIs.
 
 Extending Delta is meant to be easy: a new numbered environment is one row in
-[src/compiler/environments.ts](src/compiler/environments.ts), and a new interactive
+[src/language/environments.ts](src/language/environments.ts), and a new interactive
 tag is one custom element under [src/runtime/elements/](src/runtime/elements/).
 
 ## From source

@@ -6,6 +6,19 @@
  *
  * One element (or cohesive group) per file; each module exports a `defineX()`
  * that registers its tags. This aggregator calls them in registration order.
+ *
+ * The order matters. `customElements.define` upgrades every existing element of that
+ * tag at once, in document order, so an element defined earlier has already built its
+ * chrome when a later one runs. Three constraints follow; everything else is free:
+ *
+ *   1. defineSlide() right after defineSections(): in a presentation a section turns its
+ *      title into a new <delta-slide>, which must upgrade before the deck collects slides.
+ *   2. The collaboration elements (comment … change) after sections and environments: a
+ *      comment anchored with on="id" moves itself into the target's heading or box tag,
+ *      which must already exist.
+ *   3. defineReview() last: the panel reads state every other element has finished.
+ *
+ * A new element with no such dependency goes anywhere before the collaboration block.
  */
 
 import { defineSections } from "./section";
@@ -37,7 +50,7 @@ import { defineReview } from "./review";
 export function defineComponents(): void {
   defineDocument();
   defineSections();
-  defineSlide();
+  defineSlide(); // (1) right after sections
   defineEnvironments();
   defineProofStructure();
   defineSidenote();
@@ -55,11 +68,10 @@ export function defineComponents(): void {
   defineColumns();
   defineFrontMatter();
   defineBox();
-  // Collaboration elements go after sections/environments: a comment anchored with
-  // on="id" moves itself into the target's heading / box tag, which must already exist.
+  // (2) collaboration elements: after the headings and box tags they anchor into.
   defineComment();
   defineTodo();
   defineDraft();
   defineChange();
-  defineReview(); // last: it reads state every other element has finished building
+  defineReview(); // (3) last: it reads state every other element has finished building
 }

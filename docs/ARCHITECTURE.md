@@ -43,16 +43,31 @@ maps (`registry`, `papers`, `citedPapers`, `team`) are the **same instance** in 
 context; the rest of the project-wide state (`numbering`, `autoIds`, `globalById`, `idToFile`,
 `bibOut`, `graph`, the project's own context) lives in `Shared` (see below).
 
-### The data-driven environments table ([environments.ts](../src/compiler/environments.ts))
+### The language layer ([src/language/](../src/language/))
+
+Delta's vocabulary is data both halves read: which tags are headings, results, box or proof
+environments, aids, math, literal code, collaboration marks
+([tags.ts](../src/language/tags.ts)); the numbering table
+([environments.ts](../src/language/environments.ts)); the UI strings
+([strings.ts](../src/language/strings.ts)); the trust order
+([trust.ts](../src/language/trust.ts)); the accent palette names
+([palette.ts](../src/language/palette.ts)). These files import nothing, so the runtime bundle
+can use them too. A pass that needs "the headings" imports the set from here, never from
+another pass, and the runtime derives its element lists from the same sets.
+[test/language.test.ts](../test/language.test.ts) checks that the lists agree with each other,
+with every language block and with `theorems.css`.
+
+### The data-driven environments table ([environments.ts](../src/language/environments.ts))
 
 All LaTeX-style numbering is data. Each numbered tag maps to a `counter` and an optional
 `prefixWith` counter (`theorem` → `"1.2"`: section 1, theorem 2; the prefix is skipped while
 the parent counter is still 0). Each theorem-like environment has its own counter;
-`equation`/`equations` share one, as do `video`/`youtube`. `COUNTER_RESETS` says which
-counters restart when a parent increments (transitively: a chapter restarts sections and,
-through them, theorems; an unnumbered element restarts nothing); its keys and values are
-counter names. The numbering pass is a generic engine over this table, so adding an
-environment is one row (plus its label in `strings.ts` and its tag in the runtime).
+`equation`/`equations` share one, as do `video`/`youtube`. `COUNTER_RESETS`, derived from
+`prefixWith`, says which counters restart when a parent increments (transitively: a chapter
+restarts sections and, through them, theorems; an unnumbered element restarts nothing); its
+keys and values are counter names. The numbering pass is a generic engine over this table, so
+adding an environment is one row here, its tag in `RESULT_TAGS` or `BOX_TAGS`
+([tags.ts](../src/language/tags.ts)), and its label in every block of `strings.ts`.
 
 ## The pipeline ([pipeline.ts](../src/compiler/pipeline.ts))
 
@@ -124,18 +139,24 @@ src/
   cli.ts                       executable entry point (argv → compile → write; review/create/install subcommands)
   review-report.ts             `delta review` text/JSON formatting (pure)
   scaffold.ts, install.ts      `delta create`, `delta install`
+  language/                    the vocabulary, pure data, imported by compiler AND runtime
+    tags.ts                    tag families (HEADING_LEVEL, RESULT_TAGS, BOX_TAGS, RAW_TAGS, OPAQUE, …)
+    environments.ts            the numbering data table (ENVIRONMENTS, COUNTER_RESETS)
+    strings.ts                 i18n table (en, pt, …) + lang resolvers
+    trust.ts                   the trust order (TRUST, TRUST_OF, trustRank, weaker)
+    palette.ts                 the accent palette names (box colors, team members)
   compiler/
     pipeline.ts                THE pipeline: phases/steps table, runPipeline, Shared, the trace hook — start here
     index.ts, project.ts       the entry points (compileSource/compileFile; compileProject), both thin
     ast.ts                     ElementNode / TextNode / RawNode + elements, textContent, hasTag, titleOf
     context.ts                 CompileContext: diagnostics, registry, flags; createContext, error, warn
-    environments.ts            the numbering data table (ENVIRONMENTS, COUNTER_RESETS)
     preprocess.ts              escape < > & inside math/raw regions (pre-parse); escapeHtml
     parse.ts                   strict XML → generic AST (saxes)
     files.ts                   isRemote, readUserFile (+addDep), withFile (diagnostics attributed to another file)
     include.ts                 splice <include> files into one tree (cycle detection)
     document.ts                project.toml [document] defaults onto <document>; ctx.lang
     config.ts                  project.toml parsing (smol-toml)
+    paper.ts                   the tree as the paper reads it: flow, changeParts, proofTarget, plainText
     final.ts                   --final: strip marks, accept changes (the clean publication)
     team.ts                    <team>/<member> → ctx.team (node removed)
     collab.ts                  comment/todo/change/status vocabulary: defaults + warnings
@@ -152,7 +173,6 @@ src/
     theme.ts                   <document theme / theme-accent / theme-mode> → ctx
     imports.ts                 <import> packs and project packages → ctx.imports
     linebreaks.ts              blank lines in prose → <br><br>
-    strings.ts                 i18n table (en, pt, …) + lang resolvers
     emit.ts                    AST → standalone HTML (+ templates and the JSON islands)
     katex-css.ts               KaTeX CSS with data: fonts (offline math)
   runtime/
@@ -165,6 +185,7 @@ src/
     components/*.css           @layer delta.components — one file per component
     themes/<type>.css          @layer delta.theme — per-document-type overrides
     builtin/<name>.css         @layer delta.builtin — named themes (theme="impatech")
+    staged/                    chrome no element builds yet; not part of the build (see its README)
   generated/assets.ts          GENERATED, git-ignored (RUNTIME_JS + CORE_CSS + THEMES + BUILTIN_THEMES)
 scripts/build.ts               bundles runtime → assets.ts, and CLI → dist/cli.js
 scripts/trace.ts               compiles the explorer's sample with the trace hook → site/packs/pipeline/dist/index.js

@@ -12,6 +12,8 @@
  */
 
 import { t } from "../i18n";
+import { readIsland } from "../island";
+import { linkJump, takeTitle } from "./shared";
 
 interface TocItem {
   level: number;
@@ -22,18 +24,6 @@ interface TocItem {
   file?: string;
 }
 
-// The #delta-toc JSON island, parsed once (mirrors i18n's strings() cache).
-let tocCache: TocItem[] | null = null;
-function readTocData(): TocItem[] {
-  if (tocCache) return tocCache;
-  const el = document.getElementById("delta-toc");
-  try {
-    tocCache = el ? (JSON.parse(el.textContent || "[]") as TocItem[]) : [];
-  } catch {
-    tocCache = [];
-  }
-  return tocCache;
-}
 
 class DeltaToc extends HTMLElement {
   connectedCallback(): void {
@@ -44,19 +34,18 @@ class DeltaToc extends HTMLElement {
     // scope="project" lists the whole book; the default lists only this file's own
     // entries (those the compiler left without a `file` tag).
     const projectScope = this.getAttribute("scope") === "project";
-    const entries = readTocData().filter(
+    const entries = readIsland<TocItem[]>("delta-toc", []).filter(
       (e) => e.level - 1 <= depth && (projectScope || !e.file),
     );
     if (entries.length === 0) return;
 
     const nav = document.createElement("nav");
     nav.className = "toc";
-    const title = this.querySelector(":scope > delta-title");
-    nav.setAttribute("aria-label", (title && spokenText(title)) || t("contents", "Contents"));
+    const title = takeTitle(this);
+    nav.setAttribute("aria-label", title?.text || t("contents", "Contents"));
     const titleEl = document.createElement("div");
     titleEl.className = "toc-title";
-    if (title) titleEl.append(...title.childNodes);
-    else titleEl.textContent = t("contents", "Contents");
+    titleEl.append(...(title?.nodes ?? [t("contents", "Contents")]));
     nav.append(titleEl);
 
     const root = document.createElement("ol");
@@ -98,23 +87,9 @@ class DeltaToc extends HTMLElement {
       text.className = "toc-text";
       text.innerHTML = e.title; // our own serialized inline content (keeps math)
       a.append(text);
-      a.addEventListener("click", (ev) => {
-        if (e.file) return; // cross-file: let the browser navigate (arrival flash handles it)
-        // In a deck, scrolling can't reach a hidden slide / display:contents section —
-        // page the deck to the target's slide instead.
-        if (window.Delta?.deck?.goToId(e.id)) {
-          ev.preventDefault();
-          return;
-        }
-        const target = document.getElementById(e.id);
-        if (!target) return;
-        ev.preventDefault();
-        target.scrollIntoView({ block: "start", behavior: "smooth" });
-        target.classList.add("is-xref-target");
-        target.addEventListener("animationend", () => target.classList.remove("is-xref-target"), {
-          once: true,
-        });
-      });
+      // Cross-file: the browser navigates (the arrival flash handles it); in a deck, the
+      // target's slide is paged in; otherwise the heading scrolls to the top and flashes.
+      linkJump(a, e.id, e.file, { block: "start" });
       li.append(a);
       top.ol.append(li);
     }
@@ -124,16 +99,6 @@ class DeltaToc extends HTMLElement {
   }
 }
 
-/**
- * The text a screen reader should hear for `el`. KaTeX renders each formula three times
- * (MathML, a TeX annotation, the visual HTML); only the MathML reading is kept.
- */
-function spokenText(el: Element): string {
-  const copy = el.cloneNode(true) as Element;
-  for (const dup of copy.querySelectorAll(".katex-html, annotation")) dup.remove();
-  return copy.textContent?.replace(/\s+/g, " ").trim() ?? "";
-}
-
 export function defineToc(): void {
-  customElements.define("delta-toc", class extends DeltaToc {});
+  customElements.define("delta-toc", DeltaToc);
 }

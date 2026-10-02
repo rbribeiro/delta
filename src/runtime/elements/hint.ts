@@ -9,6 +9,7 @@
 
 import { t } from "../i18n";
 import { popover } from "../utils";
+import { button, takeTitle } from "./shared";
 
 class DeltaHint extends HTMLElement {
   connectedCallback(): void {
@@ -16,26 +17,22 @@ class DeltaHint extends HTMLElement {
     this.dataset.deltaReady = "1";
 
     // An optional <delta-title> customizes the trigger label.
-    const titleEl = this.querySelector(":scope > delta-title");
-    const label = (titleEl?.textContent ?? "").trim();
-    titleEl?.remove();
-    const showIcon = this.getAttribute("show-icon") === "false" ? false : true;
+    const title = takeTitle(this);
+    const showIcon = this.getAttribute("show-icon") !== "false";
 
     // The bubble holds the revealed content — everything left in the hint.
     const bubble = document.createElement("div");
     bubble.append(...this.childNodes);
 
     // Inline trigger: a small "? Hint" affordance the reader clicks.
-    const trigger = document.createElement("button");
-    trigger.type = "button";
-    trigger.className = "hint-trigger";
-    if(showIcon) {
+    const trigger = button("hint-trigger");
+    if (showIcon) {
       const marker = document.createElement("span");
       marker.className = "hint-marker";
       marker.textContent = "💡 ";
       trigger.append(marker);
-    } 
-    trigger.append(label || t("hint", "Hint"));
+    }
+    trigger.append(...(title?.text ? title.nodes : [t("hint", "Hint")]));
     this.append(trigger);
 
     popover(trigger, bubble);
@@ -43,5 +40,5 @@ class DeltaHint extends HTMLElement {
 }
 
 export function defineHint(): void {
-  customElements.define("delta-hint", class extends DeltaHint { });
+  customElements.define("delta-hint", DeltaHint);
 }

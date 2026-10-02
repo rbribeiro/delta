@@ -9,7 +9,8 @@ import type { Diagnostic } from "./compiler/context";
 import { scaffoldFiles } from "./scaffold";
 import { installPackages } from "./install";
 import { filterReview, formatReviewText, reviewJson, type ReviewData, type ReviewFilter } from "./review-report";
-import { trustRank, type ProofGraph } from "./compiler/graph";
+import type { ProofGraph } from "./compiler/graph";
+import { trustRank } from "./language/trust";
 import { setAttributes } from "./verify";
 import { AGENT_GUIDE } from "./agent-guide";
 import {

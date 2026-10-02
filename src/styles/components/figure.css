@@ -1,8 +1,7 @@
 /* figure.css (+ video) — framed media + caption shared by <delta-figure>,
    <delta-video> and <delta-youtube>: .figure/.video (layout), .figure-frame/
    .video-frame (the box), .video-media (the player), .figure-cap/.video-cap.
-   PARTIAL: <delta-youtube> emits an iframe.video-media (styled here); the full
-   figure/video runtime is staged. Tokens via var(--delta-*). */
+   Built by runtime/elements/media.ts. Tokens via var(--delta-*). */
 
 @layer delta.components {
 

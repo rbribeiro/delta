@@ -13,6 +13,7 @@
  */
 
 import { t } from "./i18n";
+import { button } from "./elements/shared";
 
 /** Public handle exposed as `window.Delta.deck` (null when not a deck). Lets
  *  add-ons (e.g. the upcoming progress bar) read position and drive navigation. */
@@ -139,10 +140,7 @@ export function setupDeck(): Deck | null {
   // prev / next cluster (CSS: bottom-center, brighter on hover/touch) plus
   // swipe. Buttons reuse the fragment-aware next/prev, so taps behave like the keys.
   const navBtn = (cls: string, glyph: string, label: string, fn: () => void): HTMLButtonElement => {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = `deck-nav ${cls}`;
-    b.textContent = glyph;
+    const b = button(`deck-nav ${cls}`, glyph);
     b.setAttribute("aria-label", label);
     b.addEventListener("click", fn);
     return b;

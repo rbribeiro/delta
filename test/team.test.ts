@@ -3,7 +3,8 @@ import { createContext, type CompileContext } from "../src/compiler/context";
 import { compileSource } from "../src/compiler/index";
 import { parse } from "../src/compiler/parse";
 import { preprocess } from "../src/compiler/preprocess";
-import { collectTeam, PALETTE } from "../src/compiler/team";
+import { collectTeam } from "../src/compiler/team";
+import { PALETTE } from "../src/language/palette";
 import type { ElementNode } from "../src/compiler/ast";
 
 function team(src: string): { doc: ElementNode; ctx: CompileContext } {

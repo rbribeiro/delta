@@ -80,7 +80,7 @@ Pipeline (both `compileSource` and `compileProject`): `… → resolveIncludes �
   (`status="open"`, `priority="normal"`, `kind="replace"`, `block="true"`, `<draft
   status="draft">`), warns on anything outside the vocabularies, checks people against the
   team. Exports `changeParts` (shared with `final.ts`).
-- `environments.ts`: the three counters. `numbering.ts`: `OPAQUE`.
+- `language/environments.ts`: the three counters. `language/tags.ts`: `OPAQUE`.
 - `review.ts` `buildReview` / `buildProjectReview`: collects every item into `ctx.review`
   with its number, people, a plain-text rendering (`text`: math back from KaTeX's TeX
   annotation as `$…$`, refs as "Lemma 2.1"), its live body nodes, and the nearest

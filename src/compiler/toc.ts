@@ -1,6 +1,6 @@
 import { elements, hasTag, textContent, titleOf, type ElementNode } from "./ast";
 import type { CompileContext, TocEntry } from "./context";
-import { OPAQUE } from "./numbering";
+import { HEADING_LEVEL, OPAQUE } from "../language/tags";
 
 /**
  * Builds the table-of-contents heading tree consumed by `<delta-toc>`. Walks the
@@ -17,12 +17,6 @@ import { OPAQUE } from "./numbering";
  * book-wide list (each entry tagged with its home output), so a project ToC can list
  * the whole work and link cross-file.
  */
-export const HEADING_LEVEL: Record<string, number> = {
-  chapter: 1,
-  section: 2,
-  subsection: 3,
-  subsubsection: 4,
-};
 
 /** Mutable slug counter, threaded so auto-ids stay unique across a project's files. */
 export interface SlugState {

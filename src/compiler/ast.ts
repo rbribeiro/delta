@@ -51,6 +51,11 @@ export interface ElementNode {
 
 export type Node = ElementNode | TextNode | RawNode;
 
+/** A new element node, for passes that synthesize markup (`element("ref", { to: id })`). */
+export function element(tag: string, attrs: Record<string, string> = {}, children: Node[] = []): ElementNode {
+  return { type: "element", tag, attrs, children };
+}
+
 /**
  * Extracts the text content from a node, removing all HTML tags. For text nodes, it returns the text itself. For raw nodes, it returns an empty string. For element nodes, it recursively concatenates the text content of all child nodes.
  * 
@@ -75,15 +80,40 @@ export function textContent(node: Node): string {
  * 
  * @param root - An ElementNode from which to start the traversal
  * @param skip - tags whose descendants are not visited (the element itself is still yielded):
- *   `elements(doc, OPAQUE)` walks the document the way numbering does
+ *   `elements(doc, OPAQUE)` (language/tags.ts) walks the document the way numbering does
  * @returns Generator<ElementNode> - A generator that yields ElementNode instances
  */
-export function* elements(root: ElementNode, skip?: Set<string>): Generator<ElementNode> {
+export function* elements(root: ElementNode, skip?: ReadonlySet<string>): Generator<ElementNode> {
   yield root;
   if (skip?.has(root.tag)) return;
   for (const child of root.children) {
     if (child.type === "element") yield* elements(child, skip);
   }
+}
+
+/**
+ * Depth-first, parents before children, handing `visit` each element with its ancestors
+ * (outermost first, `root` included, the element itself not). `visit` returns `false` to
+ * skip the element's children. The ancestors array is reused: read it during the call,
+ * do not keep it.
+ *
+ *   walk(doc, (el, ancestors) => { if (RAW_TAGS.has(el.tag)) return false; … });
+ */
+export function walk(root: ElementNode, visit: (el: ElementNode, ancestors: readonly ElementNode[]) => boolean | void): void {
+  const ancestors: ElementNode[] = [];
+  const go = (el: ElementNode): void => {
+    if (visit(el, ancestors) === false) return;
+    ancestors.push(el);
+    for (const c of el.children) if (c.type === "element") go(c);
+    ancestors.pop();
+  };
+  go(root);
+}
+
+/** The nearest of `ancestors` (as `walk` hands them) that passes `test`. */
+export function nearest(ancestors: readonly ElementNode[], test: (el: ElementNode) => boolean): ElementNode | undefined {
+  for (let i = ancestors.length - 1; i >= 0; i--) if (test(ancestors[i])) return ancestors[i];
+  return undefined;
 }
 
 /**

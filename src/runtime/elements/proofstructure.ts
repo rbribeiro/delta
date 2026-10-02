@@ -13,7 +13,7 @@
 
 import { t } from "../i18n";
 import { buildLens } from "./aid";
-import { setFolded } from "./shared";
+import { button, setFolded } from "./shared";
 
 class DeltaStep extends HTMLElement {
   connectedCallback(): void {
@@ -86,9 +86,7 @@ export function stepLevels(proof: HTMLElement, depth: number): HTMLElement {
     for (const b of buttons) b.setAttribute("aria-pressed", String(b === active));
   };
   const add = (label: string, k: number): void => {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.textContent = label;
+    const b = button("", label);
     b.title = t("stepLevelHint", "Expand the proof to this level");
     // The control sits in the proof's lead, which may itself be a fold toggle.
     b.addEventListener("click", (e) => {

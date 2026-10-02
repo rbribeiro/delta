@@ -1,15 +1,15 @@
 import type { ElementNode } from "./compiler/ast";
 import type { Diagnostic } from "./compiler/context";
 import {
+  ancestors,
   descendants,
-  frontier,
-  overclaimed,
   type GraphNode,
   type Loc,
   type OutlineEntry,
   type ProofGraph,
 } from "./compiler/graph";
-import { AID_TAGS } from "./compiler/understanding";
+import { AID_TAGS } from "./language/tags";
+import { trustRank } from "./language/trust";
 
 /**
  * The agent-facing views of the proof graph: `delta outline`, `show`, `uses`, `graph` and
@@ -93,7 +93,7 @@ export interface Slice {
  * tags are cut out (and the lines they leave empty), which is how a parent's *statement*
  * is shown without its narrative aids.
  */
-export function sliceOf(graph: ProofGraph, el: ElementNode, rel: Rel, drop?: Set<string>): Slice | undefined {
+export function sliceOf(graph: ProofGraph, el: ElementNode, rel: Rel, drop?: ReadonlySet<string>): Slice | undefined {
   const span = el.src;
   const text = span && graph.sources.get(span.file);
   if (!span || text === undefined) return undefined;
@@ -250,6 +250,18 @@ export function graphJson(graph: ProofGraph, rel: Rel): unknown {
   };
 }
 
+/** Work available now: own trust below verified, every parent at least a sketch. */
+export function frontier(graph: ProofGraph): GraphNode[] {
+  const sketch = trustRank("sketch");
+  return [...graph.nodes.values()].filter(
+    (n) =>
+      n.tag !== "definition" &&
+      !n.cyclic &&
+      trustRank(n.own) <= sketch &&
+      n.parents.every((p) => trustRank(graph.nodes.get(p)!.eff) >= sketch),
+  );
+}
+
 export function frontierText(graph: ProofGraph, rel: Rel): string {
   const work = frontier(graph);
   if (work.length === 0) return "no work available: every result is verified or waits on an open ancestor\n";
@@ -275,6 +287,24 @@ export interface Finding {
   line?: number;
   /** The results involved (the cycle's path, the ancestors to blame, …). */
   ids?: string[];
+}
+
+/**
+ * Results whose own proof is marked verified (or formalized) but whose effective trust is
+ * lower, each with the ancestors to blame: those whose own trust is below verified, or
+ * that sit on a cycle.
+ */
+export function overclaimed(graph: ProofGraph): { node: GraphNode; blame: string[] }[] {
+  const verified = trustRank("verified");
+  return [...graph.nodes.values()]
+    .filter((n) => n.tag !== "definition" && trustRank(n.own) >= verified && trustRank(n.eff) < verified)
+    .map((node) => ({
+      node,
+      blame: ancestors(graph, node.id).filter((a) => {
+        const up = graph.nodes.get(a)!;
+        return up.cyclic || trustRank(up.own) < verified;
+      }),
+    }));
 }
 
 /**

@@ -24,6 +24,7 @@
 import { t } from "../i18n";
 import { popover } from "../utils";
 import { memberChip, memberColor } from "./collab";
+import { button } from "./shared";
 
 class DeltaChange extends HTMLElement {
   connectedCallback(): void {
@@ -54,10 +55,7 @@ class DeltaChange extends HTMLElement {
 
     // Marker + popover (author, date, kind, note).
     const label = `${t("change", "Change")}${num ? ` ${num}` : ""} · ${t(kind, kind)}`;
-    const marker = document.createElement("button");
-    marker.type = "button";
-    marker.className = "chg-marker";
-    marker.textContent = num ?? "Δ"; // Δ
+    const marker = button("chg-marker", num ?? "Δ");
     marker.title = label;
     marker.setAttribute("aria-label", label);
     marker.addEventListener("click", (e) => e.stopPropagation());
@@ -97,5 +95,5 @@ class DeltaChange extends HTMLElement {
 }
 
 export function defineChange(): void {
-  customElements.define("delta-change", class extends DeltaChange {});
+  customElements.define("delta-change", DeltaChange);
 }

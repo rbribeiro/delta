@@ -1,8 +1,6 @@
 import { elements, type ElementNode } from "./ast";
 import { warn, type CompileContext } from "./context";
-
-/** Tags that point at another element: `<ref to>`, `<solution of>`, `<proof of>`. */
-export const REF_TAGS = new Set(["ref", "solution", "proof"]);
+import { REF_TAGS } from "../language/tags";
 
 /**
  * Resolves `<ref to="id"> <solution of="id"> <proof of="id">` cross-references against the numbering registry

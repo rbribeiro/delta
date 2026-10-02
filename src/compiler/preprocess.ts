@@ -1,3 +1,5 @@
+import { RAW_TAGS } from "../language/tags";
+
 /**
  * Runs on raw `.dlt` text before XML parsing. Authors may write `<`, `>` and `&`
  * freely inside math (`$…$`, `$$…$$`) and inside RAW_TAGS content; this pass
@@ -11,8 +13,6 @@
  * stray dollar never swallows the rest of the file.
  */
 
-/** Tags whose text content is taken literally — protected here, never `$`-scanned. */
-export const RAW_TAGS = new Set(["m", "math", "equation", "equations", "code", "c"]);
 
 /** The closing tag of each RAW_TAGS element; global, so a search can start mid-file (`lastIndex`). */
 const CLOSE_TAG = new Map([...RAW_TAGS].map((tag) => [tag, new RegExp(`</\\s*${tag}\\s*>`, "g")]));

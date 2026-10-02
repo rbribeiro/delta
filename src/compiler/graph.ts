@@ -1,10 +1,9 @@
-import { createHash } from "node:crypto";
-import { dirname, resolve } from "node:path";
-import { textContent, titleOf, type ElementNode } from "./ast";
+import { element as el, textContent, titleOf, type ElementNode } from "./ast";
 import type { LabelEntry } from "./context";
-import { OPAQUE } from "./numbering";
-import { proofTarget } from "./structure";
-import { AID_TAGS, RESULT_TAGS, flow } from "./understanding";
+import { AID_TAGS, HEADING_TAGS, LITERAL_TAGS, MATH_REF, OPAQUE, RESULT_TAGS } from "../language/tags";
+import { TRUST_OF, trustRank, weaker, type Trust } from "../language/trust";
+import { checkedHash } from "./graph-hash";
+import { collapseSpace, flow, proofTarget } from "./paper";
 
 /**
  * The proof graph: which results a result's statement or proof leans on, and how much
@@ -23,32 +22,13 @@ import { AID_TAGS, RESULT_TAGS, flow } from "./understanding";
  *   its effective trust is the weakest of its own and its parents' effective trust: a
  *   result is only as solid as its weakest ancestor. A node on a cycle is `open`;
  * - a verification is pinned: `delta verify` writes `against="<hash>"` on the proof, the
- *   hash of what was checked (see `checkedHash`). When that changes, the verification is
+ *   hash of what was checked (graph-hash.ts). When that changes, the verification is
  *   stale and the proof counts as a sketch until someone verifies it again.
  *
  * Built once per compile, after numbering (so labels are known) and before rendering (so
- * math is still source text). The CLI's outline/show/uses/graph/lint read it.
+ * math is still source text). The CLI's outline/show/uses/graph/lint read it; their
+ * queries and formatting are in graph-report.ts.
  */
-
-export const TRUST = ["open", "heuristic", "sketch", "verified", "formalized"] as const;
-export type Trust = (typeof TRUST)[number];
-
-export const trustRank = (t: Trust): number => TRUST.indexOf(t);
-const weaker = (a: Trust, b: Trust): Trust => (trustRank(a) <= trustRank(b) ? a : b);
-
-/**
- * A proof's `status` → trust. The collaboration vocabulary maps in (`draft` reads as
- * heuristic, `review` as sketch). A proof without a status is a sketch: trust is
- * declared, never assumed.
- */
-const TRUST_OF: Record<string, Trust> = {
-  draft: "heuristic",
-  heuristic: "heuristic",
-  sketch: "sketch",
-  review: "sketch",
-  verified: "verified",
-  formalized: "formalized",
-};
 
 /** Where something is, for `file:line` output. `line` is the line of the opening `<`. */
 export interface Loc {
@@ -73,7 +53,7 @@ export interface GraphNode {
   children: string[];
   /** True when the node sits on a cycle (circular reasoning). */
   cyclic: boolean;
-  /** The hash a verification of this node must match now (`checkedHash`). */
+  /** The hash a verification of this node must match now (graph-hash.ts). */
   hash: string;
   /** The first proof claims verified/formalized against a hash that no longer matches. */
   stale: boolean;
@@ -132,10 +112,8 @@ export interface GraphInput {
   ctx: { file: string; sources: Map<string, string> };
 }
 
-const CONTAINERS = new Set(["chapter", "section", "subsection", "subsubsection"]);
-/** Literal code: a `\ref` in it is text. */
-const LITERAL = new Set(["code", "c"]);
-const MATH_REF = /\\(?:eq)?ref\{([^}]*)\}/g;
+/** `el` → where it is: its file and the line of its opening `<`. */
+type Locate = (el: ElementNode, fallback: string) => Loc;
 
 export function buildGraph(files: GraphInput[], registry: Map<string, LabelEntry>): ProofGraph {
   const graph: ProofGraph = {
@@ -154,10 +132,23 @@ export function buildGraph(files: GraphInput[], registry: Map<string, LabelEntry
   for (const f of files) for (const [file, text] of f.ctx.sources) graph.sources.set(file, text);
   const locOf = locator(graph.sources);
 
-  // Pass 1: nodes, proofs, the outline, and for every id the result that owns it.
+  const proofsOf = collectNodes(graph, files, locOf);
+  attachProofs(graph, proofsOf, locOf);
+  collectEdges(graph, files, registry, locOf);
+  pinVerifications(graph);
+  markCycles(graph);
+  propagate(graph);
+  return graph;
+}
+
+/**
+ * Walk 1: the nodes (results with an id), the outline, the hypotheses, the unproved steps,
+ * and for every id the result that owns it. Returns each result's proofs, in input order.
+ */
+function collectNodes(graph: ProofGraph, files: GraphInput[], locOf: Locate): Map<string, ElementNode[]> {
   const proofsOf = new Map<string, ElementNode[]>();
-  const ownerOf = graph.owners;
   const counterexamples: ElementNode[] = [];
+
   const collect = (el: ElementNode, into: OutlineEntry[], owner: string | undefined, fallback: string): void => {
     if (OPAQUE.has(el.tag)) return;
     const id = el.attrs.id;
@@ -184,7 +175,7 @@ export function buildGraph(files: GraphInput[], registry: Map<string, LabelEntry
       });
       into.push({ tag: el.tag, id, num: el.attrs.num ?? "", title: titleText(el), loc, children: [] });
       owner = id;
-    } else if (CONTAINERS.has(el.tag)) {
+    } else if (HEADING_TAGS.has(el.tag)) {
       const entry: OutlineEntry = { tag: el.tag, id, num: el.attrs.num ?? "", title: titleText(el), loc: locOf(el, fallback), children: [] };
       into.push(entry);
       nextInto = entry.children;
@@ -201,7 +192,7 @@ export function buildGraph(files: GraphInput[], registry: Map<string, LabelEntry
     } else if (el.tag === "step" && !flow(el).some((c) => c.type === "element" && c.tag === "proof")) {
       graph.unprovedSteps.push({ id: id ?? "", num: el.attrs.num ?? "", owner, loc: locOf(el, fallback) });
     }
-    if (id !== undefined && owner !== undefined && !ownerOf.has(id)) ownerOf.set(id, owner);
+    if (id !== undefined && owner !== undefined && !graph.owners.has(id)) graph.owners.set(id, owner);
     for (const c of el.children) if (c.type === "element") collect(c, nextInto, owner, fallback);
   };
   for (const f of files) {
@@ -210,7 +201,17 @@ export function buildGraph(files: GraphInput[], registry: Map<string, LabelEntry
     graph.outline.push({ file: f.ctx.file, entries });
   }
 
-  // Own trust.
+  // Counterexamples name hypotheses, which may come later in the document.
+  for (const ce of counterexamples) {
+    const h = graph.hypotheses.get(ce.attrs.breaks);
+    if (h) h.counterexamples.push(ce);
+    else graph.badBreaks.push({ breaks: ce.attrs.breaks, loc: locOf(ce, "") });
+  }
+  return proofsOf;
+}
+
+/** Gives each node its proofs and its own trust; a proof of something not in the graph is stray. */
+function attachProofs(graph: ProofGraph, proofsOf: Map<string, ElementNode[]>, locOf: Locate): void {
   for (const node of graph.nodes.values()) {
     node.proofs = proofsOf.get(node.id) ?? [];
     if (node.tag === "definition") node.own = "verified";
@@ -220,13 +221,10 @@ export function buildGraph(files: GraphInput[], registry: Map<string, LabelEntry
   for (const [of, proofs] of proofsOf) {
     if (!graph.nodes.has(of)) for (const p of proofs) graph.strayProofs.push({ of, loc: locOf(p, "") });
   }
-  for (const ce of counterexamples) {
-    const h = graph.hypotheses.get(ce.attrs.breaks);
-    if (h) h.counterexamples.push(ce);
-    else graph.badBreaks.push({ breaks: ce.attrs.breaks, loc: locOf(ce, "") });
-  }
+}
 
-  // Pass 2: refs → edges (and dangling refs anywhere).
+/** Walk 2: every ref → an edge (or a hypothesis use, or a dangling ref). */
+function collectEdges(graph: ProofGraph, files: GraphInput[], registry: Map<string, LabelEntry>, locOf: Locate): void {
   const edge = (u: string, v: string): void => {
     const from = graph.nodes.get(u)!;
     const to = graph.nodes.get(v)!;
@@ -245,12 +243,12 @@ export function buildGraph(files: GraphInput[], registry: Map<string, LabelEntry
       return;
     }
     if (node === undefined) return;
-    const u = graph.nodes.has(target) ? target : ownerOf.get(target);
+    const u = graph.nodes.has(target) ? target : graph.owners.get(target);
     if (u !== undefined && u !== node && graph.nodes.has(u)) edge(u, node);
   };
   /** `where`: inside a proof, the innermost step (or the proof itself), for hypothesis uses. */
   const scan = (el: ElementNode, node: string | undefined, fallback: string, where: ElementNode | undefined): void => {
-    if (OPAQUE.has(el.tag) || LITERAL.has(el.tag)) return;
+    if (OPAQUE.has(el.tag) || LITERAL_TAGS.has(el.tag)) return;
     if (RESULT_TAGS.has(el.tag) && el.attrs.id !== undefined && graph.nodes.get(el.attrs.id)?.el === el) {
       node = el.attrs.id;
       where = undefined;
@@ -265,102 +263,22 @@ export function buildGraph(files: GraphInput[], registry: Map<string, LabelEntry
     if (el.tag === "ref" && el.attrs.to) use(el.attrs.to, el, node, fallback, where);
     for (const c of el.children) {
       if (c.type === "element") scan(c, node, fallback, where);
-      else if (c.type === "text") for (const m of c.text.matchAll(MATH_REF)) use(m[1], el, node, fallback, where);
+      else if (c.type === "text") for (const m of c.text.matchAll(MATH_REF)) use(m[2], el, node, fallback, where);
     }
   };
   for (const f of files) scan(f.doc, undefined, f.ctx.file, undefined);
+}
 
-  // Pin verifications: a proof verified against an old hash counts as a sketch again.
+/** A proof verified against an old hash (graph-hash.ts) counts as a sketch again. */
+function pinVerifications(graph: ProofGraph): void {
   for (const n of graph.nodes.values()) {
     n.hash = checkedHash(graph, n);
-    const proof = n.proofs[0];
-    const against = proof?.attrs.against;
+    const against = n.proofs[0]?.attrs.against;
     if (against !== undefined && trustRank(n.own) >= trustRank("verified") && against !== n.hash) {
       n.stale = true;
       n.own = "sketch";
     }
   }
-
-  markCycles(graph);
-  propagate(graph);
-  return graph;
-}
-
-/** Hash length in hex characters: short enough to read, long enough never to collide by accident. */
-const HASH_LENGTH = 12;
-
-/**
- * What a verification of `n` vouches for: its statement, its (first) proof, and the
- * statements of the results it uses, each tagged with its id. Deliberately not the
- * parents' proofs: re-proving a lemma does not disturb what uses it, but changing what
- * the lemma *says* does. See `normalizedContent` for what counts as a change.
- */
-function checkedHash(graph: ProofGraph, n: GraphNode): string {
-  const parts = [
-    ["statement", normalizedContent(graph, n.el)],
-    ["proof", n.proofs[0] ? normalizedContent(graph, n.proofs[0]) : ""],
-    ...[...n.parents].sort().map((p) => [p, normalizedContent(graph, graph.nodes.get(p)!.el)]),
-  ];
-  return createHash("sha256").update(JSON.stringify(parts)).digest("hex").slice(0, HASH_LENGTH);
-}
-
-/**
- * Not mathematics, so never part of a hash: the reader aids, a result's display title,
- * and review annotations (a comment on a verified proof must not unverify it).
- */
-const UNCHECKED = new Set([...AID_TAGS, "title", "comment", "todo"]);
-
-/**
- * The content of `el` as written (between its tags, so the proof's own `status`, `by` and
- * `against` never count), minus UNCHECKED elements at any depth, with every run of
- * whitespace collapsed: reflowing a paragraph changes nothing, any other edit does. An
- * `<include src>` counts as the included file's text, so editing that file is an edit too.
- */
-function normalizedContent(graph: ProofGraph, el: ElementNode): string {
-  const span = el.src;
-  if (!span || !graph.sources.has(span.file)) return "";
-  // Cuts per file: an included child's offsets are in its own file.
-  const cuts = new Map<string, [number, number][]>();
-  const collect = (e: ElementNode): void => {
-    for (const c of e.children) {
-      if (c.type !== "element") continue;
-      if (UNCHECKED.has(c.tag) && c.src) {
-        const list = cuts.get(c.src.file) ?? [];
-        list.push([c.src.start, c.src.end]);
-        cuts.set(c.src.file, list);
-      } else collect(c);
-    }
-  };
-  collect(el);
-  return sourceText(graph, cuts, span.file, span.inner, span.innerEnd, []).replace(/\s+/g, " ").trim();
-}
-
-const INCLUDE_TAG = /<include\b[^>]*?\bsrc\s*=\s*(["'])(.*?)\1[^>]*>/g;
-
-/** `file`'s text in [from, to) minus its cuts, each `<include src>` replaced by that file's text. */
-function sourceText(
-  graph: ProofGraph,
-  cuts: Map<string, [number, number][]>,
-  file: string,
-  from: number,
-  to: number,
-  stack: string[],
-): string {
-  const text = graph.sources.get(file);
-  if (text === undefined || stack.includes(file)) return "";
-  let out = "";
-  let at = from;
-  const inRange = (cuts.get(file) ?? []).filter(([s, e]) => s >= from && e <= to).sort((x, y) => x[0] - y[0]);
-  for (const [s, e] of inRange) {
-    out += text.slice(at, s) + " ";
-    at = e;
-  }
-  out += text.slice(at, to);
-  return out.replace(INCLUDE_TAG, (_tag, _q, src: string) => {
-    const inc = resolve(dirname(file), src);
-    const incText = graph.sources.get(inc);
-    return incText === undefined ? "" : ` ${sourceText(graph, cuts, inc, 0, incText.length, [...stack, file])} `;
-  });
 }
 
 /**
@@ -371,12 +289,6 @@ function sourceText(
  * so the refs in it resolve like any other.
  */
 export function annotateHypotheses(graph: ProofGraph): void {
-  const el = (tag: string, attrs: Record<string, string> = {}, children: ElementNode[] = []): ElementNode => ({
-    type: "element",
-    tag,
-    attrs,
-    children,
-  });
   for (const h of graph.hypotheses.values()) {
     const parts: ElementNode[] = [];
     const proved = (graph.nodes.get(h.owner)?.proofs.length ?? 0) > 0;
@@ -481,18 +393,6 @@ function propagate(graph: ProofGraph): void {
   }
 }
 
-/** Work available now: own trust below verified, every parent at least a sketch. */
-export function frontier(graph: ProofGraph): GraphNode[] {
-  const sketch = trustRank("sketch");
-  return [...graph.nodes.values()].filter(
-    (n) =>
-      n.tag !== "definition" &&
-      !n.cyclic &&
-      trustRank(n.own) <= sketch &&
-      n.parents.every((p) => trustRank(graph.nodes.get(p)!.eff) >= sketch),
-  );
-}
-
 /** Every ancestor of `id` (transitively), nearest first. */
 export function ancestors(graph: ProofGraph, id: string): string[] {
   return reach(graph, id, (n) => n.parents);
@@ -518,27 +418,9 @@ function reach(graph: ProofGraph, id: string, next: (n: GraphNode) => string[]):
   return out;
 }
 
-/**
- * Results whose own proof is marked verified (or formalized) but whose effective trust is
- * lower, each with the ancestors to blame: those whose own trust is below verified, or
- * that sit on a cycle.
- */
-export function overclaimed(graph: ProofGraph): { node: GraphNode; blame: string[] }[] {
-  const verified = trustRank("verified");
-  return [...graph.nodes.values()]
-    .filter((n) => n.tag !== "definition" && trustRank(n.own) >= verified && trustRank(n.eff) < verified)
-    .map((node) => ({
-      node,
-      blame: ancestors(graph, node.id).filter((a) => {
-        const up = graph.nodes.get(a)!;
-        return up.cyclic || trustRank(up.own) < verified;
-      }),
-    }));
-}
-
 function titleText(el: ElementNode): string {
   const t = titleOf(el);
-  return t ? textContent(t).replace(/\s+/g, " ").trim() : "";
+  return t ? collapseSpace(textContent(t)) : "";
 }
 
 /** `el` → its file and the line of its opening `<` (from the source span when there is one). */

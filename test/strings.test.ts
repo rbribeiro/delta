@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveLang, STRINGS, stringsFor } from "../src/compiler/strings";
+import { resolveLang, STRINGS, stringsFor } from "../src/language/strings";
 
 describe("resolveLang", () => {
   it("matches an exact language, case-insensitively", () => {

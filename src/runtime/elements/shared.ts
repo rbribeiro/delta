@@ -3,23 +3,158 @@
  * single-component helpers next to their element.
  */
 
-import { t } from "../i18n";
+import { nameOf, t } from "../i18n";
 import { memberChip } from "./collab";
 
-/**
- * Smooth-scrolls to `#id` and flashes it (the shared `.is-xref-target` animation).
- * Used by `<cite>` jump-to links; `<ref>`/`<toc>` inline their own copies.
- */
-export function flashTarget(id: string): void {
+/** `delta-theorem` → `theorem`: the Delta tag an element came from. */
+export function kindOf(el: Element): string {
+  return el.tagName.toLowerCase().replace(/^delta-/, "");
+}
+
+/** A `<button type="button">` with a class and its content (text or nodes). */
+export function button(className: string, ...content: (Node | string)[]): HTMLButtonElement {
+  const b = document.createElement("button");
+  b.type = "button";
+  if (className) b.className = className;
+  b.append(...content);
+  return b;
+}
+
+// -- jumping to a target ------------------------------------------------------
+
+/** Unfolds, smooth-scrolls to and flashes `#id` (the shared `.is-xref-target` animation). */
+export function flashTarget(id: string, block: ScrollLogicalPosition = "center"): boolean {
   const target = document.getElementById(id);
-  if (!target) return;
+  if (!target) return false;
   unfoldAncestors(target);
-  target.scrollIntoView({ block: "center", behavior: "smooth" });
+  target.scrollIntoView({ block, behavior: "smooth" });
   target.classList.add("is-xref-target");
   target.addEventListener("animationend", () => target.classList.remove("is-xref-target"), {
     once: true,
   });
+  return true;
 }
+
+/**
+ * Jumps to `#id` in this page the way every Delta link does: in a deck, pages to the
+ * target's slide; otherwise unfolds, scrolls and flashes it. False when there is no such
+ * element (the caller can then let the browser try).
+ */
+export function jumpTo(id: string, block: ScrollLogicalPosition = "center"): boolean {
+  if (window.Delta?.deck?.goToId(id)) return true;
+  return flashTarget(id, block);
+}
+
+/**
+ * Makes a link (its `href` already `file#id` or `#id`) jump like every Delta link: to
+ * another output (`file` set) the browser navigates; in-page it is `jumpTo`. `before`
+ * runs first on every click (closing the pop-over the link sits in).
+ */
+export function linkJump(
+  a: HTMLAnchorElement,
+  id: string,
+  file?: string | null,
+  { block = "center", before }: { block?: ScrollLogicalPosition; before?: () => void } = {},
+): void {
+  a.addEventListener("click", (e) => {
+    before?.();
+    if (file) return;
+    if (jumpTo(id, block)) e.preventDefault();
+  });
+}
+
+/** The inert `<template data-delta-pop="id">` snapshot the compiler shipped for `id`. */
+export function templateFor(id: string): HTMLTemplateElement | undefined {
+  templates ??= new Map(
+    [...document.querySelectorAll<HTMLTemplateElement>("template[data-delta-pop]")].map((tpl) => [
+      tpl.dataset.deltaPop ?? "",
+      tpl,
+    ]),
+  );
+  return templates.get(id);
+}
+let templates: Map<string, HTMLTemplateElement> | undefined;
+
+// -- labels and titles --------------------------------------------------------
+
+/**
+ * Takes the host's `<delta-title>` out of it, returning its child nodes (math and emphasis
+ * intact, to move into the element's own chrome) and the text a screen reader should hear.
+ * Undefined when the host has no title.
+ */
+export function takeTitle(host: Element): { nodes: Node[]; text: string } | undefined {
+  const title = host.querySelector(":scope > delta-title");
+  if (!title) return undefined;
+  const text = spokenText(title);
+  const nodes = [...title.childNodes];
+  title.remove();
+  return { nodes, text };
+}
+
+/**
+ * The text a screen reader should hear for `el`. KaTeX renders each formula three times
+ * (MathML, a TeX annotation, the visual HTML); only the MathML reading is kept.
+ */
+export function spokenText(el: Element): string {
+  const copy = el.cloneNode(true) as Element;
+  for (const dup of copy.querySelectorAll(".katex-html, annotation")) dup.remove();
+  return copy.textContent?.replace(/\s+/g, " ").trim() ?? "";
+}
+
+/** A caption prefix: the localized name of `kind` and its number ("Figure 1.2", "Table 3"). */
+export function numberedName(kind: string, num: string | null): string {
+  return nameOf(kind) + (num ? ` ${num}` : "");
+}
+
+/**
+ * Renders the host's `<delta-meta>` (a list of `<delta-meta-item key="…">value</delta-meta-item>`)
+ * as a `.box-meta` row of key/value pairs, in its place. Returns the row, so a caller can
+ * move it (a box puts it at the bottom); null when there is nothing to show.
+ */
+export function renderMeta(host: Element): HTMLElement | null {
+  const meta = host.querySelector(":scope > delta-meta");
+  if (!meta) return null;
+  const row = document.createElement("div");
+  row.className = "box-meta";
+  for (const item of meta.querySelectorAll(":scope > delta-meta-item")) {
+    const key = item.getAttribute("key");
+    if (!key || !item.textContent?.trim()) continue;
+    const k = document.createElement("span");
+    k.className = "k";
+    k.textContent = key;
+    const v = document.createElement("span");
+    v.className = "v";
+    v.append(...item.childNodes); // the gap after the key is `.k`'s margin
+    const pair = document.createElement("span");
+    pair.className = "box-meta-item";
+    pair.append(k, v);
+    row.append(pair);
+  }
+  if (!row.childElementCount) {
+    meta.remove();
+    return null;
+  }
+  meta.replaceWith(row);
+  return row;
+}
+
+/** A "Copy" button that puts `text()` on the clipboard and says "Copied" for a moment. */
+export function copyButton(className: string, label: string, text: () => string): HTMLButtonElement {
+  const copy = button(className, label);
+  copy.addEventListener("click", () => {
+    void navigator.clipboard?.writeText(text()).then(() => {
+      copy.textContent = t("copied", "Copied");
+      copy.classList.add("is-copied");
+      setTimeout(() => {
+        copy.textContent = label;
+        copy.classList.remove("is-copied");
+      }, 1400);
+    });
+  });
+  return copy;
+}
+
+// -- folding --------------------------------------------------------------------
 
 /**
  * Folds or unfolds a host `applyCollapsible` wired, keeping its toggle's `aria-expanded` in
@@ -56,7 +191,7 @@ export function formatPaper(paper: Element): DocumentFragment {
   present.forEach((el, i) => {
     if (i > 0) frag.append(". ");
     const span = document.createElement("span");
-    span.className = `paper-${el.tagName.toLowerCase().replace("delta-", "")}`;
+    span.className = `paper-${kindOf(el)}`;
     for (const node of el.childNodes) span.append(node.cloneNode(true));
     frag.append(span);
   });

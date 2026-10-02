@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { compileProject } from "../src/compiler/project";
-import { AID_TAGS } from "../src/compiler/understanding";
+import { AID_TAGS } from "../src/language/tags";
 import {
   frontierText,
   lintFindings,

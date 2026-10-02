@@ -11,9 +11,9 @@
  * output for `\ref{id}` / `\eqref{id}` — the same behavior, inside math.
  */
 
-import { t } from "../i18n";
+import { nameOf } from "../i18n";
 import { popover } from "../utils";
-import { unfoldAncestors } from "./shared";
+import { button, jumpTo, templateFor } from "./shared";
 
 // Small "jump to" arrow for the pop-over's go-to button (sized by reference.css).
 const XREF_GO_ICON =
@@ -32,8 +32,7 @@ interface RefTarget {
 /** "Theorem 1.2" (localized kind + number), or just the kind for an unnumbered target. */
 function refLabel(kind: string, num: string): string {
   if (kind === "hyp") return `(${num})`; // hypotheses read "(H1)", as in the statement
-  const name = t(kind, kind.charAt(0).toUpperCase() + kind.slice(1));
-  return num ? `${name} ${num}` : name;
+  return num ? `${nameOf(kind)} ${num}` : nameOf(kind);
 }
 
 /**
@@ -52,9 +51,7 @@ export function wireRefPopover(trigger: HTMLElement, { to, num, kind, href }: Re
   const labelEl = document.createElement("span");
   labelEl.className = "xref-pop-label";
   labelEl.textContent = label;
-  const go = document.createElement("button");
-  go.type = "button";
-  go.className = "xref-go";
+  const go = button("xref-go");
   go.title = label;
   go.setAttribute("aria-label", label);
   go.innerHTML = XREF_GO_ICON;
@@ -68,9 +65,7 @@ export function wireRefPopover(trigger: HTMLElement, { to, num, kind, href }: Re
     onOpen: () => {
       if (filled) return;
       filled = true;
-      const tpl = [...document.querySelectorAll("template[data-delta-pop]")].find(
-        (el) => (el as HTMLTemplateElement).dataset.deltaPop === to,
-      ) as HTMLTemplateElement | undefined;
+      const tpl = templateFor(to);
       if (!tpl) return;
       const clone = tpl.content.cloneNode(true) as DocumentFragment;
       // Drop ids (the original keeps them — the go-to target) and unfold any
@@ -87,19 +82,8 @@ export function wireRefPopover(trigger: HTMLElement, { to, num, kind, href }: Re
   go.addEventListener("click", (e) => {
     e.preventDefault();
     pop.close();
-    if (window.Delta?.deck?.goToId(to)) return; // in a deck, page to the target's slide
-    if (href) {
-      location.href = href; // cross-file: navigate to the target's output (#id flashes on arrival)
-      return;
-    }
-    const target = document.getElementById(to);
-    if (!target) return;
-    unfoldAncestors(target); // a step inside a folded proof
-    target.scrollIntoView({ block: "center", behavior: "smooth" });
-    target.classList.add("is-xref-target");
-    target.addEventListener("animationend", () => target.classList.remove("is-xref-target"), {
-      once: true,
-    });
+    if (href) location.href = href; // cross-file: navigate to the target's output (#id flashes on arrival)
+    else jumpTo(to);
   });
 }
 
@@ -120,9 +104,7 @@ class DeltaRef extends HTMLElement {
 
     // The clickable link: the author's own text if any, else the composed label.
     const hasText = (this.textContent ?? "").trim().length > 0;
-    const trigger = document.createElement("button");
-    trigger.type = "button";
-    trigger.className = "xref";
+    const trigger = button("xref");
     if (hasText) trigger.append(...this.childNodes);
     else trigger.textContent = refLabel(kind, num);
     this.replaceChildren(trigger);
@@ -158,5 +140,5 @@ export function wireMathRefs(): void {
 }
 
 export function defineRef(): void {
-  customElements.define("delta-ref", class extends DeltaRef {});
+  customElements.define("delta-ref", DeltaRef);
 }

@@ -6,7 +6,8 @@
 @layer delta.components {
 
 /* Every environment tag is block-level (custom elements default to inline).
-   index.css omitted conjecture/exercise/problem/solution — included here. */
+   One line per ENVIRONMENT_TAGS entry in src/language/tags.ts; test/language.test.ts
+   fails when one is missing. */
 delta-theorem,
 delta-lemma,
 delta-corollary,
@@ -15,6 +16,7 @@ delta-definition,
 delta-conjecture,
 delta-remark,
 delta-example,
+delta-counterexample,
 delta-claim,
 delta-observation,
 delta-exercise,
@@ -33,7 +35,8 @@ delta-claim, delta-observation, delta-conjecture {
   --delta-env-tone: var(--delta-tone-theorem);
 }
 delta-definition           { --delta-env-tone: var(--delta-tone-definition); }
-delta-example              { --delta-env-tone: var(--delta-tone-example); }
+delta-example,
+delta-counterexample       { --delta-env-tone: var(--delta-tone-example); }
 delta-remark               { --delta-env-tone: var(--delta-tone-remark); }
 delta-exercise, delta-problem { --delta-env-tone: var(--delta-tone-exercise); }
 

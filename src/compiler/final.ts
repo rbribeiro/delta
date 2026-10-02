@@ -1,7 +1,8 @@
 import { elements, type ElementNode, type Node } from "./ast";
 import type { CompileContext } from "./context";
-import { RAW_TAGS } from "./preprocess";
-import { changeParts } from "./collab";
+import { RAW_TAGS } from "../language/tags";
+import { isChecked } from "../language/trust";
+import { acceptedContent } from "./paper";
 
 /** What a `--final` build stripped from one file. */
 export interface FinalStats {
@@ -23,7 +24,7 @@ export interface FinalStats {
  *
  * Runs right after includes, BEFORE bibliography and numbering — so a `<cite>` quoted
  * inside a dropped comment never numbers a paper, and nothing stripped ever consumed a
- * counter (numbering.ts's OPAQUE set already keeps a review build's numbers identical).
+ * counter (the OPAQUE set in language/tags.ts already keeps a review build's numbers identical).
  * The block marks go later, at the start of render: the proof graph reads a proof's
  * `status` as its trust, and a final build's proof map must still show it.
  * A no-op unless `ctx.final`. Returns what it found; the pipeline sums the counts over the
@@ -84,21 +85,14 @@ function strip(el: ElementNode, stats: FinalStats): void {
       }
       case "change": {
         stats.changesAccepted++;
-        const parts = changeParts(child);
-        // replace / insert keep the <new> side (or the bare insertion); a delete keeps nothing.
-        const keep: Node[] = parts.news.length
-          ? parts.news.flatMap((n) => n.children)
-          : parts.olds.length
-            ? []
-            : child.children;
-        const holder: ElementNode = { ...child, children: keep };
+        const holder: ElementNode = { ...child, children: acceptedContent(child) };
         strip(holder, stats);
         out.push(...holder.children);
         continue;
       }
     }
     const status = child.attrs.status;
-    if (status !== undefined && status !== "verified" && status !== "formalized") stats.unverified++;
+    if (status !== undefined && !isChecked(status)) stats.unverified++;
     strip(child, stats);
     out.push(child);
   }

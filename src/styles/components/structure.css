@@ -1,9 +1,7 @@
-/* structure.css — runhead, chapter front-matter, section/subsection headings,
-   and block display for the layout wrappers. Section headings are LIVE:
-   DeltaSection emits <h2 class="section"> / <h3 class="sub"> / <h4 class="subsub">
-   with a <span class="num"> pill. The runhead and front-matter elements
-   (delta-runhead / delta-eyebrow / delta-deck / delta-meta) are STAGED — their
-   rules are inert until those elements ship. Consumes tokens via var(--delta-*). */
+/* structure.css — chapter front-matter (<eyebrow>, <title>, <meta>), section and
+   subsection headings, and block display for the layout wrappers. DeltaSection emits
+   <h2 class="section"> / <h3 class="sub"> / <h4 class="subsub"> with a
+   <span class="num"> pill. Consumes tokens via var(--delta-*). */
 
 @layer delta.components {
 
@@ -171,63 +169,6 @@ delta-intro {
 }
 :is(delta-section, delta-subsection, delta-subsubsection) > delta-meta .v {
   color: var(--delta-ink-soft);
-}
-
-/* -- Running head ----------------------------------------------------- */
-.runhead {
-  position: sticky;
-  top: 0;
-  z-index: 40;
-  background: color-mix(in oklab, var(--delta-paper) 92%, transparent);
-  backdrop-filter: blur(8px) saturate(140%);
-  -webkit-backdrop-filter: blur(8px) saturate(140%);
-  border-bottom: var(--delta-hairline) solid var(--delta-rule-soft);
-}
-.runhead-inner {
-  max-width: var(--delta-page-max);
-  margin: 0 auto;
-  padding: 14px var(--delta-page-pad-x);
-  display: flex;
-  align-items: center;
-  gap: 28px;
-  font-family: var(--delta-sans);
-  font-size: 12px;
-  color: var(--delta-mute);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-.runhead-title {
-  color: var(--delta-ink);
-  font-family: var(--delta-serif);
-  text-transform: none;
-  letter-spacing: 0;
-  font-size: 15px;
-  font-weight: 500;
-}
-.runhead-spacer { flex: 1; }
-.runhead-nav {
-  display: flex;
-  gap: 22px;
-}
-.runhead-nav a {
-  color: var(--delta-mute);
-  text-decoration: none;
-  transition: color var(--delta-dur-fast) var(--delta-ease);
-}
-.runhead-nav a:hover,
-.runhead-nav a.is-current { color: var(--delta-ink); }
-.runhead-prog {
-  height: 2px;
-  width: 60px;
-  background: var(--delta-rule);
-  border-radius: 2px;
-  overflow: hidden;
-  position: relative;
-}
-.runhead-prog > i {
-  position: absolute;
-  inset: 0 auto 0 0;
-  background: var(--delta-accent-ink);
 }
 
 /* -- TEXT FORMATTING ----------------------------------------------------- */

@@ -26,7 +26,7 @@
  * childNodes, so inline math/links/emphasis survive.
  */
 
-import { t } from "../i18n";
+import { numberedName } from "./shared";
 
 /** Applies a cell's alignment / mono style, reusing the base `.num` and `.mono`
  *  helpers. Header columns seed `aligns[i]`; body cells fall back to it. */
@@ -65,7 +65,7 @@ class DeltaTable extends HTMLElement {
       if (titleEl || num) {
         const lbl = document.createElement("span");
         lbl.className = "table-lbl";
-        lbl.textContent = t("table", "Table") + (num ? ` ${num}` : "");
+        lbl.textContent = numberedName("table", num);
         head.append(lbl);
       }
       if (titleEl) {

@@ -2,7 +2,7 @@ import { dirname, resolve } from "node:path";
 import { elements, hasTag, titleOf, type ElementNode } from "./ast";
 import { warn, type CompileContext } from "./context";
 import { isRemote, readUserFile, withFile } from "./files";
-import { OPAQUE } from "./numbering";
+import { OPAQUE } from "../language/tags";
 import { parseSource } from "./parse";
 
 /**

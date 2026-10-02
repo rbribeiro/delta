@@ -19,6 +19,7 @@
 import { t } from "../i18n";
 import { popover } from "../utils";
 import { memberChip, memberColor } from "./collab";
+import { button } from "./shared";
 
 class DeltaComment extends HTMLElement {
   connectedCallback(): void {
@@ -50,10 +51,7 @@ class DeltaComment extends HTMLElement {
     }
 
     const label = `${t("comment", "Comment")}${num ? ` ${num}` : ""}`;
-    const marker = document.createElement("button");
-    marker.type = "button";
-    marker.className = "note-marker";
-    marker.textContent = num ?? "•";
+    const marker = button("note-marker", num ?? "•");
     marker.title = label;
     marker.setAttribute("aria-label", label);
     if (color) marker.setAttribute("data-accent", color);
@@ -141,5 +139,5 @@ function buildThread(
 }
 
 export function defineComment(): void {
-  customElements.define("delta-comment", class extends DeltaComment {});
+  customElements.define("delta-comment", DeltaComment);
 }

@@ -287,19 +287,6 @@
     background: var(--delta-surface-2);
     color: var(--delta-accent-ink);
   }
-  .deck-counter {
-    font-family: var(--delta-sans);
-    font-size: 12px;
-    font-variant-numeric: tabular-nums;
-    color: var(--delta-ink-soft);
-    background: var(--delta-surface-1);
-    border: var(--delta-hairline) solid var(--delta-rule);
-    border-radius: var(--delta-radius-pill);
-    padding: 5px 11px;
-    box-shadow: var(--delta-shadow-sm);
-    user-select: none;
-  }
-
   /* Running header (JS on) — a faint "AUTHOR · AFFILIATION" eyebrow pinned to the top
      edge so a deck always carries whose talk it is. Built by deck.ts and tagged
      `eyebrow` so it inherits that primitive's look (sans, uppercase, tracked, mute);

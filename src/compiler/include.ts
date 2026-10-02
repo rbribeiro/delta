@@ -1,5 +1,5 @@
 import { dirname, relative, resolve, sep } from "node:path";
-import { type ElementNode, type Node, findElementById } from "./ast";
+import { element, findElementById, type ElementNode, type Node } from "./ast";
 import { error, type CompileContext } from "./context";
 import { isRemote, readUserFile, withFile } from "./files";
 import { parseSource } from "./parse";
@@ -89,7 +89,7 @@ function expand(
     // Splice the included document's children (a non-document root is spliced as-is), wrapped in a
     // throwaway container so nested includes and asset paths resolve relative to the included file.
     const kids = root.tag === "document" ? root.children : [root];
-    const container: ElementNode = { type: "element", tag: "#include", attrs: {}, children: kids };
+    const container = element("#include", {}, kids);
     walk(container, dirname(abs), [...stack, abs], masterDir, ctx);
     return container.children;
   });

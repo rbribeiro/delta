@@ -6,7 +6,7 @@
  */
 
 import { t } from "../i18n";
-import { formatPaper } from "./shared";
+import { formatPaper, takeTitle } from "./shared";
 
 class DeltaBibliography extends HTMLElement {
   connectedCallback(): void {
@@ -18,11 +18,9 @@ class DeltaBibliography extends HTMLElement {
 
     const section = document.createElement("section");
     section.className = "notes";
-    const title = this.querySelector(":scope > delta-title");
     const heading = document.createElement("h4");
-    heading.innerHTML = title ? title.innerHTML : t("references", "References");
+    heading.append(...(takeTitle(this)?.nodes ?? [t("references", "References")]));
     section.append(heading);
-    
 
     const list = document.createElement("ol");
     for (const paper of papers) {
@@ -37,5 +35,5 @@ class DeltaBibliography extends HTMLElement {
 }
 
 export function defineBibliography(): void {
-  customElements.define("delta-bibliography", class extends DeltaBibliography {});
+  customElements.define("delta-bibliography", DeltaBibliography);
 }

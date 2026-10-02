@@ -1,139 +1,80 @@
 /**
  * The theorem family and friends. Box environments (theorem, lemma, example, …)
  * become a bordered `.box` with a floating `.box-tag` label; proof/solution get an
- * inline italic `.proof-lead` and, for proof, a trailing QED mark.
+ * inline italic `.proof-lead` and a trailing QED mark.
  *
- * Adding a numbered environment: a row in the compiler's `environments.ts`, the
- * tag here (ENVIRONMENT_TAGS + the box-vs-proof set), and a label in `strings.ts`.
+ * The tag lists live in `src/language/tags.ts` (BOX_TAGS, PROOF_TAGS), shared with the
+ * compiler; adding an environment needs no change here.
  */
 
-import { t } from "../i18n";
-import { applyCollapsible, applyStatus } from "./shared";
+import { nameOf } from "../i18n";
+import { BOX_TAGS, ENVIRONMENT_TAGS, PROOF_TAGS } from "../../language/tags";
+import { applyCollapsible, applyStatus, kindOf, numberedName, renderMeta, takeTitle } from "./shared";
 import { buildLens } from "./aid";
 import { stepLevels } from "./proofstructure";
 
-const ENVIRONMENT_TAGS = [
-  "theorem",
-  "proposition",
-  "lemma",
-  "corollary",
-  "conjecture",
-  "definition",
-  "example",
-  "counterexample",
-  "claim",
-  "observation",
-  "exercise",
-  "problem",
-  "proof",
-  "solution",
-  "remark",
-];
-
-// Rendered as a bordered .box with a floating .box-tag label.
-const BOX_ENVIRONMENTS = new Set([
-  "theorem", "proposition", "lemma", "corollary", "conjecture", "definition",
-  "example", "counterexample", "claim", "observation", "exercise", "problem", "remark",
-]);
-// Rendered inline with an italic lead; proof additionally gets a QED mark.
-const PROOF_ENVIRONMENTS = new Set(["proof", "solution"]);
-
-/**
- * Box environments (theorem family, example, …) become a bordered `.box` with a
- * floating `.box-tag` label ("Theorem 1.2 (Title)"); proof/solution get an inline
- * italic `.proof-lead` ("Proof.") and, for proof, a trailing QED mark.
- */
 class DeltaEnvironment extends HTMLElement {
   connectedCallback(): void {
     if (this.dataset.deltaReady) return;
     this.dataset.deltaReady = "1";
-    const tagName = this.tagName.toLowerCase().replace(/^delta-/, "");
-    const num = this.getAttribute("num");
-    // Localized environment name (e.g. "Teorema"); English capitalization is the fallback.
-    let name = t(tagName, tagName.charAt(0).toUpperCase() + tagName.slice(1));
-    const title = this.querySelector(":scope > delta-title");
+    const kind = kindOf(this);
+    if (PROOF_TAGS.has(kind)) this.renderProof(kind);
+    else if (BOX_TAGS.has(kind)) this.renderBox(kind);
+    // any other tag: an unknown environment, left bare
+  }
 
-    if (PROOF_ENVIRONMENTS.has(tagName)) {
-      const lead = document.createElement("span");
-      const ofAttr = this.getAttribute("of");
-      const refTag = this.getAttribute("data-target-tag");
-      const refNum = this.getAttribute("data-target-num");
-
-      if(refTag && ofAttr && refNum) {
-        const refElement = document.createElement("delta-ref");
-        refElement.setAttribute("to",ofAttr);
-        refElement.setAttribute("data-target-num", refNum);
-        refElement.setAttribute("data-target-tag", refTag)
-        lead.append(" ");
-        lead.append(refElement);
-      }
-      lead.className = "proof-lead";
-      lead.prepend(name);
-      if (title) {
-        lead.append(" (", ...title.childNodes, ")");
-        title.remove();
-      }
-      lead.append(".");
-      this.prepend(lead, " ");
-      applyStatus(this, lead); // status="sketch" by="…" → pill after "Proof."
-      // A structured proof: "Steps 1 2 … All" to unfold it level by level.
-      const depth = Number(this.getAttribute("data-step-depth") ?? 0);
-      if (depth > 0) lead.append(" ", stepLevels(this, depth));
-
-      //if (tagName === "proof") {
-      const qed = document.createElement("span");
-      qed.className = "proof-qed";
-      qed.textContent = "□";
-      this.append(qed);
-      //}
-      applyCollapsible(this, lead);
-      return;
+  /** "Proof (of Theorem 1.2) (Title)." as an inline lead, the step-level buttons, a QED mark. */
+  private renderProof(kind: string): void {
+    const lead = document.createElement("span");
+    lead.className = "proof-lead";
+    lead.append(nameOf(kind));
+    const of = this.getAttribute("of");
+    const refTag = this.getAttribute("data-target-tag");
+    const refNum = this.getAttribute("data-target-num");
+    if (of && refTag && refNum) {
+      const ref = document.createElement("delta-ref");
+      ref.setAttribute("to", of);
+      ref.setAttribute("data-target-num", refNum);
+      ref.setAttribute("data-target-tag", refTag);
+      lead.append(" ", ref);
     }
+    const title = takeTitle(this);
+    if (title) lead.append(" (", ...title.nodes, ")");
+    lead.append(".");
+    this.prepend(lead, " ");
+    applyStatus(this, lead); // status="sketch" by="…" → pill after "Proof."
+    // A structured proof: "Steps 1 2 … All" to unfold it level by level.
+    const depth = Number(this.getAttribute("data-step-depth") ?? 0);
+    if (depth > 0) lead.append(" ", stepLevels(this, depth));
 
-    if (!BOX_ENVIRONMENTS.has(tagName)) return; // unknown environment: leave it bare
+    const qed = document.createElement("span");
+    qed.className = "proof-qed";
+    qed.textContent = "□";
+    this.append(qed);
+    applyCollapsible(this, lead);
+  }
 
-    // A floating tag carries the tagName + number (CSS uppercases it) and the
-    // optional author title (CSS parenthesises it).
+  /** A bordered box with a floating "Theorem 1.2 (Title)" tag, its meta row and its reader aids. */
+  private renderBox(kind: string): void {
+    // The tag carries the name + number (CSS uppercases it) and the optional author
+    // title (CSS parenthesises it).
     this.classList.add("box");
-    if (tagName === "example" || tagName === "counterexample") this.classList.add("example");
+    if (kind === "example" || kind === "counterexample") this.classList.add("example");
     const tag = document.createElement("span");
     tag.className = "box-tag";
-    tag.textContent = name + (num ? ` ${num}` : "");
+    tag.textContent = numberedName(kind, this.getAttribute("num"));
+    const title = takeTitle(this);
     if (title) {
       const titleEl = document.createElement("span");
       titleEl.className = "box-tag-title";
-      titleEl.append(...title.childNodes);
-      title.remove();
+      titleEl.append(...title.nodes);
       tag.append(" ", titleEl);
     }
     this.prepend(tag);
     applyStatus(this, tag); // status/by/verified-by → pill inside the label (stays out of the fold)
 
-    const meta = this.querySelector(":scope > delta-meta");
-    if (meta) {
-      const metaItems = meta.querySelectorAll(":scope > delta-meta-item");
-      if (metaItems.length) {
-        const footer = document.createElement("div");
-        footer.className = "box-meta";
-        for (const item of metaItems) {
-          const label = item.getAttribute("key");
-          if (label && item.textContent?.trim()) {
-            const k = document.createElement("span");
-            k.className = "k";
-            k.textContent = label;
-            const v = document.createElement("span");
-            v.className = "v";
-            v.append(" ", ...item.childNodes);
-            const pair = document.createElement("span");
-            pair.className = "box-meta-item";
-            pair.append(k, v);
-            footer.appendChild(pair);
-          }
-        }
-        meta.remove();
-        this.append(footer);
-      }
-    }
+    const meta = renderMeta(this);
+    if (meta) this.append(meta); // at the bottom of the box
 
     // Reader aids (<intuition>, <strategy>, …) → dots on the top border, and a drawer
     // hung right after the box, so a long aid never stretches the statement.

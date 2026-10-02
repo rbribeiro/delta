@@ -8,5 +8,5 @@ class DeltaSidenote extends HTMLElement {
 }
 
 export function defineSidenote(): void {
-  customElements.define("delta-sidenote", class extends DeltaSidenote {});
+  customElements.define("delta-sidenote", DeltaSidenote);
 }

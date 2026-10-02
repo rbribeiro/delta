@@ -1,7 +1,7 @@
-import type { ElementNode, Node } from "./ast";
+import { walk, type ElementNode } from "./ast";
+import { paperParent } from "./paper";
 import { error, warn, type CompileContext } from "./context";
-import { OPAQUE } from "./numbering";
-import { RAW_TAGS } from "./preprocess";
+import { AID_TAGS, RAW_TAGS, RESULT_TAGS } from "../language/tags";
 
 /**
  * The reader aids of a result — `<intuition>` (why it is true), `<strategy>` (how the
@@ -15,54 +15,15 @@ import { RAW_TAGS } from "./preprocess";
  * author's own `collapsed="false"` wins. Runs in the collab phase, after includes and before numbering.
  */
 
-/** Results that may carry aids (and `status="open"`: a planned result with no proof yet). */
-export const RESULT_TAGS = new Set([
-  "theorem", "proposition", "lemma", "corollary", "conjecture", "claim", "definition",
-]);
-
-/** The aids that hang under their owner as dots + drawer. */
-export const AID_TAGS = new Set(["intuition", "strategy", "obstacle"]);
-
 /** What an aid may hang on: a result, or one step of a structured proof. */
 const AID_OWNERS = new Set([...RESULT_TAGS, "step"]);
 
-/** Collaboration wrappers the placement checks look through (`<change><new><intuition>`). */
-export const TRANSPARENT = new Set(["change", "new", "old", "draft"]);
-
-/**
- * `el`'s children as the final paper reads them: `<change>`, `<new>` and `<draft>` are
- * looked through, `<old>`, comments and tasks are skipped (a `--final` build drops them),
- * and blank text is dropped. So `flow(proof)` lists a proof's steps even when one is
- * wrapped in `<change><new>`.
- */
-export function flow(el: ElementNode): Node[] {
-  return el.children.flatMap((c): Node[] => {
-    if (c.type !== "element") return c.type === "text" && !/\S/.test(c.text) ? [] : [c];
-    if (OPAQUE.has(c.tag)) return [];
-    return TRANSPARENT.has(c.tag) ? flow(c) : [c];
-  });
-}
-
 export function checkUnderstanding(doc: ElementNode, ctx: CompileContext): void {
-  walk(doc, [], ctx);
-}
-
-function walk(el: ElementNode, ancestors: ElementNode[], ctx: CompileContext): void {
-  if (RAW_TAGS.has(el.tag)) return;
-  if (AID_TAGS.has(el.tag)) visitAid(el, ownerOf(ancestors), ctx);
-  if (AID_OWNERS.has(el.tag)) checkDuplicates(el, ctx);
-  const next = [...ancestors, el];
-  for (const child of el.children) {
-    if (child.type === "element") walk(child, next, ctx);
-  }
-}
-
-/** The nearest ancestor that is not a collaboration wrapper. */
-function ownerOf(ancestors: ElementNode[]): ElementNode | undefined {
-  for (let i = ancestors.length - 1; i >= 0; i--) {
-    if (!TRANSPARENT.has(ancestors[i].tag)) return ancestors[i];
-  }
-  return undefined;
+  walk(doc, (el, ancestors) => {
+    if (RAW_TAGS.has(el.tag)) return false;
+    if (AID_TAGS.has(el.tag)) visitAid(el, paperParent(ancestors), ctx);
+    if (AID_OWNERS.has(el.tag)) checkDuplicates(el, ctx);
+  });
 }
 
 function visitAid(el: ElementNode, owner: ElementNode | undefined, ctx: CompileContext): void {

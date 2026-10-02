@@ -2,7 +2,8 @@ import { createRequire } from "node:module";
 import type { HLJSApi } from "highlight.js";
 import { textContent, type ElementNode, type Node, type Position } from "./ast";
 import { warn, type CompileContext } from "./context";
-import { escapeHtml, RAW_TAGS } from "./preprocess";
+import { RAW_TAGS } from "../language/tags";
+import { escapeHtml } from "./preprocess";
 
 /** The highlighted display block. Inline `<c>` stays literal (styled by CSS only). */
 const CODE_TAG = "code";

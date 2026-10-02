@@ -25,5 +25,5 @@ class DeltaLink extends HTMLElement {
 }
 
 export function defineLink(): void {
-  customElements.define("delta-link", class extends DeltaLink {});
+  customElements.define("delta-link", DeltaLink);
 }

@@ -1,4 +1,6 @@
-import type { ReviewItem, TeamMember } from "./compiler/context";
+import { textContent } from "./compiler/ast";
+import type { ReviewData, ReviewItem } from "./compiler/context";
+import { collapseSpace } from "./compiler/paper";
 
 /**
  * The agent-facing view of a paper's collaboration state: `delta review` prints the
@@ -6,10 +8,7 @@ import type { ReviewItem, TeamMember } from "./compiler/context";
  * (no I/O), so the CLI is a thin shell and tests need no process.
  */
 
-export interface ReviewData {
-  team: TeamMember[];
-  items: ReviewItem[];
-}
+export type { ReviewData };
 
 export interface ReviewFilter {
   status?: string;
@@ -125,14 +124,7 @@ function formatItem(i: ReviewItem): string[] {
   return out;
 }
 
+/** The heading title is AST nodes; a text-only rendering is enough for the report. */
 function headingText(i: ReviewItem): string {
-  // The heading title is AST nodes; a text-only rendering is enough for the report.
-  return (i.heading?.title ?? [])
-    .map((n) => (n.type === "text" ? n.text : n.type === "element" ? flat(n) : ""))
-    .join("")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-function flat(n: { children: import("./compiler/ast").Node[] }): string {
-  return n.children.map((c) => (c.type === "text" ? c.text : c.type === "element" ? flat(c) : "")).join("");
+  return collapseSpace((i.heading?.title ?? []).map(textContent).join(""));
 }

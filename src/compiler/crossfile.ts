@@ -1,6 +1,5 @@
 import { elements, type ElementNode } from "./ast";
-import { OPAQUE } from "./numbering";
-import { REF_TAGS } from "./references";
+import { OPAQUE, REF_TAGS } from "../language/tags";
 
 /**
  * The project-wide id maps and the two annotators that make links work *across* output files.

@@ -98,5 +98,5 @@ class DeltaTodo extends HTMLElement {
 }
 
 export function defineTodo(): void {
-  customElements.define("delta-todo", class extends DeltaTodo {});
+  customElements.define("delta-todo", DeltaTodo);
 }

@@ -4,9 +4,9 @@
  *
  * `counter` names a counter that is incremented whenever this tag is encountered. Tags sharing a counter are numbered together.
  * `prefixWith` names a counter whose displayed number is prepended ("2.3"), skipped
- * while that counter is still 0. COUNTER_RESETS restarts child counters whenever a
- * parent counter increments. Adding a numbered environment is a row here, so the
- * numbering pass needs no changes.
+ * while that counter is still 0. COUNTER_RESETS (derived from `prefixWith`) restarts child
+ * counters whenever a parent counter increments. Adding a numbered environment is a row
+ * here, so the numbering pass needs no changes.
  */
 
 export interface EnvironmentSpec {
@@ -55,15 +55,24 @@ export const ENVIRONMENTS: Record<string, EnvironmentSpec> = {
   comment: { counter: "comment" },
   todo: { counter: "todo" },
   change: { counter: "change" },
-
 };
 
 /**
- * Counters that are reset when the parent counter (key) increments. For example, when a new section starts, the subsection counter is reset to 0.
- * Keys and values are *counter* names (the `counter` field above), not tag names: `equation` covers both `<equation>` and `<equations>`.
+ * Counters reset when a parent counter (key) increments: every counter displayed with
+ * the parent's number in front, as LaTeX's `\numberwithin` does. A new section restarts
+ * subsections, theorems, equations, …; the numbering pass applies this transitively, so
+ * a new chapter restarts those too. Derived from `prefixWith`, so a new row above needs no
+ * entry here. Keys and values are *counter* names, not tag names: `equation` covers both
+ * `<equation>` and `<equations>`.
  */
-export const COUNTER_RESETS: Record<string, string[]> = {
-  chapter: ["section"],
-  section: ["subsection", "subsubsection", "theorem", "proposition", "lemma", "corollary", "conjecture", "definition", "example", "counterexample", "claim", "observation", "exercise", "problem", "equation", "figure", "video", "audio", "remark", "table", "interactive", "code"],
-  subsection: ["subsubsection"],
-};
+export const COUNTER_RESETS: Readonly<Record<string, string[]>> = childCounters();
+
+function childCounters(): Record<string, string[]> {
+  const out: Record<string, string[]> = {};
+  for (const { counter, prefixWith } of Object.values(ENVIRONMENTS)) {
+    if (!prefixWith) continue;
+    const children = (out[prefixWith] ??= []);
+    if (!children.includes(counter)) children.push(counter);
+  }
+  return out;
+}

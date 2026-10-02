@@ -3,15 +3,16 @@
  * child into a real heading, prefixed by the compile-time number.
  */
 
-import { applyCollapsible, applyStatus } from "./shared";
+import { applyCollapsible, applyStatus, kindOf, renderMeta } from "./shared";
+import { HEADING_LEVEL } from "../../language/tags";
 
-// tag → heading level + class the structure stylesheet targets
+// tag → the heading class the structure stylesheet targets
 // (h2.section gets a .num pill; h3.sub / h4.subsub are quieter).
-const SECTION_HEADINGS: Record<string, { level: number; cls: string }> = {
-  "delta-chapter": { level: 1, cls: "chapter-title" },
-  "delta-section": { level: 2, cls: "section" },
-  "delta-subsection": { level: 3, cls: "sub" },
-  "delta-subsubsection": { level: 4, cls: "subsub" },
+const HEADING_CLASS: Record<string, string> = {
+  chapter: "chapter-title",
+  section: "section",
+  subsection: "sub",
+  subsubsection: "subsub",
 };
 
 /** Replaces the <delta-title> child with a real <h1>…<h4>, prefixed by a `.num`. */
@@ -36,9 +37,9 @@ class DeltaSection extends HTMLElement {
       return;
     }
 
-    const spec = SECTION_HEADINGS[this.tagName.toLowerCase()] ?? { level: 2, cls: "section" };
-    const heading = document.createElement(`h${spec.level}`);
-    heading.className = spec.cls;
+    const tag = kindOf(this);
+    const heading = document.createElement(`h${HEADING_LEVEL[tag] ?? 2}`);
+    heading.className = HEADING_CLASS[tag] ?? "section";
     const num = this.getAttribute("num");
     if (num) {
       const numEl = document.createElement("span");
@@ -50,30 +51,7 @@ class DeltaSection extends HTMLElement {
     title.replaceWith(heading);
     applyStatus(this, heading); // status="draft" by="…" on a section → pill after the title
 
-    // render the meta info 
-    const meta = this.querySelector(':scope > delta-meta');
-    if (meta) {
-      const metaItems = meta.querySelectorAll(':scope > delta-meta-item');
-      if (metaItems.length) {
-        const boxMetaDiv = document.createElement("div");
-        boxMetaDiv.classList.add("box-meta");
-        Array.from(metaItems).forEach(element => {
-          const boxMetaItem = document.createElement("span")
-          boxMetaItem.className = "box-meta-item";
-          const metaItemKey = document.createElement("span")
-          metaItemKey.className = "k"
-          metaItemKey.textContent = element.getAttribute("key") ?? "";
-          const metaItemValue = document.createElement("span");
-          metaItemValue.innerHTML = element.innerHTML;
-          metaItemValue.className = "v"
-
-          boxMetaItem.append(metaItemKey)
-          boxMetaItem.append(metaItemValue)
-          boxMetaDiv.append(boxMetaItem)
-          meta.replaceWith(boxMetaDiv)
-        });
-      }
-    }
+    renderMeta(this);
 
     applyCollapsible(this, heading);
   }
@@ -81,7 +59,7 @@ class DeltaSection extends HTMLElement {
 
 export function defineSections(): void {
   // define() requires a unique constructor per tag, hence the anonymous subclasses.
-  for (const tag of Object.keys(SECTION_HEADINGS)) {
-    customElements.define(tag, class extends DeltaSection { });
+  for (const tag of Object.keys(HEADING_LEVEL)) {
+    customElements.define(`delta-${tag}`, class extends DeltaSection {});
   }
 }

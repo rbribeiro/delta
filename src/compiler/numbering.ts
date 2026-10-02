@@ -1,5 +1,6 @@
 import type { ElementNode } from "./ast";
-import { COUNTER_RESETS, ENVIRONMENTS, type EnvironmentSpec } from "./environments";
+import { COUNTER_RESETS, ENVIRONMENTS, type EnvironmentSpec } from "../language/environments";
+import { OPAQUE } from "../language/tags";
 import { warn, type CompileContext } from "./context";
 
 /**
@@ -15,15 +16,6 @@ export interface NumberingState {
 export function freshNumbering(): NumberingState {
   return { counters: {}, display: {} };
 }
-
-/**
- * Tags whose *descendants* are neither numbered nor registered: collaboration markup
- * that a `--final` build removes (`comment`, `todo`) or rejects (`old`). An equation
- * quoted inside a comment must not shift the paper's numbering between the review build
- * and the final one. The element itself is still assigned/registered (comments and
- * tasks carry their own counters).
- */
-export const OPAQUE = new Set(["comment", "todo", "old"]);
 
 /**
  * Numbers all elements in the document according to their environment specifications.

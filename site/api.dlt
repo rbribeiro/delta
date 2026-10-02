@@ -286,7 +286,7 @@ Delta.t("termo", "Definição")   // o texto traduzido, ou "Definição"
       passe sempre um padrão, e trate-o como o texto que de fato aparecerá. O que
       <c>t</c> compra é reaproveitar os textos que o Delta já traduz (os nomes dos
       ambientes, os rótulos do painel de revisão), que ficam em
-      <c>src/compiler/strings.ts</c>.
+      <c>src/language/strings.ts</c>.
     </subsection>
 
     <subsection id="api-deck">

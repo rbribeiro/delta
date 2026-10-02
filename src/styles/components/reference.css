@@ -1,6 +1,6 @@
 /* reference.css — <delta-ref>: a cross-reference that previews its target in a
    hovercard (.xref-pop) built on the shared .delta-pop shell (base.css), instead
-   of jumping. STAGED — reference.js builds the inner <a> and the card. The trigger
+   of jumping. runtime/elements/ref.ts builds the trigger and the card. The trigger
    reuses the dashed .ref look. Tokens via var(--delta-*). */
 
 @layer delta.components {

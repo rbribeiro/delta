@@ -48,6 +48,11 @@ export const STRINGS: Record<string, Record<string, string>> = {
     copied: "Copied",
     prevSlide: "Previous slide",
     nextSlide: "Next slide",
+    // media placeholders
+    watchOnYoutube: "Watch on YouTube",
+    noVideo: "No video source.",
+    noAudio: "No audio source.",
+    noImage: "Image not found.",
     // front matter (abstract + labeled metadata)
     abstract: "Abstract",
     keywords: "Keywords",
@@ -155,6 +160,11 @@ export const STRINGS: Record<string, Record<string, string>> = {
     copied: "Copiado",
     prevSlide: "Slide anterior",
     nextSlide: "Próximo slide",
+    // media placeholders
+    watchOnYoutube: "Assistir no YouTube",
+    noVideo: "Sem fonte de vídeo.",
+    noAudio: "Sem fonte de áudio.",
+    noImage: "Imagem não encontrada.",
     // front matter (abstract + labeled metadata)
     abstract: "Resumo",
     keywords: "Palavras-chave",
@@ -238,8 +248,8 @@ export function resolveLang(lang?: string): string {
   return DEFAULT_LANG;
 }
 
-/** Merged string set for a resolved language with `en` base overlaid by the language,
- *  so any key a language omits falls back to English. Pass a `resolveLang` result. */
-export function stringsFor(lang: string): Record<string, string> {
-  return { ...STRINGS[DEFAULT_LANG], ...(STRINGS[lang] ?? {}) };
+/** The strings for a document's `lang` (any form `resolveLang` accepts): the `en` base
+ *  overlaid by the language, so any key a language omits falls back to English. */
+export function stringsFor(lang?: string): Record<string, string> {
+  return { ...STRINGS[DEFAULT_LANG], ...STRINGS[resolveLang(lang)] };
 }

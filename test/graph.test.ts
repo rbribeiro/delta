@@ -2,7 +2,8 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { ancestors, descendants, frontier, overclaimed, type ProofGraph } from "../src/compiler/graph";
+import { ancestors, descendants, type ProofGraph } from "../src/compiler/graph";
+import { frontier, overclaimed } from "../src/graph-report";
 import { compileProject, type ProjectResult } from "../src/compiler/project";
 
 /** Writes the files into a fresh dir and compiles the `.dlt` ones (in order) as one project. */

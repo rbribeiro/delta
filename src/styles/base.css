@@ -268,7 +268,7 @@
    these flips the whole system, deck chrome included.
 
    The declaration list is intentionally repeated for the `[data-mode="auto"]` + media case
-   (no build-time preprocessing) — keep the two blocks in sync. */
+   (no build-time preprocessing); test/styles.test.ts fails if the two blocks drift apart. */
 [data-mode="dark"] {
   color-scheme: dark;
 

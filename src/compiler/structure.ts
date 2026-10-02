@@ -1,8 +1,7 @@
-import type { ElementNode } from "./ast";
+import { walk, type ElementNode } from "./ast";
 import { error, warn, type CompileContext } from "./context";
-import { OPAQUE } from "./numbering";
-import { RAW_TAGS } from "./preprocess";
-import { AID_TAGS, RESULT_TAGS, TRANSPARENT, flow } from "./understanding";
+import { AID_TAGS, OPAQUE, RAW_TAGS, RESULT_TAGS } from "../language/tags";
+import { flow, paperParent, proofTarget } from "./paper";
 
 /**
  * Structured proofs and hypotheses, the parts of a proof a reader navigates by:
@@ -40,11 +39,6 @@ import { AID_TAGS, RESULT_TAGS, TRANSPARENT, flow } from "./understanding";
 /** Where a step may sit: directly in a proof (a step's own proof included). */
 const STEP_PARENTS = new Set(["proof"]);
 
-/** The result a proof proves: its `of`, or the one `linkProofs` found right before it. */
-export function proofTarget(proof: ElementNode): string | undefined {
-  return proof.attrs.of ?? proof.attrs["data-of"];
-}
-
 /**
  * A `<proof>` without `of` proves the result right before it: the previous sibling, as the
  * final paper reads it (`flow`: wrappers looked through, comments and blank text skipped).
@@ -77,11 +71,13 @@ function next(autoIds: Map<string, number>, key: string): number {
 }
 
 export function structureProofs(doc: ElementNode, ctx: CompileContext, autoIds = new Map<string, number>()): void {
-  walk(doc, null, ctx, autoIds);
+  walk(doc, (el, ancestors) => {
+    if (RAW_TAGS.has(el.tag) || OPAQUE.has(el.tag)) return false;
+    visit(el, paperParent(ancestors), ctx, autoIds);
+  });
 }
 
-function walk(el: ElementNode, parent: ElementNode | null, ctx: CompileContext, autoIds: Map<string, number>): void {
-  if (RAW_TAGS.has(el.tag) || OPAQUE.has(el.tag)) return;
+function visit(el: ElementNode, parent: ElementNode | undefined, ctx: CompileContext, autoIds: Map<string, number>): void {
   if (el.tag === "proof" && parent?.tag !== "step") {
     // The k-th proof of a result names its steps <result>-proof<k>-step-…; the first keeps <result>-step-….
     const owner = proofTarget(el) ?? el.attrs.id;
@@ -102,9 +98,6 @@ function walk(el: ElementNode, parent: ElementNode | null, ctx: CompileContext, 
     // An id, so the hypothesis's preview can link to it.
     else if (!el.attrs.id) el.attrs.id = `${el.attrs.breaks}-counterexample-${next(autoIds, `${el.attrs.breaks}-counterexample`)}`;
   }
-  // A wrapper (<change>, <new>, <draft>) is not a parent: a <step> in <proof><change><new> sits in the proof.
-  const effective = TRANSPARENT.has(el.tag) ? parent : el;
-  for (const c of el.children) if (c.type === "element") walk(c, effective, ctx, autoIds);
 }
 
 /**

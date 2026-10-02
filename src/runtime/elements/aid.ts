@@ -16,11 +16,13 @@
  */
 
 import { t } from "../i18n";
+import { AID_TAGS } from "../../language/tags";
+import { button, kindOf } from "./shared";
 
-const AIDS = ["intuition", "strategy", "obstacle"];
+/** The aids in display order: intuition, strategy, obstacle. */
+const AIDS = [...AID_TAGS];
 const SELECTOR = AIDS.map((a) => `:scope > delta-${a}`).join(", ");
 
-const kindOf = (el: Element): string => el.tagName.toLowerCase().replace(/^delta-/, "");
 
 /** The dots (for the box's top border) and the drawer (for right after the box). */
 export interface Lens {
@@ -61,9 +63,7 @@ export function buildLens(host: HTMLElement): Lens | null {
     const kind = kindOf(aid);
     const label = t(kind, kind);
 
-    const dot = document.createElement("button");
-    dot.type = "button";
-    dot.className = "lens-dot";
+    const dot = button("lens-dot");
     dot.dataset.aid = kind;
     dot.dataset.label = label;
     dot.setAttribute("aria-label", label);
@@ -79,11 +79,8 @@ export function buildLens(host: HTMLElement): Lens | null {
     const name = document.createElement("span");
     name.className = "lens-name";
     name.textContent = label;
-    const close = document.createElement("button");
-    close.type = "button";
-    close.className = "lens-close";
+    const close = button("lens-close", "\u00d7"); // ×
     close.setAttribute("aria-label", t("close", "Close"));
-    close.textContent = "\u00d7"; // ×
     close.addEventListener("click", () => {
       show(null);
       dot.focus();

@@ -1,14 +1,14 @@
 import { basename, dirname } from "node:path";
-import { hasTag, titleOf, type ElementNode, type Node } from "./ast";
+import { element, hasTag, titleOf, type ElementNode, type Node } from "./ast";
 import type { CompileContext } from "./context";
 import { escapeAttr, escapeHtml } from "./preprocess";
 import { katexCss } from "./katex-css";
-import { plainText } from "./review";
-import { resolveLang, stringsFor } from "./strings";
+import { plainText } from "./paper";
+import { stringsFor } from "../language/strings";
+import { HEADING_TAGS } from "../language/tags";
 import { CORE_CSS, RUNTIME_JS, THEMES } from "../generated/assets";
 
 const DEFAULT_TYPE = "article";
-const CONTAINER_TAGS = new Set(["chapter", "section", "subsection", "subsubsection"])
 
 /**
  * Serializes the AST into a standalone HTML file. Every tag becomes `<delta-tag>`
@@ -27,7 +27,7 @@ export function emit(
   ctx: CompileContext,
   globalById: Map<string, ElementNode>,
 ): string {
-  const strings = stringsFor(resolveLang(ctx.lang));
+  const strings = stringsFor(ctx.lang);
   const titleEl = titleOf(doc);
   // plainText, not textContent: the rendered math in a title reads back as its `$…$` source.
   const title = titleEl
@@ -39,9 +39,8 @@ export function emit(
   const themeCss = THEMES[type] ?? THEMES[DEFAULT_TYPE];
 
   // Localized UI strings for the document's language, inlined as an inert data
-  // island the runtime reads via t(). `<` is escaped so a string can't break out
-  // of the </script>.
-  const i18n = JSON.stringify(strings).replace(/</g, "\\u003c");
+  // island the runtime reads via t().
+  const i18n = jsonIsland("delta-i18n", strings);
 
   const body = serialize(doc);
   // Snapshot every <ref> target into an inert <template> so the runtime can clone
@@ -101,7 +100,7 @@ ${head}
 </head>
 <body>
 ${body}
-${templates}${toc}${review}<script type="application/json" id="delta-i18n">${i18n}</script>
+${templates}${toc}${review}${i18n.trimEnd()}
 <script>
 ${RUNTIME_JS}
 </script>
@@ -137,9 +136,9 @@ function renderTemplates(
       // For elements that contain a lot of other elements such as chapters, sections, and so on
       // the template holds only the title
       let snapshot = node;
-      if (CONTAINER_TAGS.has(node.tag)) {
+      if (HEADING_TAGS.has(node.tag)) {
         const titleEl = titleOf(node);
-        snapshot = {type: "element", tag: node.tag, attrs: node.attrs, children: titleEl ? [titleEl] : []};
+        snapshot = element(node.tag, node.attrs, titleEl ? [titleEl] : []);
       }
       // A cross-file target may carry math this file didn't render itself.
       ctx.mathUsed ||= containsMath([snapshot]);
@@ -167,8 +166,7 @@ function renderTocIsland(ctx: CompileContext): string {
     // Present only for a project-wide entry whose section lives in another output.
     ...(e.file ? { file: e.file } : {}),
   }));
-  const json = JSON.stringify(data).replace(/</g, "\\u003c");
-  return `<script type="application/json" id="delta-toc">${json}</script>\n`;
+  return jsonIsland("delta-toc", data);
 }
 
 /**
@@ -220,8 +218,16 @@ function renderReviewIsland(doc: ElementNode, ctx: CompileContext): string {
       }),
     );
   }
+  return jsonIsland("delta-review", data);
+}
+
+/**
+ * An inert `<script type="application/json" id="…">` data island the runtime reads. `<` is
+ * escaped so no string in the data can close the `</script>`.
+ */
+function jsonIsland(id: string, data: unknown): string {
   const json = JSON.stringify(data).replace(/</g, "\\u003c");
-  return `<script type="application/json" id="delta-review">${json}</script>\n`;
+  return `<script type="application/json" id="${id}">${json}</script>\n`;
 }
 
 /** Drops undefined-valued keys so the island JSON stays small. */

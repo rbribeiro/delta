@@ -99,10 +99,4 @@ delta-hyp-unused { color: var(--delta-proof-alert); }
 delta-hyp-used > :not(.hyp-uses-label) + :not(.hyp-uses-label)::before,
 delta-hyp-needed > :not(.hyp-uses-label) + :not(.hyp-uses-label)::before { content: ", "; }
 
-/* -- Counterexample: an example's box, in the example tone -------------- */
-delta-counterexample {
-  display: block;
-  --delta-env-tone: var(--delta-tone-example);
-}
-
 }
