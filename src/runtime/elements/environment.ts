@@ -7,8 +7,8 @@
  * compiler; adding an environment needs no change here.
  */
 
-import { nameOf } from "../i18n";
-import { BOX_TAGS, ENVIRONMENT_TAGS, PROOF_TAGS } from "../../language/tags";
+import { nameOf } from "../i18n.ts";
+import { BOX_TAGS, ENVIRONMENT_TAGS, PROOF_TAGS } from "../../language/tags.ts";
 import {
   applyCollapsible,
   applyStatus,
@@ -16,9 +16,9 @@ import {
   numberedName,
   renderMeta,
   takeTitle,
-} from "./shared";
-import { buildLens } from "./aid";
-import { stepLevels } from "./proofstructure";
+} from "./shared.ts";
+import { buildLens } from "./aid.ts";
+import { stepLevels } from "./proofstructure.ts";
 
 class DeltaEnvironment extends HTMLElement {
   connectedCallback(): void {

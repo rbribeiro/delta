@@ -219,7 +219,8 @@ site/exemplos/                 the live examples linked from the landing page (a
 examples/                      hello.dlt (single file), project/ (multi-file), collab.dlt, slides.dlt
 test/                          compiler suites (most passes have one); helpers.ts (compile/parsed/numbered/compileFiles);
                                pipeline.test.ts pins the step list; language.test.ts the vocabulary
-test/runtime/                  runtime suites in happy-dom: helpers.ts `mount(dlt)`, one file per element family
+test/harness.ts                describe / it / expect on node:test, with the matchers the tests use
+test/runtime/                  runtime suites in Chromium: helpers.ts `inspect(dlt, script)`, one file per element family
 test/browser.ts                real Chromium, for hit-testing and overflow only (hittest/overflow tests)
 ```
 

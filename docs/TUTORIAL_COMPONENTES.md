@@ -654,22 +654,27 @@ vontade sem tocar no Delta, e entra no core depois de estável. A mudança é pe
    ("Figura 1.2" traduzido), `renderMeta`, `jumpTo` e o resto. Texto visível passa por `t()` ou
    `nameOf()`, e cada chave nova entra em todos os blocos de
    [`src/language/strings.ts`](../src/language/strings.ts).
-3. Escreva um teste em `test/runtime/`. Não precisa de navegador: `mount()` compila o documento
-   e roda a página inteira num DOM simulado (happy-dom).
+3. Escreva um teste em `test/runtime/`. `inspect()` compila o documento, abre a página no
+   Chromium da máquina (sem janela) e roda um trecho de JavaScript dentro dela; o teste
+   confere o que esse trecho devolve.
 
 ```ts
-import { expect, it } from "vitest";
-import { mount } from "./helpers";
+import { describe, expect, it } from "../harness.ts";
+import { BROWSER, inspect } from "./helpers.ts";
 
-it("mostra o autor da citação", async () => {
-  const page = await mount(`<document><quote><author>Euler</author>Texto.</quote></document>`);
-  expect(page.$(".quote-author")?.textContent).toBe("Euler");
-  expect(page.$(".quote-body")?.textContent).toBe("Texto.");
+describe.skipIf(!BROWSER)("<quote>", () => {
+  it("mostra o autor da citação", () => {
+    const r = inspect(
+      `<document><quote><author>Euler</author>Texto.</quote></document>`,
+      `return { author: text(".quote-author"), body: text(".quote-body") };`,
+    );
+    expect(r).toEqual({ author: "Euler", body: "Texto." });
+  });
 });
 ```
 
 `npm test` roda esses testes junto com os do compilador, então um erro no runtime aparece no
-mesmo lugar que um erro de compilação.
+mesmo lugar que um erro de compilação. Numa máquina sem Chromium eles são pulados, não falham.
 
 **O que um pacote não pode fazer:** pacotes são exclusivamente de runtime. Não rodam nenhum
 código no compilador, então não conseguem numerar ambientes, registrar um tipo de `<ref>`, ler

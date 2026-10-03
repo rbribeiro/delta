@@ -4,17 +4,17 @@ import {
   type CompileContext,
   type Diagnostic,
   type ReviewData,
-} from "./context";
-import type { ProofGraph } from "./graph";
+} from "./context.ts";
+import type { ProofGraph } from "./graph.ts";
 import {
   createShared,
   outNameFor,
   runPipeline,
   type CompileOptions,
   type FileUnit,
-} from "./pipeline";
+} from "./pipeline.ts";
 
-export type { CompileOptions, TraceEvent } from "./pipeline";
+export type { CompileOptions, TraceEvent } from "./pipeline.ts";
 
 /**
  * The single-file entry points. Both are thin: a single file is a project of one file, and the

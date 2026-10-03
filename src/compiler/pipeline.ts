@@ -1,6 +1,6 @@
 import { basename, dirname } from "node:path";
-import type { ElementNode } from "./ast";
-import type { ProjectConfig } from "./config";
+import type { ElementNode } from "./ast.ts";
+import type { ProjectConfig } from "./config.ts";
 import {
   error,
   hasErrors,
@@ -9,39 +9,39 @@ import {
   type LabelEntry,
   type ReviewItem,
   type TeamMember,
-} from "./context";
-import { readUserFile } from "./files";
-import { parseSource } from "./parse";
-import { resolveIncludes } from "./include";
-import { applyDocumentDefaults } from "./document";
+} from "./context.ts";
+import { readUserFile } from "./files.ts";
+import { parseSource } from "./parse.ts";
+import { resolveIncludes } from "./include.ts";
+import { applyDocumentDefaults } from "./document.ts";
 import {
   describeFinal,
   finalizeReview,
   stripReviewMarks,
   sumFinal,
   type FinalStats,
-} from "./final";
-import { collectTeam } from "./team";
-import { expandAnimated } from "./animated";
-import { expandCover } from "./cover";
-import { resolveCollab } from "./collab";
-import { checkUnderstanding } from "./understanding";
-import { linkProofs, structureProofs } from "./structure";
-import { fillProjectBibliography, loadBibliography, numberCitations } from "./bibliography";
-import { freshNumbering, numberDocument, type NumberingState } from "./numbering";
-import { annotateCrossFileCites, annotateCrossFileRefs, buildIdMaps } from "./crossfile";
-import { renderMath } from "./math";
-import { highlightCode } from "./code";
-import { buildProjectToc } from "./toc";
-import { buildProjectReview } from "./review";
-import { resolveReferences } from "./references";
-import { inlineFigures } from "./figures";
-import { resolveTheme } from "./theme";
-import { resolveImports, resolvePack } from "./imports";
-import { resolveLineBreaks } from "./linebreaks";
-import { emit } from "./emit";
-import { annotateHypotheses, buildGraph, markStale, type ProofGraph } from "./graph";
-import { layoutProofMaps } from "./proofmap";
+} from "./final.ts";
+import { collectTeam } from "./team.ts";
+import { expandAnimated } from "./animated.ts";
+import { expandCover } from "./cover.ts";
+import { resolveCollab } from "./collab.ts";
+import { checkUnderstanding } from "./understanding.ts";
+import { linkProofs, structureProofs } from "./structure.ts";
+import { fillProjectBibliography, loadBibliography, numberCitations } from "./bibliography.ts";
+import { freshNumbering, numberDocument, type NumberingState } from "./numbering.ts";
+import { annotateCrossFileCites, annotateCrossFileRefs, buildIdMaps } from "./crossfile.ts";
+import { renderMath } from "./math.ts";
+import { highlightCode } from "./code.ts";
+import { buildProjectToc } from "./toc.ts";
+import { buildProjectReview } from "./review.ts";
+import { resolveReferences } from "./references.ts";
+import { inlineFigures } from "./figures.ts";
+import { resolveTheme } from "./theme.ts";
+import { resolveImports, resolvePack } from "./imports.ts";
+import { resolveLineBreaks } from "./linebreaks.ts";
+import { emit } from "./emit.ts";
+import { annotateHypotheses, buildGraph, markStale, type ProofGraph } from "./graph.ts";
+import { layoutProofMaps } from "./proofmap.ts";
 
 /**
  * THE pipeline, declared as data. Every compilation — one `.dlt` or a whole project — is a list

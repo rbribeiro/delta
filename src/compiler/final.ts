@@ -1,8 +1,8 @@
-import { elements, type ElementNode, type Node } from "./ast";
-import type { CompileContext } from "./context";
-import { RAW_TAGS } from "../language/tags";
-import { isChecked } from "../language/trust";
-import { acceptedContent } from "./paper";
+import { elements, type ElementNode, type Node } from "./ast.ts";
+import type { CompileContext } from "./context.ts";
+import { RAW_TAGS } from "../language/tags.ts";
+import { isChecked } from "../language/trust.ts";
+import { acceptedContent } from "./paper.ts";
 
 /** What a `--final` build stripped from one file. */
 export interface FinalStats {

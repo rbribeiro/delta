@@ -2,16 +2,16 @@ import { type FSWatcher, existsSync, mkdirSync, readdirSync, watch, writeFileSyn
 import { createRequire } from "node:module";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { parseArgs, type ParseArgsConfig } from "node:util";
-import { compileFile, type CompileOptions } from "./compiler/index";
-import { loadProjectConfig } from "./compiler/config";
-import { compileProject } from "./compiler/project";
-import type { Diagnostic, ReviewData } from "./compiler/context";
-import type { ProofGraph } from "./compiler/graph";
-import { scaffoldFiles } from "./scaffold";
-import { installPackages } from "./install";
-import { filterReview, formatReviewText, reviewJson } from "./review-report";
-import { verify } from "./verify";
-import { AGENT_GUIDE } from "./agent-guide";
+import { compileFile, type CompileOptions } from "./compiler/index.ts";
+import { loadProjectConfig } from "./compiler/config.ts";
+import { compileProject } from "./compiler/project.ts";
+import type { Diagnostic, ReviewData } from "./compiler/context.ts";
+import type { ProofGraph } from "./compiler/graph.ts";
+import { scaffoldFiles } from "./scaffold.ts";
+import { installPackages } from "./install.ts";
+import { filterReview, formatReviewText, reviewJson } from "./review-report.ts";
+import { verify } from "./verify.ts";
+import { AGENT_GUIDE } from "./agent-guide.ts";
 import {
   frontierJson,
   frontierText,
@@ -27,7 +27,7 @@ import {
   usesJson,
   usesText,
   type Rel,
-} from "./graph-report";
+} from "./graph-report.ts";
 
 /**
  * The `delta` commands. `main(argv)` runs one and returns its exit code; src/cli.ts is the
@@ -41,7 +41,7 @@ import {
  */
 
 // The version is read from package.json at runtime, so it is never out of sync. `../package.json`
-// resolves from src/ (tsx), from dist/cli.js (the esbuild bundle) and from the installed
+// resolves from src/ (Node running the TypeScript), from dist/cli.js (the esbuild bundle) and from the installed
 // layout (node_modules/delta-lang/dist/cli.js): npm ships the root package.json alongside dist/.
 const require = createRequire(import.meta.url);
 const VERSION: string = require("../package.json").version;
@@ -116,8 +116,11 @@ const COMMANDS: Record<string, (args: string[]) => number> = {
 
 /** Thrown to end a command early with an exit code; `main` turns it into its return value. */
 class Exit extends Error {
-  constructor(readonly code: number) {
+  readonly code: number;
+
+  constructor(code: number) {
     super(`exit ${code}`);
+    this.code = code;
   }
 }
 

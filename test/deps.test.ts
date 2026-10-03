@@ -1,8 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "./harness.ts";
 import { resolve } from "node:path";
-import { compileFile } from "../src/compiler/index";
-import { loadProjectConfig } from "../src/compiler/config";
-import { compileProject } from "../src/compiler/project";
+import { compileFile } from "../src/compiler/index.ts";
+import { loadProjectConfig } from "../src/compiler/config.ts";
+import { compileProject } from "../src/compiler/project.ts";
 
 // hello.dlt exercises every dependency kind: <include>, <document theme>, <import>
 // pack, <bibliography src>, and <figure src> — so its dep set covers them all.

@@ -1,8 +1,8 @@
-import { describe, expect, it } from "vitest";
-import { textContent, type ElementNode } from "../src/compiler/ast";
-import { createContext, type Diagnostic } from "../src/compiler/context";
-import { parse, parseSource } from "../src/compiler/parse";
-import { preprocess } from "../src/compiler/preprocess";
+import { describe, expect, it } from "./harness.ts";
+import { textContent, type ElementNode } from "../src/compiler/ast.ts";
+import { createContext, type Diagnostic } from "../src/compiler/context.ts";
+import { parse, parseSource } from "../src/compiler/parse.ts";
+import { preprocess } from "../src/compiler/preprocess.ts";
 
 /** Parses `src` as already-preprocessed text. */
 function run(src: string) {

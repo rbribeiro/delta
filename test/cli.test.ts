@@ -2,20 +2,18 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
-import { describe, expect, it } from "vitest";
-import { main } from "../src/commands";
+import { fileURLToPath } from "node:url";
+import { describe, expect, it } from "./harness.ts";
+import { main } from "../src/commands.ts";
 
 /**
  * The CLI's argv surface. Commands run in-process through `main(argv, io)` (src/commands.ts),
  * with stdout/stderr captured; `deltaIn` switches the working directory for the commands that
  * default to ./project.toml. Two smoke tests at the end spawn the real executable
- * (`node --import tsx src/cli.ts`) to check the entry point and the process exit code.
+ * (`node src/cli.ts`: Node runs the TypeScript itself) to check the entry point and the exit code.
  */
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
-// tsx is resolved from the repo, not from the working directory (tests run some commands elsewhere).
-const TSX = pathToFileURL(resolve(ROOT, "node_modules/tsx/dist/loader.mjs")).href;
 const VERSION: string = JSON.parse(readFileSync(resolve(ROOT, "package.json"), "utf8")).version;
 
 interface Run {
@@ -45,7 +43,7 @@ function deltaIn(cwd: string, ...args: string[]): Run {
 
 /** The real executable, as a child process. */
 function spawnDelta(cwd: string, ...args: string[]): Run {
-  const r = spawnSync(process.execPath, ["--import", TSX, resolve(ROOT, "src/cli.ts"), ...args], {
+  const r = spawnSync(process.execPath, [resolve(ROOT, "src/cli.ts"), ...args], {
     cwd,
     encoding: "utf8",
   });

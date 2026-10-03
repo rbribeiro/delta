@@ -30,6 +30,13 @@
   "engines": {
     "node": ">=20"
   },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": ">=22.18.0",
+      "onFail": "warn"
+    }
+  },
   "bin": {
     "delta": "dist/cli.js",
     "dlt": "dist/cli.js"
@@ -38,32 +45,32 @@
     "dist"
   ],
   "scripts": {
-    "assets": "tsx scripts/build.ts assets",
-    "trace": "tsx scripts/trace.ts",
-    "build": "tsx scripts/build.ts",
+    "assets": "node scripts/build.ts assets",
+    "trace": "node scripts/trace.ts",
+    "build": "node scripts/build.ts",
     "predev": "npm run assets",
-    "dev": "tsx src/cli.ts",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "dev": "node src/cli.ts",
+    "pretest": "npm run assets",
+    "test": "node --test --test-reporter=spec \"test/**/*.test.ts\"",
+    "pretest:watch": "npm run assets",
+    "test:watch": "node --test --watch \"test/**/*.test.ts\"",
     "pretypecheck": "npm run assets",
     "typecheck": "tsc --noEmit",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
     "docs": "npm run docs:site && npm run docs:exemplos",
     "predocs:site": "npm run assets && npm run trace",
-    "docs:site": "tsx src/cli.ts build site/project.toml",
+    "docs:site": "node src/cli.ts build site/project.toml",
     "predocs:exemplos": "npm run assets",
-    "docs:exemplos": "tsx src/cli.ts build site/exemplos/livro/project.toml && tsx src/cli.ts build site/exemplos/gigante/project.toml && tsx src/cli.ts build site/exemplos/artigo.dlt -o docs/exemplos/artigo.html && tsx src/cli.ts build site/exemplos/apresentacao.dlt -o docs/exemplos/apresentacao.html",
+    "docs:exemplos": "node src/cli.ts build site/exemplos/livro/project.toml && node src/cli.ts build site/exemplos/gigante/project.toml && node src/cli.ts build site/exemplos/artigo.dlt -o docs/exemplos/artigo.html && node src/cli.ts build site/exemplos/apresentacao.dlt -o docs/exemplos/apresentacao.html",
     "predocs:watch": "npm run assets && npm run trace",
-    "docs:watch": "tsx src/cli.ts build site/project.toml --watch",
+    "docs:watch": "node src/cli.ts build site/project.toml --watch",
     "preexample": "npm run assets",
-    "example": "tsx src/cli.ts build examples/hello.dlt -o out.html",
+    "example": "node src/cli.ts build examples/hello.dlt -o out.html",
     "preexample:project": "npm run assets",
-    "example:project": "tsx src/cli.ts build examples/project/project.toml",
+    "example:project": "node src/cli.ts build examples/project/project.toml",
     "preexample:collab": "npm run assets",
-    "example:collab": "tsx src/cli.ts build examples/collab.dlt -o examples/collab.html",
+    "example:collab": "node src/cli.ts build examples/collab.dlt -o examples/collab.html",
     "prepack": "npm run build",
-    "prepublishOnly": "npm run format:check && npm run typecheck && npm test"
+    "prepublishOnly": "npm run typecheck && npm test"
   },
   "dependencies": {
     "katex": "^0.17.0"
@@ -71,10 +78,6 @@
   "devDependencies": {
     "@types/node": "^25.9.3",
     "esbuild": "^0.28.1",
-    "happy-dom": "^20.14.5",
-    "prettier": "^3.9.9",
-    "tsx": "^4.22.4",
-    "typescript": "^6.0.3",
-    "vitest": "^4.1.8"
+    "typescript": "^6.0.3"
   }
 }

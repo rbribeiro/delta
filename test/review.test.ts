@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { compile } from "./helpers";
+import { describe, expect, it } from "./harness.ts";
+import { compile } from "./helpers.ts";
 
 /** Parses the #delta-review island out of an output. */
 function island(html: string): Record<string, unknown> | undefined {

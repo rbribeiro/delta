@@ -1,8 +1,8 @@
-import type { ElementNode, Position } from "./ast";
-import { warn, type CompileContext } from "./context";
-import { changeParts } from "./paper";
-import { BLOCK_TAGS, COLLAB_PARTS, RAW_TAGS, RESULT_TAGS } from "../language/tags";
-import { TRUST_OF } from "../language/trust";
+import type { ElementNode, Position } from "./ast.ts";
+import { warn, type CompileContext } from "./context.ts";
+import { changeParts } from "./paper.ts";
+import { BLOCK_TAGS, COLLAB_PARTS, RAW_TAGS, RESULT_TAGS } from "../language/tags.ts";
+import { TRUST_OF } from "../language/trust.ts";
 
 /**
  * The validation pass for the collaboration vocabulary — `<comment>`/`<reply>`, `<todo>`,

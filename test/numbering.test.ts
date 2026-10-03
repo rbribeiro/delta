@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
-import { elements, type ElementNode } from "../src/compiler/ast";
-import { numbered } from "./helpers";
+import { describe, expect, it } from "./harness.ts";
+import { elements, type ElementNode } from "../src/compiler/ast.ts";
+import { numbered } from "./helpers.ts";
 
 function numOf(doc: ElementNode, id: string): string | undefined {
   for (const el of elements(doc)) if (el.attrs.id === id) return el.attrs.num;

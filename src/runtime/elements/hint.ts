@@ -7,9 +7,9 @@
  *   <hint><title>Need a push?</title>Factor <m>a^2 - b^2</m>.</hint>
  */
 
-import { t } from "../i18n";
-import { popover } from "../utils";
-import { button, takeTitle } from "./shared";
+import { t } from "../i18n.ts";
+import { popover } from "../utils.ts";
+import { button, takeTitle } from "./shared.ts";
 
 class DeltaHint extends HTMLElement {
   connectedCallback(): void {

@@ -1,7 +1,7 @@
 import { basename } from "node:path";
-import { describe, expect, it } from "vitest";
-import { lintFindings, showData, showText } from "../src/graph-report";
-import { compileFiles } from "./helpers";
+import { describe, expect, it } from "./harness.ts";
+import { lintFindings, showData, showText } from "../src/graph-report.ts";
+import { compileFiles } from "./helpers.ts";
 
 function build(src: string) {
   const r = compileFiles({ "p.dlt": src });

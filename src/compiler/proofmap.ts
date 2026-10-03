@@ -1,8 +1,8 @@
-import { element as el, elements, titleOf, type ElementNode, type Node } from "./ast";
-import { error, warn, type CompileContext } from "./context";
-import { stringsFor } from "../language/strings";
-import { TRUST } from "../language/trust";
-import { ancestors, type GraphNode, type ProofGraph } from "./graph";
+import { element as el, elements, titleOf, type ElementNode, type Node } from "./ast.ts";
+import { error, warn, type CompileContext } from "./context.ts";
+import { stringsFor } from "../language/strings.ts";
+import { TRUST } from "../language/trust.ts";
+import { ancestors, type GraphNode, type ProofGraph } from "./graph.ts";
 
 /**
  * `<proof-map of="thm:main"/>`: the results a theorem rests on, drawn as a layered graph

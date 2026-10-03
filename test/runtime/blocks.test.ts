@@ -1,57 +1,74 @@
-import { describe, expect, it } from "vitest";
-import { mount } from "./helpers";
+import { describe, expect, it } from "../harness.ts";
+import { BROWSER, inspect, lazy } from "./helpers.ts";
 
-describe("<code>", () => {
-  it("gets a header with its language and a copy button, and a numbered caption", async () => {
-    const page = await mount(`<document><code lang="python" num="3">print(1)</code></document>`);
-    expect(page.$(".code-lang")!.textContent).toBe("PYTHON");
-    expect(page.$(".code-copy")!.textContent).toBe("Copy");
-    expect(page.$(".code-cap .lbl")!.textContent).toBe("Code 3");
-    expect(page.$(".code-src code .tok-builtin")!.textContent).toBe("print");
+describe.skipIf(!BROWSER)("<code>", () => {
+  const facts = lazy(() =>
+    inspect(
+      `<document><code lang="python" num="3">print(1)</code></document>`,
+      `// The clipboard needs a focused, user-activated page; stand it in.
+       let copied = null;
+       navigator.clipboard.writeText = (t) => { copied = t; return Promise.resolve(); };
+       const before = text(".code-copy");
+       click(".code-copy");
+       await sleep(20);
+       return {
+         lang: text(".code-lang"),
+         caption: text(".code-cap .lbl"),
+         builtin: text(".code-src code .tok-builtin"),
+         before,
+         copied,
+         after: text(".code-copy"),
+       };`,
+    ),
+  );
+
+  it("gets a header with its language and a copy button, and a numbered caption", () => {
+    expect(facts().lang).toBe("PYTHON");
+    expect(facts().before).toBe("Copy");
+    expect(facts().caption).toBe("Code 3");
+    expect(facts().builtin).toBe("print");
   });
 
-  it("copies its source and says so", async () => {
-    const page = await mount(`<document><code lang="python">x = 1</code></document>`);
-    page.click(".code-copy");
-    expect(await page.window.navigator.clipboard.readText()).toBe("x = 1");
-    // The label reads "Copied" once the write resolves, and "Copy" again 1.4 s later.
-    await new Promise((resolve) => setTimeout(resolve, 10));
-    expect(page.$(".code-copy")!.textContent).toBe("Copied");
-  });
-});
-
-describe("media, tables and boxes", () => {
-  it("labels a figure and a table with their numbers; a missing image says so, localized", async () => {
-    const page = await mount(`<document lang="pt"><section><title>S</title>
-      <figure><caption>A plot.</caption></figure>
-      <table><title>Data</title><row><column>1</column></row></table>
-    </section></document>`);
-    expect(page.$(".figure-cap .lbl")!.textContent).toBe("Figura 1.1");
-    expect(page.$(".video-missing")!.textContent).toBe("Imagem não encontrada.");
-    expect(page.$(".table-lbl")!.textContent).toBe("Tabela 1.1");
-  });
-
-  it("colours a box from a palette name, a type preset, or a literal colour", async () => {
-    const page = await mount(`<document>
-      <box color="teal">a</box><box type="warning">b</box><box color="#5b3fb0">c</box>
-    </document>`);
-    const [a, b, c] = page.$$("delta-box");
-    expect(a.dataset.accent).toBe("teal");
-    expect(b.dataset.accent).toBe("orange");
-    expect(c.style.getPropertyValue("--delta-accent")).toBe("#5b3fb0");
+  it("copies its source and says so", () => {
+    expect(facts().copied).toBe("print(1)");
+    expect(facts().after).toBe("Copied");
   });
 });
 
-describe("presentations", () => {
-  it("shows one slide at a time and pages with the keyboard", async () => {
-    const page = await mount(`<document type="presentation">
-      <slide><title>One</title>a</slide><slide><title>Two</title>b</slide>
-    </document>`);
-    const active = () => page.$$("delta-slide").findIndex((s) => s.classList.contains("is-active"));
-    expect(active()).toBe(0);
-    page.key("ArrowRight");
-    expect(active()).toBe(1);
-    page.key("Home");
-    expect(active()).toBe(0);
+describe.skipIf(!BROWSER)("media, tables and boxes", () => {
+  it("labels a figure and a table with their numbers; a missing image says so, localized", () => {
+    const r = inspect(
+      `<document lang="pt"><section><title>S</title>
+        <figure><caption>A plot.</caption></figure>
+        <table><title>Data</title><row><column>1</column></row></table>
+      </section></document>`,
+      `return { figure: text(".figure-cap .lbl"), missing: text(".video-missing"), table: text(".table-lbl") };`,
+    );
+    expect(r).toEqual({ figure: "Figura 1.1", missing: "Imagem não encontrada.", table: "Tabela 1.1" });
+  });
+
+  it("colours a box from a palette name, a type preset, or a literal colour", () => {
+    const r = inspect(
+      `<document><box color="teal">a</box><box type="warning">b</box><box color="#5b3fb0">c</box></document>`,
+      `const [a, b, c] = $$("delta-box");
+       return { a: a.dataset.accent, b: b.dataset.accent, c: c.style.getPropertyValue("--delta-accent") };`,
+    );
+    expect(r).toEqual({ a: "teal", b: "orange", c: "#5b3fb0" });
+  });
+});
+
+describe.skipIf(!BROWSER)("presentations", () => {
+  it("shows one slide at a time and pages with the keyboard", () => {
+    const r = inspect(
+      `<document type="presentation"><slide><title>One</title>a</slide><slide><title>Two</title>b</slide></document>`,
+      `const active = () => $$("delta-slide").findIndex((s) => s.classList.contains("is-active"));
+       const seq = [active()];
+       key("ArrowRight");
+       seq.push(active());
+       key("Home");
+       seq.push(active());
+       return { seq };`,
+    );
+    expect(r.seq).toEqual([0, 1, 0]);
   });
 });

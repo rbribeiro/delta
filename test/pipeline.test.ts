@@ -1,10 +1,10 @@
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { describe, expect, it } from "vitest";
-import { compileFile, type CompileOptions, type TraceEvent } from "../src/compiler/index";
-import { PIPELINE } from "../src/compiler/pipeline";
-import { compileProject } from "../src/compiler/project";
+import { describe, expect, it } from "./harness.ts";
+import { compileFile, type CompileOptions, type TraceEvent } from "../src/compiler/index.ts";
+import { PIPELINE } from "../src/compiler/pipeline.ts";
+import { compileProject } from "../src/compiler/project.ts";
 
 /** Writes each source into a fresh temp dir and returns its absolute paths. */
 function scratch(files: Record<string, string>): { dir: string; paths: string[] } {

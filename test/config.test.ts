@@ -1,8 +1,8 @@
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
-import { loadProjectConfig } from "../src/compiler/config";
+import { describe, expect, it } from "./harness.ts";
+import { loadProjectConfig } from "../src/compiler/config.ts";
 
 /** Write a project.toml to a fresh temp dir and return its path. */
 function writeToml(content: string): string {

@@ -1,12 +1,12 @@
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
-import type { SourceSpan } from "../src/compiler/ast";
-import type { ProofGraph } from "../src/compiler/graph";
-import { compileProject } from "../src/compiler/project";
-import { lintFindings } from "../src/graph-report";
-import { setAttributes } from "../src/verify";
+import { describe, expect, it } from "./harness.ts";
+import type { SourceSpan } from "../src/compiler/ast.ts";
+import type { ProofGraph } from "../src/compiler/graph.ts";
+import { compileProject } from "../src/compiler/project.ts";
+import { lintFindings } from "../src/graph-report.ts";
+import { setAttributes } from "../src/verify.ts";
 
 function graphOf(src: string): {
   graph: ProofGraph;

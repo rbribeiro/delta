@@ -1,80 +1,94 @@
-import { describe, expect, it } from "vitest";
-import { mount } from "./helpers";
+import { describe, expect, it } from "../harness.ts";
+import { BROWSER, inspect, lazy } from "./helpers.ts";
 
-describe("<theorem> and friends", () => {
-  it("draws a box with a localized, numbered tag and the author's title", async () => {
-    const page = await mount(`<document><section><title>S</title>
-      <theorem id="t"><title>Main</title>Every $x$ works.</theorem>
-    </section></document>`);
-    const box = page.$("delta-theorem")!;
-    expect(box.classList.contains("box")).toBe(true);
-    expect(page.$(".box-tag")!.textContent).toBe("Theorem 1.1 Main");
-    expect(page.$(".box-tag-title")!.textContent).toBe("Main");
-    expect(page.$("delta-theorem > delta-title")).toBeNull(); // the title moved into the tag
+const DOC = `<document>
+  <section><title>One</title>
+    <theorem id="t"><title>Main</title>Every $x$ works.</theorem>
+    <lemma id="a">A.</lemma>
+    <proof of="a">Because.</proof>
+    <theorem id="m">T.<meta><meta-item key="Source &lt;b&gt;">Euler</meta-item></meta></theorem>
+    <theorem id="aid">T.<intuition>Why.</intuition></theorem>
+    <subsection><title>Two</title>x</subsection>
+  </section>
+  <section id="fold" collapsible="true"><title>Fold</title>Body.</section>
+  <section id="closed" collapsed="true"><title>Closed</title>Body.</section>
+</document>`;
+
+describe.skipIf(!BROWSER)("<theorem> and friends", () => {
+  const facts = lazy(() =>
+    inspect(
+      DOC,
+      `const main = $("#t");
+       const meta = $("#m");
+       const toggle = $("#fold .collapse-toggle");
+       const folded = () => $("#fold").classList.contains("is-collapsed");
+       const seq = [toggle.getAttribute("aria-expanded"), folded()];
+       toggle.click();
+       seq.push(toggle.getAttribute("aria-expanded"), folded());
+       key("Enter", toggle);
+       seq.push(folded());
+       return {
+         isBox: main.classList.contains("box"),
+         tag: text(".box-tag", main),
+         tagTitle: text(".box-tag-title", main),
+         titleLeft: !!$(":scope > delta-title", main),
+         lead: text("delta-proof > .proof-lead"),
+         leadHasXref: !!$("delta-proof > .proof-lead .xref"),
+         qed: !!$("delta-proof > .proof-qed"),
+         metaLast: meta.lastElementChild.className,
+         metaKey: text(".box-meta .k", meta),
+         metaKeyHasB: !!$(".box-meta .k b", meta),
+         metaValue: text(".box-meta .v", meta),
+         dots: $$("#aid .lens-dot").map((d) => d.dataset.aid),
+         drawerAfter: !!$("#aid + .lens-drawer"),
+         h2: text("h2.section"),
+         h3: text("h3.sub"),
+         foldSequence: seq,
+         startsClosed: $("#closed").classList.contains("is-collapsed"),
+       };`,
+    ),
+  );
+
+  it("draws a box with a numbered tag and the author's title", () => {
+    expect(facts().isBox).toBe(true);
+    expect(facts().tag).toBe("Theorem 1.1 Main");
+    expect(facts().tagTitle).toBe("Main");
+    expect(facts().titleLeft).toBe(false); // the title moved into the tag
   });
 
-  it("speaks the document's language", async () => {
-    const page = await mount(`<document lang="pt"><lemma>L.</lemma></document>`);
-    expect(page.$(".box-tag")!.textContent).toBe("Lema 1");
+  it("gives a proof an italic lead, a link to what it proves, and a QED mark", () => {
+    expect(facts().lead).toBe("Proof Lemma 1.1.");
+    expect(facts().leadHasXref).toBe(true);
+    expect(facts().qed).toBe(true);
   });
 
-  it("gives a proof an italic lead, a link to what it proves, and a QED mark", async () => {
-    const page = await mount(
-      `<document><lemma id="a">A.</lemma><proof of="a">Because.</proof></document>`,
-    );
-    const lead = page.$("delta-proof > .proof-lead")!;
-    expect(lead.textContent).toBe("Proof Lemma 1.");
-    expect(lead.querySelector(".xref")).not.toBeNull();
-    expect(page.$("delta-proof > .proof-qed")).not.toBeNull();
+  it("puts the <meta> row at the bottom of the box, keys as text", () => {
+    expect(facts().metaLast).toBe("box-meta");
+    expect(facts().metaKey).toBe("Source <b>");
+    expect(facts().metaKeyHasB).toBe(false);
+    expect(facts().metaValue).toBe("Euler");
   });
 
-  it("puts the <meta> row at the bottom of the box, keys as text", async () => {
-    const page = await mount(
-      `<document><theorem>T.<meta><meta-item key="Source &lt;b&gt;">Euler</meta-item></meta></theorem></document>`,
-    );
-    const box = page.$("delta-theorem")!;
-    expect(box.lastElementChild!.className).toBe("box-meta");
-    expect(page.$(".box-meta .k")!.textContent).toBe("Source <b>");
-    expect(page.$(".box-meta .k b")).toBeNull();
-    expect(page.$(".box-meta .v")!.textContent).toBe("Euler");
+  it("hangs a reader aid under the box as a dot and a folded drawer", () => {
+    expect(facts().dots).toEqual(["intuition"]);
+    expect(facts().drawerAfter).toBe(true);
   });
 
-  it("hangs a reader aid under the box as a dot and a folded drawer", async () => {
-    const page = await mount(
-      `<document><theorem>T.<intuition>Why.</intuition></theorem></document>`,
-    );
-    expect(page.$$(".lens-dot").map((d) => d.dataset.aid)).toEqual(["intuition"]);
-    expect(page.$("delta-theorem + .lens-drawer")).not.toBeNull();
-  });
-});
-
-describe("sections and folding", () => {
-  it("turns the title into a real heading with its number", async () => {
-    const page = await mount(
-      `<document><section><title>One</title><subsection><title>Two</title>x</subsection></section></document>`,
-    );
-    expect(page.$("h2.section")!.textContent).toBe("1 One");
-    expect(page.$("h3.sub")!.textContent).toBe("1.1 Two");
+  it("turns section titles into real headings with their numbers", () => {
+    expect(facts().h2).toBe("1 One");
+    expect(facts().h3).toBe("1.1 Two");
   });
 
-  it("folds and unfolds a collapsible section, by click and by keyboard", async () => {
-    const page = await mount(
-      `<document><section collapsible="true"><title>One</title>Body.</section></document>`,
-    );
-    const section = page.$("delta-section")!;
-    const toggle = page.$(".collapse-toggle")!;
-    expect(toggle.getAttribute("aria-expanded")).toBe("true");
-    toggle.click();
-    expect(section.classList.contains("is-collapsed")).toBe(true);
-    expect(toggle.getAttribute("aria-expanded")).toBe("false");
-    page.key("Enter", ".collapse-toggle");
-    expect(section.classList.contains("is-collapsed")).toBe(false);
+  it("folds and unfolds a collapsible section, by click and by keyboard", () => {
+    expect(facts().foldSequence).toEqual(["true", false, "false", true, false]);
   });
 
-  it('starts folded with collapsed="true"', async () => {
-    const page = await mount(
-      `<document><section collapsed="true"><title>One</title>Body.</section></document>`,
-    );
-    expect(page.$("delta-section")!.classList.contains("is-collapsed")).toBe(true);
+  it('starts folded with collapsed="true"', () => {
+    expect(facts().startsClosed).toBe(true);
+  });
+
+  it("speaks the document's language", () => {
+    const r = inspect(`<document lang="pt"><lemma>L.</lemma></document>`, `return { tag: text(".box-tag") };`);
+    expect(r.tag).toBe("Lema 1");
   });
 });

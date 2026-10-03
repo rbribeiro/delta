@@ -1,7 +1,7 @@
-import type { ElementNode } from "./ast";
-import { COUNTER_RESETS, ENVIRONMENTS, type EnvironmentSpec } from "../language/environments";
-import { OPAQUE } from "../language/tags";
-import { warn, type CompileContext } from "./context";
+import type { ElementNode } from "./ast.ts";
+import { COUNTER_RESETS, ENVIRONMENTS, type EnvironmentSpec } from "../language/environments.ts";
+import { OPAQUE } from "../language/tags.ts";
+import { warn, type CompileContext } from "./context.ts";
 
 /**
  * Carried counter state. A single document starts fresh; a project threads one

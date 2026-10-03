@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { parseToml, TomlError } from "./toml";
-import type { Diagnostic } from "./context";
-import { isBuiltinThemeName } from "./theme";
+import { parseToml, TomlError } from "./toml.ts";
+import type { Diagnostic } from "./context.ts";
+import { isBuiltinThemeName } from "./theme.ts";
 
 /**
  * A resolved project: the ordered list of input `.dlt` files and the directory

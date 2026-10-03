@@ -1,15 +1,15 @@
-import { elements, hasTag, nearest, titleOf, walk, type ElementNode, type Node } from "./ast";
+import { elements, hasTag, nearest, titleOf, walk, type ElementNode, type Node } from "./ast.ts";
 import {
   warn,
   type CompileContext,
   type ReviewHeading,
   type ReviewItem,
   type ReviewReply,
-} from "./context";
-import { stringsFor } from "../language/strings";
-import { HEADING_LEVEL, HEADING_TAGS, OPAQUE, RAW_TAGS } from "../language/tags";
-import { ensureHeadingId, uniqueSlug, type SlugState } from "./toc";
-import { changeParts, plainText, proofTarget } from "./paper";
+} from "./context.ts";
+import { stringsFor } from "../language/strings.ts";
+import { HEADING_LEVEL, HEADING_TAGS, OPAQUE, RAW_TAGS } from "../language/tags.ts";
+import { ensureHeadingId, uniqueSlug, type SlugState } from "./toc.ts";
+import { changeParts, plainText, proofTarget } from "./paper.ts";
 
 /**
  * Collects the collaboration state of a document into `ctx.review`: every `<comment>`,

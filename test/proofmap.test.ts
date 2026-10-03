@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { compileFiles as build } from "./helpers";
+import { describe, expect, it } from "./harness.ts";
+import { compileFiles as build } from "./helpers.ts";
 
 const doc = (body: string) =>
   `<document lang="pt-BR"><section id="s"><title>S</title>${body}</section></document>`;

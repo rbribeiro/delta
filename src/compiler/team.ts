@@ -1,6 +1,6 @@
-import { elements, type ElementNode, type Node, type Position } from "./ast";
-import { warn, type CompileContext, type TeamMember } from "./context";
-import { PALETTE } from "../language/palette";
+import { elements, type ElementNode, type Node, type Position } from "./ast.ts";
+import { warn, type CompileContext, type TeamMember } from "./context.ts";
+import { PALETTE } from "../language/palette.ts";
 
 /**
  * `<team>` — the collaborators registry, a direct child of `<document>`:

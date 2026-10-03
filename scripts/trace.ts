@@ -1,10 +1,10 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, resolve } from "node:path";
-import type { Node } from "../src/compiler/ast";
-import { loadProjectConfig } from "../src/compiler/config";
-import type { CompileContext } from "../src/compiler/context";
-import { PIPELINE, type Shared } from "../src/compiler/pipeline";
-import { compileProject } from "../src/compiler/project";
+import type { Node } from "../src/compiler/ast.ts";
+import { loadProjectConfig } from "../src/compiler/config.ts";
+import type { CompileContext } from "../src/compiler/context.ts";
+import { PIPELINE, type Shared } from "../src/compiler/pipeline.ts";
+import { compileProject } from "../src/compiler/project.ts";
 
 /**
  * Generates the data behind the docs' pipeline explorer (`site/compilador.dlt`).

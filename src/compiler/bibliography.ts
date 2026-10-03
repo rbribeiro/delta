@@ -1,9 +1,9 @@
 import { dirname, resolve } from "node:path";
-import { elements, hasTag, titleOf, type ElementNode } from "./ast";
-import { warn, type CompileContext } from "./context";
-import { isRemote, readUserFile, withFile } from "./files";
-import { OPAQUE } from "../language/tags";
-import { parseSource } from "./parse";
+import { elements, hasTag, titleOf, type ElementNode } from "./ast.ts";
+import { warn, type CompileContext } from "./context.ts";
+import { isRemote, readUserFile, withFile } from "./files.ts";
+import { OPAQUE } from "../language/tags.ts";
+import { parseSource } from "./parse.ts";
 
 /**
  * Loads the bibliography from the given document (or children `<paper>` elements) and registers the papers in the compiler context.

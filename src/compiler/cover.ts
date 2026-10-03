@@ -1,5 +1,5 @@
-import type { ElementNode } from "./ast";
-import type { CompileContext } from "./context";
+import type { ElementNode } from "./ast.ts";
+import type { CompileContext } from "./context.ts";
 
 /**
  * Presentation cover. `<cover>` (a direct child of `<document>`) is the deck's front

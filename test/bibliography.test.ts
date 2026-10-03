@@ -1,8 +1,8 @@
-import { describe, expect, it } from "vitest";
-import { elements, type ElementNode } from "../src/compiler/ast";
-import { loadBibliography, resolveCitations } from "../src/compiler/bibliography";
-import type { CompileContext } from "../src/compiler/context";
-import { compileHtml, parsed, warnings } from "./helpers";
+import { describe, expect, it } from "./harness.ts";
+import { elements, type ElementNode } from "../src/compiler/ast.ts";
+import { loadBibliography, resolveCitations } from "../src/compiler/bibliography.ts";
+import type { CompileContext } from "../src/compiler/context.ts";
+import { compileHtml, parsed, warnings } from "./helpers.ts";
 
 // The document lives in test/, so a `src` resolves relative to test/.
 const FILE = "test/doc.dlt";

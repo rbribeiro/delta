@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vitest";
-import { type CompileContext } from "../src/compiler/context";
-import { collectTeam } from "../src/compiler/team";
-import { PALETTE } from "../src/language/palette";
-import type { ElementNode } from "../src/compiler/ast";
-import { compile, parsed, warnings } from "./helpers";
+import { describe, expect, it } from "./harness.ts";
+import { type CompileContext } from "../src/compiler/context.ts";
+import { collectTeam } from "../src/compiler/team.ts";
+import { PALETTE } from "../src/language/palette.ts";
+import type { ElementNode } from "../src/compiler/ast.ts";
+import { compile, parsed, warnings } from "./helpers.ts";
 
 function team(src: string): { doc: ElementNode; ctx: CompileContext } {
   const { doc, ctx } = parsed(src);

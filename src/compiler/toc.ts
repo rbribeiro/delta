@@ -1,6 +1,6 @@
-import { elements, hasTag, textContent, titleOf, type ElementNode } from "./ast";
-import type { CompileContext, TocEntry } from "./context";
-import { HEADING_LEVEL, OPAQUE } from "../language/tags";
+import { elements, hasTag, textContent, titleOf, type ElementNode } from "./ast.ts";
+import type { CompileContext, TocEntry } from "./context.ts";
+import { HEADING_LEVEL, OPAQUE } from "../language/tags.ts";
 
 /**
  * Builds the table-of-contents heading tree consumed by `<delta-toc>`. Walks the

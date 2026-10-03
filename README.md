@@ -57,7 +57,7 @@ tag is one custom element under [src/runtime/elements/](src/runtime/elements/).
 ```bash
 npm install
 npm run example        # compiles examples/hello.dlt → out.html, open it in a browser
-npm test               # vitest
+npm test               # node --test
 npm run build          # dist/cli.js
 node dist/cli.js build mydoc.dlt -o mydoc.html
 ```

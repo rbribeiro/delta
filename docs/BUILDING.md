@@ -20,8 +20,8 @@ argument:
   `dist/cli.js`.
 
 ```
-npm run assets      ->  tsx scripts/build.ts assets   ->  buildAssets() only
-npm run build       ->  tsx scripts/build.ts          ->  buildAssets() + buildCli()
+npm run assets      ->  node scripts/build.ts assets   ->  buildAssets() only
+npm run build       ->  node scripts/build.ts          ->  buildAssets() + buildCli()
 ```
 
 Both use [esbuild](https://esbuild.github.io/).
@@ -85,31 +85,28 @@ So `npm publish` ships only `dist/`, and an installed `delta` command runs the b
 
 | Script | Command | What it does |
 |--------|---------|--------------|
-| `assets` | `tsx scripts/build.ts assets` | regenerate `src/generated/assets.ts` only |
-| `build` | `tsx scripts/build.ts` | assets + bundle the CLI to `dist/cli.js` |
-| `dev` | `tsx src/cli.ts` | run the CLI from source (e.g. `npm run dev -- build doc.dlt -o out.html`) |
-| `test` | `vitest run` | run the test suite once |
-| `test:watch` | `vitest` | run the suite in watch mode |
+| `assets` | `node scripts/build.ts assets` | regenerate `src/generated/assets.ts` only |
+| `build` | `node scripts/build.ts` | assets + bundle the CLI to `dist/cli.js` |
+| `dev` | `node src/cli.ts` | run the CLI from source (e.g. `npm run dev -- build doc.dlt -o out.html`) |
+| `test` | `node --test "test/**/*.test.ts"` | run the test suite once (`pretest` regenerates the assets) |
+| `test:watch` | `node --test --watch …` | rerun the suite on every save |
 | `typecheck` | `tsc --noEmit` | type-check without emitting |
-| `format` | `prettier --write .` | format the code (TS, JS, JSON; see `.prettierignore` for what is left alone) |
-| `format:check` | `prettier --check .` | fail if any file is not formatted (run by `prepublishOnly`) |
-| `example` | `tsx src/cli.ts build examples/hello.dlt -o out.html` | compile the single-file example |
-| `example:project` | `tsx src/cli.ts build examples/project/project.toml` | compile the multi-file project example |
-| `example:collab` | `tsx src/cli.ts build examples/collab.dlt -o examples/collab.html` | compile the collaboration example |
-| `trace` | `tsx scripts/trace.ts` | regenerate the pipeline explorer's data (`site/packs/pipeline/dist/index.js`) |
+| `example` | `node src/cli.ts build examples/hello.dlt -o out.html` | compile the single-file example |
+| `example:project` | `node src/cli.ts build examples/project/project.toml` | compile the multi-file project example |
+| `example:collab` | `node src/cli.ts build examples/collab.dlt -o examples/collab.html` | compile the collaboration example |
+| `trace` | `node scripts/trace.ts` | regenerate the pipeline explorer's data (`site/packs/pipeline/dist/index.js`) |
 | `docs` | `npm run docs:site && npm run docs:exemplos` | build the whole published site |
-| `docs:site` | `tsx src/cli.ts build site/project.toml` | compile the site project (`site/*.dlt` → `docs/*.html`); `predocs:site` runs `assets` and `trace` first |
-| `docs:watch` | `tsx src/cli.ts build site/project.toml --watch` | rebuild the site on every save; `predocs:watch` runs `assets` and `trace` first |
-| `docs:exemplos` | four `tsx src/cli.ts build …` calls | compile the live examples (`site/exemplos/` → `docs/exemplos/`): the two book projects, the article, the presentation; `predocs:exemplos` runs `assets` first |
+| `docs:site` | `node src/cli.ts build site/project.toml` | compile the site project (`site/*.dlt` → `docs/*.html`); `predocs:site` runs `assets` and `trace` first |
+| `docs:watch` | `node src/cli.ts build site/project.toml --watch` | rebuild the site on every save; `predocs:watch` runs `assets` and `trace` first |
+| `docs:exemplos` | four `node src/cli.ts build …` calls | compile the live examples (`site/exemplos/` → `docs/exemplos/`): the two book projects, the article, the presentation; `predocs:exemplos` runs `assets` first |
 | `prepack` | `npm run build` | build `dist/` before `npm pack` / `npm publish` |
-| `prepublishOnly` | `npm run format:check && npm run typecheck && npm test` | refuse to publish an unformatted or broken build |
+| `prepublishOnly` | `npm run typecheck && npm test` | refuse to publish a broken build |
 
-**The assets regenerate for you.** Every vitest run (`npm test`, `test:watch`, or `vitest`
-directly) rebuilds them first through its global setup ([vitest.config.ts](../vitest.config.ts),
-`test/setup-assets.ts`). `predev`, `pretypecheck`, `preexample` and `preexample:project` run
-`npm run assets` first, so the generated file is fresh whenever you go through `npm`.
+**The assets regenerate for you.** `pretest`, `pretest:watch`, `predev`, `pretypecheck`,
+`preexample` and `preexample:project` run `npm run assets` first, so the generated file is
+fresh whenever you go through `npm`.
 
-**The one gotcha:** running `tsc` or `tsx src/cli.ts` **directly** (not via `npm`) skips the
+**The one gotcha:** running `tsc` or `node src/cli.ts` **directly** (not via `npm`) skips the
 hooks. On a fresh checkout, or after editing anything under `src/runtime/` or `src/styles/`,
 run `npm run assets` once first -- otherwise you will hit a missing-module error or see stale
 runtime/CSS. In `test:watch`, the assets are rebuilt once per start, not on every save. (Same note in
@@ -121,15 +118,16 @@ runtime/CSS. In `test:watch`, the assets are rebuilt once per start, not on ever
   parser (`src/compiler/xml.ts`), the `project.toml` parser (`src/compiler/toml.ts`) and the
   syntax highlighter (`src/compiler/highlight.ts`) are Delta's own, and the body font is
   vendored in `src/styles/fonts/`.
-- **Build / dev** (`devDependencies`): `esbuild` (bundling), `tsx` (run TS directly),
-  `typescript` (type-checking), `vitest` (tests), `happy-dom` (the runtime tests' DOM),
-  `prettier` (formatting), `@types/node`.
+- **Build / dev** (`devDependencies`): `esbuild` (bundling), `typescript` (type-checking),
+  `@types/node`. Node itself runs the TypeScript sources (22.18+ / 24+) and runs the tests
+  (`node --test`, with the small `expect` in [test/harness.ts](../test/harness.ts)), so there
+  is no transpiler and no test framework to install.
 
 ## A typical loop
 
 ```
 npm install
-npm run assets          # once, so direct tsx/vitest calls work
+npm run assets          # once, so direct node calls work
 npm test                # or: npm run typecheck
 npm run example         # compile examples/hello.dlt -> out.html, open from file://
 npm run build           # produce dist/cli.js for distribution

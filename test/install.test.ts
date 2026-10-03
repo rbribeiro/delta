@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
-import { parseToml } from "../src/compiler/toml";
-import { addPackagesToToml } from "../src/install";
+import { describe, expect, it } from "./harness.ts";
+import { parseToml } from "../src/compiler/toml.ts";
+import { addPackagesToToml } from "../src/install.ts";
 
 describe("addPackagesToToml", () => {
   it("appends to an existing packages array", () => {

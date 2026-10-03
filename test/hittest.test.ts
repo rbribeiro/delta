@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
-import { BROWSER, evaluate } from "./browser";
-import { compileHtml } from "./helpers";
+import { describe, expect, it } from "./harness.ts";
+import { BROWSER, evaluate } from "./browser.ts";
+import { compileHtml } from "./helpers.ts";
 
 /**
  * Hit-testing regression guard — the ONE thing a DOM shim cannot check.

@@ -1,16 +1,16 @@
-import type { ProofGraph } from "./graph";
+import type { ProofGraph } from "./graph.ts";
 import { join } from "node:path";
-import type { ProjectConfig } from "./config";
-import { createContext, hasErrors, type Diagnostic, type ReviewData } from "./context";
+import type { ProjectConfig } from "./config.ts";
+import { createContext, hasErrors, type Diagnostic, type ReviewData } from "./context.ts";
 import {
   createShared,
   outNameFor,
   runPipeline,
   type CompileOptions,
   type FileUnit,
-} from "./pipeline";
+} from "./pipeline.ts";
 
-export { outNameFor } from "./pipeline";
+export { outNameFor } from "./pipeline.ts";
 
 export interface ProjectResult {
   /** One per input, in declaration order; written verbatim by the CLI. */

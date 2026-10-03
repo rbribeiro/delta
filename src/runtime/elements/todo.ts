@@ -13,8 +13,8 @@
  * and in print (collab.css).
  */
 
-import { t } from "../i18n";
-import { memberChip, memberColor } from "./collab";
+import { t } from "../i18n.ts";
+import { memberChip, memberColor } from "./collab.ts";
 
 const GLYPH: Record<string, string> = { open: "☐", doing: "◐", done: "☑" }; // ☐ ◐ ☑
 

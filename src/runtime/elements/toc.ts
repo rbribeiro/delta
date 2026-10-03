@@ -11,9 +11,9 @@
  * navigate there); the default lists only this file's own entries (no `file`).
  */
 
-import { t } from "../i18n";
-import { readIsland } from "../island";
-import { linkJump, takeTitle } from "./shared";
+import { t } from "../i18n.ts";
+import { readIsland } from "../island.ts";
+import { linkJump, takeTitle } from "./shared.ts";
 
 interface TocItem {
   level: number;

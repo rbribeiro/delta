@@ -1,14 +1,14 @@
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
-import type { ElementNode } from "../src/compiler/ast";
-import { createContext, type CompileContext } from "../src/compiler/context";
-import { resolveImports } from "../src/compiler/imports";
-import { parse } from "../src/compiler/parse";
-import { preprocess } from "../src/compiler/preprocess";
-import { THEMES } from "../src/generated/assets";
-import { compileHtml, parsed } from "./helpers";
+import { describe, expect, it } from "./harness.ts";
+import type { ElementNode } from "../src/compiler/ast.ts";
+import { createContext, type CompileContext } from "../src/compiler/context.ts";
+import { resolveImports } from "../src/compiler/imports.ts";
+import { parse } from "../src/compiler/parse.ts";
+import { preprocess } from "../src/compiler/preprocess.ts";
+import { THEMES } from "../src/generated/assets.ts";
+import { compileHtml, parsed } from "./helpers.ts";
 
 const compile = (src: string): string => compileHtml(src, { file: "test/doc.dlt" });
 

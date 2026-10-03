@@ -9,7 +9,7 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { parseToml } from "./compiler/toml";
+import { parseToml } from "./compiler/toml.ts";
 
 /** A `[table]` / `[[table]]` header at the start of a line — packages must go *before* the first. */
 const TABLE_HEADER = /^\s*\[/m;

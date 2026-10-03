@@ -11,9 +11,9 @@
  *   steps above level k, so the reader sees the claims down to level k.
  */
 
-import { t } from "../i18n";
-import { buildLens } from "./aid";
-import { button, setFolded } from "./shared";
+import { t } from "../i18n.ts";
+import { buildLens } from "./aid.ts";
+import { button, setFolded } from "./shared.ts";
 
 class DeltaStep extends HTMLElement {
   connectedCallback(): void {

@@ -1,7 +1,7 @@
-import { describe, expect, it } from "vitest";
-import { mount } from "./helpers";
+import { describe, expect, it } from "../harness.ts";
+import { BROWSER, inspect, lazy } from "./helpers.ts";
 
-const DOC = `<document>
+const DOC = `<document><toc/>
   <section id="s1"><title>First</title>
     <lemma id="a"><title>Key</title>The statement.</lemma>
     See <ref to="a"/> and <ref to="a">the key lemma</ref>, also $\\eqref{e}$.
@@ -12,78 +12,95 @@ const DOC = `<document>
   </section>
 </document>`;
 
-describe("<ref>", () => {
-  it("reads as the target's label unless the author wrote their own text", async () => {
-    const page = await mount(DOC);
-    expect(page.$$("delta-ref .xref").map((b) => b.textContent)).toEqual([
-      "Lemma 1.1",
-      "the key lemma",
-    ]);
+describe.skipIf(!BROWSER)("<ref> and <toc>", () => {
+  const facts = lazy(() =>
+    inspect(
+      DOC,
+      `const trigger = $("delta-ref .xref");
+       const labels = $$("delta-ref .xref").map((b) => b.textContent);
+       const expandedBefore = trigger.getAttribute("aria-expanded");
+       trigger.click();
+       const expandedAfter = trigger.getAttribute("aria-expanded");
+       const card = openPopover();
+       const cardLabel = text(".xref-pop-label", card);
+       const cardBody = text(".xref-pop-body", card);
+       const cardHasIds = !!$("[id]", card);
+       key("Escape");
+       const expandedAfterEscape = trigger.getAttribute("aria-expanded");
+       trigger.click();
+       click(".xref-go");
+       const flashed = $("#a").classList.contains("is-xref-target");
+
+       const marker = $(".math-xref");
+       const mathLabel = marker.textContent;
+       const mathTabIndex = marker.tabIndex;
+       marker.click();
+       const mathExpanded = marker.getAttribute("aria-expanded");
+       key("Escape");
+
+       const toc = $$(".toc-link").map((a) => [a.getAttribute("href"), a.textContent]);
+       const nested = !!$(".toc-list > .toc-item > .toc-sub");
+       const tocLabel = $("nav.toc").getAttribute("aria-label");
+       const foldedBefore = $("#s2").classList.contains("is-collapsed");
+       click('.toc-link[href="#deep"]');
+       return {
+         labels, expandedBefore, expandedAfter, cardLabel, cardBody, cardHasIds, expandedAfterEscape, flashed,
+         mathLabel, mathTabIndex, mathExpanded, toc, nested, tocLabel, foldedBefore,
+         foldedAfter: $("#s2").classList.contains("is-collapsed"),
+         deepFlashed: $("#deep").classList.contains("is-xref-target"),
+       };`,
+    ),
+  );
+
+  it("reads as the target's label unless the author wrote their own text", () => {
+    expect(facts().labels).toEqual(["Lemma 1.1", "the key lemma"]);
   });
 
-  it("opens a preview card cloned from the target's snapshot, without its ids", async () => {
-    const page = await mount(DOC);
-    const trigger = page.$("delta-ref .xref")!;
-    expect(trigger.getAttribute("aria-expanded")).toBe("false");
-    trigger.click();
-    expect(trigger.getAttribute("aria-expanded")).toBe("true");
-    const card = page.openPopover()!;
-    expect(card.querySelector(".xref-pop-label")!.textContent).toBe("Lemma 1.1");
-    expect(card.querySelector(".xref-pop-body")!.textContent).toContain("The statement.");
-    expect(card.querySelector("[id]")).toBeNull(); // the original keeps the anchor
+  it("opens a preview card cloned from the target's snapshot, without its ids", () => {
+    expect(facts().expandedBefore).toBe("false");
+    expect(facts().expandedAfter).toBe("true");
+    expect(facts().cardLabel).toBe("Lemma 1.1");
+    expect(facts().cardBody).toContain("The statement.");
+    expect(facts().cardHasIds).toBe(false); // the original keeps the anchor
   });
 
-  it("closes on Escape, and its go button jumps to the target", async () => {
-    const page = await mount(DOC);
-    page.click("delta-ref .xref");
-    page.key("Escape");
-    expect(page.$("delta-ref .xref")!.getAttribute("aria-expanded")).toBe("false");
-
-    page.click("delta-ref .xref");
-    page.click(".xref-go");
-    expect(page.$("#a")!.classList.contains("is-xref-target")).toBe(true);
+  it("closes on Escape, and its go button jumps to the target", () => {
+    expect(facts().expandedAfterEscape).toBe("false");
+    expect(facts().flashed).toBe(true);
   });
 
-  it("makes a \\ref inside math a keyboard-reachable trigger", async () => {
-    const page = await mount(DOC);
-    const marker = page.$(".math-xref")!;
-    expect(marker.textContent).toBe("(1.1)");
-    expect(marker.tabIndex).toBe(0);
-    marker.click();
-    expect(marker.getAttribute("aria-expanded")).toBe("true");
+  it("makes a \\ref inside math a keyboard-reachable trigger", () => {
+    expect(facts().mathLabel).toBe("(1.1)");
+    expect(facts().mathTabIndex).toBe(0);
+    expect(facts().mathExpanded).toBe("true");
   });
-});
 
-describe("<toc>", () => {
-  it("lists the headings, nested, with numbers and links", async () => {
-    const page = await mount(DOC.replace("<document>", "<document><toc/>"));
-    expect(page.$$(".toc-link").map((a) => [a.getAttribute("href"), a.textContent])).toEqual([
+  it("lists the headings in the ToC, nested, with numbers and links", () => {
+    expect(facts().toc).toEqual([
       ["#s1", "1 First"],
       ["#s2", "2 Second"],
       ["#deep", "2.1 Deep"],
     ]);
-    expect(page.$(".toc-list > .toc-item > .toc-sub")).not.toBeNull();
-    expect(page.$("nav.toc")!.getAttribute("aria-label")).toBe("Contents");
+    expect(facts().nested).toBe(true);
+    expect(facts().tocLabel).toBe("Contents");
   });
 
-  it("takes its heading from a <title>, and depth limits how deep it goes", async () => {
-    const page = await mount(
-      DOC.replace("<document>", `<document><toc depth="1"><title>Plan</title></toc>`),
+  it("unfolds a folded section to reach a heading inside it", () => {
+    expect(facts().foldedBefore).toBe(true);
+    expect(facts().foldedAfter).toBe(false);
+    expect(facts().deepFlashed).toBe(true);
+  });
+
+  it("takes the ToC heading from a <title>, and depth limits how deep it goes", () => {
+    const r = inspect(
+      DOC.replace("<toc/>", `<toc depth="1"><title>Plan</title></toc>`),
+      `return { title: text(".toc-title"), links: $$(".toc-link").length };`,
     );
-    expect(page.$(".toc-title")!.textContent).toBe("Plan");
-    expect(page.$$(".toc-link")).toHaveLength(2);
-  });
-
-  it("unfolds a folded section to reach a heading inside it", async () => {
-    const page = await mount(DOC.replace("<document>", "<document><toc/>"));
-    expect(page.$("#s2")!.classList.contains("is-collapsed")).toBe(true);
-    page.click('.toc-link[href="#deep"]');
-    expect(page.$("#s2")!.classList.contains("is-collapsed")).toBe(false);
-    expect(page.$("#deep")!.classList.contains("is-xref-target")).toBe(true);
+    expect(r).toEqual({ title: "Plan", links: 2 });
   });
 });
 
-describe("<cite> and <bibliography>", () => {
+describe.skipIf(!BROWSER)("<cite> and <bibliography>", () => {
   const BIB = `<document>
     As shown in <cite paper="k98"/> and <cite papers="k98,ab10"/>.
     <bibliography>
@@ -91,34 +108,40 @@ describe("<cite> and <bibliography>", () => {
       <paper id="ab10"><author>Abel</author><title>Series</title><year>2010</year></paper>
     </bibliography>
   </document>`;
+  const facts = lazy(() =>
+    inspect(
+      BIB,
+      `const cites = $$(".cite").map((c) => c.textContent);
+       const entries = $$("section.notes li").map((li) => li.id);
+       const first = text("section.notes li");
+       $$(".cite")[1].click();
+       const items = $$(".cite-pop-item").map((i) => text(".cite-pop-num", i));
+       $$(".cite-pop-num")[1].click();
+       return { cites, entries, first, items, flashed: $("#ab10").classList.contains("is-xref-target") };`,
+    ),
+  );
 
-  it("numbers citations in first-cite order and lists the papers", async () => {
-    const page = await mount(BIB);
-    expect(page.$$(".cite").map((c) => c.textContent)).toEqual(["[1]", "[1, 2]"]);
-    expect(page.$$("section.notes li").map((li) => li.id)).toEqual(["k98", "ab10"]);
-    expect(page.$("section.notes li")!.textContent).toBe("Knuth. Literate Programming. 1998.");
+  it("numbers citations in first-cite order and lists the papers", () => {
+    expect(facts().cites).toEqual(["[1]", "[1, 2]"]);
+    expect(facts().entries).toEqual(["k98", "ab10"]);
+    expect(facts().first).toBe("Knuth. Literate Programming. 1998.");
   });
 
-  it("opens a card with every cited paper; its number jumps to the entry", async () => {
-    const page = await mount(BIB);
-    page.$$(".cite")[1].click();
-    expect(
-      page.$$(".cite-pop-item").map((i) => i.querySelector(".cite-pop-num")!.textContent),
-    ).toEqual(["[1]", "[2]"]);
-    page.$$(".cite-pop-num")[1].click();
-    expect(page.$("#ab10")!.classList.contains("is-xref-target")).toBe(true);
+  it("opens a card with every cited paper; its number jumps to the entry", () => {
+    expect(facts().items).toEqual(["[1]", "[2]"]);
+    expect(facts().flashed).toBe(true);
   });
 });
 
-describe("<hint>", () => {
-  it("is a trigger labelled by its title that reveals the body", async () => {
-    const page = await mount(
+describe.skipIf(!BROWSER)("<hint>", () => {
+  it("is a trigger labelled by its title that reveals the body", () => {
+    const r = inspect(
       `<document><p>Try it <hint><title>Need a push?</title>Factor it.</hint>.</p></document>`,
+      `const trigger = $(".hint-trigger");
+       const label = trigger.textContent;
+       trigger.click();
+       return { label, expanded: trigger.getAttribute("aria-expanded"), body: openPopover().textContent };`,
     );
-    const trigger = page.$(".hint-trigger")!;
-    expect(trigger.textContent).toBe("💡 Need a push?");
-    trigger.click();
-    expect(trigger.getAttribute("aria-expanded")).toBe("true");
-    expect(page.openPopover()!.textContent).toBe("Factor it.");
+    expect(r).toEqual({ label: "💡 Need a push?", expanded: "true", body: "Factor it." });
   });
 });

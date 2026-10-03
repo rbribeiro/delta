@@ -14,7 +14,7 @@
  * from that one seed via color-mix, so nothing is hardcoded and it tracks light/dark.
  */
 
-import { PALETTE } from "../../language/palette";
+import { PALETTE } from "../../language/palette.ts";
 
 // The named palettes defined in base.css ([data-accent="…"]); anything else is
 // treated as a literal CSS color set inline on --delta-accent.

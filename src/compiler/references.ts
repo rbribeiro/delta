@@ -1,6 +1,6 @@
-import { elements, type ElementNode } from "./ast";
-import { warn, type CompileContext } from "./context";
-import { REF_TAGS } from "../language/tags";
+import { elements, type ElementNode } from "./ast.ts";
+import { warn, type CompileContext } from "./context.ts";
+import { REF_TAGS } from "../language/tags.ts";
 
 /**
  * Resolves `<ref to="id"> <solution of="id"> <proof of="id">` cross-references against the numbering registry

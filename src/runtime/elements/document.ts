@@ -3,7 +3,7 @@
  * date, …), rendered like a box's.
  */
 
-import { renderMeta } from "./shared";
+import { renderMeta } from "./shared.ts";
 
 class DeltaDocument extends HTMLElement {
   connectedCallback(): void {

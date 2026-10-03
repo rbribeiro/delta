@@ -10,7 +10,7 @@
  * A `--final` build unwraps the prose and drops the marks.
  */
 
-import { applyStatus } from "./shared";
+import { applyStatus } from "./shared.ts";
 
 class DeltaDraft extends HTMLElement {
   connectedCallback(): void {

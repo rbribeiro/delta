@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs";
 import { dirname, extname, resolve } from "node:path";
-import { elements, type ElementNode } from "./ast";
-import { addDep, warn, type CompileContext } from "./context";
-import { isRemote } from "./files";
+import { elements, type ElementNode } from "./ast.ts";
+import { addDep, warn, type CompileContext } from "./context.ts";
+import { isRemote } from "./files.ts";
 
 const MIME: Record<string, string> = {
   ".png": "image/png",

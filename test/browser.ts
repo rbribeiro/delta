@@ -54,11 +54,13 @@ export const BROWSER = found && canLaunch(found) ? found : undefined;
 export function evaluate(html: string, probe: string, width = 1200): string {
   const dir = mkdtempSync(join(tmpdir(), "delta-hittest-"));
   const file = join(dir, "page.html");
+  // A replacer function, not a string: in a replacement string `$$`, `$&` and `$'` are
+  // substitutions, which would silently rewrite a probe that uses them.
   writeFileSync(
     file,
     html.replace(
       "</body>",
-      `<script>window.addEventListener("load",()=>{setTimeout(()=>{${probe}},350);});</script></body>`,
+      () => `<script>window.addEventListener("load",()=>{setTimeout(()=>{${probe}},350);});</script></body>`,
     ),
   );
   let dom: string;

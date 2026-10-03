@@ -1,5 +1,5 @@
-import type { ElementNode } from "./compiler/ast";
-import type { Diagnostic } from "./compiler/context";
+import type { ElementNode } from "./compiler/ast.ts";
+import type { Diagnostic } from "./compiler/context.ts";
 import {
   ancestors,
   descendants,
@@ -7,9 +7,9 @@ import {
   type Loc,
   type OutlineEntry,
   type ProofGraph,
-} from "./compiler/graph";
-import { AID_TAGS } from "./language/tags";
-import { trustRank } from "./language/trust";
+} from "./compiler/graph.ts";
+import { AID_TAGS } from "./language/tags.ts";
+import { trustRank } from "./language/trust.ts";
 
 /**
  * The agent-facing views of the proof graph: `delta outline`, `show`, `uses`, `graph` and

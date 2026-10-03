@@ -1,12 +1,12 @@
 import { basename, dirname } from "node:path";
-import { element, hasTag, titleOf, type ElementNode, type Node } from "./ast";
-import type { CompileContext } from "./context";
-import { escapeAttr, escapeHtml } from "./preprocess";
-import { katexCss } from "./katex-css";
-import { plainText } from "./paper";
-import { stringsFor } from "../language/strings";
-import { HEADING_TAGS } from "../language/tags";
-import { CORE_CSS, RUNTIME_JS, THEMES } from "../generated/assets";
+import { element, hasTag, titleOf, type ElementNode, type Node } from "./ast.ts";
+import type { CompileContext } from "./context.ts";
+import { escapeAttr, escapeHtml } from "./preprocess.ts";
+import { katexCss } from "./katex-css.ts";
+import { plainText } from "./paper.ts";
+import { stringsFor } from "../language/strings.ts";
+import { HEADING_TAGS } from "../language/tags.ts";
+import { CORE_CSS, RUNTIME_JS, THEMES } from "../generated/assets.ts";
 
 const DEFAULT_TYPE = "article";
 

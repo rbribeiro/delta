@@ -1,8 +1,8 @@
-import { textContent, type ElementNode, type Node, type Position } from "./ast";
-import { warn, type CompileContext } from "./context";
-import { RAW_TAGS } from "../language/tags";
-import { highlight } from "./highlight";
-import { escapeHtml } from "./preprocess";
+import { textContent, type ElementNode, type Node, type Position } from "./ast.ts";
+import { warn, type CompileContext } from "./context.ts";
+import { RAW_TAGS } from "../language/tags.ts";
+import { highlight } from "./highlight.ts";
+import { escapeHtml } from "./preprocess.ts";
 
 /** The highlighted display block. Inline `<c>` stays literal (styled by CSS only). */
 const CODE_TAG = "code";

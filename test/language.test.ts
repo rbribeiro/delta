@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
-import { describe, expect, it } from "vitest";
-import { COUNTER_RESETS, ENVIRONMENTS } from "../src/language/environments";
-import { STRINGS } from "../src/language/strings";
+import { describe, expect, it } from "./harness.ts";
+import { COUNTER_RESETS, ENVIRONMENTS } from "../src/language/environments.ts";
+import { STRINGS } from "../src/language/strings.ts";
 import {
   AID_TAGS,
   BLOCK_TAGS,
@@ -9,9 +9,9 @@ import {
   HEADING_TAGS,
   PROOF_TAGS,
   RESULT_TAGS,
-} from "../src/language/tags";
-import { TRUST, TRUST_OF } from "../src/language/trust";
-import { PALETTE } from "../src/language/palette";
+} from "../src/language/tags.ts";
+import { TRUST, TRUST_OF } from "../src/language/trust.ts";
+import { PALETTE } from "../src/language/palette.ts";
 
 /**
  * The vocabulary in src/language/ is read by the compiler, the runtime and the CSS. These

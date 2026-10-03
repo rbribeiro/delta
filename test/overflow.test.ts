@@ -1,7 +1,7 @@
-import { describe, expect, it } from "vitest";
-import { createContext } from "../src/compiler/context";
-import { compileSource } from "../src/compiler/index";
-import { BROWSER, evaluate } from "./browser";
+import { describe, expect, it } from "./harness.ts";
+import { createContext } from "../src/compiler/context.ts";
+import { compileSource } from "../src/compiler/index.ts";
+import { BROWSER, evaluate } from "./browser.ts";
 
 /**
  * A display formula wider than the column must scroll inside itself, never widen the page:

@@ -1,5 +1,5 @@
-import { element as el, textContent, titleOf, type ElementNode } from "./ast";
-import type { LabelEntry } from "./context";
+import { element as el, textContent, titleOf, type ElementNode } from "./ast.ts";
+import type { LabelEntry } from "./context.ts";
 import {
   AID_TAGS,
   HEADING_TAGS,
@@ -7,10 +7,10 @@ import {
   MATH_REF,
   OPAQUE,
   RESULT_TAGS,
-} from "../language/tags";
-import { TRUST_OF, trustRank, weaker, type Trust } from "../language/trust";
-import { checkedHash } from "./graph-hash";
-import { collapseSpace, flow, proofTarget } from "./paper";
+} from "../language/tags.ts";
+import { TRUST_OF, trustRank, weaker, type Trust } from "../language/trust.ts";
+import { checkedHash } from "./graph-hash.ts";
+import { collapseSpace, flow, proofTarget } from "./paper.ts";
 
 /**
  * The proof graph: which results a result's statement or proof leans on, and how much

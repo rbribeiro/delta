@@ -5,8 +5,8 @@
  * collapsible folding. Inline <c> is styled by CSS alone and needs no element.
  */
 
-import { t } from "../i18n";
-import { applyCollapsible, copyButton, numberedName } from "./shared";
+import { t } from "../i18n.ts";
+import { applyCollapsible, copyButton, numberedName } from "./shared.ts";
 
 class DeltaCode extends HTMLElement {
   connectedCallback(): void {

@@ -1,11 +1,11 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { describe, expect, it } from "vitest";
-import { elements, type ElementNode } from "../src/compiler/ast";
-import { createContext, type CompileContext } from "../src/compiler/context";
-import { inlineFigures } from "../src/compiler/figures";
-import { compileSource } from "../src/compiler/index";
-import { parsed } from "./helpers";
+import { describe, expect, it } from "./harness.ts";
+import { elements, type ElementNode } from "../src/compiler/ast.ts";
+import { createContext, type CompileContext } from "../src/compiler/context.ts";
+import { inlineFigures } from "../src/compiler/figures.ts";
+import { compileSource } from "../src/compiler/index.ts";
+import { parsed } from "./helpers.ts";
 
 // ctx.file lives in test/, so a figure `src` resolves relative to test/.
 function inlined(src: string): { doc: ElementNode; ctx: CompileContext } {

@@ -1,7 +1,7 @@
-import { describe, expect, it } from "vitest";
-import { createContext } from "../src/compiler/context";
-import { compileSource } from "../src/compiler/index";
-import { findMathEnd, preprocess, preprocessMapped } from "../src/compiler/preprocess";
+import { describe, expect, it } from "./harness.ts";
+import { createContext } from "../src/compiler/context.ts";
+import { compileSource } from "../src/compiler/index.ts";
+import { findMathEnd, preprocess, preprocessMapped } from "../src/compiler/preprocess.ts";
 
 describe("preprocess", () => {
   it("escapes <, > and & inside inline math", () => {

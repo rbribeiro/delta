@@ -12,8 +12,8 @@
  * not the compiler: slides carry no number.
  */
 
-import { t } from "./i18n";
-import { button } from "./elements/shared";
+import { t } from "./i18n.ts";
+import { button } from "./elements/shared.ts";
 
 /** Public handle exposed as `window.Delta.deck` (null when not a deck). Lets
  *  add-ons (e.g. the upcoming progress bar) read position and drive navigation. */

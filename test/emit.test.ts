@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
-import { THEMES } from "../src/generated/assets";
-import { compile } from "./helpers";
+import { describe, expect, it } from "./harness.ts";
+import { THEMES } from "../src/generated/assets.ts";
+import { compile } from "./helpers.ts";
 
 const DOC = `<document lang="en">
   <title>T</title>

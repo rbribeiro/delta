@@ -1,61 +1,75 @@
-import { describe, expect, it } from "vitest";
-import { mount } from "./helpers";
+import { describe, expect, it } from "../harness.ts";
+import { BROWSER, inspect, lazy } from "./helpers.ts";
 
 const TEAM = `<team>
     <member id="ana" name="Ana Ribeiro" color="purple"/>
     <member id="bot" name="Claude" kind="agent"/>
   </team>`;
 
-describe("comments, tasks and changes", () => {
-  it("a comment is a numbered marker whose thread opens in a bubble", async () => {
-    const page = await mount(
-      `<document>${TEAM}<p>Text.<comment by="ana">Is this right?<reply by="bot">Yes.</reply></comment></p></document>`,
-    );
-    const marker = page.$(".note-marker")!;
-    expect(marker.textContent).toBe("1");
-    marker.click();
-    const thread = page.openPopover()!;
-    expect(thread.querySelector(".note-body")!.textContent).toBe("Is this right?");
-    expect(thread.querySelector(".note-reply-body")!.textContent).toBe("Yes.");
-    expect(thread.querySelector(".who-name")!.textContent).toBe("Ana Ribeiro");
+describe.skipIf(!BROWSER)("comments, tasks and changes", () => {
+  const facts = lazy(() =>
+    inspect(
+      `<document>${TEAM}
+        <p>Text.<comment by="ana">Is this right?<reply by="bot">Yes.</reply></comment></p>
+        <todo for="bot" status="doing">Check the bound.</todo>
+        <p>A <change by="ana"><old>bad</old><new>good</new></change> idea.</p>
+        <lemma status="sketch" by="bot" verified-by="ana">L.</lemma>
+      </document>`,
+      `const marker = $(".note-marker");
+       const markerText = marker.textContent;
+       marker.click();
+       const thread = openPopover();
+       const pill = $(".box-tag .status-pill");
+       const modes = [];
+       window.Delta.review.setChanges("final");
+       modes.push(document.documentElement.dataset.changes);
+       window.Delta.review.setChanges("markup");
+       modes.push(document.documentElement.dataset.changes ?? null);
+       return {
+         markerText,
+         threadBody: text(".note-body", thread),
+         replyBody: text(".note-reply-body", thread),
+         threadAuthor: text(".who-name", thread),
+         todoState: text(".todo-state"),
+         todoNum: text(".todo-num"),
+         todoBadge: text(".todo-for .who-badge"),
+         changeKind: $("delta-change").dataset.kind,
+         modes,
+         pillStatus: pill.dataset.status,
+         pillLabel: text(".status-label", pill),
+         pillNames: $$(".who-name", pill).map((n) => n.textContent),
+         lemmaStatus: $("delta-lemma").dataset.status,
+       };`,
+    ),
+  );
+
+  it("a comment is a numbered marker whose thread opens in a bubble", () => {
+    expect(facts().markerText).toBe("1");
+    expect(facts().threadBody).toBe("Is this right?");
+    expect(facts().replyBody).toBe("Yes.");
+    expect(facts().threadAuthor).toBe("Ana Ribeiro");
   });
 
-  it("a task shows its state and who it is for", async () => {
-    const page = await mount(
-      `<document>${TEAM}<todo for="bot" status="doing">Check the bound.</todo></document>`,
-    );
-    expect(page.$(".todo-state")!.textContent).toBe("◐");
-    expect(page.$(".todo-num")!.textContent).toBe("Task 1");
-    expect(page.$(".todo-for .who-badge")!.textContent).toBe("agent");
+  it("a task shows its state and who it is for", () => {
+    expect(facts().todoState).toBe("◐");
+    expect(facts().todoNum).toBe("Task 1");
+    expect(facts().todoBadge).toBe("agent");
   });
 
-  it("a change marks its kind; the document-wide switch picks which side shows", async () => {
-    const page = await mount(
-      `<document><p>A <change by="ana"><old>bad</old><new>good</new></change> idea.</p></document>`,
-    );
-    expect(page.$("delta-change")!.dataset.kind).toBe("replace");
-    page.window.Delta.review.setChanges("final");
-    expect(page.document.documentElement.dataset.changes).toBe("final");
-    page.window.Delta.review.setChanges("markup");
-    expect(page.document.documentElement.dataset.changes).toBeUndefined();
+  it("a change marks its kind; the document-wide switch picks which side shows", () => {
+    expect(facts().changeKind).toBe("replace");
+    expect(facts().modes).toEqual(["final", null]);
   });
 
-  it("a block's status and authors become a pill in its label", async () => {
-    const page = await mount(
-      `<document>${TEAM}<lemma status="sketch" by="bot" verified-by="ana">L.</lemma></document>`,
-    );
-    const pill = page.$(".box-tag .status-pill")!;
-    expect(pill.dataset.status).toBe("sketch");
-    expect(pill.querySelector(".status-label")!.textContent).toBe("Sketch");
-    expect([...pill.querySelectorAll(".who-name")].map((n) => n.textContent)).toEqual([
-      "Claude",
-      "Ana Ribeiro",
-    ]);
-    expect(page.$("delta-lemma")!.dataset.status).toBe("sketch");
+  it("a block's status and authors become a pill in its label", () => {
+    expect(facts().pillStatus).toBe("sketch");
+    expect(facts().pillLabel).toBe("Sketch");
+    expect(facts().pillNames).toEqual(["Claude", "Ana Ribeiro"]);
+    expect(facts().lemmaStatus).toBe("sketch");
   });
 });
 
-describe("<review>", () => {
+describe.skipIf(!BROWSER)("<review>", () => {
   const DOC = `<document>${TEAM}<review/>
     <section id="s"><title>Intro</title>
       <comment by="ana">First note.</comment>
@@ -63,47 +77,51 @@ describe("<review>", () => {
       <todo for="bot">Do it.</todo>
       <lemma id="l" status="sketch" by="bot">L.</lemma>
     </section></document>`;
+  const facts = lazy(() =>
+    inspect(
+      DOC,
+      `const stats = $$(".review-stat").map((s) => s.textContent);
+       const groups = $$(".review-group-title").map((g) => g.textContent);
+       const items = $$(".review-item").length;
+       const loc = text(".review-loc");
+       click('.review-filter-member[data-member="ana"]');
+       const byAna = $$(".review-item").map((i) => i.dataset.kind);
+       click('.review-filter-member[data-member="ana"]'); // off again
+       click('.review-filter-status[data-status="resolved"]');
+       const resolved = $$(".review-item .review-text").map((t) => t.textContent);
+       click('.review-filter-status[data-status="resolved"]');
+       const toggle = $(".review-switch");
+       const pressed = [toggle.getAttribute("aria-pressed")];
+       toggle.click();
+       const off = document.documentElement.dataset.review ?? null;
+       pressed.push(toggle.getAttribute("aria-pressed"));
+       toggle.click();
+       const back = document.documentElement.dataset.review ?? null;
+       click('.review-item[data-kind="todo"] .review-jump');
+       return { stats, groups, items, loc, byAna, resolved, pressed, off, back,
+                jumped: $("delta-todo").classList.contains("is-xref-target") };`,
+    ),
+  );
 
-  it("summarizes open work and lists the items grouped by kind", async () => {
-    const page = await mount(DOC);
-    expect(page.$$(".review-stat").map((s) => s.textContent)).toEqual([
-      "1 open comments",
-      "1 open tasks",
-      "0 pending changes",
-      "1 Sketch",
-    ]);
-    expect(page.$$(".review-group-title").map((g) => g.textContent)).toEqual([
-      "Annotations",
-      "Tasks",
-      "Blocks",
-    ]);
-    expect(page.$$(".review-item")).toHaveLength(4);
-    expect(page.$(".review-loc")!.textContent).toBe("§ 1 Intro");
+  it("summarizes open work and lists the items grouped by kind", () => {
+    expect(facts().stats).toEqual(["1 open comments", "1 open tasks", "0 pending changes", "1 Sketch"]);
+    expect(facts().groups).toEqual(["Annotations", "Tasks", "Blocks"]);
+    expect(facts().items).toBe(4);
+    expect(facts().loc).toBe("§ 1 Intro");
   });
 
-  it("filters by member and by status", async () => {
-    const page = await mount(DOC);
-    page.click('.review-filter-member[data-member="ana"]');
-    expect(page.$$(".review-item").map((i) => i.dataset.kind)).toEqual(["comment"]);
-    page.click('.review-filter-member[data-member="ana"]'); // off again
-    page.click('.review-filter-status[data-status="resolved"]');
-    expect(page.$$(".review-item .review-text").map((t) => t.textContent)).toEqual(["Old note."]);
+  it("filters by member and by status", () => {
+    expect(facts().byAna).toEqual(["comment"]);
+    expect(facts().resolved).toEqual(["Old note."]);
   });
 
-  it("switches annotations off for the whole document, and back", async () => {
-    const page = await mount(DOC);
-    const toggle = page.$(".review-switch")!;
-    expect(toggle.getAttribute("aria-pressed")).toBe("true");
-    toggle.click();
-    expect(page.document.documentElement.dataset.review).toBe("off");
-    expect(toggle.getAttribute("aria-pressed")).toBe("false");
-    toggle.click();
-    expect(page.document.documentElement.dataset.review).toBeUndefined();
+  it("switches annotations off for the whole document, and back", () => {
+    expect(facts().pressed).toEqual(["true", "false"]);
+    expect(facts().off).toBe("off");
+    expect(facts().back).toBeNull();
   });
 
-  it("jumps to an item when its number is clicked", async () => {
-    const page = await mount(DOC);
-    page.click('.review-item[data-kind="todo"] .review-jump');
-    expect(page.$("delta-todo")!.classList.contains("is-xref-target")).toBe(true);
+  it("jumps to an item when its number is clicked", () => {
+    expect(facts().jumped).toBe(true);
   });
 });

@@ -21,31 +21,31 @@
  * A new element with no such dependency goes anywhere before the collaboration block.
  */
 
-import { defineSections } from "./section";
-import { defineSlide } from "./slide";
-import { defineEnvironments } from "./environment";
-import { defineProofStructure } from "./proofstructure";
-import { defineDocument } from "./document";
-import { defineSidenote } from "./sidenote";
-import { defineMedia } from "./media";
-import { defineHint } from "./hint";
-import { defineToc } from "./toc";
-import { defineFloating } from "./floating";
-import { defineLink } from "./link";
-import { defineRef } from "./ref";
-import { defineBibliography } from "./bibliography";
-import { defineCite } from "./cite";
-import { defineCode } from "./code";
-import { defineList } from "./list";
-import { defineTable } from "./table";
-import { defineColumns } from "./columns";
-import { defineFrontMatter } from "./frontmatter";
-import { defineBox } from "./box";
-import { defineComment } from "./comment";
-import { defineTodo } from "./todo";
-import { defineDraft } from "./draft";
-import { defineChange } from "./change";
-import { defineReview } from "./review";
+import { defineSections } from "./section.ts";
+import { defineSlide } from "./slide.ts";
+import { defineEnvironments } from "./environment.ts";
+import { defineProofStructure } from "./proofstructure.ts";
+import { defineDocument } from "./document.ts";
+import { defineSidenote } from "./sidenote.ts";
+import { defineMedia } from "./media.ts";
+import { defineHint } from "./hint.ts";
+import { defineToc } from "./toc.ts";
+import { defineFloating } from "./floating.ts";
+import { defineLink } from "./link.ts";
+import { defineRef } from "./ref.ts";
+import { defineBibliography } from "./bibliography.ts";
+import { defineCite } from "./cite.ts";
+import { defineCode } from "./code.ts";
+import { defineList } from "./list.ts";
+import { defineTable } from "./table.ts";
+import { defineColumns } from "./columns.ts";
+import { defineFrontMatter } from "./frontmatter.ts";
+import { defineBox } from "./box.ts";
+import { defineComment } from "./comment.ts";
+import { defineTodo } from "./todo.ts";
+import { defineDraft } from "./draft.ts";
+import { defineChange } from "./change.ts";
+import { defineReview } from "./review.ts";
 
 export function defineComponents(): void {
   defineDocument();

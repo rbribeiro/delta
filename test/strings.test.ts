@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { resolveLang, STRINGS, stringsFor } from "../src/language/strings";
+import { describe, expect, it } from "./harness.ts";
+import { resolveLang, STRINGS, stringsFor } from "../src/language/strings.ts";
 
 describe("resolveLang", () => {
   it("matches an exact language, case-insensitively", () => {

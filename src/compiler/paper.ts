@@ -1,6 +1,6 @@
-import { nearest, textContent, type ElementNode, type Node } from "./ast";
-import type { CompileContext } from "./context";
-import { OPAQUE, TRANSPARENT } from "../language/tags";
+import { nearest, textContent, type ElementNode, type Node } from "./ast.ts";
+import type { CompileContext } from "./context.ts";
+import { OPAQUE, TRANSPARENT } from "../language/tags.ts";
 
 /**
  * The tree as the final paper reads it. Collaboration markup wraps the mathematics

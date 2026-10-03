@@ -5,7 +5,7 @@
  * parse of inert in-page content.
  */
 
-import { readIsland } from "./island";
+import { readIsland } from "./island.ts";
 
 /** Localized string for `key`, falling back to `fallback` (or the key itself). */
 export function t(key: string, fallback?: string): string {

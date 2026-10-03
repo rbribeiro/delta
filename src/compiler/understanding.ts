@@ -1,7 +1,7 @@
-import { walk, type ElementNode } from "./ast";
-import { paperParent } from "./paper";
-import { error, warn, type CompileContext } from "./context";
-import { AID_TAGS, RAW_TAGS, RESULT_TAGS } from "../language/tags";
+import { walk, type ElementNode } from "./ast.ts";
+import { paperParent } from "./paper.ts";
+import { error, warn, type CompileContext } from "./context.ts";
+import { AID_TAGS, RAW_TAGS, RESULT_TAGS } from "../language/tags.ts";
 
 /**
  * The reader aids of a result — `<intuition>` (why it is true), `<strategy>` (how the

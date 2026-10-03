@@ -1,15 +1,15 @@
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { compileProject } from "../src/compiler/project";
-import { describe, expect, it } from "vitest";
-import { elements, type ElementNode } from "../src/compiler/ast";
-import { createContext, type CompileContext } from "../src/compiler/context";
-import { resolveIncludes } from "../src/compiler/include";
-import { compileSource } from "../src/compiler/index";
-import { numberDocument } from "../src/compiler/numbering";
-import { parse } from "../src/compiler/parse";
-import { preprocess } from "../src/compiler/preprocess";
+import { compileProject } from "../src/compiler/project.ts";
+import { describe, expect, it } from "./harness.ts";
+import { elements, type ElementNode } from "../src/compiler/ast.ts";
+import { createContext, type CompileContext } from "../src/compiler/context.ts";
+import { resolveIncludes } from "../src/compiler/include.ts";
+import { compileSource } from "../src/compiler/index.ts";
+import { numberDocument } from "../src/compiler/numbering.ts";
+import { parse } from "../src/compiler/parse.ts";
+import { preprocess } from "../src/compiler/preprocess.ts";
 
 // The master file lives in test/fixtures/include/, so `<include src>` resolves there.
 const MASTER = "test/fixtures/include/main.dlt";

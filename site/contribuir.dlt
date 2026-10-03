@@ -21,12 +21,13 @@
     <subsection id="passo-ambiente">
       <title>O ambiente</title>
 
-      Node 20 ou mais novo. Depois:
+      Node 22.18 ou mais novo (24 é a escolha certa): o código roda como TypeScript direto
+      no Node, sem transpilador. Depois:
 
       <code lang="bash" numbered="false">
 git clone https://github.com/rbribeiro/delta && cd delta
 npm install
-npm test               # a suíte inteira (vitest); regenera os assets antes
+npm test               # a suíte inteira (node --test); regenera os assets antes
 npm run typecheck      # tsc --noEmit
 npm run dev -- build examples/hello.dlt -o out.html    # a CLI, direto do fonte
 npm run example:project                                 # o projeto de exemplo
@@ -36,8 +37,8 @@ npm run docs           # este site (site/ → docs/), inclusive o explorador
       Para rodar um arquivo de teste só, ou um teste pelo nome:
 
       <code lang="bash" numbered="false">
-npx vitest run test/numbering.test.ts
-npx vitest run -t "resets across"
+node --test test/numbering.test.ts
+node --test --test-name-pattern "resets across" test/
       </code>
 
       <box type="warning">
@@ -45,7 +46,7 @@ npx vitest run -t "resets across"
         O emissor importa <c>RUNTIME_JS</c>, <c>CORE_CSS</c> e os temas de
         <c>src/generated/assets.ts</c>, que é gerado (pelo <c>npm run assets</c>) e não é
         versionado. Todo script do <c>npm</c> que precisa dele o regenera antes. Mas se você
-        chamar <c>vitest</c> ou <c>tsc</c> diretamente numa cópia recém-clonada, ou depois de
+        chamar <c>node --test</c> ou <c>tsc</c> diretamente numa cópia recém-clonada, ou depois de
         mexer em <c>src/runtime/</c> ou <c>src/styles/</c>, rode <c>npm run assets</c> uma
         vez, ou verá um módulo faltando ou um runtime velho. O mesmo vale para os dados do
         explorador (<c>npm run trace</c>).
@@ -228,8 +229,8 @@ export function countWords(doc: ElementNode, _ctx: CompileContext): void {
         <item>
           <b>Teste</b> em <c>test/words.test.ts</c>, com o ajudante compartilhado:
           <code lang="typescript" numbered="false">
-import { describe, expect, it } from "vitest";
-import { compile } from "./helpers";
+import { describe, expect, it } from "./harness.ts";
+import { compile } from "./helpers.ts";
 
 describe("countWords", () => {
   it("writes the word count on each section", () => {
@@ -315,13 +316,15 @@ describe("countWords", () => {
       depende. <c>test/language.test.ts</c> confere que o vocabulário de
       <c>src/language/</c> concorda com os textos traduzidos e com o CSS.
 
-      O runtime tem os seus testes em <c>test/runtime/</c>, sem navegador:
-      <c>mount(src)</c> compila o documento e roda a página inteira, runtime incluído, num DOM
-      simulado (happy-dom). O teste olha o que o leitor veria e faz o que ele faria:
-      <c>page.$(".box-tag")</c>, <c>page.click(".collapse-toggle")</c>,
-      <c>page.key("Escape")</c>. Um erro que a página registre no console derruba o teste.
-      O que depende de layout de verdade (o que está sob o mouse, o que transborda num
-      celular) fica em <c>test/hittest.test.ts</c>, que usa o Chromium da máquina.
+      O runtime tem os seus testes em <c>test/runtime/</c>, no Chromium da máquina (sem
+      janela; numa máquina sem Chromium eles são pulados): <c>inspect(src, script)</c>
+      compila o documento, abre a página e roda o <c>script</c> dentro dela. O script olha o
+      que o leitor veria e faz o que ele faria: <c>text(".box-tag")</c>,
+      <c>click(".collapse-toggle")</c>, <c>key("Escape")</c>, e devolve o que o teste confere.
+      Cada abertura do navegador custa um segundo, então cada conjunto de testes abre um
+      documento uma vez e os <c>it</c>s leem campos do mesmo resultado. O que depende de
+      layout de verdade (o que está sob o mouse, o que transborda num celular) fica em
+      <c>test/hittest.test.ts</c>, com o mesmo navegador.
     </subsection>
 
     <subsection id="passo-checklist">

@@ -1,13 +1,13 @@
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { type ElementNode } from "../src/compiler/ast";
-import { createContext, type CompileContext } from "../src/compiler/context";
-import { compileSource, type CompileOptions } from "../src/compiler/index";
-import { numberDocument } from "../src/compiler/numbering";
-import { parse } from "../src/compiler/parse";
-import { preprocess } from "../src/compiler/preprocess";
-import { compileProject, type ProjectResult } from "../src/compiler/project";
+import { type ElementNode } from "../src/compiler/ast.ts";
+import { createContext, type CompileContext } from "../src/compiler/context.ts";
+import { compileSource, type CompileOptions } from "../src/compiler/index.ts";
+import { numberDocument } from "../src/compiler/numbering.ts";
+import { parse } from "../src/compiler/parse.ts";
+import { preprocess } from "../src/compiler/preprocess.ts";
+import { compileProject, type ProjectResult } from "../src/compiler/project.ts";
 
 /**
  * The ways a test drives the compiler. Every pass test starts from one of these instead of

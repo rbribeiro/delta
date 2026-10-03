@@ -1,11 +1,11 @@
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
-import { createContext, type CompileContext } from "../src/compiler/context";
-import { compileSource } from "../src/compiler/index";
-import { compileProject } from "../src/compiler/project";
-import { compile } from "./helpers";
+import { describe, expect, it } from "./harness.ts";
+import { createContext, type CompileContext } from "../src/compiler/context.ts";
+import { compileSource } from "../src/compiler/index.ts";
+import { compileProject } from "../src/compiler/project.ts";
+import { compile } from "./helpers.ts";
 
 /** Compiles without throwing, so a test can look at the errors. */
 function attempt(src: string): CompileContext {

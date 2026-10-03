@@ -1,4 +1,4 @@
-import { RAW_TAGS } from "../language/tags";
+import { RAW_TAGS } from "../language/tags.ts";
 
 /**
  * Runs on raw `.dlt` text before XML parsing. Authors may write `<`, `>` and `&`

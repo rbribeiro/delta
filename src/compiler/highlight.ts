@@ -14,7 +14,7 @@
  * entry in GRAMMARS; adding an alias one entry in ALIASES.
  */
 
-import { escapeHtml } from "./preprocess";
+import { escapeHtml } from "./preprocess.ts";
 
 export type Token = "comment" | "string" | "number" | "keyword" | "name" | "builtin" | "tag" | "attr";
 

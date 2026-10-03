@@ -15,7 +15,7 @@
  * the converse is not quite true (DOCTYPE), and that is on purpose.
  */
 
-import { element, type ElementNode } from "./ast";
+import { element, type ElementNode } from "./ast.ts";
 
 /** Called for every well-formedness error, with its offset in the text. */
 export type XmlErrorReporter = (message: string, at: number) => void;

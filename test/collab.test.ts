@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
-import { elements, type ElementNode } from "../src/compiler/ast";
-import { compile, warnings } from "./helpers";
+import { describe, expect, it } from "./harness.ts";
+import { elements, type ElementNode } from "../src/compiler/ast.ts";
+import { compile, warnings } from "./helpers.ts";
 
 const wrap = (body: string): string =>
   `<document><section id="s"><title>S</title>${body}</section></document>`;

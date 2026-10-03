@@ -4,7 +4,7 @@
  **** ***********************/
 
 import { resolve } from "node:path";
-import type { ElementNode, Node, Position } from "./ast";
+import type { ElementNode, Node, Position } from "./ast.ts";
 
 export interface Diagnostic {
   severity: "error" | "warning";

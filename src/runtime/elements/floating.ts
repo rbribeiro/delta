@@ -15,9 +15,9 @@
  * outside-click dismissal), so it flips up from the fixed button.
  */
 
-import { t } from "../i18n";
-import { popover } from "../utils";
-import { button, takeTitle } from "./shared";
+import { t } from "../i18n.ts";
+import { popover } from "../utils.ts";
+import { button, takeTitle } from "./shared.ts";
 
 class DeltaFloating extends HTMLElement {
   connectedCallback(): void {

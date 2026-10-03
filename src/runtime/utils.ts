@@ -37,7 +37,7 @@ export interface Popover {
 }
 
 // `showPopover`, not the `popover` property: an engine can know the attribute without
-// implementing the methods (happy-dom, some older browsers), and then nothing would open.
+// implementing the methods (older browsers, DOM emulators), and then nothing would open.
 const HAS_POPOVER =
   typeof HTMLElement !== "undefined" && typeof HTMLElement.prototype.showPopover === "function";
 const EDGE = 8; // keep the bubble at least this far from the viewport edges

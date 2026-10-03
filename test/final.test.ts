@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { compile as compileWith } from "./helpers";
+import { describe, expect, it } from "./harness.ts";
+import { compile as compileWith } from "./helpers.ts";
 
 const compile = (src: string, final: boolean) => compileWith(src, { final });
 

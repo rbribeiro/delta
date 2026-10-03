@@ -18,8 +18,8 @@
  * No persistence and no fetch: the `.dlt` is the state, this is a view of it.
  */
 
-import { t } from "../i18n";
-import { button, copyButton, linkJump, takeTitle } from "./shared";
+import { t } from "../i18n.ts";
+import { button, copyButton, linkJump, takeTitle } from "./shared.ts";
 import {
   memberChip,
   readReview,
@@ -27,7 +27,7 @@ import {
   REVIEW_EVENT,
   type ChangesMode,
   type ReviewItemData,
-} from "./collab";
+} from "./collab.ts";
 
 const KINDS = ["comment", "todo", "change", "status"] as const;
 type Kind = (typeof KINDS)[number];

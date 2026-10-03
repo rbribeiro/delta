@@ -1,8 +1,8 @@
 import { dirname, relative, resolve, sep } from "node:path";
-import { element, findElementById, type ElementNode, type Node } from "./ast";
-import { error, type CompileContext } from "./context";
-import { isRemote, readUserFile, withFile } from "./files";
-import { parseSource } from "./parse";
+import { element, findElementById, type ElementNode, type Node } from "./ast.ts";
+import { error, type CompileContext } from "./context.ts";
+import { isRemote, readUserFile, withFile } from "./files.ts";
+import { parseSource } from "./parse.ts";
 
 // Tags whose relative `src` is written from the included file's folder, so it is rewritten to be
 // relative to the master document (which resolves it later).

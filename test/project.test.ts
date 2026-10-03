@@ -1,8 +1,8 @@
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { describe, expect, it } from "vitest";
-import { compileProject, type ProjectResult } from "../src/compiler/project";
+import { describe, expect, it } from "./harness.ts";
+import { compileProject, type ProjectResult } from "../src/compiler/project.ts";
 
 const DIR = "test/fixtures/project";
 

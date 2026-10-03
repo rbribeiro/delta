@@ -21,10 +21,10 @@
  * Accepting a change for real means editing the source (or building with --final).
  */
 
-import { t } from "../i18n";
-import { popover } from "../utils";
-import { memberChip, memberColor } from "./collab";
-import { button } from "./shared";
+import { t } from "../i18n.ts";
+import { popover } from "../utils.ts";
+import { memberChip, memberColor } from "./collab.ts";
+import { button } from "./shared.ts";
 
 class DeltaChange extends HTMLElement {
   connectedCallback(): void {

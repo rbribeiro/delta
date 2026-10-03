@@ -5,8 +5,8 @@
  * for a `<cite>` link. Each entry is formatted by the shared `formatPaper`.
  */
 
-import { t } from "../i18n";
-import { formatPaper, takeTitle } from "./shared";
+import { t } from "../i18n.ts";
+import { formatPaper, takeTitle } from "./shared.ts";
 
 class DeltaBibliography extends HTMLElement {
   connectedCallback(): void {

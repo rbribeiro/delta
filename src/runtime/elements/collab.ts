@@ -11,8 +11,8 @@
  * offers views of it. Offline by construction: everything is read from inert in-page JSON.
  */
 
-import { t } from "../i18n";
-import { readIsland } from "../island";
+import { t } from "../i18n.ts";
+import { readIsland } from "../island.ts";
 
 export interface ReviewMember {
   id: string;

@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
-import { highlight, LANGUAGES } from "../src/compiler/highlight";
-import { escapeHtml } from "../src/compiler/preprocess";
+import { describe, expect, it } from "./harness.ts";
+import { highlight, LANGUAGES } from "../src/compiler/highlight.ts";
+import { escapeHtml } from "../src/compiler/preprocess.ts";
 
 /** The spans as `[kind, text]` pairs, in order. */
 function tokens(html: string): [string, string][] {

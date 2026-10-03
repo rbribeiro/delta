@@ -1,6 +1,6 @@
-import { textContent } from "./compiler/ast";
-import type { ReviewData, ReviewItem } from "./compiler/context";
-import { collapseSpace } from "./compiler/paper";
+import { textContent } from "./compiler/ast.ts";
+import type { ReviewData, ReviewItem } from "./compiler/context.ts";
+import { collapseSpace } from "./compiler/paper.ts";
 
 /**
  * The agent-facing view of a paper's collaboration state: `delta review` prints the

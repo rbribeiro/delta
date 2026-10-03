@@ -1,8 +1,8 @@
 import katex from "katex";
-import { textContent, type ElementNode, type Node, type Position } from "./ast";
-import { error, warn, type CompileContext } from "./context";
-import { MATH_REF, MATH_TAGS, RAW_TAGS } from "../language/tags";
-import { escapeAttr, findMathEnd } from "./preprocess";
+import { textContent, type ElementNode, type Node, type Position } from "./ast.ts";
+import { error, warn, type CompileContext } from "./context.ts";
+import { MATH_REF, MATH_TAGS, RAW_TAGS } from "../language/tags.ts";
+import { escapeAttr, findMathEnd } from "./preprocess.ts";
 
 /** The marker KaTeX renders for the k-th \ref of a formula, swapped for its real attributes. */
 const REF_MARK = /data-delta-ref="(\d+)"/g;

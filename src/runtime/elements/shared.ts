@@ -3,8 +3,8 @@
  * single-component helpers next to their element.
  */
 
-import { nameOf, t } from "../i18n";
-import { memberChip } from "./collab";
+import { nameOf, t } from "../i18n.ts";
+import { memberChip } from "./collab.ts";
 
 /** `delta-theorem` → `theorem`: the Delta tag an element came from. */
 export function kindOf(el: Element): string {

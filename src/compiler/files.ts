@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { addDep, type CompileContext } from "./context";
+import { addDep, type CompileContext } from "./context.ts";
 
 /**
  * Helpers for the passes that read the author's *other* files: includes, the `.ref`

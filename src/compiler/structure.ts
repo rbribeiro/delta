@@ -1,7 +1,7 @@
-import { walk, type ElementNode } from "./ast";
-import { error, warn, type CompileContext } from "./context";
-import { AID_TAGS, OPAQUE, RAW_TAGS, RESULT_TAGS } from "../language/tags";
-import { flow, paperParent, proofTarget } from "./paper";
+import { walk, type ElementNode } from "./ast.ts";
+import { error, warn, type CompileContext } from "./context.ts";
+import { AID_TAGS, OPAQUE, RAW_TAGS, RESULT_TAGS } from "../language/tags.ts";
+import { flow, paperParent, proofTarget } from "./paper.ts";
 
 /**
  * Structured proofs and hypotheses, the parts of a proof a reader navigates by:

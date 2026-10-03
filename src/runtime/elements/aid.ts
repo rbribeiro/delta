@@ -15,9 +15,9 @@
  * placement and stamped `collapsed` (every aid hidden unless the author opened it).
  */
 
-import { t } from "../i18n";
-import { AID_TAGS } from "../../language/tags";
-import { button, kindOf } from "./shared";
+import { t } from "../i18n.ts";
+import { AID_TAGS } from "../../language/tags.ts";
+import { button, kindOf } from "./shared.ts";
 
 /** The aids in display order: intuition, strategy, obstacle. */
 const AIDS = [...AID_TAGS];

@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vitest";
-import { elements, type ElementNode } from "../src/compiler/ast";
-import { type CompileContext } from "../src/compiler/context";
-import { numberDocument } from "../src/compiler/numbering";
-import { resolveReferences } from "../src/compiler/references";
-import { compileHtml, parsed } from "./helpers";
+import { describe, expect, it } from "./harness.ts";
+import { elements, type ElementNode } from "../src/compiler/ast.ts";
+import { type CompileContext } from "../src/compiler/context.ts";
+import { numberDocument } from "../src/compiler/numbering.ts";
+import { resolveReferences } from "../src/compiler/references.ts";
+import { compileHtml, parsed } from "./helpers.ts";
 
 function resolved(src: string): { ref?: ElementNode; ctx: CompileContext } {
   const { doc, ctx } = parsed(src);

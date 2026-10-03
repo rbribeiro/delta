@@ -11,9 +11,9 @@
  * output for `\ref{id}` / `\eqref{id}` — the same behavior, inside math.
  */
 
-import { nameOf } from "../i18n";
-import { popover } from "../utils";
-import { button, jumpTo, templateFor } from "./shared";
+import { nameOf } from "../i18n.ts";
+import { popover } from "../utils.ts";
+import { button, jumpTo, templateFor } from "./shared.ts";
 
 // Small "jump to" arrow for the pop-over's go-to button (sized by reference.css).
 const XREF_GO_ICON =

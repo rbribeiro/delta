@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vitest";
-import { elements, type ElementNode } from "../src/compiler/ast";
-import { type CompileContext } from "../src/compiler/context";
-import { numberDocument } from "../src/compiler/numbering";
-import { buildToc } from "../src/compiler/toc";
-import { compileHtml, parsed } from "./helpers";
+import { describe, expect, it } from "./harness.ts";
+import { elements, type ElementNode } from "../src/compiler/ast.ts";
+import { type CompileContext } from "../src/compiler/context.ts";
+import { numberDocument } from "../src/compiler/numbering.ts";
+import { buildToc } from "../src/compiler/toc.ts";
+import { compileHtml, parsed } from "./helpers.ts";
 
 function built(src: string): { doc: ElementNode; ctx: CompileContext } {
   const { doc, ctx } = parsed(src);

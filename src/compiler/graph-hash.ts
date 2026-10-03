@@ -1,9 +1,9 @@
 import { createHash } from "node:crypto";
 import { dirname, resolve } from "node:path";
-import type { ElementNode } from "./ast";
-import type { GraphNode, ProofGraph } from "./graph";
-import { AID_TAGS } from "../language/tags";
-import { collapseSpace } from "./paper";
+import type { ElementNode } from "./ast.ts";
+import type { GraphNode, ProofGraph } from "./graph.ts";
+import { AID_TAGS } from "../language/tags.ts";
+import { collapseSpace } from "./paper.ts";
 
 /**
  * The hash `delta verify` pins a verification to (`against="<hash>"` on the proof). The

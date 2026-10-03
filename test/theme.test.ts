@@ -1,11 +1,11 @@
-import { describe, expect, it } from "vitest";
-import type { ElementNode } from "../src/compiler/ast";
-import { createContext, type CompileContext } from "../src/compiler/context";
-import { parse } from "../src/compiler/parse";
-import { preprocess } from "../src/compiler/preprocess";
-import { isBuiltinThemeName, resolveTheme } from "../src/compiler/theme";
-import { BUILTIN_THEMES, CORE_CSS, THEMES } from "../src/generated/assets";
-import { compileHtml, parsed } from "./helpers";
+import { describe, expect, it } from "./harness.ts";
+import type { ElementNode } from "../src/compiler/ast.ts";
+import { createContext, type CompileContext } from "../src/compiler/context.ts";
+import { parse } from "../src/compiler/parse.ts";
+import { preprocess } from "../src/compiler/preprocess.ts";
+import { isBuiltinThemeName, resolveTheme } from "../src/compiler/theme.ts";
+import { BUILTIN_THEMES, CORE_CSS, THEMES } from "../src/generated/assets.ts";
+import { compileHtml, parsed } from "./helpers.ts";
 
 const compile = (src: string): string => compileHtml(src, { file: "test/doc.dlt" });
 

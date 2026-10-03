@@ -1,10 +1,10 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { createRequire } from "node:module";
 import { basename, dirname, resolve } from "node:path";
-import type { ElementNode, Position } from "./ast";
-import { addDep, warn, error, type CompileContext, type ImportEntry } from "./context";
-import { EXTERNAL_REF } from "./theme";
-import { isRemote, readUserFile } from "./files";
+import type { ElementNode, Position } from "./ast.ts";
+import { addDep, warn, error, type CompileContext, type ImportEntry } from "./context.ts";
+import { EXTERNAL_REF } from "./theme.ts";
+import { isRemote, readUserFile } from "./files.ts";
 
 const JS_EXTERNAL_REF = /\bfetch\s*\(|\bimport\s*\(|https?:\/\//i;
 

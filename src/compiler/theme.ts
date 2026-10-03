@@ -1,8 +1,8 @@
 import { basename, dirname, resolve } from "node:path";
-import type { ElementNode } from "./ast";
-import { warn, type CompileContext } from "./context";
-import { isRemote, readUserFile } from "./files";
-import { BUILTIN_THEMES } from "../generated/assets";
+import type { ElementNode } from "./ast.ts";
+import { warn, type CompileContext } from "./context.ts";
+import { isRemote, readUserFile } from "./files.ts";
+import { BUILTIN_THEMES } from "../generated/assets.ts";
 
 /**
  * Resolves `<document theme="…">`, which names one of two things:

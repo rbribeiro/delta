@@ -4,8 +4,8 @@
  * "Figure N" caption). All caption labels are localized via `t`.
  */
 
-import { t } from "../i18n";
-import { numberedName } from "./shared";
+import { t } from "../i18n.ts";
+import { numberedName } from "./shared.ts";
 
 /**
  * Lifts a `<delta-caption>` child into a caption row: adds `.video-cap` and a

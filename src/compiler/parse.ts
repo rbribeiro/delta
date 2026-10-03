@@ -1,7 +1,7 @@
-import { elements, type ElementNode, type Position } from "./ast";
-import { error, type CompileContext } from "./context";
-import { preprocessMapped } from "./preprocess";
-import { parseXml } from "./xml";
+import { elements, type ElementNode, type Position } from "./ast.ts";
+import { error, type CompileContext } from "./context.ts";
+import { preprocessMapped } from "./preprocess.ts";
+import { parseXml } from "./xml.ts";
 
 /**
  * Preprocesses and parses the author's text, recording it in `ctx.sources` under `ctx.file`

@@ -1,5 +1,5 @@
-import { elements, type ElementNode } from "./ast";
-import { OPAQUE, REF_TAGS } from "../language/tags";
+import { elements, type ElementNode } from "./ast.ts";
+import { OPAQUE, REF_TAGS } from "../language/tags.ts";
 
 /**
  * The project-wide id maps and the two annotators that make links work *across* output files.

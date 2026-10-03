@@ -3,8 +3,8 @@
  * child into a real heading, prefixed by the compile-time number.
  */
 
-import { applyCollapsible, applyStatus, kindOf, renderMeta } from "./shared";
-import { HEADING_LEVEL } from "../../language/tags";
+import { applyCollapsible, applyStatus, kindOf, renderMeta } from "./shared.ts";
+import { HEADING_LEVEL } from "../../language/tags.ts";
 
 // tag → the heading class the structure stylesheet targets
 // (h2.section gets a .num pill; h3.sub / h4.subsub are quieter).

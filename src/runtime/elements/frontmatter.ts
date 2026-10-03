@@ -18,8 +18,8 @@
  * the CSS keys off the `.fm-line`/`.fm-block` classes added here (never the bare tag).
  */
 
-import { t } from "../i18n";
-import { kindOf } from "./shared";
+import { t } from "../i18n.ts";
+import { kindOf } from "./shared.ts";
 
 // tag (sans `delta-`) → English fallback label. The i18n island supplies the
 // localized text via t(); the fallback only matters if a key is missing.

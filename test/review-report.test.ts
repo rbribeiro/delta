@@ -1,12 +1,12 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "./harness.ts";
 import {
   filterReview,
   formatReviewText,
   reviewJson,
   summarize,
   type ReviewData,
-} from "../src/review-report";
-import { compile } from "./helpers";
+} from "../src/review-report.ts";
+import { compile } from "./helpers.ts";
 
 function data(src: string): ReviewData {
   const { ctx } = compile(src);

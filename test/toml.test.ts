@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
-import { parseToml, TomlError } from "../src/compiler/toml";
+import { describe, expect, it } from "./harness.ts";
+import { parseToml, TomlError } from "../src/compiler/toml.ts";
 
 /** The error a parse throws, with its position; fails the test if it parses. */
 function error(src: string): TomlError {

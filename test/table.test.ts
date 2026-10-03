@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
-import { RUNTIME_JS } from "../src/generated/assets";
-import { compile } from "./helpers";
+import { describe, expect, it } from "./harness.ts";
+import { RUNTIME_JS } from "../src/generated/assets.ts";
+import { compile } from "./helpers.ts";
 
 const doc = (body: string) =>
   `<document lang="en"><title>T</title><section id="s"><title>S</title>${body}</section></document>`;

@@ -1,8 +1,8 @@
 import { readFileSync, writeFileSync } from "node:fs";
-import type { SourceSpan } from "./compiler/ast";
-import type { ProofGraph } from "./compiler/graph";
-import { escapeAttr } from "./compiler/preprocess";
-import { trustRank } from "./language/trust";
+import type { SourceSpan } from "./compiler/ast.ts";
+import type { ProofGraph } from "./compiler/graph.ts";
+import { escapeAttr } from "./compiler/preprocess.ts";
+import { trustRank } from "./language/trust.ts";
 
 /**
  * `delta verify`: sign a result's proof as checked. Its one edit sets attributes on the

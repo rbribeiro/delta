@@ -1,99 +1,59 @@
-import { afterEach } from "vitest";
-import { VirtualConsoleLogLevelEnum, Window as HappyWindow } from "happy-dom";
-import { compileSource } from "../../src/compiler/index";
-import { createContext } from "../../src/compiler/context";
+import { BROWSER, evaluate } from "../browser.ts";
+import { compileHtml } from "../helpers.ts";
+
+export { BROWSER };
 
 /**
- * Runtime tests without a browser. `mount(dlt)` compiles a document exactly as `delta build`
- * would and loads the HTML into a fresh happy-dom window, which runs the page's own inlined
- * runtime (the bundled RUNTIME_JS, as it ships). Each mount is a new window, so custom
- * elements, island caches and listeners never leak between tests; every window is closed
- * after the test.
+ * Runtime tests run in the machine's Chromium (test/browser.ts): `inspect(dlt, script)`
+ * compiles the document exactly as `delta build` would, loads it headless, waits for the
+ * runtime to upgrade every element, runs `script` inside the page and returns what it
+ * returns (anything JSON can carry). Suites wrap themselves in `describe.skipIf(!BROWSER)`,
+ * so a machine without Chromium skips them instead of failing.
  *
- *   const page = await mount(`<document><theorem>…</theorem></document>`);
- *   expect(page.$(".box-tag")?.textContent).toBe("Theorem 1");
- *   page.click(".collapse-toggle");
+ * A launch costs about a second, so a suite compiles one document, runs one script that
+ * reads and clicks everything it needs, and lets each `it` assert on one field of the
+ * result; `lazy()` makes that one launch happen on the first `it` only.
  *
- * An error the page logs (an exception in a click handler, say) fails the test: happy-dom
- * would otherwise swallow it, and the test would only see that nothing happened.
+ *   const facts = lazy(() => inspect(DOC, `click(".collapse-toggle"); return { folded: $("section").classList.contains("is-collapsed") };`));
+ *   it("folds", () => expect(facts().folded).toBe(true));
  *
- * happy-dom does no layout: positions, sizes and scrolling are not real. What depends on
- * them (hit-testing, overflow) stays in the Chromium tests (test/browser.ts).
+ * Inside the script: `$`, `$$` (query one/all), `text(sel)` (textContent or null),
+ * `click(sel)`, `key(k, target?)` (a keydown), `openPopover()` (the bubble that is open),
+ * and `await` (the script runs in an async function; `await sleep(ms)` lets a promise settle).
  */
-
-export interface Page {
-  document: Document;
-  window: Window & typeof globalThis;
-  /** The first element matching `selector`, or null. */
-  $(selector: string): HTMLElement | null;
-  /** Every element matching `selector`. */
-  $$(selector: string): HTMLElement[];
-  /** Clicks the first element matching `selector`; throws if there is none. */
-  click(selector: string): void;
-  /**
-   * The pop-over bubble that is open now (the runtime moves every bubble to the end of
-   * <body>). happy-dom has no Popover API, so the runtime takes its fallback and marks the
-   * open bubble `.is-open`; real browsers take the `showPopover()` path, which the Chromium
-   * tests cover.
-   */
-  openPopover(): HTMLElement | undefined;
-  /** Dispatches a keydown of `key` on the first element matching `selector` (the document when omitted). */
-  key(key: string, selector?: string): void;
+export function inspect<T = Record<string, unknown>>(dlt: string, script: string, file = "test/doc.dlt"): T {
+  const probe = `
+    const $ = (s, root = document) => root.querySelector(s);
+    const $$ = (s, root = document) => [...root.querySelectorAll(s)];
+    const text = (s, root) => { const el = $(s, root); return el ? el.textContent : null; };
+    const click = (s) => { const el = $(s); if (!el) throw new Error("nothing matches " + s); el.click(); };
+    const key = (k, target = document) => target.dispatchEvent(new KeyboardEvent("keydown", { key: k, bubbles: true }));
+    const openPopover = () => $$(".delta-pop").find((p) => p.matches(":popover-open") || p.classList.contains("is-open")) ?? null;
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    (async () => { ${script} })()
+      .then((result) => ({ result }), (e) => ({ error: String((e && e.stack) || e) }))
+      .then((out) => {
+        const bytes = new TextEncoder().encode(JSON.stringify(out));
+        let s = "";
+        for (const b of bytes) s += String.fromCharCode(b);
+        document.title = "RESULT::" + btoa(s);
+      });`;
+  const raw = evaluate(compileHtml(dlt, { file }), probe);
+  if (!raw) throw new Error("the page produced no result: the runtime or the probe did not finish");
+  const out = JSON.parse(Buffer.from(raw, "base64").toString("utf8")) as { result?: T; error?: string };
+  if (out.error !== undefined) throw new Error(`the probe failed in the page:\n${out.error}`);
+  return out.result as T;
 }
 
-const open: HappyWindow[] = [];
-afterEach(async () => {
-  const windows = open.splice(0);
-  const errors = windows.flatMap((w) =>
-    w.happyDOM.virtualConsolePrinter
-      .read()
-      .filter((entry) => entry.level >= VirtualConsoleLogLevelEnum.error)
-      .map((entry) => entry.message.map(String).join(" ")),
-  );
-  await Promise.all(windows.map((w) => w.happyDOM.close()));
-  if (errors.length) throw new Error(`the page logged errors:\n${errors.join("\n")}`);
-});
-
-export async function mount(dlt: string, file = "test.dlt"): Promise<Page> {
-  const ctx = createContext(file);
-  const html = compileSource(dlt, ctx);
-  if (html === undefined) {
-    throw new Error(
-      `the document did not compile:\n${ctx.diagnostics.map((d) => d.message).join("\n")}`,
-    );
-  }
-  const window = new HappyWindow({
-    url: `file:///${file.replace(/\.dlt$/, ".html")}`,
-    // The page runs its own inlined runtime; the documents are ours, so the sandbox warning is noise.
-    settings: {
-      enableJavaScriptEvaluation: true,
-      suppressInsecureJavaScriptEnvironmentWarning: true,
-      disableCSSFileLoading: true,
-    },
-  });
-  open.push(window);
-  window.document.write(html);
-  await window.happyDOM.waitUntilComplete();
-
-  const document = window.document as unknown as Document;
-  const $ = (selector: string) => document.querySelector<HTMLElement>(selector);
-  return {
-    document,
-    window: window as unknown as Window & typeof globalThis,
-    $,
-    $$: (selector) => [...document.querySelectorAll<HTMLElement>(selector)],
-    openPopover: () => document.querySelector<HTMLElement>(".delta-pop.is-open") ?? undefined,
-    click(selector) {
-      const el = $(selector);
-      if (!el) throw new Error(`nothing matches ${selector}`);
-      el.click();
-    },
-    key(key, selector) {
-      const target = selector ? $(selector) : document;
-      if (!target) throw new Error(`nothing matches ${selector}`);
-      target.dispatchEvent(
-        new window.KeyboardEvent("keydown", { key, bubbles: true }) as unknown as Event,
-      );
-    },
+/** Runs `fn` on the first call only and returns the same value afterwards. */
+export function lazy<T>(fn: () => T): () => T {
+  let value: T;
+  let done = false;
+  return () => {
+    if (!done) {
+      value = fn();
+      done = true;
+    }
+    return value;
   };
 }
