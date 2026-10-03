@@ -182,6 +182,27 @@
       enunciados, e o leitor abre o resto quando quiser. Para deixar uma aberta desde o
       início, use <c>collapsed="false"</c> nela. Na impressão, tudo sai aberto.
 
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">collapsed</column>
+          <column mono="true">false</column>
+          <column>Começa com a gaveta aberta. Como só uma gaveta abre por vez, vale a primeira com <c>collapsed="false"</c>; na prévia de uma <c><ref></c> todas começam fechadas</column>
+        </row>
+      </table>
+
+      Esse é o único atributo. <c>id</c> é erro de compilação: uma ajuda não é alvo de
+      <c><ref></c> (ponha o <c>id</c> no resultado). Duas ajudas do mesmo tipo no mesmo
+      resultado, ou no mesmo passo, geram um aviso: junte-as numa só. As
+      <c><ref></c> dentro delas funcionam normalmente para quem lê, mas não entram no
+      grafo da prova (veja <ref to="sobre-mapa-prova"/>). A cor de cada pontinho vem
+      dos tokens <c>--delta-aid-intuition</c>, <c>--delta-aid-strategy</c> e
+      <c>--delta-aid-obstacle</c> (veja <ref to="temas">Temas</ref>).
+
       <theorem id="demo-entendimento">
         <title>Bolzano–Weierstrass</title>
         Toda sequência limitada em $\mathbb{R}$ tem uma subsequência convergente.
@@ -243,6 +264,29 @@
       O <c>delta lint</c> aponta hipóteses que a prova nunca usa: ou falta um passo, ou o
       teorema vale sem ela. Aponta também passos sem demonstração.
 
+      <table numbered="false">
+        <header>
+          <column>Tag</column>
+          <column>Atributos</column>
+          <column>Onde pode ir</column>
+        </header>
+        <row>
+          <column mono="true">step</column>
+          <column><c>id</c> (opcional; sem ele, vira <c>resultado-step-2.1</c>)</column>
+          <column>Diretamente dentro de uma <c><proof></c>, inclusive a de outro passo</column>
+        </row>
+        <row>
+          <column mono="true">hyp</column>
+          <column><c>id</c> (para citá-la com <c><ref></c>)</column>
+          <column>No enunciado de um resultado; nunca numa prova ou numa ajuda</column>
+        </row>
+        <row>
+          <column mono="true">counterexample</column>
+          <column><c>breaks</c> (obrigatório: o <c>id</c> da hipótese), <c>id</c></column>
+          <column>Em qualquer lugar; aparece na prévia da hipótese</column>
+        </row>
+      </table>
+
       <theorem id="demo-passos-thm">
         Suponha <hyp id="demo-hyp-pos">$x > 0$</hyp> e <hyp id="demo-hyp-int">$x$
         inteiro</hyp>. Então $x \ge 1$.
@@ -294,6 +338,29 @@
       não contam), e o compilador calcula a disposição. Por isso ele muda sozinho quando
       a prova muda. É o jeito de mostrar o plano antes dos detalhes: com os lemas ainda
       em aberto, o mapa já diz como eles se juntam.
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">of</column>
+          <column mono="true">id</column>
+          <column>O resultado embaixo do mapa; acima dele, tudo o que ele usa, direta ou indiretamente. Sem <c>of</c>, o grafo inteiro do projeto</column>
+        </row>
+      </table>
+
+      A tag é vazia e pode ir em qualquer lugar do texto. Um <c>of</c> que não é o
+      <c>id</c> de um resultado é erro de compilação; um documento sem nenhum resultado
+      com <c>id</c> gera só um aviso, e o mapa fica vazio. Contam como resultado as
+      mesmas tags que levam ajudas (veja <ref to="sobre-entendimento"/>). As caixas têm tamanho fixo
+      (quatro cabem na largura do texto): um título longo quebra em duas linhas e
+      depois é cortado. A legenda embaixo lista só as confianças presentes no mapa. Se
+      a prova for circular, as arestas que fecham o ciclo são desenhadas à parte, à
+      direita. Para ver o mesmo grafo no terminal, use <c>delta graph</c> ou
+      <c>delta uses</c> (veja <ref to="cli">CLI</ref>).
 
       <lemma id="demo-mapa-lema" status="open">
         <title>Subsequência monótona</title>

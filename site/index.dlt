@@ -82,7 +82,8 @@ Por <ref to="thm:heine-borel"/>, toda bola fechada
           <lede>
             Troque o <c>type</c> do documento e as mesmas tags (teoremas, equações,
             referências, figuras) se rearranjam para o formato. Os três exemplos abaixo
-            estão compilados e abrem em uma nova aba.
+            estão compilados e abrem em uma nova aba; a <go to="galeria.html">galeria</go>
+            reúne todos os exemplos.
           </lede>
         </band-head>
         <grid>
@@ -321,6 +322,10 @@ para todo $x \in K$.<comment by="rodrigo" date="2026-09-12">
             </preview>
           </showcase>
         </demo>
+
+        <actions>
+          <go to="galeria.html" class="btn primary">Ver a galeria de exemplos</go>
+        </actions>
       </wrap>
     </band>
 
@@ -423,6 +428,7 @@ delta build artigo.dlt -o artigo.html --watch
       <p>Feito com ❤️ em Delta no IMPA Tech. </p>
       <footer-links>
         <go to="documentacao.html">Documentação</go>
+        <go to="galeria.html">Galeria</go>
         <link to="https://github.com/rbribeiro/delta">GitHub</link>
         <link to="https://www.npmjs.com/package/delta-lang">npm</link>
       </footer-links>

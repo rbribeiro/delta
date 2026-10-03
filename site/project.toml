@@ -15,6 +15,7 @@ inputs = [
   "index.dlt",          # página inicial (landing): tema próprio, inicio.css
   "documentacao.dlt",   # documentação: o ponto de entrada da referência
   "comecar.dlt",        # primeiros passos
+  "galeria.dlt",        # galeria de exemplos por tipo (livro, artigo, apresentação): muda sempre
   "cli.dlt",            # referência: linha de comando (comandos, opções, códigos de saída)
   "estrutura.dlt",      # referência: estrutura do documento
   "matematica.dlt",     # referência: matemática
