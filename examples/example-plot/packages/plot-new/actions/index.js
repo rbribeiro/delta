@@ -1,29 +1,26 @@
 // Attributes & Data Setup
 function initPlotAttributes(plot) {
-    plot.title = plot.getAttribute("title") || "";
-    plot.grab = (plot.getAttribute("grab") !== "false");
+    // Grabbing
+    plot.grab = parseOption(plot.getAttribute("grab"),{"true": true,"false": false});
+    
+    // Plot Type
     plot.type = parseOption(plot.getAttribute("type"), ["cartesian", "points"]);
 
-    plot.offsetX = 0;
-    plot.offsetY = 0;
-    plot.userInteracted = false;
-
-    // Zoom attributes
+    // Zoom
     const zoomAttr = plot.getAttribute("zoom") || "true";
-    let zoomRange = parseTuple(zoomAttr, 2, true);
-    if (!zoomRange) {
-        zoomRange = parseTuple(parseOption(zoomAttr, { "true": "0.25,4", "false": "1,1" }), 2, true);
-    } else if (zoomRange[0] > zoomRange[1] || zoomRange[1] < 1 || zoomRange[0] > 1) {
-        zoomRange = [0.25, 4];
-    }
-    plot.minZoom = zoomRange[0];
-    plot.maxZoom = zoomRange[1];
-    plot.zoomEnabled = (zoomRange[0] !== 1 || zoomRange[1] !== 1);
-    plot.zoom = Math.max(Math.min(1, plot.maxZoom), plot.minZoom);
+    const fallbackZoom = [0.25,4];
+    let zoomRange = parseOption(plot.getAttribute("zoom"),{"true": parseTuple(zoomAttr,2,true) || fallbackZoom, "false": [1,1]});
+
+    plot.offsetX = 0; plot.offsetY = 0;
+    plot.userInteracted = false;
+    plot.minZoom = Math.min(zoomRange[0],1); plot.maxZoom = Math.max(zoomRange[1],1);
+    plot.zoomEnabled = (plot.minZoom !== 1 || plot.maxZoom !== 1);
+    plot.zoom = 1;
 
     // Initial axis ranges
-    plot.xRange = parseTuple(plot.getAttribute("x"), 2, true) || [-16, 16];
-    plot.yRange = parseTuple(plot.getAttribute("y"), 2, true) || [-9, 9];
+    const fallbackX = [-16,16], fallbackY = [-9,9];
+    plot.xRange = parseTuple(plot.getAttribute("x"), 2, true) || fallbackX;
+    plot.yRange = parseTuple(plot.getAttribute("y"), 2, true) || fallbackY;
 
     // Authoritative data container
     plot.data = createPlotData(plot, { points: [], functions: [] });
@@ -34,10 +31,14 @@ function createPlotStructure(plot) {
     plot.container = document.createElement("div");
     plot.container.className = "plot-container";
 
+    plot.header = document.createElement("div");
+    plot.header.className = "plot-header";
+
     plot.canvas = document.createElement("canvas");
     plot.canvas.className = "plot-canvas";
     plot.ctx = plot.canvas.getContext("2d");
 
+    plot.container.prepend(plot.header);
     plot.container.append(plot.canvas);
     plot.append(plot.container);
 }
@@ -66,26 +67,26 @@ function collectPlotSubcomponents(plot) {
     }
     if (axisEl) plot.elements.push(axisEl);
 
-    // Functions (rendered below points)
+    // Functions
     const functionEls = Array.from(plot.querySelectorAll("delta-function"));
     for (const fn of functionEls) {
         plot.elements.push(fn);
     }
 
-    // Single point instances (registered into plot.data.points)
+    // Single point instances
     const pointEls = Array.from(plot.querySelectorAll("delta-point"));
     for (const pt of pointEls) {
         plot.elements.push(pt);
     }
 
-    // Points controller & interactive layer (rendered on top of curves)
+    // Points controller
     let pointsEl = plot.querySelector("delta-points");
     if (!pointsEl && (plot.type === "points" || pointEls.length > 0)) {
         pointsEl = document.createElement("delta-points");
     }
     if (pointsEl) plot.elements.push(pointsEl);
 
-    // Clear inner children so raw markup does not bleed into layout
+    // Clear inner children
     plot.innerHTML = "";
     plot.append(plot.container);
 }

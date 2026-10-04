@@ -9,9 +9,6 @@ function parseTitleOptions(titleEl) {
 function buildTitleHeader(plot, { text, color }) {
     plot.title = text;
 
-    const headerEl = document.createElement("div");
-    headerEl.className = "plot-header";
-
     const textEl = document.createElement("span");
     textEl.className = "plot-title";
     textEl.textContent = text;
@@ -20,7 +17,5 @@ function buildTitleHeader(plot, { text, color }) {
         textEl.style.color = color;
     }
 
-    headerEl.append(textEl);
-    plot.container.prepend(headerEl);
-    return headerEl;
+    plot.header.append(textEl);
 }

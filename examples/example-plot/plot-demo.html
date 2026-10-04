@@ -3274,8 +3274,19 @@ delta-plot:focus-visible,
       </delta-row>
     </delta-table><delta-subsection id="sec:title" num="1.1">
       <delta-title>&lt;title&gt;</delta-title>
-      Define o título exibido na barra de cabeçalho superior da área de plotagem. Não possui atributos adicionais: o texto do título é inserido diretamente como conteúdo da tag.<delta-code lang="xml" numbered="false"><span class="hljs-tag">&lt;<span class="hljs-name">plot</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>Plano Cartesiano<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
+      Define o título exibido na barra de cabeçalho superior da área de plotagem. O texto do título é inserido diretamente como conteúdo da tag.<delta-table numbered="false">
+        <delta-header>
+          <delta-column>Atributo</delta-column>
+          <delta-column>Valores</delta-column>
+          <delta-column>O que faz</delta-column>
+        </delta-header>
+        <delta-row>
+          <delta-column mono="true">color</delta-column>
+          <delta-column>cor CSS (ex: <delta-c>#3b82f6</delta-c>)</delta-column>
+          <delta-column>Define a cor personalizada do texto do título. O padrão utiliza a cor tipográfica do tema.</delta-column>
+        </delta-row>
+      </delta-table><delta-code lang="xml" numbered="false"><span class="hljs-tag">&lt;<span class="hljs-name">plot</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">title</span> <span class="hljs-attr">color</span>=<span class="hljs-string">&quot;#3b82f6&quot;</span>&gt;</span>Plano Cartesiano<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">plot</span>&gt;</span></delta-code>
     </delta-subsection><delta-subsection id="sec:grid" num="1.2">
       <delta-title>&lt;grid&gt;</delta-title>
@@ -3288,7 +3299,17 @@ delta-plot:focus-visible,
         <delta-row>
           <delta-column mono="true">show</delta-column>
           <delta-column><delta-c>true</delta-c>, <delta-c>false</delta-c>, <delta-c>origin</delta-c>, <delta-c>basic</delta-c></delta-column>
-          <delta-column><delta-c>true</delta-c> desenha grade e origem; <delta-c>origin</delta-c> só os eixos centrais; <delta-c>basic</delta-c> só a malha; <delta-c>false</delta-c> oculta ambos.</delta-column>
+          <delta-column><delta-c>true</delta-c> desenha grade e origem; <delta-c>origin</delta-c> só os eixos centrais; <delta-c>basic</delta-c> só a malha; <delta-c>false</delta-c> oculta ambos. O padrão é <delta-c>true</delta-c>.</delta-column>
+        </delta-row>
+        <delta-row>
+          <delta-column mono="true">color</delta-column>
+          <delta-column>cor CSS (ex: <delta-c>rgba(0,0,0,0.15)</delta-c>)</delta-column>
+          <delta-column>Cor das linhas da malha e dos eixos centrais. O padrão utiliza tonalidades sutis derivadas do tema.</delta-column>
+        </delta-row>
+        <delta-row>
+          <delta-column mono="true">thickness</delta-column>
+          <delta-column>número (ex: <delta-c>1</delta-c>, <delta-c>1.5</delta-c>)</delta-column>
+          <delta-column>Espessura do traço das linhas da grade e da cruz central em pixels. Também aceita o atributo <delta-c>width</delta-c>. O padrão é <delta-c>1</delta-c>.</delta-column>
         </delta-row>
       </delta-table>
     </delta-subsection><delta-subsection id="sec:axis" num="1.3">
@@ -3302,12 +3323,24 @@ delta-plot:focus-visible,
         <delta-row>
           <delta-column mono="true">show</delta-column>
           <delta-column><delta-c>true</delta-c>, <delta-c>false</delta-c>, <delta-c>x</delta-c>, <delta-c>y</delta-c></delta-column>
-          <delta-column>Controla a visibilidade dos números: ambos os eixos (<delta-c>true</delta-c>), apenas horizontal (<delta-c>x</delta-c>), apenas vertical (<delta-c>y</delta-c>) ou nenhum (<delta-c>false</delta-c>).</delta-column>
+          <delta-column>Controla a visibilidade dos números: ambos os eixos (<delta-c>true</delta-c>), apenas horizontal (<delta-c>x</delta-c>), apenas vertical (<delta-c>y</delta-c>) ou nenhum (<delta-c>false</delta-c>). O padrão é <delta-c>true</delta-c>.</delta-column>
+        </delta-row>
+        <delta-row>
+          <delta-column mono="true">color</delta-column>
+          <delta-column>cor CSS (ex: <delta-c>#475569</delta-c>)</delta-column>
+          <delta-column>Cor dos números e marcações numéricas das réguas dos eixos. O padrão utiliza a cor de texto secundária.</delta-column>
         </delta-row>
       </delta-table>
     </delta-subsection><delta-subsection id="sec:points" num="1.4">
       <delta-title>&lt;points&gt;</delta-title>
-      Adiciona uma camada interativa de pontos com barra de status inferior, modo de manipulação/movimentação e balão de coordenadas flutuante.<delta-table numbered="false">
+      Adiciona uma camada interativa de pontos com barra de status inferior, modo de manipulação/movimentação, botões de ação e balão de coordenadas flutuante.<br><br>A interface inclui:
+      <delta-list>
+        <delta-item>Barra de status inferior com contagem em tempo real dos pontos presentes no gráfico.</delta-item>
+        <delta-item>Botão de alternância do modo interativo de pontos (cursor em cruz ou ponteiro).</delta-item>
+        <delta-item>Botão para deletar o ponto selecionado e botão para limpar todos os pontos (quando habilitado).</delta-item>
+        <delta-item>Balão de coordenadas flutuante (<delta-c>badge</delta-c>) sobre o ponto selecionado, com botão de atalho para remoção rápida.</delta-item>
+        <delta-item>Atalhos de teclado quando o gráfico está em foco: <delta-c>Delete</delta-c> ou <delta-c>Backspace</delta-c> remove o ponto selecionado; <delta-c>Escape</delta-c> cancela a seleção.</delta-item>
+      </delta-list><delta-table numbered="false">
         <delta-header>
           <delta-column>Atributo</delta-column>
           <delta-column>Valores</delta-column>
@@ -3316,12 +3349,17 @@ delta-plot:focus-visible,
         <delta-row>
           <delta-column mono="true">size</delta-column>
           <delta-column>número (<delta-c>0.1</delta-c> a <delta-c>10</delta-c>)</delta-column>
-          <delta-column>Fator de escala multiplicador do raio dos pontos renderizados. O padrão é <delta-c>1</delta-c></delta-column>
+          <delta-column>Fator de escala multiplicador do raio dos pontos renderizados. O padrão é <delta-c>1</delta-c>.</delta-column>
+        </delta-row>
+        <delta-row>
+          <delta-column mono="true">color</delta-column>
+          <delta-column>cor CSS (ex: <delta-c>#3b82f6</delta-c>)</delta-column>
+          <delta-column>Cor padrão herdada por novos pontos adicionados interativamente ou pontos sem cor própria. O padrão utiliza a cor de destaque do tema.</delta-column>
         </delta-row>
         <delta-row>
           <delta-column mono="true">interaction</delta-column>
           <delta-column><delta-c>true</delta-c>, <delta-c>move</delta-c>, <delta-c>false</delta-c></delta-column>
-          <delta-column><delta-c>true</delta-c> permite criar, mover e deletar pontos; <delta-c>move</delta-c> permite apenas arrastar; <delta-c>false</delta-c> bloqueia edição.</delta-column>
+          <delta-column><delta-c>true</delta-c> permite criar, mover e deletar pontos; <delta-c>move</delta-c> permite apenas arrastar pontos existentes; <delta-c>false</delta-c> bloqueia edição e oculta ações da barra inferior. O padrão é <delta-c>true</delta-c>.</delta-column>
         </delta-row>
       </delta-table>
     </delta-subsection><delta-subsection id="sec:point" num="1.5">
@@ -3345,7 +3383,7 @@ delta-plot:focus-visible,
         <delta-row>
           <delta-column mono="true">pos</delta-column>
           <delta-column>tupla <delta-c>x,y</delta-c></delta-column>
-          <delta-column>Par de coordenadas como tupla (alternativa a <delta-c>x</delta-c> e <delta-c>y</delta-c> separados ou ao texto interno).</delta-column>
+          <delta-column>Par de coordenadas como tupla (alternativa a <delta-c>x</delta-c> e <delta-c>y</delta-c> separados).</delta-column>
         </delta-row>
         <delta-row>
           <delta-column mono="true">size</delta-column>
@@ -3355,7 +3393,12 @@ delta-plot:focus-visible,
         <delta-row>
           <delta-column mono="true">color</delta-column>
           <delta-column>cor CSS (ex: <delta-c>#ef4444</delta-c>, <delta-c>blue</delta-c>)</delta-column>
-          <delta-column>Cor de preenchimento do ponto (hexadecimal, rgb ou nome). O padrão segue a cor do tema.</delta-column>
+          <delta-column>Cor de preenchimento do ponto (hexadecimal, rgb ou nome). O padrão segue a cor herdada de <delta-c>&lt;points&gt;</delta-c> ou do tema.</delta-column>
+        </delta-row>
+        <delta-row>
+          <delta-column mono="true">name</delta-column>
+          <delta-column>texto (ex: <delta-c>Origem</delta-c>, <delta-c>P1</delta-c>)</delta-column>
+          <delta-column>Nome identificador associado ao ponto. O padrão é <delta-c>""</delta-c> (não nomeado). Permanece armazenado no modelo de dados autoritativo.</delta-column>
         </delta-row>
       </delta-table><delta-box type="note">
         <delta-title>Detecção Automática de Pontos</delta-title>
@@ -3363,9 +3406,41 @@ delta-plot:focus-visible,
       </delta-box>
     </delta-subsection><delta-subsection id="sec:function" num="1.6">
       <delta-title>&lt;function&gt;</delta-title>
-      Permite desenhar curvas no plano cartesiano a partir de uma expressão matemática dependente de <delta-c>x</delta-c> e <delta-c>y</delta-c>. O gráfico amostra a expressão ao longo do eixo horizontal e desenha a curva correspondente de forma suave no canvas.<delta-code lang="xml" numbered="false"><span class="hljs-tag">&lt;<span class="hljs-name">plot</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">function</span>&gt;</span>Math.sin(x)<span class="hljs-tag">&lt;/<span class="hljs-name">function</span>&gt;</span>
+      Permite desenhar curvas no plano cartesiano a partir de uma expressão matemática dependente de <delta-c>x</delta-c> (e opcionalmente <delta-c>y</delta-c>). O gráfico amostra a expressão ao longo do eixo horizontal e desenha a curva correspondente de forma suave no canvas.<delta-table numbered="false">
+        <delta-header>
+          <delta-column>Atributo</delta-column>
+          <delta-column>Valores</delta-column>
+          <delta-column>O que faz</delta-column>
+        </delta-header>
+        <delta-row>
+          <delta-column mono="true">color</delta-column>
+          <delta-column>cor CSS (ex: <delta-c>#3b82f6</delta-c>)</delta-column>
+          <delta-column>Cor do traço da curva no plano. O padrão utiliza a cor de destaque do tema.</delta-column>
+        </delta-row>
+        <delta-row>
+          <delta-column mono="true">from</delta-column>
+          <delta-column>tupla <delta-c>a,b</delta-c> (ex: <delta-c>-2,2</delta-c>)</delta-column>
+          <delta-column>Delimita o domínio da função ao intervalo <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">[</mo><mi>a</mi><mo separator="true">,</mo><mi>b</mi><mo stretchy="false">]</mo></mrow><annotation encoding="application/x-tex">[a, b]</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord mathnormal">a</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">b</span><span class="mclose">]</span></span></span></span> no eixo horizontal. A curva só é traçada dentro desta faixa.</delta-column>
+        </delta-row>
+        <delta-row>
+          <delta-column mono="true">to</delta-column>
+          <delta-column>tupla <delta-c>u,v</delta-c> (ex: <delta-c>-1,1</delta-c>)</delta-column>
+          <delta-column>Delimita o contradomínio (imagem) da função ao intervalo <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">[</mo><mi>u</mi><mo separator="true">,</mo><mi>v</mi><mo stretchy="false">]</mo></mrow><annotation encoding="application/x-tex">[u, v]</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord mathnormal">u</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.0359em;">v</span><span class="mclose">]</span></span></span></span> no eixo vertical. Pontos com ordenada fora do intervalo não são desenhados.</delta-column>
+        </delta-row>
+        <delta-row>
+          <delta-column mono="true">name</delta-column>
+          <delta-column>texto (ex: <delta-c>seno</delta-c>, <delta-c>f</delta-c>)</delta-column>
+          <delta-column>Nome identificador da função. O padrão é <delta-c>""</delta-c>.</delta-column>
+        </delta-row>
+      </delta-table>O conteúdo interno da tag é avaliado como uma expressão JavaScript padrão, permitindo o uso direto de funções do módulo <delta-c>Math</delta-c> (como <delta-c>Math.sin</delta-c>, <delta-c>Math.cos</delta-c>, <delta-c>Math.exp</delta-c>, <delta-c>Math.sqrt</delta-c>) e operadores aritméticos (como <delta-c>**</delta-c> para exponenciação).<delta-code lang="xml" numbered="false"><span class="hljs-tag">&lt;<span class="hljs-name">plot</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">function</span> <span class="hljs-attr">color</span>=<span class="hljs-string">&quot;#3b82f6&quot;</span> <span class="hljs-attr">from</span>=<span class="hljs-string">&quot;-4,4&quot;</span>&gt;</span>Math.sin(x)<span class="hljs-tag">&lt;/<span class="hljs-name">function</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">plot</span>&gt;</span></delta-code>
+    </delta-subsection><delta-subsection id="sec:data" num="1.7">
+      <delta-title>Estrutura de Dados e Eventos</delta-title>
+      Cada elemento <delta-c>&lt;plot&gt;</delta-c> gerencia um modelo de dados reativo e autoritativo em <delta-c>plot.data</delta-c>, acessível programaticamente:<delta-list>
+        <delta-item><delta-c>plot.data.points</delta-c>: lista reativa contendo os pontos do gráfico, cada um com as propriedades <delta-c>{ id, x, y, size, color, name }</delta-c>.</delta-item>
+        <delta-item><delta-c>plot.data.functions</delta-c>: lista reativa com as definições de funções, incluindo <delta-c>{ id, f, vars, rawExpr, color, from, to, name }</delta-c>.</delta-item>
+      </delta-list>Qualquer inserção, alteração ou remoção realizada em <delta-c>plot.data</delta-c> sincroniza imediatamente a visualização do canvas e dispara o evento customizado <delta-c>delta:data-change</delta-c> no elemento <delta-c>&lt;plot&gt;</delta-c>, disponibilizando a referência em <delta-c>event.detail</delta-c>.
     </delta-subsection>
   </delta-section><delta-section id="sec:ex" num="2">
     <delta-eyebrow>Demonstração</delta-eyebrow>
@@ -3423,31 +3498,68 @@ delta-plot:focus-visible,
         <delta-point x="3" y="-1"></delta-point>
       </delta-plot>
     </delta-subsection><delta-subsection num="2.6">
-      <delta-title>Pontos Declarativos com Cores e Tamanhos</delta-title>
-      Pontos pré-definidos no código com atributos individuais de posição, cor e tamanho:
+      <delta-title>Pontos Declarativos com Cores, Tamanhos e Nomes</delta-title>
+      Pontos pré-definidos no código com atributos individuais de coordenadas (<delta-c>pos</delta-c> ou <delta-c>x</delta-c>/<delta-c>y</delta-c>), cor, tamanho e nome:
       <delta-code lang="xml" numbered="false"><span class="hljs-tag">&lt;<span class="hljs-name">plot</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>Pontos Fixados no Código<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">point</span> <span class="hljs-attr">x</span>=<span class="hljs-string">&quot;0&quot;</span> <span class="hljs-attr">y</span>=<span class="hljs-string">&quot;0&quot;</span> <span class="hljs-attr">size</span>=<span class="hljs-string">&quot;1.5&quot;</span> <span class="hljs-attr">color</span>=<span class="hljs-string">&quot;#ef4444&quot;</span> /&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">point</span> <span class="hljs-attr">x</span>=<span class="hljs-string">&quot;4&quot;</span> <span class="hljs-attr">y</span>=<span class="hljs-string">&quot;3&quot;</span> <span class="hljs-attr">color</span>=<span class="hljs-string">&quot;#3b82f6&quot;</span> /&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">point</span> <span class="hljs-attr">x</span>=<span class="hljs-string">&quot;-4&quot;</span> <span class="hljs-attr">y</span>=<span class="hljs-string">&quot;-2&quot;</span> <span class="hljs-attr">size</span>=<span class="hljs-string">&quot;2&quot;</span> /&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">point</span> <span class="hljs-attr">pos</span>=<span class="hljs-string">&quot;0,0&quot;</span> <span class="hljs-attr">size</span>=<span class="hljs-string">&quot;1.5&quot;</span> <span class="hljs-attr">color</span>=<span class="hljs-string">&quot;#ef4444&quot;</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;Origem&quot;</span> /&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">point</span> <span class="hljs-attr">pos</span>=<span class="hljs-string">&quot;4,3&quot;</span> <span class="hljs-attr">color</span>=<span class="hljs-string">&quot;#3b82f6&quot;</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;P1&quot;</span> /&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">point</span> <span class="hljs-attr">pos</span>=<span class="hljs-string">&quot;-4,-2&quot;</span> <span class="hljs-attr">size</span>=<span class="hljs-string">&quot;2&quot;</span> <span class="hljs-attr">color</span>=<span class="hljs-string">&quot;#10b981&quot;</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;P2&quot;</span> /&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">plot</span>&gt;</span></delta-code>
       <delta-plot>
         <delta-title>Pontos Fixados no Código</delta-title>
-        <delta-point x="0" y="0" size="1.5" color="#ef4444"></delta-point>
-        <delta-point x="4" y="3" color="#3b82f6"></delta-point>
-        <delta-point x="-4" y="-2" size="2"></delta-point>
+        <delta-point pos="0,0" size="1.5" color="#ef4444" name="Origem"></delta-point>
+        <delta-point pos="4,3" color="#3b82f6" name="P1"></delta-point>
+        <delta-point pos="-4,-2" size="2" color="#10b981" name="P2"></delta-point>
       </delta-plot>
     </delta-subsection><delta-subsection num="2.7">
       <delta-title>Curva de Função</delta-title>
-      Exemplo de renderização analítica de uma curva definida por expressão matemática:
+      Renderização analítica de uma curva contínua definida por expressão matemática com cor personalizada:
       <delta-code lang="xml" numbered="false"><span class="hljs-tag">&lt;<span class="hljs-name">plot</span> <span class="hljs-attr">x</span>=<span class="hljs-string">&quot;-8,8&quot;</span> <span class="hljs-attr">y</span>=<span class="hljs-string">&quot;-4,4&quot;</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>Curva Analítica<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">function</span>&gt;</span>Math.sin(x)<span class="hljs-tag">&lt;/<span class="hljs-name">function</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">function</span> <span class="hljs-attr">color</span>=<span class="hljs-string">&quot;#3b82f6&quot;</span>&gt;</span>Math.sin(x)<span class="hljs-tag">&lt;/<span class="hljs-name">function</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">plot</span>&gt;</span></delta-code>
       <delta-plot x="-8,8" y="-4,4">
         <delta-title>Curva Analítica</delta-title>
-        <delta-function>x**2</delta-function>
-        <delta-point x="0" y="0.1"></delta-point>
+        <delta-function color="#3b82f6">Math.sin(x)</delta-function>
+      </delta-plot>
+    </delta-subsection><delta-subsection num="2.8">
+      <delta-title>Curvas com Domínio e Contradomínio</delta-title>
+      Múltiplas funções simultâneas delimitadas por intervalos de domínio (<delta-c>from</delta-c>) e contradomínio (<delta-c>to</delta-c>), renderizadas com cores distintas:
+      <delta-code lang="xml" numbered="false"><span class="hljs-tag">&lt;<span class="hljs-name">plot</span> <span class="hljs-attr">x</span>=<span class="hljs-string">&quot;-6,6&quot;</span> <span class="hljs-attr">y</span>=<span class="hljs-string">&quot;-3,3&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>Família de Curvas<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">function</span> <span class="hljs-attr">color</span>=<span class="hljs-string">&quot;#3b82f6&quot;</span> <span class="hljs-attr">from</span>=<span class="hljs-string">&quot;-5,5&quot;</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;seno&quot;</span>&gt;</span>Math.sin(x)<span class="hljs-tag">&lt;/<span class="hljs-name">function</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">function</span> <span class="hljs-attr">color</span>=<span class="hljs-string">&quot;#10b981&quot;</span> <span class="hljs-attr">from</span>=<span class="hljs-string">&quot;-2,2&quot;</span> <span class="hljs-attr">to</span>=<span class="hljs-string">&quot;-0.5,2.5&quot;</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;parábola&quot;</span>&gt;</span>x**2 - 1<span class="hljs-tag">&lt;/<span class="hljs-name">function</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">function</span> <span class="hljs-attr">color</span>=<span class="hljs-string">&quot;#ef4444&quot;</span> <span class="hljs-attr">from</span>=<span class="hljs-string">&quot;0.2,5&quot;</span> <span class="hljs-attr">to</span>=<span class="hljs-string">&quot;0,3&quot;</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;inversa&quot;</span>&gt;</span>1 / x<span class="hljs-tag">&lt;/<span class="hljs-name">function</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">plot</span>&gt;</span></delta-code>
+      <delta-plot x="-6,6" y="-3,3">
+        <delta-title>Família de Curvas</delta-title>
+        <delta-function color="#3b82f6" from="-5,5" name="seno">Math.sin(x)</delta-function>
+        <delta-function color="#10b981" from="-2,2" to="-0.5,2.5" name="parábola">x**2 - 1</delta-function>
+        <delta-function color="#ef4444" from="0.2,5" to="0,3" name="inversa">1 / x</delta-function>
+      </delta-plot>
+    </delta-subsection><delta-subsection num="2.9">
+      <delta-title>Personalização Visual Completa</delta-title>
+      Configuração refinada combinando cores personalizadas para título, réguas numéricas dos eixos, malha e espessura da grade, além de cor padrão e tamanho para a camada de pontos:
+      <delta-code lang="xml" numbered="false"><span class="hljs-tag">&lt;<span class="hljs-name">plot</span> <span class="hljs-attr">x</span>=<span class="hljs-string">&quot;-6,6&quot;</span> <span class="hljs-attr">y</span>=<span class="hljs-string">&quot;-3,3&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">title</span> <span class="hljs-attr">color</span>=<span class="hljs-string">&quot;#0284c7&quot;</span>&gt;</span>Gráfico com Estilo Customizado<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">grid</span> <span class="hljs-attr">color</span>=<span class="hljs-string">&quot;rgba(2, 132, 199, 0.15)&quot;</span> <span class="hljs-attr">thickness</span>=<span class="hljs-string">&quot;1.5&quot;</span> /&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">axis</span> <span class="hljs-attr">color</span>=<span class="hljs-string">&quot;#0284c7&quot;</span> /&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">points</span> <span class="hljs-attr">color</span>=<span class="hljs-string">&quot;#0284c7&quot;</span> <span class="hljs-attr">size</span>=<span class="hljs-string">&quot;1.2&quot;</span> /&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">point</span> <span class="hljs-attr">pos</span>=<span class="hljs-string">&quot;-3,1&quot;</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;A&quot;</span> <span class="hljs-attr">color</span>=<span class="hljs-string">&quot;#e11d48&quot;</span> <span class="hljs-attr">size</span>=<span class="hljs-string">&quot;1.8&quot;</span> /&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">point</span> <span class="hljs-attr">pos</span>=<span class="hljs-string">&quot;0,0&quot;</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;Origem&quot;</span> <span class="hljs-attr">color</span>=<span class="hljs-string">&quot;#e11d48&quot;</span> <span class="hljs-attr">size</span>=<span class="hljs-string">&quot;1.8&quot;</span> /&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">point</span> <span class="hljs-attr">pos</span>=<span class="hljs-string">&quot;3,-1&quot;</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;B&quot;</span> <span class="hljs-attr">color</span>=<span class="hljs-string">&quot;#e11d48&quot;</span> <span class="hljs-attr">size</span>=<span class="hljs-string">&quot;1.8&quot;</span> /&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">function</span> <span class="hljs-attr">color</span>=<span class="hljs-string">&quot;#0284c7&quot;</span> <span class="hljs-attr">from</span>=<span class="hljs-string">&quot;-4,4&quot;</span>&gt;</span>0.5 * x<span class="hljs-tag">&lt;/<span class="hljs-name">function</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">plot</span>&gt;</span></delta-code>
+      <delta-plot x="-6,6" y="-3,3">
+        <delta-title color="#0284c7">Gráfico com Estilo Customizado</delta-title>
+        <delta-grid color="rgba(2, 132, 199, 0.15)" thickness="1.5"></delta-grid>
+        <delta-axis color="#0284c7"></delta-axis>
+        <delta-points color="#0284c7" size="1.2"></delta-points>
+        <delta-point pos="-3,1" name="A" color="#e11d48" size="1.8"></delta-point>
+        <delta-point pos="0,0" name="Origem" color="#e11d48" size="1.8"></delta-point>
+        <delta-point pos="3,-1" name="B" color="#e11d48" size="1.8"></delta-point>
+        <delta-function color="#0284c7" from="-4,4">0.5 * x</delta-function>
       </delta-plot>
     </delta-subsection>
   </delta-section>
@@ -3460,50 +3572,82 @@ delta-plot:focus-visible,
 </script>
 <script>
 /* pack: auxiliary */
-// Visual Constants
+// Visual and Layout Constants
 const BASE_SIZE_SCALE = 40;
 const BASE_SCALE = BASE_SIZE_SCALE;
 const TARGET_GRID_SPACING = 50;
-const GRID_LINE_COLOR = "rgba(128, 128, 128, 0.12)";
-const GRID_LINE_WIDTH = 1;
-const AXIS_LINE_COLOR = "rgba(128, 128, 128, 0.24)";
-const AXIS_LINE_WIDTH = 1;
-const AXIS_LABEL_FONT = "10px sans-serif";
-const AXIS_LABEL_COLOR = "rgba(40, 40, 40, 0.85)";
 
-// Data and String Parsing
-function parseTuple(tuple, k = 0, numbers = true) {
-    if (tuple == null) return null;
-    const parts = tuple.split(',');
+const DEFAULT_GRID_COLOR = "rgba(128, 128, 128, 0.12)";
+const DEFAULT_GRID_WIDTH = 1;
+const DEFAULT_ORIGIN_COLOR = "rgba(128, 128, 128, 0.24)";
+const DEFAULT_ORIGIN_WIDTH = 1;
+
+const DEFAULT_AXIS_LABEL_FONT = "10px sans-serif";
+const DEFAULT_AXIS_LABEL_COLOR = "rgba(40, 40, 40, 0.85)";
+
+// String and Tuple Parsing
+function parseTuple(tupleStr, k = 0, numbers = true) {
+    if (tupleStr == null) return null;
+    const parts = String(tupleStr).split(",");
     if (k > 0 && parts.length !== k) return null;
-    
+
     if (numbers) {
         const nums = parts.map(el => parseFloat(el.trim()));
         if (nums.some(num => isNaN(num))) return null;
         return nums;
-    } else {
-        return parts;
     }
+    return parts.map(el => el.trim());
 }
 
 function parseOption(value, options) {
     const isArray = Array.isArray(options);
     const keys = isArray ? options : Object.keys(options);
-    const firstValue = isArray ? options[0] : options[keys[0]];
+    const defaultValue = isArray ? options[0] : options[keys[0]];
 
-    if (!value) return firstValue;
-    const val = String(value).toLowerCase();
+    if (!value) return defaultValue;
+    const normalized = String(value).toLowerCase().trim();
 
-    for (let key of keys) {
-        if (val === String(key).toLowerCase()) {
+    for (const key of keys) {
+        if (normalized === String(key).toLowerCase()) {
             return isArray ? key : options[key];
         }
     }
-
-    return firstValue;
+    return defaultValue;
 }
 
-// Math and Formatting
+function parseNumber(value, fallback = 0) {
+    if (value == null) return fallback;
+    const num = parseFloat(value);
+    return isNaN(num) ? fallback : num;
+}
+
+// Coordinate and Formatting Helpers
+function getPlotCenter(plot, w, h) {
+    const width = (w !== undefined) ? w : (plot.canvas ? plot.canvas.clientWidth : 0);
+    const height = (h !== undefined) ? h : (plot.canvas ? plot.canvas.clientHeight : 0);
+    return {
+        centerX: width / 2 + plot.offsetX,
+        centerY: height / 2 + plot.offsetY,
+        scale: BASE_SIZE_SCALE * plot.zoom
+    };
+}
+
+function worldToScreen(x, y, plot, w, h) {
+    const { centerX, centerY, scale } = getPlotCenter(plot, w, h);
+    return {
+        sx: centerX + x * scale,
+        sy: centerY - y * scale
+    };
+}
+
+function screenToWorld(sx, sy, plot, w, h) {
+    const { centerX, centerY, scale } = getPlotCenter(plot, w, h);
+    return {
+        x: parseFloat(((sx - centerX) / scale).toFixed(6)),
+        y: parseFloat(((centerY - sy) / scale).toFixed(6))
+    };
+}
+
 function getNiceStep(targetStep) {
     const pow10 = Math.pow(10, Math.floor(Math.log10(targetStep)));
     const frac = targetStep / pow10;
@@ -3518,34 +3662,30 @@ function formatNumber(val, precision = 6) {
     return parseFloat(val.toFixed(precision)).toString();
 }
 
-// Coordinate Conversion Helpers
-function getPlotCenter(plot, w, h) {
-    const width = (w !== undefined) ? w : (plot.canvas ? plot.canvas.clientWidth : 0);
-    const height = (h !== undefined) ? h : (plot.canvas ? plot.canvas.clientHeight : 0);
-    return {
-        centerX: width / 2 + plot.offsetX,
-        centerY: height / 2 + plot.offsetY,
-        scale: BASE_SIZE_SCALE * plot.zoom
-    };
+</script>
+<script>
+/* pack: factory */
+// Function Factory Logic
+function make_function(expr, vars) {
+    try {
+        const body = `
+            try {
+                const res = ${expr};
+                return Number.isNaN(res) ? null : res;
+            } catch (e) {
+                return null;
+            }
+        `;
+        return new Function(...vars, body);
+    } catch (e) {
+        return null;
+    }
 }
 
-function worldToScreen(x, y, plot, w, h) {
-    const { centerX, centerY, scale } = getPlotCenter(plot, w, h);
-    return {
-        sx: Math.round(centerX + x * scale),
-        sy: Math.round(centerY - y * scale)
-    };
-}
-
-function screenToWorld(sx, sy, plot, w, h) {
-    const { centerX, centerY, scale } = getPlotCenter(plot, w, h);
-    return {
-        x: parseFloat(((sx - centerX) / scale).toFixed(6)),
-        y: parseFloat(((centerY - sy) / scale).toFixed(6))
-    };
-}
-
-// Reactive Authoritative Plot Data
+</script>
+<script>
+/* pack: data-handle */
+// Authoritative Reactive Plot Data
 function createPlotData(plot, initial = {}) {
     let nextId = 1;
     let notifyScheduled = false;
@@ -3573,7 +3713,7 @@ function createPlotData(plot, initial = {}) {
                 return val;
             },
             set(target, prop, val, receiver) {
-                // Auto-assign unique id to point object if missing
+                // Auto-assign unique id to entity objects inside collections
                 if (Array.isArray(target) && prop !== "length" && typeof val === "object" && val !== null) {
                     if (val.id === undefined) val.id = nextId++;
                 }
@@ -3594,313 +3734,350 @@ function createPlotData(plot, initial = {}) {
 
     return reactive({
         points: [],
+        functions: [],
         ...initial
     });
 }
+
+// Authoritative Point Actions
+function addPoint(plot, point) {
+    if (!plot.data) plot.data = createPlotData(plot);
+    const item = {
+        name: "",
+        ...point
+    };
+    plot.data.points.push(item);
+    return item;
+}
+
+function removePoint(plot, id) {
+    if (!plot.data?.points) return;
+    const index = plot.data.points.findIndex(p => p && p.id === id);
+    if (index !== -1) {
+        plot.data.points.splice(index, 1);
+    }
+}
+
+function clearPoints(plot) {
+    if (plot.data?.points) {
+        plot.data.points.length = 0;
+    }
+}
+
+// Authoritative Function Actions
+function addFunction(plot, fnData) {
+    if (!plot.data) plot.data = createPlotData(plot);
+    const item = {
+        name: "",
+        ...fnData
+    };
+    plot.data.functions.push(item);
+    return item;
+}
+
+function removeFunction(plot, id) {
+    if (!plot.data?.functions) return;
+    const index = plot.data.functions.findIndex(f => f && f.id === id);
+    if (index !== -1) {
+        plot.data.functions.splice(index, 1);
+    }
+}
+
 </script>
 <script>
-/* pack: parsing */
-function parsePlotAttributes(plot, typeAttr, grabAttr, zoomAttr, xAttr, yAttr, titleAttr = "") {
-    // Title
-    plot.title = titleAttr || "";
-
+/* pack: actions */
+// Attributes & Data Setup
+function initPlotAttributes(plot) {
     // Grabbing
-    plot.grab = (grabAttr !== "false");
-    plot.offsetX = 0;
-    plot.offsetY = 0;
+    plot.grab = parseOption(plot.getAttribute("grab"),{"true": true,"false": false});
+    
+    // Plot Type
+    plot.type = parseOption(plot.getAttribute("type"), ["cartesian", "points"]);
 
     // Zoom
-    let zoomTuple = parseTuple(zoomAttr, 2, true);
-    if (!zoomTuple) {
-        zoomTuple = parseTuple(parseOption(zoomAttr, { "true": "0.25,4", "false": "1,1" }), 2, true);
-    } else {
-        if (zoomTuple[0] > zoomTuple[1] || 1 > zoomTuple[1] || 1 < zoomTuple[0]) zoomTuple = [0.25, 4];
-    }
-    plot.minZoom = zoomTuple[0];
-    plot.maxZoom = zoomTuple[1];
-    plot.zoomEnabled = (zoomTuple[0] !== 1 || zoomTuple[1] !== 1);
-    plot.zoom = Math.max(Math.min(1, plot.maxZoom), plot.minZoom);
+    const zoomAttr = plot.getAttribute("zoom") || "true";
+    const fallbackZoom = [0.25,4];
+    let zoomRange = parseOption(plot.getAttribute("zoom"),{"true": parseTuple(zoomAttr,2,true) || fallbackZoom, "false": [1,1]});
 
-    // Initial Position Range
-    plot.xRange = parseTuple(xAttr, 2, true) || [-16, 16];
-    plot.yRange = parseTuple(yAttr, 2, true) || [-9, 9];
+    plot.offsetX = 0; plot.offsetY = 0;
     plot.userInteracted = false;
+    plot.minZoom = Math.min(zoomRange[0],1); plot.maxZoom = Math.max(zoomRange[1],1);
+    plot.zoomEnabled = (plot.minZoom !== 1 || plot.maxZoom !== 1);
+    plot.zoom = 1;
 
-    // Plot Type
-    plot.type = parseOption(typeAttr, ['cartesian', 'points']);
+    // Initial axis ranges
+    const fallbackX = [-16,16], fallbackY = [-9,9];
+    plot.xRange = parseTuple(plot.getAttribute("x"), 2, true) || fallbackX;
+    plot.yRange = parseTuple(plot.getAttribute("y"), 2, true) || fallbackY;
 
-    // Reactive Authoritative Data Container
-    plot.data = createPlotData(plot, { points: [] });
+    // Authoritative data container
+    plot.data = createPlotData(plot, { points: [], functions: [] });
 }
 
-function parsePointsAttributes(points, sizeAttr, interactionAttr, plot) {
-    // Setup
-    const rawSize = parseFloat(sizeAttr);
-    points.size = isNaN(rawSize) ? 1 : Math.max(0.1, Math.min(10, rawSize));
-    points.interaction = parseOption(interactionAttr, ["true", "false", "move"]);
+// DOM Construction
+function createPlotStructure(plot) {
+    plot.container = document.createElement("div");
+    plot.container.className = "plot-container";
 
-    points.plot = plot;
-    if (!plot.data) plot.data = createPlotData(plot, { points: [] });
-    if (!plot.data.points) plot.data.points = [];
+    plot.header = document.createElement("div");
+    plot.header.className = "plot-header";
 
-    points.mode = false;
-    points.selectedId = null;
-    points.draggingId = null;
-    points.hoverId = null;
-    points.dragOffset = { x: 0, y: 0 };
+    plot.canvas = document.createElement("canvas");
+    plot.canvas.className = "plot-canvas";
+    plot.ctx = plot.canvas.getContext("2d");
+
+    plot.container.prepend(plot.header);
+    plot.container.append(plot.canvas);
+    plot.append(plot.container);
 }
 
-function parsePointToData(plot, ptEl) {
-    let x = parseFloat(ptEl.getAttribute("x")) || 0;
-    let y = parseFloat(ptEl.getAttribute("y")) || 0;
-    let tup = parseTuple(ptEl.getAttribute("pos"), 2, true);
-
-    if(tup) x, y = tup[0], tup[1];
-
-    if (!isNaN(x) && !isNaN(y)) {
-        const point = { x, y };
-        const sizeAttr = ptEl.getAttribute("size");
-        if (sizeAttr && !isNaN(parseFloat(sizeAttr))) {
-            point.size = parseFloat(sizeAttr);
-        }
-        const colorAttr = ptEl.getAttribute("color");
-        if (colorAttr) {
-            point.color = colorAttr;
-        }
-        plot.data.points.push(point);
-    }
-}
-
-function parseSubcomponentData(plot) {
-    // Disable connectedCallback on child web components
-    for (const child of plot.children) {
-        if (child.tagName.toLowerCase().startsWith("delta-")) {
-            child.connectedCallback = () => {};
-        }
-    }
+// Subcomponents Discovery
+function collectPlotSubcomponents(plot) {
     plot.elements = [];
 
-    // Title
-    let titleEl = plot.querySelector("delta-title");
+    // Title subcomponent
+    const titleEl = plot.querySelector("delta-title");
     if (titleEl) {
         plot.elements.push(titleEl);
     }
 
-    // Grid
+    // Grid subcomponent
     let gridEl = plot.querySelector("delta-grid");
-    if ((plot.type === "cartesian" || plot.type === "points") && !gridEl) {
+    if (!gridEl && (plot.type === "cartesian" || plot.type === "points")) {
         gridEl = document.createElement("delta-grid");
     }
     if (gridEl) plot.elements.push(gridEl);
 
-    // Axis
+    // Axis subcomponent
     let axisEl = plot.querySelector("delta-axis");
-    if ((plot.type === "cartesian" || plot.type === "points") && !axisEl) {
+    if (!axisEl && (plot.type === "cartesian" || plot.type === "points")) {
         axisEl = document.createElement("delta-axis");
     }
     if (axisEl) plot.elements.push(axisEl);
 
-    // Singular Points
-    let singularPoints = plot.querySelectorAll("delta-point");
-    for (const pt of singularPoints) {
-        parsePointToData(plot, pt);
-    }
-
-    // Points Subcomponent
-    let pointsEl = plot.querySelector("delta-points");
-    if ((plot.type === "points" || plot.data.points.length > 0) && !pointsEl) {
-        pointsEl = document.createElement("delta-points");
-    }
-    if (pointsEl) plot.elements.push(pointsEl);
-
     // Functions
-    let functionEls = plot.querySelectorAll("delta-function");
+    const functionEls = Array.from(plot.querySelectorAll("delta-function"));
     for (const fn of functionEls) {
         plot.elements.push(fn);
     }
 
+    // Single point instances
+    const pointEls = Array.from(plot.querySelectorAll("delta-point"));
+    for (const pt of pointEls) {
+        plot.elements.push(pt);
+    }
+
+    // Points controller
+    let pointsEl = plot.querySelector("delta-points");
+    if (!pointsEl && (plot.type === "points" || pointEls.length > 0)) {
+        pointsEl = document.createElement("delta-points");
+    }
+    if (pointsEl) plot.elements.push(pointsEl);
+
+    // Clear inner children
     plot.innerHTML = "";
+    plot.append(plot.container);
 }
+
+// Viewport & Zoom Management
+function resizePlotCanvas(plot) {
+    const rect = plot.canvas.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    const targetW = Math.round(rect.width * dpr);
+    const targetH = Math.round(rect.height * dpr);
+
+    if (plot.canvas.width !== targetW || plot.canvas.height !== targetH) {
+        plot.canvas.width = targetW;
+        plot.canvas.height = targetH;
+        plot.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        if (!plot.userInteracted) {
+            fitInitialBounds(plot, rect.width, rect.height);
+        }
+    }
+}
+
+function fitInitialBounds(plot, w, h) {
+    if (plot.userInteracted || w < 10 || h < 10) return;
+
+    const dx = Math.abs(plot.xRange[1] - plot.xRange[0]);
+    const dy = Math.abs(plot.yRange[1] - plot.yRange[0]);
+    if (dx <= 0 || dy <= 0) return;
+
+    plot.zoom = Math.min(w / (dx * BASE_SIZE_SCALE), h / (dy * BASE_SIZE_SCALE));
+    plot.zoom = Math.max(plot.minZoom, Math.min(plot.maxZoom, plot.zoom));
+
+    const scale = BASE_SIZE_SCALE * plot.zoom;
+    const xMid = (plot.xRange[0] + plot.xRange[1]) / 2;
+    const yMid = (plot.yRange[0] + plot.yRange[1]) / 2;
+    plot.offsetX = -xMid * scale;
+    plot.offsetY = yMid * scale;
+}
+
+function applyZoom(plot, newZoom, cx, cy) {
+    const clamped = Math.max(plot.minZoom, Math.min(plot.maxZoom, newZoom));
+    if (Math.abs(clamped - plot.zoom) < 1e-6) return;
+
+    // Shift offsets so cursor remains stationary in world space
+    plot.offsetX = cx - ((cx - plot.offsetX) / plot.zoom) * clamped;
+    plot.offsetY = cy - ((cy - plot.offsetY) / plot.zoom) * clamped;
+    plot.zoom = clamped;
+
+    plot.render();
+}
+
+// Navigation Events (Pan & Zoom)
+function bindPlotPan(plot) {
+    if (!plot.grab) return;
+    plot.canvas.style.cursor = "grab";
+
+    let isDragging = false;
+    let dragStartX = 0, dragStartY = 0;
+    let startOffsetX = 0, startOffsetY = 0;
+    let activePointerId = null;
+
+    plot.canvas.addEventListener("pointerdown", (e) => {
+        if (activePointerId !== null) return;
+        if (plot.elements.some(el => el.isDraggingEntity && el.isDraggingEntity())) return;
+
+        activePointerId = e.pointerId;
+        isDragging = true;
+        plot.userInteracted = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        startOffsetX = plot.offsetX;
+        startOffsetY = plot.offsetY;
+
+        plot.canvas.setPointerCapture(e.pointerId);
+        plot.canvas.style.cursor = "grabbing";
+    });
+
+    plot.canvas.addEventListener("pointermove", (e) => {
+        if (!isDragging || e.pointerId !== activePointerId) return;
+        plot.offsetX = startOffsetX + (e.clientX - dragStartX);
+        plot.offsetY = startOffsetY + (e.clientY - dragStartY);
+        plot.render();
+    });
+
+    const stopDrag = (e) => {
+        if (e.pointerId !== activePointerId) return;
+        isDragging = false;
+        activePointerId = null;
+        try { plot.canvas.releasePointerCapture(e.pointerId); } catch (_) {}
+        plot.canvas.style.cursor = "grab";
+    };
+
+    plot.canvas.addEventListener("pointerup", stopDrag);
+    plot.canvas.addEventListener("pointercancel", stopDrag);
+}
+
+function bindPlotZoom(plot) {
+    if (!plot.zoomEnabled) return;
+
+    plot.canvas.addEventListener("wheel", (e) => {
+        e.preventDefault();
+        plot.userInteracted = true;
+
+        const factor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
+        const rect = plot.canvas.getBoundingClientRect();
+        const cx = e.clientX - rect.left - rect.width / 2;
+        const cy = e.clientY - rect.top - rect.height / 2;
+
+        applyZoom(plot, plot.zoom * factor, cx, cy);
+    }, { passive: false });
+
+    // Touch pinch-zoom
+    let pinchDist = null;
+    let pinchZoom = null;
+    let pinchCenter = null;
+
+    plot.canvas.addEventListener("touchstart", (e) => {
+        if (e.touches.length === 2) {
+            plot.userInteracted = true;
+            const [t1, t2] = e.touches;
+            pinchDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+            pinchZoom = plot.zoom;
+            const rect = plot.canvas.getBoundingClientRect();
+            pinchCenter = {
+                x: (t1.clientX + t2.clientX) / 2 - rect.left - rect.width / 2,
+                y: (t1.clientY + t2.clientY) / 2 - rect.top - rect.height / 2
+            };
+        }
+    }, { passive: true });
+
+    plot.canvas.addEventListener("touchmove", (e) => {
+        if (e.touches.length === 2 && pinchDist !== null) {
+            e.preventDefault();
+            const [t1, t2] = e.touches;
+            const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+            applyZoom(plot, pinchZoom * (dist / pinchDist), pinchCenter.x, pinchCenter.y);
+        }
+    }, { passive: false });
+
+    const endTouch = () => {
+        pinchDist = null;
+        pinchZoom = null;
+        pinchCenter = null;
+    };
+    plot.canvas.addEventListener("touchend", endTouch);
+    plot.canvas.addEventListener("touchcancel", endTouch);
+}
+
+// Rendering Pipeline
+function renderPlot(plot) {
+    if (!plot.ctx) return;
+    resizePlotCanvas(plot);
+
+    const dpr = window.devicePixelRatio || 1;
+    plot.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const rect = plot.canvas.getBoundingClientRect();
+    const w = rect.width;
+    const h = rect.height;
+    if (w === 0 || h === 0) return;
+
+    plot.ctx.clearRect(0, 0, w, h);
+
+    for (const el of plot.elements) {
+        el.render(plot.ctx, w, h, plot);
+    }
+}
+
 </script>
 <script>
-/* pack: factory */
-function make_function(expr, vars) {
-  try {
-    const body = `
-      try {
-        const res = ${expr};
-        return Number.isNaN(res) ? null : res;
-      } catch (e) {
-        return null;
-      }
-    `;
-    return new Function(...vars, body);
-  } catch (e) {
-    return null;
-  }
-}
-</script>
-<script>
-/* pack: axis */
-class DeltaAxis extends HTMLElement {
-    build(plot) {
-        this.showAttr = this.getAttribute("show") || "true";
-        this.show = parseOption(this.showAttr, ["true", "false", "x", "y"]);
-    }
-
-    bind(plot) {}
-
-    render(ctx, w, h, plot) {
-        if (this.show === "false") return;
-        const showX = (this.show === "true" || this.show === "x");
-        const showY = (this.show === "true" || this.show === "y");
-
-        const { centerX, centerY, scale } = getPlotCenter(plot, w, h);
-        const roundCenterX = Math.round(centerX);
-        const roundCenterY = Math.round(centerY);
-
-        ctx.font = AXIS_LABEL_FONT;
-        ctx.fillStyle = AXIS_LABEL_COLOR;
-
-        // X-axis markings
-        if (showX) {
-            const stepUnitX = getNiceStep(TARGET_GRID_SPACING / scale);
-            const stepPxX = stepUnitX * scale;
-            const textY = h - 6;
-
-            const minUnit = Math.floor((-roundCenterX) / stepPxX) * stepUnitX;
-            const maxUnit = Math.ceil((w - roundCenterX) / stepPxX) * stepUnitX;
-
-            for (let u = minUnit; u <= maxUnit + stepUnitX * 0.5; u += stepUnitX) {
-                const val = parseFloat(u.toFixed(8)) + 0;
-                const sx = Math.round(roundCenterX + u * scale);
-                if (sx >= 0 && sx <= w) {
-                    ctx.textBaseline = "bottom";
-                    if (sx < 25) {
-                        ctx.textAlign = "left";
-                        ctx.fillText(formatNumber(val), Math.max(4, sx), textY);
-                    } else if (sx > w - 25) {
-                        ctx.textAlign = "right";
-                        ctx.fillText(formatNumber(val), Math.min(w - 4, sx), textY);
-                    } else {
-                        ctx.textAlign = "center";
-                        ctx.fillText(formatNumber(val), sx, textY);
-                    }
-                }
-            }
-        }
-
-        // Y-axis markings
-        if (showY) {
-            const stepUnitY = getNiceStep(TARGET_GRID_SPACING / scale);
-            const stepPxY = stepUnitY * scale;
-            const textX = 8;
-
-            const minUnit = Math.floor((roundCenterY - h) / stepPxY) * stepUnitY;
-            const maxUnit = Math.ceil(roundCenterY / stepPxY) * stepUnitY;
-
-            for (let u = minUnit; u <= maxUnit + stepUnitY * 0.5; u += stepUnitY) {
-                const val = parseFloat(u.toFixed(8)) + 0;
-                const sy = Math.round(roundCenterY - u * scale);
-                if (sy >= 0 && sy <= h) {
-                    ctx.textAlign = "left";
-                    if (sy < 16) {
-                        ctx.textBaseline = "top";
-                        ctx.fillText(formatNumber(val), textX, 4);
-                    } else if (sy > h - 22) {
-                        ctx.textBaseline = "bottom";
-                        ctx.fillText(formatNumber(val), textX, h - 18);
-                    } else {
-                        ctx.textBaseline = "middle";
-                        ctx.fillText(formatNumber(val), textX, sy);
-                    }
-                }
-            }
-        }
-    }
+/* pack: actions */
+// Title Subcomponent Actions
+function parseTitleOptions(titleEl) {
+    return {
+        text: titleEl.textContent.trim(),
+        color: titleEl.getAttribute("color") || null
+    };
 }
 
-customElements.define("delta-axis", DeltaAxis);
+function buildTitleHeader(plot, { text, color }) {
+    plot.title = text;
 
-</script>
-<script>
-/* pack: grid */
-class DeltaGrid extends HTMLElement {
-    build(plot) {
-        this.showAttr = this.getAttribute("show") || "true";
-        this.show = parseOption(this.showAttr, ["true", "false", "origin", "basic"]);
+    const textEl = document.createElement("span");
+    textEl.className = "plot-title";
+    textEl.textContent = text;
+
+    if (color) {
+        textEl.style.color = color;
     }
 
-    bind(plot) {}
-
-    render(ctx, w, h, plot) {
-        if (this.show === "false") return;
-
-        const { centerX, centerY, scale } = getPlotCenter(plot, w, h);
-        const roundCenterX = Math.round(centerX);
-        const roundCenterY = Math.round(centerY);
-
-        // Grid lines
-        if (this.show === "true" || this.show === "basic") {
-            ctx.strokeStyle = GRID_LINE_COLOR;
-            ctx.lineWidth = GRID_LINE_WIDTH;
-
-            const stepUnit = getNiceStep(TARGET_GRID_SPACING / scale);
-            const stepPx = stepUnit * scale;
-
-            // Vertical lines (X direction)
-            const startX = ((roundCenterX % stepPx) + stepPx) % stepPx;
-            for (let x = startX; x <= w + 0.5; x += stepPx) {
-                const rx = Math.round(x);
-                ctx.beginPath();
-                ctx.moveTo(rx + 0.5, 0);
-                ctx.lineTo(rx + 0.5, h);
-                ctx.stroke();
-            }
-
-            // Horizontal lines (Y direction)
-            const startY = ((roundCenterY % stepPx) + stepPx) % stepPx;
-            for (let y = startY; y <= h + 0.5; y += stepPx) {
-                const ry = Math.round(y);
-                ctx.beginPath();
-                ctx.moveTo(0, ry + 0.5);
-                ctx.lineTo(w, ry + 0.5);
-                ctx.stroke();
-            }
-        }
-
-        // Origin axes
-        if (this.show === "true" || this.show === "origin") {
-            ctx.strokeStyle = AXIS_LINE_COLOR;
-            ctx.lineWidth = AXIS_LINE_WIDTH;
-
-            // X axis
-            if (roundCenterY >= 0 && roundCenterY <= h) {
-                ctx.beginPath();
-                ctx.moveTo(0, roundCenterY + 0.5);
-                ctx.lineTo(w, roundCenterY + 0.5);
-                ctx.stroke();
-            }
-
-            // Y axis
-            if (roundCenterX >= 0 && roundCenterX <= w) {
-                ctx.beginPath();
-                ctx.moveTo(roundCenterX + 0.5, 0);
-                ctx.lineTo(roundCenterX + 0.5, h);
-                ctx.stroke();
-            }
-        }
-    }
+    plot.header.append(textEl);
 }
-
-customElements.define("delta-grid", DeltaGrid);
 
 </script>
 <script>
 /* pack: title */
+// Title Subcomponent
 class DeltaTitle extends HTMLElement {
     build(plot) {
-        plot.title = this.innerHTML;
+        const opts = parseTitleOptions(this);
+        buildTitleHeader(plot, opts);
     }
 
     bind(plot) {}
@@ -3912,427 +4089,750 @@ customElements.define("delta-title", DeltaTitle);
 
 </script>
 <script>
-/* pack: points */
-class DeltaPoints extends HTMLElement {
+/* pack: actions */
+// Grid Subcomponent Actions
+function parseGridOptions(gridEl) {
+    const rawShow = gridEl.getAttribute("show") || "true";
+    const show = parseOption(rawShow, ["true", "false", "origin", "basic"]);
+    const color = gridEl.getAttribute("color") || DEFAULT_GRID_COLOR;
+    const thickness = parseNumber(gridEl.getAttribute("thickness") || gridEl.getAttribute("width"), DEFAULT_GRID_WIDTH);
+
+    return { show, color, thickness };
+}
+
+function drawGridMesh(ctx, w, h, plot, color, thickness) {
+    const { centerX, centerY, scale } = getPlotCenter(plot, w, h);
+    const roundCenterX = Math.round(centerX);
+    const roundCenterY = Math.round(centerY);
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth = thickness;
+
+    const stepUnit = getNiceStep(TARGET_GRID_SPACING / scale);
+    const stepPx = stepUnit * scale;
+
+    // Vertical grid lines
+    const startX = ((roundCenterX % stepPx) + stepPx) % stepPx;
+    for (let x = startX; x <= w + 0.5; x += stepPx) {
+        const rx = Math.round(x);
+        ctx.beginPath();
+        ctx.moveTo(rx + 0.5, 0);
+        ctx.lineTo(rx + 0.5, h);
+        ctx.stroke();
+    }
+
+    // Horizontal grid lines
+    const startY = ((roundCenterY % stepPx) + stepPx) % stepPx;
+    for (let y = startY; y <= h + 0.5; y += stepPx) {
+        const ry = Math.round(y);
+        ctx.beginPath();
+        ctx.moveTo(0, ry + 0.5);
+        ctx.lineTo(w, ry + 0.5);
+        ctx.stroke();
+    }
+}
+
+function drawOriginCross(ctx, w, h, plot, color, thickness) {
+    const { centerX, centerY } = getPlotCenter(plot, w, h);
+    const roundCenterX = Math.round(centerX);
+    const roundCenterY = Math.round(centerY);
+
+    // If color was custom-defined, use it; otherwise use the darker origin default
+    const originColor = (color !== DEFAULT_GRID_COLOR) ? color : DEFAULT_ORIGIN_COLOR;
+    ctx.strokeStyle = originColor;
+    ctx.lineWidth = Math.max(1, thickness);
+
+    // X origin axis
+    if (roundCenterY >= 0 && roundCenterY <= h) {
+        ctx.beginPath();
+        ctx.moveTo(0, roundCenterY + 0.5);
+        ctx.lineTo(w, roundCenterY + 0.5);
+        ctx.stroke();
+    }
+
+    // Y origin axis
+    if (roundCenterX >= 0 && roundCenterX <= w) {
+        ctx.beginPath();
+        ctx.moveTo(roundCenterX + 0.5, 0);
+        ctx.lineTo(roundCenterX + 0.5, h);
+        ctx.stroke();
+    }
+}
+
+</script>
+<script>
+/* pack: grid */
+// Grid Subcomponent
+class DeltaGrid extends HTMLElement {
     build(plot) {
-        this.sizeAttr = this.getAttribute("size") || "1";
-        this.interactionAttr = this.getAttribute("interaction") || "true";
-
-        parsePointsAttributes(this, this.sizeAttr, this.interactionAttr, plot);
-
-        this.floatingBadge = this.buildFloatingBadge(plot);
-        plot.container.append(this.floatingBadge);
-
-        this.footer = this.buildFooter(plot);
-        plot.container.append(this.footer);
+        this.options = parseGridOptions(this);
     }
 
-    bind(plot) {
-        this.plot = plot;
-        plot.tabIndex = 0;
-
-        plot.canvas.addEventListener("pointerdown", (e) => this.onPointerDown(e, plot));
-        plot.canvas.addEventListener("pointermove", (e) => this.onPointerMove(e, plot));
-        plot.canvas.addEventListener("pointerup", (e) => this.onPointerUp(e, plot));
-        plot.canvas.addEventListener("pointercancel", (e) => this.onPointerUp(e, plot));
-        plot.canvas.addEventListener("pointerleave", () => {
-            if (this.mode && this.draggingId === null) this.hoverId = null;
-        });
-
-        plot.addEventListener("keydown", (e) => this.onKeyDown(e, plot));
-
-        document.addEventListener("pointerdown", (e) => {
-            if (!plot.contains(e.target) && this.selectedId !== null) {
-                this.selectedId = null;
-                plot.render();
-            }
-        });
-    }
+    bind(plot) {}
 
     render(ctx, w, h, plot) {
-        if (this.deleteSelectedBtn) {
-            this.deleteSelectedBtn.disabled = (this.selectedId === null);
+        const { show, color, thickness } = this.options;
+        if (show === "false") return;
+
+        if (show === "true" || show === "basic") {
+            drawGridMesh(ctx, w, h, plot, color, thickness);
         }
-        this.updateFloatingBadge();
-        this.updateStatus();
 
-        const points = plot.data?.points || [];
-        if (!points.length) return;
-
-        const defaultAccent = getComputedStyle(plot).getPropertyValue("--delta-accent").trim() || "rgb(80, 80, 80)";
-
-        for (const p of points) {
-            if (!p || typeof p.x !== "number" || typeof p.y !== "number") continue;
-
-            const pos = worldToScreen(p.x, p.y, plot, w, h);
-            const radius = 3 * (p.size || this.size || 1);
-            const pointColor = p.color || defaultAccent;
-            const isSel = p.id === this.selectedId;
-
-            if (isSel) {
-                ctx.beginPath();
-                ctx.arc(pos.sx, pos.sy, radius + 6, 0, Math.PI * 2);
-                ctx.fillStyle = "rgba(80, 80, 80, 0.18)";
-                ctx.fill();
-                ctx.strokeStyle = pointColor;
-                ctx.lineWidth = 1.5;
-                ctx.stroke();
-            }
-
-            ctx.beginPath();
-            ctx.arc(pos.sx, pos.sy, radius, 0, Math.PI * 2);
-            ctx.fillStyle = isSel ? pointColor : "#ffffff";
-            ctx.fill();
-            ctx.strokeStyle = isSel ? "#ffffff" : pointColor;
-            ctx.lineWidth = 2;
-            ctx.stroke();
+        if (show === "true" || show === "origin") {
+            drawOriginCross(ctx, w, h, plot, color, thickness);
         }
     }
+}
 
-    // UI Construction
+customElements.define("delta-grid", DeltaGrid);
 
-    buildFooter(plot) {
-        const footer = document.createElement("div");
-        footer.className = "plot-footer";
+</script>
+<script>
+/* pack: actions */
+// Axis Subcomponent Actions
+function parseAxisOptions(axisEl) {
+    const rawShow = axisEl.getAttribute("show") || "true";
+    const show = parseOption(rawShow, ["true", "false", "x", "y"]);
+    const color = axisEl.getAttribute("color") || DEFAULT_AXIS_LABEL_COLOR;
 
-        this.statusEl = document.createElement("span");
-        this.statusEl.className = "plot-footer-status";
-        this.updateStatus();
-        footer.append(this.statusEl);
+    return { show, color };
+}
 
-        if (this.interaction === "false") return footer;
+function drawXAxisNumbers(ctx, w, h, plot, color) {
+    const { centerX, scale } = getPlotCenter(plot, w, h);
+    const roundCenterX = Math.round(centerX);
 
-        const actions = document.createElement("div");
-        actions.className = "plot-footer-actions";
+    ctx.font = DEFAULT_AXIS_LABEL_FONT;
+    ctx.fillStyle = color;
 
-        // Mode toggle button
-        const modeTitle = this.interaction === "move" ? "Modo de movimentação de pontos" : "Modo de manipulação de pontos";
-        this.modeBtn = this.createBtn("plot-footer-btn", modeTitle,
-            `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3" fill="currentColor"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 3"/></svg>`,
-            () => {
-                this.setMode(!this.mode);
-                if (this.mode) plot.focus();
+    const stepUnitX = getNiceStep(TARGET_GRID_SPACING / scale);
+    const stepPxX = stepUnitX * scale;
+    const textY = h - 6;
+
+    const minUnit = Math.floor((-roundCenterX) / stepPxX) * stepUnitX;
+    const maxUnit = Math.ceil((w - roundCenterX) / stepPxX) * stepUnitX;
+
+    for (let u = minUnit; u <= maxUnit + stepUnitX * 0.5; u += stepUnitX) {
+        const val = parseFloat(u.toFixed(8)) + 0;
+        const sx = Math.round(roundCenterX + u * scale);
+        if (sx >= 0 && sx <= w) {
+            ctx.textBaseline = "bottom";
+            if (sx < 25) {
+                ctx.textAlign = "left";
+                ctx.fillText(formatNumber(val), Math.max(4, sx), textY);
+            } else if (sx > w - 25) {
+                ctx.textAlign = "right";
+                ctx.fillText(formatNumber(val), Math.min(w - 4, sx), textY);
+            } else {
+                ctx.textAlign = "center";
+                ctx.fillText(formatNumber(val), sx, textY);
             }
-        );
-        actions.append(this.modeBtn);
+        }
+    }
+}
 
-        if (this.interaction === "true") {
-            this.deleteSelectedBtn = this.createBtn("plot-footer-btn", "Deletar ponto selecionado",
-                `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M18 6L6 18M6 6l12 12"/></svg>`,
-                () => {
-                    if (this.selectedId !== null) {
-                        this.removePoint(this.selectedId);
-                        if (this.mode) plot.focus();
-                    }
-                }
-            );
-            this.deleteSelectedBtn.disabled = true;
-            actions.append(this.deleteSelectedBtn);
+function drawYAxisNumbers(ctx, w, h, plot, color) {
+    const { centerY, scale } = getPlotCenter(plot, w, h);
+    const roundCenterY = Math.round(centerY);
 
-            this.clearBtn = this.createBtn("plot-footer-btn", "Limpar todos os pontos",
-                `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M10 11v6M14 11v6"/></svg>`,
-                () => {
-                    this.clearPoints();
-                    if (this.mode) plot.focus();
-                }
-            );
-            actions.append(this.clearBtn);
+    ctx.font = DEFAULT_AXIS_LABEL_FONT;
+    ctx.fillStyle = color;
+
+    const stepUnitY = getNiceStep(TARGET_GRID_SPACING / scale);
+    const stepPxY = stepUnitY * scale;
+    const textX = 8;
+
+    const minUnit = Math.floor((roundCenterY - h) / stepPxY) * stepUnitY;
+    const maxUnit = Math.ceil(roundCenterY / stepPxY) * stepUnitY;
+
+    for (let u = minUnit; u <= maxUnit + stepUnitY * 0.5; u += stepUnitY) {
+        const val = parseFloat(u.toFixed(8)) + 0;
+        const sy = Math.round(roundCenterY - u * scale);
+        if (sy >= 0 && sy <= h) {
+            ctx.textAlign = "left";
+            if (sy < 16) {
+                ctx.textBaseline = "top";
+                ctx.fillText(formatNumber(val), textX, 4);
+            } else if (sy > h - 22) {
+                ctx.textBaseline = "bottom";
+                ctx.fillText(formatNumber(val), textX, h - 18);
+            } else {
+                ctx.textBaseline = "middle";
+                ctx.fillText(formatNumber(val), textX, sy);
+            }
+        }
+    }
+}
+
+</script>
+<script>
+/* pack: axis */
+// Axis Subcomponent
+class DeltaAxis extends HTMLElement {
+    build(plot) {
+        this.options = parseAxisOptions(this);
+    }
+
+    bind(plot) {}
+
+    render(ctx, w, h, plot) {
+        const { show, color } = this.options;
+        if (show === "false") return;
+
+        const showX = (show === "true" || show === "x");
+        const showY = (show === "true" || show === "y");
+
+        if (showX) {
+            drawXAxisNumbers(ctx, w, h, plot, color);
         }
 
-        footer.append(actions);
+        if (showY) {
+            drawYAxisNumbers(ctx, w, h, plot, color);
+        }
+    }
+}
+
+customElements.define("delta-axis", DeltaAxis);
+
+</script>
+<script>
+/* pack: actions */
+// Point Subcomponent Actions
+function parsePointAttributes(pointEl) {
+    let x = parseFloat(pointEl.getAttribute("x")) || 0;
+    let y = parseFloat(pointEl.getAttribute("y")) || 0;
+
+    const tuple = parseTuple(pointEl.getAttribute("pos"), 2, true);
+    if (tuple) {
+        x = tuple[0];
+        y = tuple[1];
+    }
+
+    const color = pointEl.getAttribute("color") || null;
+    const rawSize = parseFloat(pointEl.getAttribute("size"));
+    const size = isNaN(rawSize) ? null : rawSize;
+    const name = pointEl.getAttribute("name") || "";
+
+    return { x, y, color, size, name };
+}
+
+function registerPointInPlot(plot, pointData) {
+    return addPoint(plot, pointData);
+}
+
+</script>
+<script>
+/* pack: point */
+// Point Subcomponent
+class DeltaPoint extends HTMLElement {
+    build(plot) {
+        const pointData = parsePointAttributes(this);
+        registerPointInPlot(plot, pointData);
+    }
+
+    bind(plot) {}
+
+    render(ctx, w, h, plot) {}
+}
+
+customElements.define("delta-point", DeltaPoint);
+
+</script>
+<script>
+/* pack: actions */
+// Points Controller Actions
+
+// Options & Controller State
+function parsePointsOptions(el) {
+    const rawSize = parseFloat(el.getAttribute("size"));
+    const defaultSize = isNaN(rawSize) ? 1 : Math.max(0.1, Math.min(10, rawSize));
+    const defaultColor = el.getAttribute("color") || null;
+    const interaction = parseOption(el.getAttribute("interaction"), ["true", "false", "move"]);
+
+    return { defaultSize, defaultColor, interaction };
+}
+
+function createPointsState() {
+    return {
+        mode: false,
+        selectedId: null,
+        draggingId: null,
+        hoverId: null,
+        dragOffset: { x: 0, y: 0 }
+    };
+}
+
+// Hit Testing
+function hitTestPoint(plot, sx, sy, defaultSize) {
+    const points = plot.data?.points || [];
+    for (let i = points.length - 1; i >= 0; i--) {
+        const p = points[i];
+        if (!p || typeof p.x !== "number" || typeof p.y !== "number") continue;
+
+        const pos = worldToScreen(p.x, p.y, plot);
+        const radius = Math.max(12, 3 * (p.size || defaultSize) + 6);
+        if (Math.hypot(pos.sx - sx, pos.sy - sy) <= radius) {
+            return p;
+        }
+    }
+    return null;
+}
+
+// UI Elements Construction
+function createPointsFooter(controller, plot) {
+    const footer = document.createElement("div");
+    footer.className = "plot-footer";
+
+    controller.statusEl = document.createElement("span");
+    controller.statusEl.className = "plot-footer-status";
+    footer.append(controller.statusEl);
+
+    if (controller.options.interaction === "false") {
         return footer;
     }
 
-    buildFloatingBadge(plot) {
-        const badge = document.createElement("div");
-        badge.className = "plot-point-badge";
+    const actions = document.createElement("div");
+    actions.className = "plot-footer-actions";
 
-        this.floatingBadgeCoords = document.createElement("span");
-        badge.append(this.floatingBadgeCoords);
+    // Mode Toggle Button
+    const isMoveOnly = (controller.options.interaction === "move");
+    const modeTitle = isMoveOnly ? "Modo de movimentação de pontos" : "Modo de manipulação de pontos";
+    controller.modeBtn = createButton("plot-footer-btn", modeTitle,
+        `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3" fill="currentColor"/><circle cx="12" cy="12" r="8" stroke-dasharray="3 3"/></svg>`,
+        () => {
+            setPointsMode(controller, plot, !controller.state.mode);
+            if (controller.state.mode) plot.focus();
+        }
+    );
+    actions.append(controller.modeBtn);
 
-        this.floatingBadgeDelete = document.createElement("button");
-        this.floatingBadgeDelete.type = "button";
-        this.floatingBadgeDelete.className = "plot-point-badge-delete";
-        this.floatingBadgeDelete.title = "Deletar ponto";
-        this.floatingBadgeDelete.setAttribute("aria-label", "Deletar ponto");
-        this.floatingBadgeDelete.textContent = "×";
-        this.floatingBadgeDelete.addEventListener("pointerdown", (e) => e.stopPropagation());
-        this.floatingBadgeDelete.addEventListener("click", (e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            if (this.selectedId !== null) {
-                this.removePoint(this.selectedId);
-                if (this.mode) plot.focus();
+    if (controller.options.interaction === "true") {
+        // Delete Selected Button
+        controller.deleteSelectedBtn = createButton("plot-footer-btn", "Deletar ponto selecionado",
+            `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M18 6L6 18M6 6l12 12"/></svg>`,
+            () => {
+                if (controller.state.selectedId !== null) {
+                    removePoint(plot, controller.state.selectedId);
+                    controller.state.selectedId = null;
+                    if (controller.state.mode) plot.focus();
+                }
             }
-        });
+        );
+        controller.deleteSelectedBtn.disabled = true;
+        actions.append(controller.deleteSelectedBtn);
 
-        badge.append(this.floatingBadgeDelete);
-        return badge;
+        // Clear All Points Button
+        controller.clearBtn = createButton("plot-footer-btn", "Limpar todos os pontos",
+            `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M10 11v6M14 11v6"/></svg>`,
+            () => {
+                clearPoints(plot);
+                controller.state.selectedId = null;
+                controller.state.draggingId = null;
+                if (controller.state.mode) plot.focus();
+            }
+        );
+        actions.append(controller.clearBtn);
     }
 
-    createBtn(className, title, innerHTML, onClick) {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = className;
-        btn.title = title;
-        btn.setAttribute("aria-label", title);
-        btn.innerHTML = innerHTML;
-        btn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            onClick(e);
-        });
-        return btn;
+    footer.append(actions);
+    return footer;
+}
+
+function createFloatingBadge(controller, plot) {
+    const badge = document.createElement("div");
+    badge.className = "plot-point-badge";
+
+    controller.badgeCoords = document.createElement("span");
+    badge.append(controller.badgeCoords);
+
+    controller.badgeDelete = document.createElement("button");
+    controller.badgeDelete.type = "button";
+    controller.badgeDelete.className = "plot-point-badge-delete";
+    controller.badgeDelete.title = "Deletar ponto";
+    controller.badgeDelete.textContent = "×";
+
+    controller.badgeDelete.addEventListener("pointerdown", e => e.stopPropagation());
+    controller.badgeDelete.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (controller.state.selectedId !== null) {
+            removePoint(plot, controller.state.selectedId);
+            controller.state.selectedId = null;
+            if (controller.state.mode) plot.focus();
+        }
+    });
+
+    badge.append(controller.badgeDelete);
+    return badge;
+}
+
+function createButton(className, title, innerHTML, onClick) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = className;
+    btn.title = title;
+    btn.innerHTML = innerHTML;
+    btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        onClick(e);
+    });
+    return btn;
+}
+
+function setPointsMode(controller, plot, active) {
+    controller.state.mode = Boolean(active);
+    controller.modeBtn?.classList.toggle("active", controller.state.mode);
+
+    if (!controller.state.mode) {
+        controller.state.selectedId = null;
+        controller.state.draggingId = null;
+        controller.state.hoverId = null;
+        if (plot.canvas) plot.canvas.style.cursor = plot.grab ? "grab" : "default";
+    } else {
+        if (plot.canvas) {
+            const isMoveOnly = (controller.options.interaction === "move");
+            plot.canvas.style.cursor = isMoveOnly ? "default" : "crosshair";
+        }
+    }
+    plot.render();
+}
+
+function updatePointsUI(controller, plot) {
+    // Update footer status text
+    const count = (plot.data?.points || []).length;
+    if (controller.statusEl) {
+        controller.statusEl.textContent = `${count} ${count === 1 ? "ponto" : "pontos"}`;
     }
 
-    updateFloatingBadge() {
-        if (!this.floatingBadge || !this.plot) return;
-        const p = this.plot.data?.points?.find(pt => pt && pt.id === this.selectedId);
-        if (!p || typeof p.x !== "number" || typeof p.y !== "number" || this.interaction === "false") {
-            this.floatingBadge.style.display = "none";
-            return;
+    // Update delete button state
+    if (controller.deleteSelectedBtn) {
+        controller.deleteSelectedBtn.disabled = (controller.state.selectedId === null);
+    }
+
+    // Update floating badge position & visibility
+    if (!controller.badge) return;
+    const selected = plot.data?.points?.find(p => p && p.id === controller.state.selectedId);
+    if (!selected || typeof selected.x !== "number" || typeof selected.y !== "number" || controller.options.interaction === "false") {
+        controller.badge.style.display = "none";
+        return;
+    }
+
+    if (controller.badgeDelete) {
+        controller.badgeDelete.style.display = (controller.options.interaction === "true") ? "inline-flex" : "none";
+    }
+
+    const pos = worldToScreen(selected.x, selected.y, plot);
+    const radius = 3 * (selected.size || controller.options.defaultSize);
+    const cx = (plot.canvas.offsetLeft || 0) + pos.sx;
+    const cy = (plot.canvas.offsetTop || 0) + pos.sy - radius - 6;
+
+    if (pos.sx >= 0 && pos.sx <= plot.canvas.clientWidth && pos.sy >= 0 && pos.sy <= plot.canvas.clientHeight) {
+        controller.badge.style.display = "flex";
+        controller.badge.style.left = `${cx}px`;
+        controller.badge.style.top = `${cy}px`;
+        controller.badgeCoords.textContent = `(${formatNumber(selected.x)}, ${formatNumber(selected.y)})`;
+    } else {
+        controller.badge.style.display = "none";
+    }
+}
+
+// Canvas Points Layer Rendering
+function drawPointsLayer(ctx, w, h, plot, controller) {
+    const points = plot.data?.points || [];
+    if (!points.length) return;
+
+    const defaultAccent = getComputedStyle(plot).getPropertyValue("--delta-accent").trim() || "rgb(80, 80, 80)";
+
+    for (const p of points) {
+        if (!p || typeof p.x !== "number" || typeof p.y !== "number") continue;
+
+        const pos = worldToScreen(p.x, p.y, plot, w, h);
+        const radius = 3 * (p.size || controller.options.defaultSize);
+        const pointColor = p.color || controller.options.defaultColor || defaultAccent;
+        const isSelected = (p.id === controller.state.selectedId);
+
+        // Highlight ring for selected point
+        if (isSelected) {
+            ctx.beginPath();
+            ctx.arc(pos.sx, pos.sy, radius + 6, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(80, 80, 80, 0.18)";
+            ctx.fill();
+            ctx.strokeStyle = pointColor;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
         }
 
-        if (this.floatingBadgeDelete) {
-            this.floatingBadgeDelete.style.display = (this.interaction === "true") ? "inline-flex" : "none";
+        // Point body and border
+        ctx.beginPath();
+        ctx.arc(pos.sx, pos.sy, radius, 0, Math.PI * 2);
+        ctx.fillStyle = isSelected ? pointColor : "#ffffff";
+        ctx.fill();
+        ctx.strokeStyle = isSelected ? "#ffffff" : pointColor;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
+}
+
+// Event Bindings
+function bindPointsInteractions(controller, plot) {
+    plot.tabIndex = 0;
+
+    plot.canvas.addEventListener("pointerdown", (e) => {
+        if (!controller.state.mode || controller.options.interaction === "false") return;
+        plot.focus();
+
+        const rect = plot.canvas.getBoundingClientRect();
+        const sx = e.clientX - rect.left;
+        const sy = e.clientY - rect.top;
+
+        const hit = hitTestPoint(plot, sx, sy, controller.options.defaultSize);
+        if (hit) {
+            controller.state.selectedId = hit.id;
+            controller.state.draggingId = hit.id;
+            const hitScreen = worldToScreen(hit.x, hit.y, plot);
+            controller.state.dragOffset = { x: hitScreen.sx - sx, y: hitScreen.sy - sy };
+            try { plot.canvas.setPointerCapture(e.pointerId); } catch (_) {}
+            plot.render();
+        } else if (controller.options.interaction === "true") {
+            const world = screenToWorld(sx, sy, plot);
+            const newPoint = addPoint(plot, {
+                x: world.x,
+                y: world.y,
+                size: controller.options.defaultSize,
+                color: controller.options.defaultColor
+            });
+            controller.state.selectedId = newPoint.id;
+            controller.state.draggingId = newPoint.id;
+            controller.state.dragOffset = { x: 0, y: 0 };
+            try { plot.canvas.setPointerCapture(e.pointerId); } catch (_) {}
+        } else if (controller.options.interaction === "move" && controller.state.selectedId !== null) {
+            controller.state.selectedId = null;
+            plot.render();
         }
+    });
 
-        const pos = worldToScreen(p.x, p.y, this.plot);
-        const radius = 3 * (p.size || this.size || 1);
-        const cx = (this.plot.canvas.offsetLeft || 0) + pos.sx;
-        const cy = (this.plot.canvas.offsetTop || 0) + pos.sy - radius - 6;
+    plot.canvas.addEventListener("pointermove", (e) => {
+        if (!controller.state.mode || controller.options.interaction === "false") return;
 
-        if (pos.sx >= 0 && pos.sx <= this.plot.canvas.clientWidth && pos.sy >= 0 && pos.sy <= this.plot.canvas.clientHeight) {
-            this.floatingBadge.style.display = "flex";
-            this.floatingBadge.style.left = `${cx}px`;
-            this.floatingBadge.style.top = `${cy}px`;
-            this.floatingBadgeCoords.textContent = `(${formatNumber(p.x)}, ${formatNumber(p.y)})`;
+        const rect = plot.canvas.getBoundingClientRect();
+        const sx = e.clientX - rect.left;
+        const sy = e.clientY - rect.top;
+
+        if (controller.state.draggingId !== null) {
+            const world = screenToWorld(sx + controller.state.dragOffset.x, sy + controller.state.dragOffset.y, plot);
+            const pt = plot.data.points.find(p => p && p.id === controller.state.draggingId);
+            if (pt) {
+                pt.x = world.x;
+                pt.y = world.y;
+            }
         } else {
-            this.floatingBadge.style.display = "none";
+            const hit = hitTestPoint(plot, sx, sy, controller.options.defaultSize);
+            const newHover = hit ? hit.id : null;
+            if (newHover !== controller.state.hoverId) {
+                controller.state.hoverId = newHover;
+                const isMoveOnly = (controller.options.interaction === "move");
+                plot.canvas.style.cursor = hit ? "pointer" : (isMoveOnly ? "default" : "crosshair");
+            }
         }
+    });
+
+    const stopDragging = (e) => {
+        if (!controller.state.mode) return;
+        if (controller.state.draggingId !== null) {
+            try { plot.canvas.releasePointerCapture(e.pointerId); } catch (_) {}
+            controller.state.draggingId = null;
+            plot.render();
+        }
+    };
+
+    plot.canvas.addEventListener("pointerup", stopDragging);
+    plot.canvas.addEventListener("pointercancel", stopDragging);
+    plot.canvas.addEventListener("pointerleave", () => {
+        if (controller.state.mode && controller.state.draggingId === null) {
+            controller.state.hoverId = null;
+        }
+    });
+
+    plot.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && controller.state.selectedId !== null) {
+            e.preventDefault();
+            controller.state.selectedId = null;
+            plot.render();
+        } else if ((e.key === "Delete" || e.key === "Backspace") && controller.options.interaction === "true" && controller.state.mode && controller.state.selectedId !== null) {
+            e.preventDefault();
+            removePoint(plot, controller.state.selectedId);
+            controller.state.selectedId = null;
+        }
+    });
+
+    document.addEventListener("pointerdown", (e) => {
+        if (!plot.contains(e.target) && controller.state.selectedId !== null) {
+            controller.state.selectedId = null;
+            plot.render();
+        }
+    });
+}
+
+</script>
+<script>
+/* pack: points */
+// Points Controller Subcomponent
+class DeltaPoints extends HTMLElement {
+    build(plot) {
+        this.options = parsePointsOptions(this);
+        this.state = createPointsState();
+
+        this.badge = createFloatingBadge(this, plot);
+        this.footer = createPointsFooter(this, plot);
+
+        plot.container.append(this.badge, this.footer);
     }
 
-    updateStatus() {
-        if (!this.statusEl) return;
-        const count = (this.plot?.data?.points || []).length;
-        this.statusEl.textContent = `${count} ${count === 1 ? "ponto" : "pontos"}`;
+    bind(plot) {
+        bindPointsInteractions(this, plot);
     }
 
-    setMode(mode) {
-        this.mode = Boolean(mode);
-        this.modeBtn?.classList.toggle("active", this.mode);
-        if (!this.mode) {
-            this.selectedId = this.draggingId = this.hoverId = null;
-            if (this.plot?.canvas) this.plot.canvas.style.cursor = this.plot.grab ? "grab" : "default";
-        } else {
-            if (this.plot?.canvas) this.plot.canvas.style.cursor = this.interaction === "move" ? "default" : "crosshair";
-        }
-        if (this.plot) this.plot.render();
+    render(ctx, w, h, plot) {
+        updatePointsUI(this, plot);
+        drawPointsLayer(ctx, w, h, plot, this);
     }
 
     isDraggingEntity() {
-        return this.mode && this.interaction !== "false";
-    }
-
-    // Points Operations
-
-    addPoint(x, y, size = this.size, color) {
-        const pt = { x, y, size, ...(color && { color }) };
-        this.plot.data.points.push(pt);
-        this.selectedId = this.draggingId = pt.id;
-        this.dragOffset = { x: 0, y: 0 };
-        return pt;
-    }
-
-    removePoint(id) {
-        const idx = this.plot.data.points.findIndex(p => p && p.id === id);
-        if (idx !== -1) this.plot.data.points.splice(idx, 1);
-        if (this.selectedId === id) this.selectedId = null;
-        if (this.draggingId === id) this.draggingId = null;
-        if (this.hoverId === id) this.hoverId = null;
-    }
-
-    clearPoints() {
-        this.plot.data.points.length = 0;
-        this.selectedId = this.draggingId = this.hoverId = null;
-    }
-
-    movePoint(id, x, y) {
-        const p = this.plot.data.points.find(pt => pt && pt.id === id);
-        if (p) {
-            p.x = x;
-            p.y = y;
-        }
-    }
-
-    hitTest(sx, sy, plot) {
-        const points = plot.data?.points || [];
-        for (let i = points.length - 1; i >= 0; i--) {
-            const p = points[i];
-            if (!p || typeof p.x !== "number" || typeof p.y !== "number") continue;
-            const pos = worldToScreen(p.x, p.y, plot);
-            const r = Math.max(12, 3 * (p.size || this.size || 1) + 6);
-            if (Math.hypot(pos.sx - sx, pos.sy - sy) <= r) return p;
-        }
-        return null;
-    }
-
-    // Event Handlers
-
-    onPointerDown(e, plot) {
-        if (!this.mode || this.interaction === "false") return;
-        plot.focus();
-        const r = plot.canvas.getBoundingClientRect();
-        const sx = e.clientX - r.left;
-        const sy = e.clientY - r.top;
-
-        const hit = this.hitTest(sx, sy, plot);
-        if (hit) {
-            this.selectedId = this.draggingId = hit.id;
-            const hitScreen = worldToScreen(hit.x, hit.y, plot);
-            this.dragOffset = { x: hitScreen.sx - sx, y: hitScreen.sy - sy };
-            try { plot.canvas.setPointerCapture(e.pointerId); } catch (_) {}
-            plot.render();
-        } else if (this.interaction === "true") {
-            const world = screenToWorld(sx, sy, plot);
-            this.addPoint(world.x, world.y, this.size);
-            try { plot.canvas.setPointerCapture(e.pointerId); } catch (_) {}
-        } else if (this.interaction === "move" && this.selectedId !== null) {
-            this.selectedId = null;
-            plot.render();
-        }
-    }
-
-    onPointerMove(e, plot) {
-        if (!this.mode || this.interaction === "false") return;
-        const r = plot.canvas.getBoundingClientRect();
-        const sx = e.clientX - r.left;
-        const sy = e.clientY - r.top;
-
-        if (this.draggingId !== null) {
-            const world = screenToWorld(sx + this.dragOffset.x, sy + this.dragOffset.y, plot);
-            this.movePoint(this.draggingId, world.x, world.y);
-        } else {
-            const hit = this.hitTest(sx, sy, plot);
-            const newHover = hit ? hit.id : null;
-            if (newHover !== this.hoverId) {
-                this.hoverId = newHover;
-                plot.canvas.style.cursor = hit ? "pointer" : (this.interaction === "move" ? "default" : "crosshair");
-            }
-        }
-    }
-
-    onPointerUp(e, plot) {
-        if (!this.mode) return;
-        if (this.draggingId !== null) {
-            try { plot.canvas.releasePointerCapture(e.pointerId); } catch (_) {}
-            this.draggingId = null;
-            plot.render();
-        }
-    }
-
-    onKeyDown(e, plot) {
-        if (e.key === "Escape" && this.selectedId !== null) {
-            e.preventDefault();
-            this.selectedId = null;
-            plot.render();
-        } else if ((e.key === "Delete" || e.key === "Backspace") && this.interaction === "true" && this.mode && this.selectedId !== null) {
-            e.preventDefault();
-            this.removePoint(this.selectedId);
-        }
+        return this.state.mode && this.options.interaction !== "false";
     }
 }
 
 customElements.define("delta-points", DeltaPoints);
+
 </script>
 <script>
-/* pack: function */
-function drawFunction(plot, ctx, w, h, f, precision = 1000, color = null) {
-    if (typeof f !== "function") return;
-    if (!ctx || w === 0 || h === 0) return;
+/* pack: actions */
+// Function Subcomponent Actions
+function parseFunctionOptions(fnEl) {
+    const rawExpr = fnEl.textContent.trim();
+    const vars = ["x", "y"];
+    const f = make_function(rawExpr, vars);
+
+    const color = fnEl.getAttribute("color") || null;
+    const from = parseTuple(fnEl.getAttribute("from"), 2, true);
+    const to = parseTuple(fnEl.getAttribute("to"), 2, true);
+    const name = fnEl.getAttribute("name") || "";
+
+    return { rawExpr, vars, f, color, from, to, name };
+}
+
+function registerFunctionInPlot(plot, fnData) {
+    return addFunction(plot, fnData);
+}
+
+function drawFunctionCurves(ctx, w, h, plot, precision = 1000) {
+    const funcs = plot.data?.functions || [];
+    if (!funcs.length) return;
 
     const { centerX, centerY, scale } = getPlotCenter(plot, w, h);
     if (scale <= 0) return;
 
+    const defaultAccent = getComputedStyle(plot).getPropertyValue("--delta-accent").trim() || "rgb(80, 80, 80)";
     const xMin = -centerX / scale;
     const xMax = (w - centerX) / scale;
-    const step = (xMax - xMin) / (precision - 1);
 
-    ctx.save();
-    ctx.strokeStyle = color || getComputedStyle(plot).getPropertyValue("--delta-accent").trim() || "rgb(80, 80, 80)";
-    ctx.lineWidth = 2;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
+    for (const fnObj of funcs) {
+        if (!fnObj || typeof fnObj.f !== "function") continue;
 
-    ctx.beginPath();
-    let penDown = false;
-
-    for (let i = 0; i < precision; i++) {
-        const xi = xMin + i * step;
-        let yi;
-        try {
-            yi = f(xi, 0);
-        } catch (e) {
-            yi = null;
+        // Apply domain [a, b] restriction if specified
+        let startX = xMin;
+        let endX = xMax;
+        if (fnObj.from && fnObj.from.length === 2) {
+            startX = Math.max(xMin, fnObj.from[0]);
+            endX = Math.min(xMax, fnObj.from[1]);
         }
+        if (startX >= endX) continue;
 
-        const isValid = (yi !== null && typeof yi === "number" && !isNaN(yi) && isFinite(yi));
+        // Dynamic sampling density: at least 2 samples per screen pixel to eliminate jagged segments
+        const screenSpan = Math.max(1, (endX - startX) * scale);
+        const sampleCount = Math.max(precision, Math.ceil(screenSpan * 2));
+        const step = (endX - startX) / (sampleCount - 1);
 
-        if (isValid) {
-            const sx = Math.round(centerX + xi * scale);
-            const sy = Math.round(centerY - yi * scale);
+        ctx.save();
+        ctx.strokeStyle = fnObj.color || defaultAccent;
+        ctx.lineWidth = 2;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
 
-            if (!penDown) {
-                ctx.moveTo(sx, sy);
-                penDown = true;
-            } else {
-                ctx.lineTo(sx, sy);
+        ctx.beginPath();
+        let penDown = false;
+        let prevSy = null;
+
+        for (let i = 0; i < sampleCount; i++) {
+            const xi = startX + i * step;
+            let yi;
+            try {
+                yi = fnObj.f(xi, 0);
+            } catch (_) {
+                yi = null;
             }
-        } else {
-            penDown = false;
-        }
-    }
 
-    ctx.stroke();
-    ctx.restore();
+            let isValid = (yi !== null && typeof yi === "number" && !isNaN(yi) && isFinite(yi));
+
+            // Apply codomain [u, v] restriction if specified
+            if (isValid && fnObj.to && fnObj.to.length === 2) {
+                if (yi < fnObj.to[0] || yi > fnObj.to[1]) {
+                    isValid = false;
+                }
+            }
+
+            if (isValid) {
+                // Exact floating-point coordinates enable native subpixel anti-aliasing
+                const sx = centerX + xi * scale;
+                const sy = centerY - yi * scale;
+
+                // Detect extreme asymptote jumps (e.g. 1/x crossing x=0)
+                const isAsymptoteJump = (prevSy !== null && Math.abs(sy - prevSy) > h * 3);
+
+                if (!penDown || isAsymptoteJump) {
+                    ctx.moveTo(sx, sy);
+                    penDown = true;
+                } else {
+                    ctx.lineTo(sx, sy);
+                }
+                prevSy = sy;
+            } else {
+                penDown = false;
+                prevSy = null;
+            }
+        }
+
+        ctx.stroke();
+        ctx.restore();
+    }
 }
 
+</script>
+<script>
+/* pack: function */
+// Function Subcomponent
 class DeltaFunction extends HTMLElement {
     build(plot) {
-        this.plot = plot;
-        if (!plot.data) plot.data = {};
-        if (!plot.data.functions) plot.data.functions = [];
-
-        const rawExpr = this.textContent.trim();
-        const vars = ['x', 'y'];
-        const f = make_function(rawExpr, vars);
-        const color = this.getAttribute("color") || null;
-
-        this.fnData = { f, vars, rawExpr, color };
-        plot.data.functions.push(this.fnData);
+        const fnData = parseFunctionOptions(this);
+        registerFunctionInPlot(plot, fnData);
     }
 
-    bind(plot) {
-        this.plot = plot;
-    }
+    bind(plot) {}
 
     render(ctx, w, h, plot) {
+        // Render all registered functions once per plot frame from the first function element
         const isFirst = (plot.elements.find(el => el.tagName === "DELTA-FUNCTION") === this);
-        if (!isFirst) return;
-
-        const funcs = plot.data?.functions || [];
-        for (const fnObj of funcs) {
-            if (fnObj && fnObj.f) {
-                drawFunction(plot, ctx, w, h, fnObj.f, 1000, fnObj.color);
-            }
+        if (isFirst) {
+            drawFunctionCurves(ctx, w, h, plot);
         }
     }
 }
 
 customElements.define("delta-function", DeltaFunction);
+
 </script>
 <script>
-/* pack: plot */
-// Plot Component
+/* pack: plot-new */
+// Plot Core Component
 class DeltaPlot extends HTMLElement {
     connectedCallback() {
         if (this.dataset.deltaReady) return;
@@ -4341,43 +4841,14 @@ class DeltaPlot extends HTMLElement {
     }
 
     build() {
-        // Attributes
-        let typeAttr = this.getAttribute("type") || "cartesian";
-        let grabAttr = this.getAttribute("grab") || "true";
-        let zoomAttr = this.getAttribute("zoom") || "true";
-        let xAttr = this.getAttribute("x") || "-16,16";
-        let yAttr = this.getAttribute("y") || "-9,9";
-        let titleAttr = this.getAttribute("title") || "";
+        initPlotAttributes(this);
+        createPlotStructure(this);
+        collectPlotSubcomponents(this);
 
-        parsePlotAttributes(this, typeAttr, grabAttr, zoomAttr, xAttr, yAttr, titleAttr);
-        parseSubcomponentData(this);
-
-        // Main Container
-        this.container = document.createElement("div");
-        this.container.className = "plot-container";
-
-        // Canvas
-        this.canvas = document.createElement("canvas");
-        this.canvas.className = "plot-canvas";
-        this.ctx = this.canvas.getContext("2d");
-        this.container.append(this.canvas);
-        this.append(this.container);
-
-        // Subcomponents build
         for (const el of this.elements) {
             el.build(this);
         }
 
-        // Header
-        const headerEl = document.createElement("div");
-        headerEl.className = "plot-header";
-        const titleEl = document.createElement("span");
-        titleEl.className = "plot-title";
-        titleEl.textContent = this.title || "";
-        headerEl.append(titleEl);
-        this.container.prepend(headerEl);
-
-        // Other steps
         this.bind();
         this.render();
     }
@@ -4387,179 +4858,21 @@ class DeltaPlot extends HTMLElement {
             this.render();
         }).observe(this.canvas);
 
-        // Subcomponents bind
         for (const el of this.elements) {
             el.bind(this);
         }
 
-        this.bindGrab();
-        this.bindZoom();
+        bindPlotPan(this);
+        bindPlotZoom(this);
     }
 
     render() {
-        if (!this.ctx) return;
-        this.resize();
-
-        const r = this.canvas.getBoundingClientRect();
-        const w = r.width;
-        const h = r.height;
-        if (w === 0 || h === 0) return;
-        this.ctx.clearRect(0, 0, w, h);
-
-        // Subcomponents render
-        for (const el of this.elements) {
-            el.render(this.ctx, w, h, this);
-        }
-    }
-
-    // Viewport Management
-    
-    resize() {
-        const r = this.canvas.getBoundingClientRect();
-        if (r.width === 0 || r.height === 0) return;
-        const dpr = window.devicePixelRatio || 1;
-        const targetW = Math.round(r.width * dpr);
-        const targetH = Math.round(r.height * dpr);
-
-        if (this.canvas.width !== targetW || this.canvas.height !== targetH) {
-            this.canvas.width = targetW;
-            this.canvas.height = targetH;
-            this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-            if (!this.userInteracted) {
-                this.applyInitialBounds(r.width, r.height);
-            }
-        }
-    }
-
-    applyInitialBounds(w, h) {
-        if (this.userInteracted || w < 10 || h < 10) return;
-
-        const dx = Math.abs(this.xRange[1] - this.xRange[0]);
-        const dy = Math.abs(this.yRange[1] - this.yRange[0]);
-        if (dx <= 0 || dy <= 0) return;
-
-        // Fits both x and y ranges on screen
-        this.zoom = Math.min(w / (dx * BASE_SIZE_SCALE), h / (dy * BASE_SIZE_SCALE));
-        this.zoom = Math.max(this.minZoom, Math.min(this.maxZoom, this.zoom));
-
-        // Center camera on range midpoints
-        const scale = BASE_SIZE_SCALE * this.zoom;
-        const xMid = (this.xRange[0] + this.xRange[1]) / 2;
-        const yMid = (this.yRange[0] + this.yRange[1]) / 2;
-        this.offsetX = -xMid * scale;
-        this.offsetY = yMid * scale;
-    }
-
-    bindGrab() {
-        if (!this.grab) return;
-        this.canvas.style.cursor = "grab";
-
-        let isDragging = false;
-        let dragStartX = 0, dragStartY = 0;
-        let startOffsetX = 0, startOffsetY = 0;
-        let activePointerId = null;
-
-        this.canvas.addEventListener("pointerdown", (e) => {
-            if (activePointerId !== null) return;
-            if (this.elements.some(el => el.isDraggingEntity && el.isDraggingEntity())) return;
-            activePointerId = e.pointerId;
-            isDragging = true;
-            this.userInteracted = true;
-            dragStartX = e.clientX;
-            dragStartY = e.clientY;
-            startOffsetX = this.offsetX;
-            startOffsetY = this.offsetY;
-            this.canvas.setPointerCapture(e.pointerId);
-            this.canvas.style.cursor = "grabbing";
-        });
-
-        this.canvas.addEventListener("pointermove", (e) => {
-            if (!isDragging || e.pointerId !== activePointerId) return;
-            this.offsetX = startOffsetX + (e.clientX - dragStartX);
-            this.offsetY = startOffsetY + (e.clientY - dragStartY);
-            this.render();
-        });
-
-        const stopDrag = (e) => {
-            if (e.pointerId !== activePointerId) return;
-            isDragging = false;
-            activePointerId = null;
-            try { this.canvas.releasePointerCapture(e.pointerId); } catch (_) {}
-            this.canvas.style.cursor = "grab";
-        };
-
-        this.canvas.addEventListener("pointerup", stopDrag);
-        this.canvas.addEventListener("pointercancel", stopDrag);
-    }
-
-    bindZoom() {
-        if (!this.zoomEnabled) return;
-
-        this.canvas.addEventListener("wheel", (e) => {
-            e.preventDefault();
-            this.userInteracted = true;
-
-            const factor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
-            const r = this.canvas.getBoundingClientRect();
-            const cx = e.clientX - r.left - r.width / 2;
-            const cy = e.clientY - r.top - r.height / 2;
-
-            this.applyZoom(this.zoom * factor, cx, cy);
-        }, { passive: false });
-
-        // Touch pinch-zoom
-        let initialPinchDist = null;
-        let initialPinchZoom = null;
-        let pinchCenter = null;
-
-        this.canvas.addEventListener("touchstart", (e) => {
-            if (e.touches.length === 2) {
-                this.userInteracted = true;
-                const [t1, t2] = e.touches;
-                initialPinchDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
-                initialPinchZoom = this.zoom;
-                const r = this.canvas.getBoundingClientRect();
-                pinchCenter = {
-                    x: (t1.clientX + t2.clientX) / 2 - r.left - r.width / 2,
-                    y: (t1.clientY + t2.clientY) / 2 - r.top - r.height / 2
-                };
-            }
-        }, { passive: true });
-
-        this.canvas.addEventListener("touchmove", (e) => {
-            if (e.touches.length === 2 && initialPinchDist !== null) {
-                e.preventDefault();
-                const [t1, t2] = e.touches;
-                const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
-                const newZoom = initialPinchZoom * (dist / initialPinchDist);
-                this.applyZoom(newZoom, pinchCenter.x, pinchCenter.y);
-            }
-        }, { passive: false });
-
-        const endTouch = () => {
-            initialPinchDist = null;
-            initialPinchZoom = null;
-            pinchCenter = null;
-        };
-        this.canvas.addEventListener("touchend", endTouch);
-        this.canvas.addEventListener("touchcancel", endTouch);
-    }
-
-    applyZoom(newZoom, cx, cy) {
-        const clampedZoom = Math.max(this.minZoom, Math.min(this.maxZoom, newZoom));
-        if (Math.abs(clampedZoom - this.zoom) < 1e-6) return;
-
-        // Shift offsets so cursor remains pinned
-        this.offsetX = cx - ((cx - this.offsetX) / this.zoom) * clampedZoom;
-        this.offsetY = cy - ((cy - this.offsetY) / this.zoom) * clampedZoom;
-        this.zoom = clampedZoom;
-
-        this.render();
+        renderPlot(this);
     }
 }
 
 customElements.define("delta-plot", DeltaPlot);
+
 </script>
 
 </body>

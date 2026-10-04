@@ -7,7 +7,9 @@ function drawFunction(plot, ctx, w, h, f, precision = 1000, color = null) {
 
     const xMin = -centerX / scale;
     const xMax = (w - centerX) / scale;
-    const step = (xMax - xMin) / (precision - 1);
+    const screenSpan = Math.max(1, (xMax - xMin) * scale);
+    const sampleCount = Math.max(precision, Math.ceil(screenSpan * 2));
+    const step = (xMax - xMin) / (sampleCount - 1);
 
     ctx.save();
     ctx.strokeStyle = color || getComputedStyle(plot).getPropertyValue("--delta-accent").trim() || "rgb(80, 80, 80)";
@@ -17,8 +19,9 @@ function drawFunction(plot, ctx, w, h, f, precision = 1000, color = null) {
 
     ctx.beginPath();
     let penDown = false;
+    let prevSy = null;
 
-    for (let i = 0; i < precision; i++) {
+    for (let i = 0; i < sampleCount; i++) {
         const xi = xMin + i * step;
         let yi;
         try {
@@ -30,17 +33,21 @@ function drawFunction(plot, ctx, w, h, f, precision = 1000, color = null) {
         const isValid = (yi !== null && typeof yi === "number" && !isNaN(yi) && isFinite(yi));
 
         if (isValid) {
-            const sx = Math.round(centerX + xi * scale);
-            const sy = Math.round(centerY - yi * scale);
+            const sx = centerX + xi * scale;
+            const sy = centerY - yi * scale;
 
-            if (!penDown) {
+            const isAsymptoteJump = (prevSy !== null && Math.abs(sy - prevSy) > h * 3);
+
+            if (!penDown || isAsymptoteJump) {
                 ctx.moveTo(sx, sy);
                 penDown = true;
             } else {
                 ctx.lineTo(sx, sy);
             }
+            prevSy = sy;
         } else {
             penDown = false;
+            prevSy = null;
         }
     }
 

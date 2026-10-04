@@ -10,7 +10,7 @@
     Página demonstrativa e referência técnica do componente plot, projetado para renderização interativa de curvas, eixos e pontos em um espaço bidimensional.
   </abstract>
 
-  <import src="packages/plot" />
+  <import src="packages/plot-new" />
 
   <section id="sec:plot">
     <eyebrow>Referência de Componentes</eyebrow>
@@ -53,11 +53,24 @@
 
     <subsection id="sec:title">
       <title>&lt;title&gt;</title>
-      Define o título exibido na barra de cabeçalho superior da área de plotagem. Não possui atributos adicionais: o texto do título é inserido diretamente como conteúdo da tag.
+      Define o título exibido na barra de cabeçalho superior da área de plotagem. O texto do título é inserido diretamente como conteúdo da tag.
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">color</column>
+          <column>cor CSS (ex: <c>#3b82f6</c>)</column>
+          <column>Define a cor personalizada do texto do título. O padrão utiliza a cor tipográfica do tema.</column>
+        </row>
+      </table>
 
       <code lang="xml" numbered="false">
         <plot>
-          <title>Plano Cartesiano</title>
+          <title color="#3b82f6">Plano Cartesiano</title>
         </plot>
       </code>
     </subsection>
@@ -75,7 +88,17 @@
         <row>
           <column mono="true">show</column>
           <column><c>true</c>, <c>false</c>, <c>origin</c>, <c>basic</c></column>
-          <column><c>true</c> desenha grade e origem; <c>origin</c> só os eixos centrais; <c>basic</c> só a malha; <c>false</c> oculta ambos.</column>
+          <column><c>true</c> desenha grade e origem; <c>origin</c> só os eixos centrais; <c>basic</c> só a malha; <c>false</c> oculta ambos. O padrão é <c>true</c>.</column>
+        </row>
+        <row>
+          <column mono="true">color</column>
+          <column>cor CSS (ex: <c>rgba(0,0,0,0.15)</c>)</column>
+          <column>Cor das linhas da malha e dos eixos centrais. O padrão utiliza tonalidades sutis derivadas do tema.</column>
+        </row>
+        <row>
+          <column mono="true">thickness</column>
+          <column>número (ex: <c>1</c>, <c>1.5</c>)</column>
+          <column>Espessura do traço das linhas da grade e da cruz central em pixels. Também aceita o atributo <c>width</c>. O padrão é <c>1</c>.</column>
         </row>
       </table>
     </subsection>
@@ -93,14 +116,28 @@
         <row>
           <column mono="true">show</column>
           <column><c>true</c>, <c>false</c>, <c>x</c>, <c>y</c></column>
-          <column>Controla a visibilidade dos números: ambos os eixos (<c>true</c>), apenas horizontal (<c>x</c>), apenas vertical (<c>y</c>) ou nenhum (<c>false</c>).</column>
+          <column>Controla a visibilidade dos números: ambos os eixos (<c>true</c>), apenas horizontal (<c>x</c>), apenas vertical (<c>y</c>) ou nenhum (<c>false</c>). O padrão é <c>true</c>.</column>
+        </row>
+        <row>
+          <column mono="true">color</column>
+          <column>cor CSS (ex: <c>#475569</c>)</column>
+          <column>Cor dos números e marcações numéricas das réguas dos eixos. O padrão utiliza a cor de texto secundária.</column>
         </row>
       </table>
     </subsection>
 
     <subsection id="sec:points">
       <title>&lt;points&gt;</title>
-      Adiciona uma camada interativa de pontos com barra de status inferior, modo de manipulação/movimentação e balão de coordenadas flutuante.
+      Adiciona uma camada interativa de pontos com barra de status inferior, modo de manipulação/movimentação, botões de ação e balão de coordenadas flutuante.
+
+      A interface inclui:
+      <list>
+        <item>Barra de status inferior com contagem em tempo real dos pontos presentes no gráfico.</item>
+        <item>Botão de alternância do modo interativo de pontos (cursor em cruz ou ponteiro).</item>
+        <item>Botão para deletar o ponto selecionado e botão para limpar todos os pontos (quando habilitado).</item>
+        <item>Balão de coordenadas flutuante (<c>badge</c>) sobre o ponto selecionado, com botão de atalho para remoção rápida.</item>
+        <item>Atalhos de teclado quando o gráfico está em foco: <c>Delete</c> ou <c>Backspace</c> remove o ponto selecionado; <c>Escape</c> cancela a seleção.</item>
+      </list>
 
       <table numbered="false">
         <header>
@@ -111,12 +148,17 @@
         <row>
           <column mono="true">size</column>
           <column>número (<c>0.1</c> a <c>10</c>)</column>
-          <column>Fator de escala multiplicador do raio dos pontos renderizados. O padrão é <c>1</c></column>
+          <column>Fator de escala multiplicador do raio dos pontos renderizados. O padrão é <c>1</c>.</column>
+        </row>
+        <row>
+          <column mono="true">color</column>
+          <column>cor CSS (ex: <c>#3b82f6</c>)</column>
+          <column>Cor padrão herdada por novos pontos adicionados interativamente ou pontos sem cor própria. O padrão utiliza a cor de destaque do tema.</column>
         </row>
         <row>
           <column mono="true">interaction</column>
           <column><c>true</c>, <c>move</c>, <c>false</c></column>
-          <column><c>true</c> permite criar, mover e deletar pontos; <c>move</c> permite apenas arrastar; <c>false</c> bloqueia edição.</column>
+          <column><c>true</c> permite criar, mover e deletar pontos; <c>move</c> permite apenas arrastar pontos existentes; <c>false</c> bloqueia edição e oculta ações da barra inferior. O padrão é <c>true</c>.</column>
         </row>
       </table>
     </subsection>
@@ -144,7 +186,7 @@
         <row>
           <column mono="true">pos</column>
           <column>tupla <c>x,y</c></column>
-          <column>Par de coordenadas como tupla (alternativa a <c>x</c> e <c>y</c> separados ou ao texto interno).</column>
+          <column>Par de coordenadas como tupla (alternativa a <c>x</c> e <c>y</c> separados).</column>
         </row>
         <row>
           <column mono="true">size</column>
@@ -154,7 +196,12 @@
         <row>
           <column mono="true">color</column>
           <column>cor CSS (ex: <c>#ef4444</c>, <c>blue</c>)</column>
-          <column>Cor de preenchimento do ponto (hexadecimal, rgb ou nome). O padrão segue a cor do tema.</column>
+          <column>Cor de preenchimento do ponto (hexadecimal, rgb ou nome). O padrão segue a cor herdada de <c><points></c> ou do tema.</column>
+        </row>
+        <row>
+          <column mono="true">name</column>
+          <column>texto (ex: <c>Origem</c>, <c>P1</c>)</column>
+          <column>Nome identificador associado ao ponto. O padrão é <c>""</c> (não nomeado). Permanece armazenado no modelo de dados autoritativo.</column>
         </row>
       </table>
 
@@ -166,13 +213,55 @@
 
     <subsection id="sec:function">
       <title>&lt;function&gt;</title>
-      Permite desenhar curvas no plano cartesiano a partir de uma expressão matemática dependente de <c>x</c> e <c>y</c>. O gráfico amostra a expressão ao longo do eixo horizontal e desenha a curva correspondente de forma suave no canvas.
+      Permite desenhar curvas no plano cartesiano a partir de uma expressão matemática dependente de <c>x</c> (e opcionalmente <c>y</c>). O gráfico amostra a expressão ao longo do eixo horizontal e desenha a curva correspondente de forma suave no canvas.
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">color</column>
+          <column>cor CSS (ex: <c>#3b82f6</c>)</column>
+          <column>Cor do traço da curva no plano. O padrão utiliza a cor de destaque do tema.</column>
+        </row>
+        <row>
+          <column mono="true">from</column>
+          <column>tupla <c>a,b</c> (ex: <c>-2,2</c>)</column>
+          <column>Delimita o domínio da função ao intervalo $[a, b]$ no eixo horizontal. A curva só é traçada dentro desta faixa.</column>
+        </row>
+        <row>
+          <column mono="true">to</column>
+          <column>tupla <c>u,v</c> (ex: <c>-1,1</c>)</column>
+          <column>Delimita o contradomínio (imagem) da função ao intervalo $[u, v]$ no eixo vertical. Pontos com ordenada fora do intervalo não são desenhados.</column>
+        </row>
+        <row>
+          <column mono="true">name</column>
+          <column>texto (ex: <c>seno</c>, <c>f</c>)</column>
+          <column>Nome identificador da função. O padrão é <c>""</c>.</column>
+        </row>
+      </table>
+
+      O conteúdo interno da tag é avaliado como uma expressão JavaScript padrão, permitindo o uso direto de funções do módulo <c>Math</c> (como <c>Math.sin</c>, <c>Math.cos</c>, <c>Math.exp</c>, <c>Math.sqrt</c>) e operadores aritméticos (como <c>**</c> para exponenciação).
 
       <code lang="xml" numbered="false">
 <plot>
-  <function>Math.sin(x)</function>
+  <function color="#3b82f6" from="-4,4">Math.sin(x)</function>
 </plot>
       </code>
+    </subsection>
+
+    <subsection id="sec:data">
+      <title>Estrutura de Dados e Eventos</title>
+      Cada elemento <c><plot></c> gerencia um modelo de dados reativo e autoritativo em <c>plot.data</c>, acessível programaticamente:
+
+      <list>
+        <item><c>plot.data.points</c>: lista reativa contendo os pontos do gráfico, cada um com as propriedades <c>{ id, x, y, size, color, name }</c>.</item>
+        <item><c>plot.data.functions</c>: lista reativa com as definições de funções, incluindo <c>{ id, f, vars, rawExpr, color, from, to, name }</c>.</item>
+      </list>
+
+      Qualquer inserção, alteração ou remoção realizada em <c>plot.data</c> sincroniza imediatamente a visualização do canvas e dispara o evento customizado <c>delta:data-change</c> no elemento <c><plot></c>, disponibilizando a referência em <c>event.detail</c>.
     </subsection>
   </section>
 
@@ -256,37 +345,82 @@
     </subsection>
 
     <subsection>
-      <title>Pontos Declarativos com Cores e Tamanhos</title>
-      Pontos pré-definidos no código com atributos individuais de posição, cor e tamanho:
+      <title>Pontos Declarativos com Cores, Tamanhos e Nomes</title>
+      Pontos pré-definidos no código com atributos individuais de coordenadas (<c>pos</c> ou <c>x</c>/<c>y</c>), cor, tamanho e nome:
       <code lang="xml" numbered="false">
 <plot>
   <title>Pontos Fixados no Código</title>
-  <point x="0" y="0" size="1.5" color="#ef4444" />
-  <point x="4" y="3" color="#3b82f6" />
-  <point x="-4" y="-2" size="2" />
+  <point pos="0,0" size="1.5" color="#ef4444" name="Origem" />
+  <point pos="4,3" color="#3b82f6" name="P1" />
+  <point pos="-4,-2" size="2" color="#10b981" name="P2" />
 </plot>
       </code>
       <plot>
         <title>Pontos Fixados no Código</title>
-        <point x="0" y="0" size="1.5" color="#ef4444" />
-        <point x="4" y="3" color="#3b82f6" />
-        <point x="-4" y="-2" size="2" />
+        <point pos="0,0" size="1.5" color="#ef4444" name="Origem" />
+        <point pos="4,3" color="#3b82f6" name="P1" />
+        <point pos="-4,-2" size="2" color="#10b981" name="P2" />
       </plot>
     </subsection>
 
     <subsection>
       <title>Curva de Função</title>
-      Exemplo de renderização analítica de uma curva definida por expressão matemática:
+      Renderização analítica de uma curva contínua definida por expressão matemática com cor personalizada:
       <code lang="xml" numbered="false">
 <plot x="-8,8" y="-4,4">
   <title>Curva Analítica</title>
-  <function>Math.sin(x)</function>
+  <function color="#3b82f6">Math.sin(x)</function>
 </plot>
       </code>
       <plot x="-8,8" y="-4,4">
         <title>Curva Analítica</title>
-        <function>x**2</function>
-        <point x="0" y="0.1"/>
+        <function color="#3b82f6">Math.sin(x)</function>
+      </plot>
+    </subsection>
+
+    <subsection>
+      <title>Curvas com Domínio e Contradomínio</title>
+      Múltiplas funções simultâneas delimitadas por intervalos de domínio (<c>from</c>) e contradomínio (<c>to</c>), renderizadas com cores distintas:
+      <code lang="xml" numbered="false">
+<plot x="-6,6" y="-3,3">
+  <title>Família de Curvas</title>
+  <function color="#3b82f6" from="-5,5" name="seno">Math.sin(x)</function>
+  <function color="#10b981" from="-2,2" to="-0.5,2.5" name="parábola">x**2 - 1</function>
+  <function color="#ef4444" from="0.2,5" to="0,3" name="inversa">1 / x</function>
+</plot>
+      </code>
+      <plot x="-6,6" y="-3,3">
+        <title>Família de Curvas</title>
+        <function color="#3b82f6" from="-5,5" name="seno">Math.sin(x)</function>
+        <function color="#10b981" from="-2,2" to="-0.5,2.5" name="parábola">x**2 - 1</function>
+        <function color="#ef4444" from="0.2,5" to="0,3" name="inversa">1 / x</function>
+      </plot>
+    </subsection>
+
+    <subsection>
+      <title>Personalização Visual Completa</title>
+      Configuração refinada combinando cores personalizadas para título, réguas numéricas dos eixos, malha e espessura da grade, além de cor padrão e tamanho para a camada de pontos:
+      <code lang="xml" numbered="false">
+<plot x="-6,6" y="-3,3">
+  <title color="#0284c7">Gráfico com Estilo Customizado</title>
+  <grid color="rgba(2, 132, 199, 0.15)" thickness="1.5" />
+  <axis color="#0284c7" />
+  <points color="#0284c7" size="1.2" />
+  <point pos="-3,1" name="A" color="#e11d48" size="1.8" />
+  <point pos="0,0" name="Origem" color="#e11d48" size="1.8" />
+  <point pos="3,-1" name="B" color="#e11d48" size="1.8" />
+  <function color="#0284c7" from="-4,4">0.5 * x</function>
+</plot>
+      </code>
+      <plot x="-6,6" y="-3,3">
+        <title color="#0284c7">Gráfico com Estilo Customizado</title>
+        <grid color="rgba(2, 132, 199, 0.15)" thickness="1.5" />
+        <axis color="#0284c7" />
+        <points color="#0284c7" size="1.2" />
+        <point pos="-3,1" name="A" color="#e11d48" size="1.8" />
+        <point pos="0,0" name="Origem" color="#e11d48" size="1.8" />
+        <point pos="3,-1" name="B" color="#e11d48" size="1.8" />
+        <function color="#0284c7" from="-4,4">0.5 * x</function>
       </plot>
     </subsection>
   </section>

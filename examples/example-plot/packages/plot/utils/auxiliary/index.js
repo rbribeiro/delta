@@ -70,8 +70,8 @@ function getPlotCenter(plot, w, h) {
 function worldToScreen(x, y, plot, w, h) {
     const { centerX, centerY, scale } = getPlotCenter(plot, w, h);
     return {
-        sx: Math.round(centerX + x * scale),
-        sy: Math.round(centerY - y * scale)
+        sx: centerX + x * scale,
+        sy: centerY - y * scale
     };
 }
 

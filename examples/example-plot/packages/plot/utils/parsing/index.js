@@ -98,24 +98,24 @@ function parseSubcomponentData(plot) {
     }
     if (axisEl) plot.elements.push(axisEl);
 
+    // Functions (rendered below points)
+    let functionEls = plot.querySelectorAll("delta-function");
+    for (const fn of functionEls) {
+        plot.elements.push(fn);
+    }
+
     // Singular Points
     let singularPoints = plot.querySelectorAll("delta-point");
     for (const pt of singularPoints) {
         parsePointToData(plot, pt);
     }
 
-    // Points Subcomponent
+    // Points Subcomponent (rendered on top of curves)
     let pointsEl = plot.querySelector("delta-points");
     if ((plot.type === "points" || plot.data.points.length > 0) && !pointsEl) {
         pointsEl = document.createElement("delta-points");
     }
     if (pointsEl) plot.elements.push(pointsEl);
-
-    // Functions
-    let functionEls = plot.querySelectorAll("delta-function");
-    for (const fn of functionEls) {
-        plot.elements.push(fn);
-    }
 
     plot.innerHTML = "";
 }
