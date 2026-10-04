@@ -97,7 +97,7 @@
       Uma demonstração escrita <em>dentro</em> do resultado, ou <em>logo depois</em> dele
       (uma segunda demonstração logo depois da primeira também), junta-se à caixa do
       resultado: as duas viram uma só ficha, e a demonstração é o rodapé dela, uma barra
-      "Demonstração ▸" que abre o texto. Ela começa fechada. Um comentário entre os dois
+      "Demonstração", com uma seta, que abre o texto. Ela começa fechada. Um comentário entre os dois
       não os separa; um parágrafo ou uma figura, sim. O mesmo vale para
       <c><solution></c> depois de (ou dentro de) um <c><exercise></c> ou
       <c><problem></c>: a barra diz "Ver solução".

@@ -70,13 +70,18 @@ delta-step.step-pleat {
 .step-head > .status-mark { margin-left: 12px; }
 .step-caret {
   flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1em;
+  height: 1.1em;
   margin-left: 12px;
+  align-self: center;
   font-style: normal;
-  font-size: 9px;
   color: var(--delta-mute);
-  opacity: 0.7;
 }
-.step-caret::before { content: "\25b4"; } /* ▴ */
+.step-caret::before { --wedge: 0.45em; }
+.step-head.collapse-toggle:hover .step-caret { color: var(--delta-accent-ink); }
 .step-head.collapse-toggle::before { content: none; }
 .step-head.collapse-toggle:hover { color: var(--delta-accent-ink); }
 .step-head.collapse-toggle:focus-visible { outline-offset: -2px; border-radius: 0; }
@@ -95,7 +100,6 @@ delta-step.step-pleat {
   color: var(--delta-ink-soft);
 }
 .step-pleat.is-collapsed > .step-head:hover { filter: brightness(1.03); }
-.step-pleat.is-collapsed > .step-head .step-caret { display: none; }
 .step-pleat.is-collapsed > .step-mountain {
   display: block;
   height: 9px;

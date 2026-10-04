@@ -174,7 +174,8 @@ delta-counterexample.box {
 }
 .box-foot.proof-pending { color: var(--delta-mute); }
 
-/* The bar: "Proof ▸" (or "Show solution ▸"); the whole bar is the fold's toggle. */
+/* The bar: "Proof >" (or "Show solution >", the wedge of collapse.css); the whole bar
+   is the fold's toggle. */
 .proof-bar {
   display: flex;
   flex-wrap: wrap;
@@ -190,15 +191,20 @@ delta-counterexample.box {
 .proof-bar:hover { color: var(--delta-accent-ink); }
 .proof-bar > .status-mark { margin-left: auto; }
 .proof-bar-caret {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1em;
+  height: 1.1em;
   margin-left: auto;
   font-style: normal;
-  font-size: 11px;
   color: var(--delta-mute);
+  transition: color var(--delta-dur-fast) var(--delta-ease);
 }
+.proof-bar:hover .proof-bar-caret { color: var(--delta-accent-ink); }
+.proof-bar-caret::before { --wedge: 0.5em; --wedge-stroke: 1.6px; }
 .proof-bar > .status-mark + .proof-bar-caret,
 .proof-bar-name + .proof-bar-caret { margin-left: 0; }
-.proof-bar-caret::before { content: "\25be"; } /* ▾ */
-.is-collapsed > .proof-bar .proof-bar-caret::before { content: "\25b8"; } /* ▸ */
 .proof-bar .when-open,
 .is-collapsed > .proof-bar .when-folded { display: inline; }
 .proof-bar .when-folded,

@@ -3,7 +3,8 @@
    section heading, a box's `.box-head`, a proof `.proof-lead` or a joined proof's
    `.proof-bar` — into a `.collapse-toggle`
    and moves the body into a `.collapse-body`; folding sets `.is-collapsed` on the
-   host. Here: the caret, the affordance, and the hide. Tokens via var(--delta-*). */
+   host. Here: the disclosure wedge (shared by every fold), the affordance, and the
+   hide. Tokens via var(--delta-*). */
 
 @layer delta.components {
 
@@ -12,60 +13,96 @@
   -webkit-user-select: none;
   user-select: none;
 }
-/* Headings & proof leads anchor the gutter sign (a box header parks its sign inline
-   instead, and a proof bar has its own caret). */
-.collapse-toggle:not(.box-head, .proof-bar) {
-  position: relative;
-}
 .collapse-toggle:focus-visible {
   outline: 2px solid var(--delta-accent-ink);
   outline-offset: 3px;
   border-radius: var(--delta-radius-sm);
 }
 
-/* Disclosure sign: "−" when open, "+" when folded. */
-.collapse-toggle::before {
-  content: "\2212"; /* − (minus) */
-  color: var(--delta-mute);
-  font-family: var(--delta-sans);
-  font-weight: 600;
-  transition: color var(--delta-dur-fast) var(--delta-ease);
+/* -- The disclosure wedge ------------------------------------------------
+   One mark for everything that folds: a wedge pointing at the content, ">" while it
+   is folded, turning down once it is open. Drawn, not typed (a glyph's size and
+   weight change with the font), as the corner of a small square: two borders in
+   the current colour, turned. Used by a collapsible's label here, a proof's bar
+   (.proof-bar-caret, theorems.css), a pleated step (.step-caret, proofstructure.css)
+   and an open aid (.fold-caret, understanding.css). */
+.collapse-toggle:not(.box-head, .proof-bar, .step-head)::before,
+.box-head.collapse-toggle::before,
+.proof-bar-caret::before,
+.step-caret::before,
+.fold-caret::before {
+  --wedge: 0.4em;
+  content: "";
+  display: inline-block;
+  box-sizing: border-box;
+  width: var(--wedge);
+  height: var(--wedge);
+  border-right: var(--wedge-stroke, 1.5px) solid currentColor;
+  border-bottom: var(--wedge-stroke, 1.5px) solid currentColor;
+  /* The corner's mass sits off the square's middle, toward where it points: the
+     nudge pulls it back, so the wedge looks centred both ways. */
+  --nudge-x: 0%;
+  --nudge-y: -22%;
+  transform: translate(calc(var(--wedge-x, 0%) + var(--nudge-x)), calc(var(--wedge-y, 0%) + var(--nudge-y)))
+             rotate(var(--wedge-turn, 45deg));
+  transition: transform var(--delta-dur) var(--delta-ease), color var(--delta-dur-fast) var(--delta-ease);
 }
-.is-collapsed > .collapse-toggle::before {
-  content: "+";
+/* Folded: the wedge points at what is hidden. */
+.is-collapsed > .collapse-toggle::before,
+.box.is-collapsed > .box-sheet > .box-head::before,
+.is-collapsed > .proof-bar .proof-bar-caret::before,
+.step-pleat.is-collapsed > .step-head .step-caret::before {
+  --wedge-turn: -45deg;
+  --nudge-x: -22%;
+  --nudge-y: 0%;
 }
-.collapse-toggle:hover::before {
-  color: var(--delta-accent-ink);
+@media (prefers-reduced-motion: reduce) {
+  .collapse-toggle::before, .proof-bar-caret::before, .step-caret::before, .fold-caret::before {
+    transition: none;
+  }
 }
 
-/* Headings & proof leads: park the sign in the left gutter, out of the text
-   flow — so it adds no inline space and can't open a flex gap (h2.section is a
-   flex row). `right:100%` sits it just left of the text; centring on the label
-   keeps it level with the text (a flex container resolves an abspos child's
-   static position to the top, so `top:auto` would float it above the number). */
-.collapse-toggle:not(.box-head, .proof-bar)::before {
+/* Headings & proof leads anchor the wedge in the left gutter, out of the text flow —
+   so it adds no inline space, can't open a flex gap (h2.section is a flex row) and
+   can't be read as part of the number. `right:100%` sits it just left of the text;
+   centring on the label keeps it level with the text (a flex container resolves an
+   abspos child's static position to the top, so `top:auto` would float it above the
+   number). */
+.collapse-toggle:not(.box-head, .proof-bar, .step-head) {
+  position: relative;
+}
+.collapse-toggle:not(.box-head, .proof-bar, .step-head)::before {
+  --wedge: min(0.34em, 11px); /* a chapter's big title keeps a modest wedge */
+  --wedge-y: -50%;
   position: absolute;
   right: 100%;
   top: 50%;
-  transform: translateY(-50%);
-  margin-right: 0.3em;
-  font-size: 0.8em;
-  line-height: 1;
+  margin-right: 0.45em;
+  color: var(--delta-mute);
 }
+.collapse-toggle:hover::before { color: var(--delta-accent-ink); }
 
-/* Box header: a compact inline sign before the label. A proof bar: none (its caret). */
+/* Box header: the wedge inline, before the label. */
 .box-head.collapse-toggle::before {
-  margin-right: -0.2em;
+  --wedge: 0.5em;
+  margin-right: -2px;
+  color: var(--delta-mute);
+  align-self: center;
 }
-.proof-bar.collapse-toggle::before { content: none; }
 
-.is-collapsed > .collapse-body {
+.is-collapsed > .collapse-body,
+.box.is-collapsed > .box-sheet > .collapse-body {
   display: none;
 }
 
 /* A folded box collapses to its header (theorems.css hides what hangs under it). */
 .box.is-collapsed .box-head {
   padding-bottom: 14px;
+}
+
+/* On paper nothing folds: no wedge. */
+@media print {
+  .collapse-toggle::before { display: none; }
 }
 
 }

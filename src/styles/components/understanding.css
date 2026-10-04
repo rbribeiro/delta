@@ -126,7 +126,16 @@ delta-obstacle {
   outline: 2px solid var(--delta-accent-ink);
   outline-offset: -2px;
 }
-.fold-caret { font-size: 9px; letter-spacing: 0; opacity: 0.6; }
+.fold-caret {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1em;
+  height: 1.1em;
+  letter-spacing: 0;
+  font-size: 12px;
+}
+.fold-caret::before { --wedge: 0.45em; } /* open: the wedge of collapse.css, pointing down */
 .fold-body {
   padding: 8px var(--box-pad-x, 24px) 20px;
   font-size: 0.97em;

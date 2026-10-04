@@ -83,7 +83,6 @@ function fold(aid: HTMLElement, open: boolean): HTMLElement {
   const caret = document.createElement("span");
   caret.className = "fold-caret";
   caret.setAttribute("aria-hidden", "true");
-  caret.textContent = "▴"; // ▴
   const head = button("fold-head", name, caret);
   aid.classList.add("fold-body");
   const crease = document.createElement("span");

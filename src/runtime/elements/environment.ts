@@ -72,7 +72,7 @@ class DeltaEnvironment extends HTMLElement {
   }
 
   /**
-   * A proof or solution drawn as a sheet under a bar ("Proof ▸", "Show solution ▸") that
+   * A proof or solution drawn as a sheet under a bar ("Proof >", "Show solution >") that
    * unfolds it. At the foot of its box it starts folded unless the author or the document
    * opened it, and its status shows in the bar unless the box already shows it in its
    * header. Standing alone (a proof with steps away from its box), the bar names what it

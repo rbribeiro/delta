@@ -226,7 +226,8 @@ export function applyCollapsible(host: HTMLElement, label: HTMLElement): void {
   const body = document.createElement("div");
   body.className = "collapse-body";
   while (label.nextSibling) body.append(label.nextSibling);
-  host.append(body);
+  // Beside the label: in the host itself, or (a box's header) in the sheet it heads.
+  (label.parentElement ?? host).append(body);
 
   label.classList.add("collapse-toggle");
   label.setAttribute("role", "button");

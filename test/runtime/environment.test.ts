@@ -337,3 +337,44 @@ describe.skipIf(!BROWSER)("the dashed edge of unfinished work", () => {
     expect(r.solid).toMatch(/^repeating-linear-gradient\(rgba\(0, 0, 0, 0\) 0px/);
   });
 });
+
+describe.skipIf(!BROWSER)("the disclosure wedge", () => {
+  const facts = lazy(() =>
+    inspect(
+      `<document><section id="a" collapsible="true"><title>A</title>
+         <lemma id="l" collapsible="true">Statement.</lemma><proof>P.</proof>
+       </section><section id="b" collapsed="true"><title>B</title>x</section></document>`,
+      `const turn = (el, pseudo = "::before") => {
+         const m = new DOMMatrix(getComputedStyle(el, pseudo).transform);
+         return Math.round(Math.atan2(m.b, m.a) * 180 / Math.PI);
+       };
+       const mark = (el) => getComputedStyle(el, "::before").content;
+       const box = $("#l");
+       const bar = $(":scope > .proof-foot", box);
+       const before = { open: turn($("#a > h2")), folded: turn($("#b > h2")), boxOpen: turn($(".box-head", box)),
+                        bar: turn($(".proof-bar-caret", bar)), signs: [mark($("#a > h2")), mark($("#b > h2"))] };
+       const statementInSheet = !!$(".box-sheet .box-body", box);
+       // this browser runs no animation frames: read the turn without the transition
+       const still = document.createElement("style");
+       still.textContent = "*::before { transition: none !important; }";
+       document.head.append(still);
+       $(".box-head", box).click();
+       return { ...before, statementInSheet, boxFolded: turn($(".box-head", box)),
+                statementHidden: $(".box-body", box).getClientRects().length === 0 };`,
+    ),
+  );
+
+  it("points down at open content and right at folded content, with no ± sign", () => {
+    expect(facts().open).toBe(45);
+    expect(facts().folded).toBe(-45);
+    expect(facts().bar).toBe(-45); // a joined proof starts folded
+    expect(facts().signs).toEqual(['""', '""']); // drawn, not the old "−" / "+"
+  });
+
+  it("turns on a box header too, and folding a box keeps its statement in its sheet", () => {
+    expect(facts().boxOpen).toBe(45);
+    expect(facts().statementInSheet).toBe(true);
+    expect(facts().boxFolded).toBe(-45);
+    expect(facts().statementHidden).toBe(true);
+  });
+});
