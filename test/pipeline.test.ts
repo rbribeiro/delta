@@ -77,6 +77,7 @@ describe("the declared pipeline", () => {
       "numbering/numberDocument",
       "numbering/buildIdMaps",
       "numbering/buildGraph",
+      "numbering/linkRemoteProofs",
       "render/stripReviewMarks",
       "render/layoutProofMaps",
       "render/renderMath",
@@ -201,7 +202,7 @@ describe("stopAfter", () => {
       stopAfter: "numbering",
       trace: (e) => void steps.push(e.step),
     });
-    expect(steps.at(-1)).toBe("buildGraph");
+    expect(steps.at(-1)).toBe("linkRemoteProofs");
     expect(steps).not.toContain("renderMath");
   });
 

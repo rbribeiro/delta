@@ -1,6 +1,6 @@
 import { walk, type ElementNode } from "./ast.ts";
 import { error, warn, type CompileContext } from "./context.ts";
-import { AID_TAGS, OPAQUE, RAW_TAGS, RESULT_TAGS } from "../language/tags.ts";
+import { AID_TAGS, OPAQUE, PROOF_TAGS, PROVES, RAW_TAGS, RESULT_TAGS } from "../language/tags.ts";
 import { flow, paperParent, proofTarget } from "./paper.ts";
 
 /**
@@ -21,12 +21,14 @@ import { flow, paperParent, proofTarget } from "./paper.ts";
  * - Steps are numbered by their place in the proof, Lamport-style: 1, 2, then 1.1, 1.2
  *   inside step 1's proof. A step without an id gets one (`<result>-step-1.2`), so every
  *   step is ref-able ("Step 1.2") and addressable by `delta show`.
- * - A step's own proof folds (claims stay visible); the top-level proof learns how deep
- *   its steps go (`data-step-depth`), which the runtime turns into an "expand to level k"
- *   control. An author's `collapsed` wins.
+ * - A top-level step's own proof folds (the reader sees the claims first; the runtime
+ *   draws each step as a pleat of the proof's sheet). Deeper steps never fold: they read
+ *   as a list inside their step. The top-level proof learns that it has steps
+ *   (`data-step-depth`, how deep they go). An author's `collapsed` wins.
+ * - A `<solution>` may have steps too, numbered and named after its exercise.
  * - Hypotheses are numbered H1, H2, … per result; a ref to one reads "(H1)".
- * - A `<proof>` without `of` proves the result right before it (`linkProofs`), as in a
- *   LaTeX paper. A result may have several proofs: the second one's steps are
+ * - A `<proof>` without `of` proves the result right before it, or the one it is nested
+ *   in (`linkProofs`), as in a LaTeX paper. A result may have several proofs: the second one's steps are
  *   `<result>-proof2-step-1`, … (`autoIds` counts them across the project).
  * - Inside `<old>`, comments and tasks nothing is numbered, and `<change>`/`<new>`/`<draft>`
  *   are looked through: review and `--final` builds number the same steps and hypotheses.
@@ -37,39 +39,81 @@ import { flow, paperParent, proofTarget } from "./paper.ts";
  */
 
 /** Where a step may sit: directly in a proof (a step's own proof included). */
-const STEP_PARENTS = new Set(["proof"]);
+const STEP_PARENTS = new Set(["proof", "solution"]);
+
+/** Review notes, which sit between a box and its proof without parting them. */
+const NOTES = new Set(["comment", "todo"]);
 
 /**
- * A `<proof>` without `of` proves the result right before it: the previous sibling, as the
- * final paper reads it (`flow`: wrappers looked through, comments and blank text skipped).
- * It must be a result with an id, or another proof of one (a second proof). Anything else
- * in between leaves the proof unlinked. Written as `data-of`, not `of`: `of` also changes
- * the label ("Proof of Theorem 1.1."), and this proof reads plain "Proof.".
+ * Links each proof to what it proves, and joins the ones the reader sees with it.
+ *
+ * - A `<proof>` without `of` proves the result right before it: the previous sibling, as
+ *   the final paper reads it (`flow`: wrappers looked through, comments and blank text
+ *   skipped). It must be a result with an id, or another proof of one (a second proof).
+ *   A `<proof>` nested directly in a result proves that result. A `<solution>` works the
+ *   same way with an exercise or a problem. Written as `data-of`, not `of`: `of` also
+ *   changes the label ("Proof of Theorem 1.1."), and this proof reads plain "Proof.".
+ * - A proof (or solution) nested in its target, or right after it in the source (after a
+ *   joined proof of the same target counts), gets `data-attached`: the runtime draws it
+ *   as the footer of its target's box, folded unless the author said otherwise. The
+ *   document's `proofs="open"` (a deck's default) unfolds them all.
  */
 export function linkProofs(doc: ElementNode, _ctx: CompileContext): void {
+  const open = (doc.attrs.proofs ?? (doc.attrs.type === "presentation" ? "open" : "")) === "open";
   const visit = (el: ElementNode): void => {
     if (RAW_TAGS.has(el.tag)) return;
     const seq = flow(el);
     seq.forEach((n, i) => {
       if (n.type !== "element") return;
-      const prev = seq[i - 1];
-      if (
-        n.tag === "proof" &&
-        n.attrs.of === undefined &&
-        el.tag !== "step" &&
-        prev?.type === "element"
-      ) {
-        const target = RESULT_TAGS.has(prev.tag)
-          ? prev.attrs.id
-          : prev.tag === "proof"
-            ? proofTarget(prev)
-            : undefined;
+      const proves = PROVES[n.tag];
+      if (proves && n.attrs.of === undefined && el.tag !== "step") {
+        const prev = seq[i - 1];
+        const target = proves.has(el.tag)
+          ? el.attrs.id
+          : prev?.type !== "element"
+            ? undefined
+            : proves.has(prev.tag)
+              ? prev.attrs.id
+              : prev.tag === n.tag
+                ? proofTarget(prev)
+                : undefined;
         if (target) n.attrs["data-of"] = target;
       }
       visit(n);
     });
+    if (el.tag !== "step") joinProofs(el, open ? "false" : "true");
   };
   visit(doc);
+}
+
+/** Marks `parent`'s proof-like children that join a box: nested in it, or right after it. */
+function joinProofs(parent: ElementNode, collapsed: string): void {
+  // The previous sibling, blank text skipped, and review notes too (`--final` drops them,
+  // and a comment on a theorem must not tear its proof away from it).
+  let prev: ElementNode | undefined;
+  for (const c of parent.children) {
+    if (c.type !== "element") {
+      if (c.type !== "text" || /\S/.test(c.text)) prev = undefined;
+      continue;
+    }
+    if (NOTES.has(c.tag)) continue;
+    const proves = PROVES[c.tag];
+    const target = proofTarget(c);
+    // Without an id to link by, a proof still joins the box it sits in or right after.
+    const joined =
+      proves !== undefined &&
+      ((proves.has(parent.tag) && (target === undefined || target === parent.attrs.id)) ||
+        (prev !== undefined &&
+          ((proves.has(prev.tag) && prev.attrs.id === target) ||
+            (prev.tag === c.tag &&
+              prev.attrs["data-attached"] === "true" &&
+              proofTarget(prev) === target))));
+    if (joined) {
+      c.attrs["data-attached"] = "true";
+      c.attrs.collapsed ??= collapsed;
+    }
+    prev = c;
+  }
 }
 
 /** Counts the next auto id for `key` (project-wide, so ids never collide across files). */
@@ -100,13 +144,22 @@ function visit(
     // The k-th proof of a result names its steps <result>-proof<k>-step-…; the first keeps <result>-step-….
     const owner = proofTarget(el) ?? el.attrs.id;
     const k = owner ? next(autoIds, `${owner}-proof`) : 1;
+    // A proof away from its result gets an id: the result's box links to it.
+    if (owner && !el.attrs.id && el.attrs["data-attached"] !== "true" && proofTarget(el))
+      el.attrs.id = k === 1 ? `${owner}-proof` : `${owner}-proof${k}`;
     numberSteps(el, "", k === 1 ? owner : `${owner}-proof${k}`, ctx);
+  }
+  if (el.tag === "solution") {
+    // Likewise <exercise>-step-…, then <exercise>-solution2-step-….
+    const owner = proofTarget(el) ?? el.attrs.id;
+    const k = owner ? next(autoIds, `${owner}-solution`) : 1;
+    numberSteps(el, "", k === 1 ? owner : `${owner}-solution${k}`, ctx);
   }
   if (RESULT_TAGS.has(el.tag)) numberHypotheses(el, ctx);
   if (el.tag === "step" && !(parent && STEP_PARENTS.has(parent.tag))) {
     error(
       ctx,
-      `<step> must be directly inside a <proof> (a step's own <proof> included); found inside <${parent?.tag ?? "document"}>`,
+      `<step> must be directly inside a <proof> or <solution> (a step's own <proof> included); found inside <${parent?.tag ?? "document"}>`,
       el.pos,
     );
   }
@@ -133,8 +186,8 @@ function visit(
 }
 
 /**
- * Numbers the steps of one proof (and, recursively, of each step's proof). Returns the
- * depth of the deepest step, so the top-level proof can offer levels 1…depth.
+ * Numbers the steps of one proof or solution (and, recursively, of each step's proof).
+ * Returns the depth of the deepest step.
  */
 function numberSteps(
   proof: ElementNode,
@@ -177,10 +230,11 @@ function numberSteps(
     for (const c of claims) c.tag = "step-claim";
     const sub = proofs[0];
     if (sub) {
-      // A step's proof folds by default: the reader sees the claims first.
-      sub.attrs.collapsible = "true";
-      sub.attrs.collapsed ??= "true";
-      sub.attrs["data-depth"] = String(depth);
+      // A top-level step's proof folds by default: the reader sees the claims first.
+      if (depth === 1) {
+        sub.attrs.collapsible = "true";
+        sub.attrs.collapsed ??= "true";
+      }
       deepest = Math.max(deepest, numberSteps(sub, `${num}.`, owner, ctx, depth + 1));
     }
   }
@@ -197,6 +251,7 @@ function numberHypotheses(result: ElementNode, ctx: CompileContext): void {
         c.type !== "element" ||
         AID_TAGS.has(c.tag) ||
         RESULT_TAGS.has(c.tag) ||
+        PROOF_TAGS.has(c.tag) ||
         OPAQUE.has(c.tag)
       )
         continue;

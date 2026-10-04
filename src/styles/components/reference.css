@@ -96,13 +96,18 @@ delta-ref { display: inline; }
 .xref-pop-body img { max-height: 30vh; width: auto; }
 
 /* Flatten a cloned theorem .box so it reads as plain preview content
-   (no floating pill, border, or shadow inside the small card). */
+   (no paper, edge or shadow inside the small card). */
 .xref-pop-body .box {
-  margin: 0; padding: 0; border: 0; box-shadow: none; background: none;
+  --box-bg: transparent;
+  --box-edge: 0 solid transparent;
+  --box-pad-x: 0px;
+  margin: 0;
+  filter: none;
 }
-.xref-pop-body .box-tag {
-  position: static; margin: 0 0 4px; transform: none;
-}
+.xref-pop-body .box-head { padding: 0; min-height: 0; margin-bottom: 4px; }
+.xref-pop-body .box-body { padding: 0; }
+.xref-pop-body .box-sheet { background-image: none; }
+.xref-pop-body .box.has-folds::after { display: none; }
 .xref-pop-body :is(h2, h3, h4) { margin: 0; }
 
 /* Brief accent flash on the target when the reader jumps to it. */

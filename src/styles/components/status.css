@@ -1,89 +1,206 @@
-/* status.css — the maturity / authorship marks any block may carry (applyStatus in
-   runtime/elements/shared.ts): `status="draft|sketch|review|verified"`, `by`,
-   `verified-by`. The `.status-pill` sits in the block's label (box tag, proof lead,
-   heading) or, for <draft> (runtime/elements/draft.ts), in a `.status-bar` row on top.
-   Unfinished blocks (draft/sketch) read as unfinished: a dashed edge. Uses the design
-   system's --delta-ok / --delta-warn status tokens. Hiding (review switch, print) is in
-   collab.css. Tokens via var(--delta-*). */
+/* status.css — the maturity / authorship mark any block may carry (applyStatus in
+   runtime/elements/status.ts): `status`, `by`, `verified-by`, `verified-on`. The
+   `.status-mark` sits at the end of the block's header (box header, proof bar or lead,
+   heading) or, for <draft>, in a `.status-bar` row on top.
+
+   While the work is in progress the mark is one quiet word in small caps, and the box's
+   paper tells the rest: draft and heuristic on squared paper, sketch on ruled paper, both
+   with a dashed edge; an open result is only its dashed outline; under review it is plain
+   paper. Checked (verified, formalized), the word becomes a rubber stamp in the checker's
+   ink; a stale verification keeps its stamp, faded and struck through. Hovering
+   either (or clicking, which pins it) opens the history (.status-history, a .delta-pop bubble). Hiding (the
+   review switch, print) is in collab.css. Tokens via var(--delta-*). */
 
 @layer delta.components {
 
-.status-pill {
+.status-mark {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
   vertical-align: middle;
-  font-family: var(--delta-sans);
-  font-size: 9.5px;
-  font-weight: 700;
   font-style: normal;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+}
+
+/* -- In progress: one word ------------------------------------------- */
+.status-word {
+  appearance: none;
+  margin: 0;
+  padding: 2px 0 3px;
+  border: 0;
+  border-bottom: 1px dotted var(--delta-rule);
+  background: none;
+  cursor: pointer;
+  font-family: var(--delta-serif);
+  font-size: 10.5px;
+  font-weight: var(--delta-weight-strong);
+  font-style: normal;
   line-height: 1;
-  padding: 3px 7px;
-  border-radius: var(--delta-radius-pill);
-  border: 1px solid var(--delta-rule);
-  background: var(--delta-surface-2);
-  color: var(--delta-ink-soft);
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--delta-mute);
+}
+.status-word:hover { color: var(--delta-ink-soft); }
+
+/* -- Checked: the rubber stamp --------------------------------------- */
+.status-stamp {
+  /* The checker's colour (data-accent, from the team): its deep ink on light paper, its
+     bright tone in dark mode (--delta-stamp-bright); without one, the stamp ink. */
+  --stamp-ink: var(--delta-stamp-ink);
+  appearance: none;
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  margin: -4px 0;
+  padding: 4px 9px 3px;
+  border: 2px solid var(--stamp-ink);
+  border-radius: 5px;
+  /* the inner rule of a double-ruled stamp */
+  box-shadow: inset 0 0 0 2px var(--box-bg, var(--delta-env-bg)), inset 0 0 0 3px var(--stamp-ink);
+  background: none;
+  cursor: pointer;
+  font-family: var(--delta-serif);
+  font-style: normal;
+  color: var(--stamp-ink);
+  mix-blend-mode: var(--delta-stamp-blend);
+  opacity: 0.85;
+  transform: rotate(-6deg);
+  /* Uneven inking: the stamp is pressed harder on its upper left. */
+  -webkit-mask-image: radial-gradient(130% 100% at 28% 30%, #000 50%, rgb(0 0 0 / .5) 100%);
+  mask-image: radial-gradient(130% 100% at 28% 30%, #000 50%, rgb(0 0 0 / .5) 100%);
+  animation: status-stamp-in .45s cubic-bezier(.2, .8, .3, 1.2) both;
+}
+.status-stamp[data-accent] {
+  --stamp-ink: color-mix(in oklab, var(--delta-accent) var(--delta-stamp-bright), var(--delta-accent-ink));
+}
+.stamp-word {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
   white-space: nowrap;
 }
-.status-pill .who { font-size: 10.5px; }
-.status-pill[data-status="draft"] {
+.stamp-sub {
+  font-size: 8.5px;
+  font-weight: var(--delta-weight-strong);
+  line-height: 1;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+/* Stale: the check no longer holds. The stamp fades and is struck through. */
+.status-mark[data-status="stale"] .status-stamp {
+  --stamp-ink: var(--delta-stamp-stale);
+  opacity: 0.45;
+}
+.status-mark[data-status="stale"] .status-stamp::after {
+  content: "";
+  position: absolute;
+  left: -6px;
+  right: -6px;
+  top: 50%;
+  height: 1.5px;
+  background: var(--delta-stamp-stale);
+  transform: rotate(-8deg);
+}
+.status-stamp:focus-visible,
+.status-word:focus-visible {
+  outline: 2px solid var(--delta-accent-ink);
+  outline-offset: 3px;
+}
+@keyframes status-stamp-in {
+  0%   { transform: rotate(-6deg) scale(1.5); opacity: 0; }
+  70%  { transform: rotate(-6deg) scale(.97); }
+  100% { transform: rotate(-6deg) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .status-stamp { animation: none; }
+}
+
+/* In a heading or a lead the mark follows the text; a heading's stamp is no bigger. */
+.proof-lead .status-mark { margin-left: 0.4em; }
+:is(h1, h2, h3, h4) .status-mark { margin-left: 0.6em; }
+
+/* -- The history, inside its .delta-pop bubble (which owns padding and display) -- */
+.status-history {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  width: min(260px, 70vw);
+  font-family: var(--delta-serif);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--delta-ink-soft);
+}
+.status-history-title {
+  font-size: 10.5px;
+  font-weight: var(--delta-weight-strong);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: var(--delta-mute);
-  border-style: dashed;
 }
-/* The trust levels read the trust tokens (base.css), like the proof map does. */
-.status-pill[data-status="heuristic"],
-.status-pill[data-status="sketch"] {
-  color: var(--pill-trust);
-  border-style: dashed;
-  border-color: color-mix(in oklab, var(--pill-trust) 50%, transparent);
+.status-history-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
 }
-.status-pill[data-status="heuristic"] { --pill-trust: var(--delta-trust-heuristic); }
-.status-pill[data-status="sketch"]    { --pill-trust: var(--delta-trust-sketch); }
-.status-pill[data-status="open"] {
-  color: var(--delta-trust-open);
-  border-style: dashed;
-  background: transparent;
+.status-history-row b { font-weight: var(--delta-weight-strong); color: var(--delta-ink); }
+/* A person in a circle, an agent in a square, in the member's colour. */
+.status-avatar {
+  --delta-accent-ink: color-mix(in oklab, var(--delta-accent) 64%, var(--delta-ink));
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--delta-accent-ink) 16%, var(--delta-paper));
+  color: var(--delta-accent-ink);
+  font-size: 10.5px;
+  font-weight: var(--delta-weight-strong);
+  line-height: 1;
 }
-/* A verification whose checked content changed since (see graph.ts): redo it. */
-.status-pill[data-status="stale"] {
-  color: var(--delta-proof-alert);
-  border-style: dashed;
-  border-color: color-mix(in oklab, var(--delta-proof-alert) 50%, transparent);
-  background: transparent;
-}
-.status-pill[data-status="review"] {
-  color: var(--delta-warn);
-  border-color: color-mix(in oklab, var(--delta-warn) 50%, transparent);
-  background: color-mix(in oklab, var(--delta-warn) 10%, var(--delta-paper));
-}
-.status-pill[data-status="verified"],
-.status-pill[data-status="formalized"] {
-  color: var(--pill-trust);
-  border-color: color-mix(in oklab, var(--pill-trust) 50%, transparent);
-  background: color-mix(in oklab, var(--pill-trust) 10%, var(--delta-paper));
-}
-.status-pill[data-status="verified"]   { --pill-trust: var(--delta-trust-verified); }
-.status-pill[data-status="formalized"] { --pill-trust: var(--delta-trust-formalized); }
-.status-check { color: var(--delta-ok); font-size: 1.15em; }
+.status-avatar[data-kind="agent"] { border-radius: 5px; }
+.status-history-note { font-style: italic; color: var(--delta-mute); }
 
-/* In a label the pill follows the text. */
-.box-tag .status-pill { margin-left: 0.4em; }
-.proof-lead .status-pill { margin-left: 0.4em; }
-h1 .status-pill, h2 .status-pill, h3 .status-pill, h4 .status-pill { margin-left: 0.6em; font-size: 10px; }
-/* A collapsed box keeps its pill readable at the box-tag's smaller size. */
-.box-tag .status-pill .who-badge { font-size: 8px; }
+/* -- Paper: what the status is made of --------------------------------
+   On a box, the sheet takes the texture and every part of the card the dashed edge
+   (theorems.css reads --box-edge), and the shadow goes: unfinished work lies flat. */
+.box:is([data-status="draft"], [data-status="heuristic"], [data-status="sketch"], [data-status="open"]),
+.proof-sheet:is([data-status="draft"], [data-status="heuristic"], [data-status="sketch"]) {
+  --box-edge: var(--delta-hairline) dashed var(--delta-status-dash);
+  filter: none;
+}
+/* Squared paper: a draft, a heuristic argument. */
+.box:is([data-status="draft"], [data-status="heuristic"]) > .box-sheet {
+  background-image: linear-gradient(var(--delta-status-grid) 1px, transparent 1px),
+                    linear-gradient(90deg, var(--delta-status-grid) 1px, transparent 1px);
+  background-size: 18px 18px;
+  background-position: 0 6px;
+}
+/* Ruled paper, one rule per line of text: a sketch. */
+.box[data-status="sketch"] > .box-sheet {
+  background-image: linear-gradient(transparent calc(100% - 1px), var(--delta-status-grid) 1px);
+  background-size: 100% calc(var(--delta-leading) * 1em);
+  /* a rule under each line of the statement, below the header */
+  background-position: 0 10px;
+}
+/* No paper at all: a result planned but not written, only its outline. */
+.box[data-status="open"] {
+  --box-bg: transparent;
+  --box-well: transparent;
+}
+.box[data-status="open"] > :is(.proof-foot, .box-foot) {
+  border-top-style: dashed;
+  border-top-color: var(--delta-status-dash);
+}
 
-/* Unfinished blocks: dashed edge. */
-.box[data-status="draft"],
-.box[data-status="heuristic"],
-.box[data-status="sketch"] { border-style: dashed; }
-delta-proof[data-status="draft"],
-delta-proof[data-status="heuristic"],
-delta-proof[data-status="sketch"],
-delta-solution[data-status="draft"],
-delta-solution[data-status="sketch"] {
+/* A proof standing alone (not joined to its box, no sheet of its own, not a step's):
+   a dashed outline while unfinished. */
+delta-proof:not(.proof-foot, .proof-sheet, .step-body):is([data-status="draft"], [data-status="heuristic"], [data-status="sketch"]),
+delta-solution:not(.proof-foot, .proof-sheet, .step-body):is([data-status="draft"], [data-status="sketch"]) {
   outline: 1px dashed var(--delta-rule);
   outline-offset: 6px;
   border-radius: var(--delta-radius-sm);

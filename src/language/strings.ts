@@ -121,8 +121,19 @@ export const STRINGS: Record<string, Record<string, string>> = {
     notUsed: "Not used in the proof",
     theProof: "the proof",
     brokenBy: "Needed, see",
-    stepLevel: "Steps",
-    stepLevelHint: "Expand the proof to this level",
+    onlySteps: "Steps only",
+    fullProof: "Full proof",
+    // a box's foot (a joined proof or solution, or where the proof is) and its status history
+    showSolution: "Show solution",
+    hideSolution: "Hide solution",
+    proofIn: "Proof in",
+    proofInChapter: "Proof in",
+    seeProof: "See the proof",
+    proofPending: "Proof pending",
+    writtenBy: "Written by",
+    proposedBy: "Proposed by",
+    checkedBy: "Checked by",
+    staleNote: "It changed after it was checked.",
   },
   pt: {
     theorem: "Teorema",
@@ -233,8 +244,18 @@ export const STRINGS: Record<string, Record<string, string>> = {
     notUsed: "Não usada na demonstração",
     theProof: "a demonstração",
     brokenBy: "Necessária, veja",
-    stepLevel: "Passos",
-    stepLevelHint: "Abrir a demonstração até este nível",
+    onlySteps: "Só passos",
+    fullProof: "Completo",
+    showSolution: "Ver solução",
+    hideSolution: "Esconder solução",
+    proofIn: "Demonstração na", // na Seção 2.3, na Subseção…
+    proofInChapter: "Demonstração no", // no Capítulo 3
+    seeProof: "Ver demonstração",
+    proofPending: "Demonstração pendente",
+    writtenBy: "Escrito por",
+    proposedBy: "Proposto por",
+    checkedBy: "Conferido por",
+    staleNote: "Mudou depois da conferência.",
   },
 };
 

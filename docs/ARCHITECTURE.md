@@ -174,7 +174,7 @@ src/
     final.ts                   --final: strip marks, accept changes (the clean publication)
     team.ts                    <team>/<member> → ctx.team (node removed)
     collab.ts                  comment/todo/change/status vocabulary: defaults + warnings
-    structure.ts               linkProofs (a proof without `of`), numbered steps and hypotheses
+    structure.ts               linkProofs (a proof without `of`; proofs joined to their box), numbered steps and hypotheses
     understanding.ts           reader aids (<intuition>, <strategy>, <obstacle>): placement + fold default
     animated.ts, cover.ts      presentation sugar (animated → reveal; <cover> → <slide>)
     bibliography.ts            load .ref papers; number <cite>; fill the (first) <bibliography>
@@ -182,6 +182,7 @@ src/
     crossfile.ts               buildIdMaps (globalById/idToFile); cross-file href annotations
     graph.ts                   the proof graph: nodes, edges, trust propagation, cycles; annotateHypotheses, markStale
     graph-hash.ts              the hash a verification is pinned to (what counts as changing a proof)
+    proof-links.ts             linkRemoteProofs: where a result's proof is ("Proof in Section 2.3"), or that it is pending
     proofmap.ts                <proof-map> → a laid-out SVG of the graph (layered layout, at compile time)
     math.ts                    compile-time KaTeX (+ \ref{} inside math)
     code.ts                    <code lang> blocks: dedent + highlight

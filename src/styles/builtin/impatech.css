@@ -68,8 +68,7 @@
        gets its own colour, so a theorem, a definition and an example are told
        apart at a glance while scanning — the brand's differently-coloured cards,
        applied where a long document actually benefits from them. The pill carries
-       black text (every tone is light) and drops its border, since a filled shape
-       needs no outline. */
+       black text (every tone is light). */
     --delta-env-bg:          var(--delta-surface-1);
     --delta-env-border:      var(--delta-rule);
     --delta-tone-theorem:    var(--delta-lime);
@@ -78,7 +77,7 @@
     --delta-tone-remark:     var(--delta-pink);
     --delta-tone-exercise:   var(--delta-dune);
     --delta-env-tag-ink:     var(--delta-black);
-    --delta-env-tag-border:  transparent;
+    --delta-env-tag-fill:    1;
     /* Tint the box border toward its family tone, so the whole environment — pill
        and edge — is colour-coded, while the interior stays neutral grey. */
     --delta-env-tint:        0.6;

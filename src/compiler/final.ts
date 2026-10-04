@@ -20,7 +20,7 @@ export interface FinalStats {
  *   <comment>, <todo>, <review>, <team>   removed (a comment's replies go with it)
  *   <draft>                              unwrapped (its prose stays)
  *   <change>                             accepted: <new> (or the bare insertion) stays, <old> goes
- *   status / by / verified-by / against  removed from every element (`stripReviewMarks`)
+ *   status / by / verified-by / verified-on / against  removed from every element (`stripReviewMarks`)
  *
  * Runs right after includes, BEFORE bibliography and numbering — so a `<cite>` quoted
  * inside a dropped comment never numbers a paper, and nothing stripped ever consumed a
@@ -102,10 +102,10 @@ function strip(el: ElementNode, stats: FinalStats): void {
 }
 
 /** The marks a published paper does not show. */
-const REVIEW_MARKS = ["status", "by", "verified-by", "against"];
+const REVIEW_MARKS = ["status", "by", "verified-by", "verified-on", "against"];
 
 /**
- * `--final` only: drops `status`, `by`, `verified-by` and `against` from every element.
+ * `--final` only: drops `status`, `by`, `verified-by`, `verified-on` and `against` from every element.
  * After the proof graph, which reads a proof's status as its trust (and after `markStale`,
  * so a "stale" it wrote goes too).
  */

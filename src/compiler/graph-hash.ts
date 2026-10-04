@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { dirname, resolve } from "node:path";
 import type { ElementNode } from "./ast.ts";
 import type { GraphNode, ProofGraph } from "./graph.ts";
-import { AID_TAGS } from "../language/tags.ts";
+import { AID_TAGS, PROOF_TAGS, RESULT_TAGS } from "../language/tags.ts";
 import { collapseSpace } from "./paper.ts";
 
 /**
@@ -38,7 +38,8 @@ const UNCHECKED = new Set([...AID_TAGS, "title", "comment", "todo"]);
 
 /**
  * The content of `el` as written (between its tags, so the proof's own `status`, `by` and
- * `against` never count), minus UNCHECKED elements at any depth, with every run of
+ * `against` never count), minus UNCHECKED elements at any depth (and, for a result, the
+ * proofs nested in it), with every run of
  * whitespace collapsed: reflowing a paragraph changes nothing, any other edit does. An
  * `<include src>` counts as the included file's text, so editing that file is an edit too.
  */
@@ -47,10 +48,13 @@ function normalizedContent(graph: ProofGraph, el: ElementNode): string {
   if (!span || !graph.sources.has(span.file)) return "";
   // Cuts per file: an included child's offsets are in its own file.
   const cuts = new Map<string, [number, number][]>();
+  // A proof nested in a result is the proof, not the statement: it has its own part.
+  const isStatement = RESULT_TAGS.has(el.tag);
   const collect = (e: ElementNode): void => {
     for (const c of e.children) {
       if (c.type !== "element") continue;
-      if (UNCHECKED.has(c.tag) && c.src) {
+      const cut = UNCHECKED.has(c.tag) || (isStatement && e === el && PROOF_TAGS.has(c.tag));
+      if (cut && c.src) {
         const list = cuts.get(c.src.file) ?? [];
         list.push([c.src.start, c.src.end]);
         cuts.set(c.src.file, list);

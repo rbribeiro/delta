@@ -27,6 +27,7 @@ import { expandCover } from "./cover.ts";
 import { resolveCollab } from "./collab.ts";
 import { checkUnderstanding } from "./understanding.ts";
 import { linkProofs, structureProofs } from "./structure.ts";
+import { linkRemoteProofs } from "./proof-links.ts";
 import { fillProjectBibliography, loadBibliography, numberCitations } from "./bibliography.ts";
 import { freshNumbering, numberDocument, type NumberingState } from "./numbering.ts";
 import { annotateCrossFileCites, annotateCrossFileRefs, buildIdMaps } from "./crossfile.ts";
@@ -237,7 +238,7 @@ export const PIPELINE: Phase[] = [
       },
       {
         name: "linkProofs",
-        what: 'A <proof> without `of` proves the result right before it: data-of="<id>" (the label stays plain "Proof.").',
+        what: 'A <proof> without `of` proves the result right before it (or around it): data-of="<id>". A proof/solution nested in or right after its target joins its box: data-attached, folded unless proofs="open".',
         each: perFile(linkProofs),
       },
       {
@@ -308,6 +309,11 @@ export const PIPELINE: Phase[] = [
           markStale(s.graph);
           annotateHypotheses(s.graph);
         },
+      },
+      {
+        name: "linkRemoteProofs",
+        what: 'A result whose proof is not joined to its box: data-proof-at="<proof id>" (+ the heading it sits under), or data-proof="pending" for status="open" with no proof.',
+        all: (files, s) => linkRemoteProofs(parsed(files), s.graph!, s.idToFile, s.final),
       },
     ],
   },

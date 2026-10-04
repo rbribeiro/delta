@@ -2,13 +2,72 @@
    runtime/elements/review.ts). A `.toc`-like card: header (+ "Copy as text"), the
    `.review-stat` summary chips, the two switches (`.review-switch` annotations on/off,
    `.review-seg` change view), `.review-filter` chips (members, statuses) and the
-   `.review-item` rows grouped by kind. Reuses `.status-pill` (status.css) and `.who`
-   (collab.css). Sheds its card chrome inside a <floating> panel. Hidden in print
+   `.review-item` rows grouped by kind, each with a `.status-pill` (below) and `.who`
+   chips (collab.css). Sheds its card chrome inside a <floating> panel. Hidden in print
    (collab.css). Tokens via var(--delta-*). */
 
 @layer delta.components {
 
 delta-review { display: block; }
+
+/* -- Status pills: each row's status, coloured by trust like the proof map --- */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  vertical-align: middle;
+  font-family: var(--delta-sans);
+  font-size: 9.5px;
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1;
+  padding: 3px 7px;
+  border-radius: var(--delta-radius-pill);
+  border: 1px solid var(--delta-rule);
+  background: var(--delta-surface-2);
+  color: var(--delta-ink-soft);
+  white-space: nowrap;
+}
+.status-pill[data-status="draft"] {
+  color: var(--delta-mute);
+  border-style: dashed;
+}
+/* The trust levels read the trust tokens (base.css), like the proof map does. */
+.status-pill[data-status="heuristic"],
+.status-pill[data-status="sketch"] {
+  color: var(--pill-trust);
+  border-style: dashed;
+  border-color: color-mix(in oklab, var(--pill-trust) 50%, transparent);
+}
+.status-pill[data-status="heuristic"] { --pill-trust: var(--delta-trust-heuristic); }
+.status-pill[data-status="sketch"]    { --pill-trust: var(--delta-trust-sketch); }
+.status-pill[data-status="open"] {
+  color: var(--delta-trust-open);
+  border-style: dashed;
+  background: transparent;
+}
+/* A verification whose checked content changed since (see graph.ts): redo it. */
+.status-pill[data-status="stale"] {
+  color: var(--delta-proof-alert);
+  border-style: dashed;
+  border-color: color-mix(in oklab, var(--delta-proof-alert) 50%, transparent);
+  background: transparent;
+}
+.status-pill[data-status="review"] {
+  color: var(--delta-warn);
+  border-color: color-mix(in oklab, var(--delta-warn) 50%, transparent);
+  background: color-mix(in oklab, var(--delta-warn) 10%, var(--delta-paper));
+}
+.status-pill[data-status="verified"],
+.status-pill[data-status="formalized"] {
+  color: var(--pill-trust);
+  border-color: color-mix(in oklab, var(--pill-trust) 50%, transparent);
+  background: color-mix(in oklab, var(--pill-trust) 10%, var(--delta-paper));
+}
+.status-pill[data-status="verified"]   { --pill-trust: var(--delta-trust-verified); }
+.status-pill[data-status="formalized"] { --pill-trust: var(--delta-trust-formalized); }
 
 .review {
   margin: var(--delta-block-gap) 0;

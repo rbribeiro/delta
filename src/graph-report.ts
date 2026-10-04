@@ -8,7 +8,10 @@ import {
   type OutlineEntry,
   type ProofGraph,
 } from "./compiler/graph.ts";
-import { AID_TAGS } from "./language/tags.ts";
+import { AID_TAGS, PROOF_TAGS } from "./language/tags.ts";
+
+/** A parent's statement as `--context` shows it: no aids, no proof nested in it. */
+const NOT_STATEMENT: ReadonlySet<string> = new Set([...AID_TAGS, ...PROOF_TAGS]);
 import { trustRank } from "./language/trust.ts";
 
 /**
@@ -180,7 +183,8 @@ export function showData(
     owner,
     tag: el.tag === "step-claim" ? "claim" : el.tag,
     num: el.attrs.num ?? "",
-    statement: sliceOf(graph, el, rel),
+    // A proof nested in the result is listed with the proofs, not inside the statement.
+    statement: sliceOf(graph, el, rel, node ? PROOF_TAGS : undefined),
     proofs: (node?.proofs ?? []).flatMap((p) => sliceOf(graph, p, rel) ?? []),
   };
   // The context of a result: its parents' statements. Of a step (or anything else inside a
@@ -189,7 +193,7 @@ export function showData(
   if (withContext && base) {
     const statement = (n: GraphNode) => ({
       node: n,
-      statement: sliceOf(graph, n.el, rel, AID_TAGS),
+      statement: sliceOf(graph, n.el, rel, NOT_STATEMENT),
     });
     data.context = [
       ...(owner ? [statement(owner)] : []),

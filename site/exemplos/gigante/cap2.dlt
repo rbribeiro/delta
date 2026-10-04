@@ -92,6 +92,8 @@
 
         <step id="st:local">
           <claim>$\mathbb{P}(|C(v)| \ge K \log n) = \rho + o(1)$ para cada vértice $v$.</claim>
+          <strategy>Prender a exploração de $C(v)$ entre duas árvores de Galton–Watson e
+          comparar as duas com a árvore de prole $\mathrm{Poisson}(c)$.</strategy>
           <proof>
             Por <ref to="lem:acoplamento"/> com $k = K \log n$, a exploração de $C(v)$ fica
             entre dois processos de Galton–Watson com prole binomial, e ambos convergem

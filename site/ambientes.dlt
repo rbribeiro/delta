@@ -87,15 +87,50 @@
     <subsection id="tag-proof">
       <title>&lt;proof&gt; e &lt;solution&gt;</title>
 
-      A demonstração não ganha caixa nem número: abre com a palavra "Demonstração"
-      em itálico e fecha com o quadrado no fim. O atributo <c>of</c> aponta para o
-      resultado que ela demonstra, e o rótulo passa a citá-lo. Sem <c>of</c>, como no
-      LaTeX, ela demonstra o resultado que vem logo antes dela (se ele tiver <c>id</c>) e
-      o rótulo fica só "Demonstração". Para o grafo de provas, o <c>delta verify</c> e os
-      ids dos passos as duas formas valem igual. Se houver algo entre os dois (um
-      parágrafo, uma figura), a demonstração não fica ligada a resultado nenhum. Um
+      A demonstração não ganha número. O atributo <c>of</c> aponta para o resultado que
+      ela demonstra. Sem <c>of</c>, como no LaTeX, ela demonstra o resultado que vem logo
+      antes dela, ou aquele dentro do qual foi escrita. Para o grafo de provas, o
+      <c>delta verify</c> e os ids dos passos, todas essas formas valem igual. Um
       resultado pode ter mais de uma demonstração; os passos da segunda ganham ids
       <c>…-proof2-step-1</c>, e a confiança do resultado vem da primeira.
+
+      Uma demonstração escrita <em>dentro</em> do resultado, ou <em>logo depois</em> dele
+      (uma segunda demonstração logo depois da primeira também), junta-se à caixa do
+      resultado: as duas viram uma só ficha, e a demonstração é o rodapé dela, uma barra
+      "Demonstração ▸" que abre o texto. Ela começa fechada. Um comentário entre os dois
+      não os separa; um parágrafo ou uma figura, sim. O mesmo vale para
+      <c><solution></c> depois de (ou dentro de) um <c><exercise></c> ou
+      <c><problem></c>: a barra diz "Ver solução".
+
+      <code lang="xml" numbered="false">
+<lemma id="lem:soma">
+  Se $a \le b$ então $a + c \le b + c$.
+</lemma>
+<proof>Some $c$ aos dois lados.</proof>
+
+<exercise>
+  Mostre que $\sqrt{2}$ é irracional.
+  <solution>Suponha $\sqrt{2} = p/q$ em termos mínimos.</solution>
+</exercise>
+      </code>
+
+      <lemma id="demo-soma">
+        Se $a \le b$ então $a + c \le b + c$.
+      </lemma>
+      <proof>Some $c$ aos dois lados.</proof>
+
+      <exercise>
+        Mostre que $\sqrt{2}$ é irracional.
+        <solution>Suponha $\sqrt{2} = p/q$ em termos mínimos. Então $p^2 = 2q^2$, logo
+        $p$ é par, e daí $q$ também é: contradição.</solution>
+      </exercise>
+
+      Uma demonstração longe do seu resultado fica onde está, com o rótulo
+      "Demonstração" em itálico e o quadrado no fim; o rótulo cita o resultado quando há
+      <c>of</c>. A caixa do resultado ganha então um rodapé que leva até ela:
+      "Demonstração na Seção 2.3", ou "Ver demonstração" quando ela está na mesma seção.
+      Um resultado com <c>status="open"</c> e nenhuma demonstração mostra
+      "Demonstração pendente" (veja <ref to="colab-status">Colaboração</ref>).
 
       <table numbered="false">
         <header>
@@ -106,9 +141,19 @@
         <row>
           <column mono="true">of</column>
           <column mono="true">id</column>
-          <column>Diz qual resultado esta demonstração prova. Opcional logo depois do resultado</column>
+          <column>Diz qual resultado esta demonstração prova. Opcional logo depois do resultado ou dentro dele</column>
+        </row>
+        <row>
+          <column mono="true">collapsed</column>
+          <column mono="true">false</column>
+          <column>Numa demonstração juntada à caixa: começa aberta</column>
         </row>
       </table>
+
+      Para abrir todas de uma vez, use <c><document proofs="open"></c> (ou
+      <c>proofs = "open"</c> na tabela <c>[document]</c> do <c>project.toml</c>). Numa
+      apresentação elas já começam abertas. O <c>collapsed</c> de cada demonstração
+      sempre vence. Na impressão, todas saem abertas.
 
       <code lang="xml" numbered="false">
 <proof of="thm:bolzano">
@@ -174,13 +219,13 @@
 </theorem>
       </code>
 
-      Elas não ficam dentro da caixa. Cada uma vira um pontinho colorido na borda de
-      cima, do lado oposto ao rótulo, e o nome aparece ao passar o mouse. Um clique abre
-      o conteúdo numa gaveta presa <em>embaixo</em> da caixa, uma de cada vez. Assim a
-      caixa guarda só o enunciado, mesmo quando a estratégia é tão longa quanto a prova.
-      Todas começam fechadas, em qualquer tipo de documento: a página mostra os
-      enunciados, e o leitor abre o resto quando quiser. Para deixar uma aberta desde o
-      início, use <c>collapsed="false"</c> nela. Na impressão, tudo sai aberto.
+      Elas não enchem a caixa. Cada uma é uma dobra do papel, logo abaixo do enunciado:
+      fechada, uma tira fina vincada, cujo nome aparece ao passar o mouse; um clique
+      desdobra o conteúdo ali mesmo, e um clique no nome dobra de volta. A ordem é sempre
+      intuição, estratégia, obstáculo, e cada uma abre por si. Todas começam fechadas, em
+      qualquer tipo de documento: a página mostra os enunciados, e o leitor abre o resto
+      quando quiser. Para deixar uma aberta desde o início, use <c>collapsed="false"</c>
+      nela. Na impressão, tudo sai aberto.
 
       <table numbered="false">
         <header>
@@ -191,7 +236,7 @@
         <row>
           <column mono="true">collapsed</column>
           <column mono="true">false</column>
-          <column>Começa com a gaveta aberta. Como só uma gaveta abre por vez, vale a primeira com <c>collapsed="false"</c>; na prévia de uma <c><ref></c> todas começam fechadas</column>
+          <column>Começa desdobrada; na prévia de uma <c><ref></c> todas começam fechadas</column>
         </row>
       </table>
 
@@ -199,8 +244,8 @@
       <c><ref></c> (ponha o <c>id</c> no resultado). Duas ajudas do mesmo tipo no mesmo
       resultado, ou no mesmo passo, geram um aviso: junte-as numa só. As
       <c><ref></c> dentro delas funcionam normalmente para quem lê, mas não entram no
-      grafo da prova (veja <ref to="sobre-mapa-prova"/>). A cor de cada pontinho vem
-      dos tokens <c>--delta-aid-intuition</c>, <c>--delta-aid-strategy</c> e
+      grafo da prova (veja <ref to="sobre-mapa-prova"/>). A cor do nome e o leve tom de
+      cada dobra vêm dos tokens <c>--delta-aid-intuition</c>, <c>--delta-aid-strategy</c> e
       <c>--delta-aid-obstacle</c> (veja <ref to="temas">Temas</ref>).
 
       <theorem id="demo-entendimento">
@@ -215,7 +260,7 @@
       </theorem>
 
       Ao passar o mouse numa <c><ref></c> para um resultado, a prévia mostra o
-      enunciado com os mesmos pontinhos, todos fechados: dá para abrir qualquer um ali mesmo.
+      enunciado com as mesmas dobras, todas fechadas: dá para abrir qualquer uma ali mesmo.
       Um resultado que ainda não tem prova pode levar <c>status="open"</c>, que o marca
       como planejado (veja <ref to="colab-status">Colaboração</ref>). O livro
       <link to="exemplos/gigante/cap1.html">A componente gigante</link> usa tudo isto.
@@ -224,14 +269,19 @@
     <subsection id="sobre-provas-estruturadas">
       <title>Provas em passos e hipóteses</title>
 
-      Uma prova longa lê melhor em níveis: primeiro as afirmações principais, depois a
-      prova de cada uma, que por sua vez pode ter os seus próprios passos. Cada
-      <c><step></c> tem uma <c><claim></c> (o que o passo estabelece) e, de preferência,
-      uma <c><proof></c>. Os passos são numerados pelo lugar que ocupam: 1, 2, e dentro
-      do passo 2, 2.1, 2.2. A prova de cada passo começa fechada, e o cabeçalho da
-      demonstração ganha o controle "Passos 1 2 … Todos", que abre a prova até o nível
-      escolhido. Um passo pode ser citado com <c><ref></c> ("Passo 2.1"), e quem não tem
-      <c>id</c> ganha um.
+      Uma prova longa lê melhor em duas camadas: primeiro as afirmações principais, depois
+      a prova de cada uma. Cada <c><step></c> tem uma <c><claim></c> (o que o passo
+      estabelece) e, de preferência, uma <c><proof></c>. Os passos são numerados pelo
+      lugar que ocupam: 1, 2, e dentro do passo 2, 2.1, 2.2. Um passo pode ser citado com
+      <c><ref></c> ("Passo 2.1"), e quem não tem <c>id</c> ganha um. Uma
+      <c><solution></c> também pode ter passos.
+
+      Cada passo de primeiro nível é uma prega da folha da demonstração: fechado, mostra
+      só o número e a afirmação, impressos na dobra; um clique o abre e mostra a sua prova.
+      A barra da demonstração ganha "Só passos · Completo", que fecha ou abre todos de uma
+      vez. Os passos dentro de um passo não dobram de novo: aparecem abertos, como uma
+      lista dentro do passo. Uma demonstração com passos longe do seu resultado ganha uma
+      folha própria, com a mesma barra, que diz o que ela demonstra.
 
       <code lang="xml" numbered="false">
 <theorem id="thm:t">
@@ -254,8 +304,9 @@
       Dentro de um passo, <c><claim></c> é a afirmação do passo; fora dele continua sendo
       o ambiente numerado "Afirmação" de sempre. Um passo também pode levar
       <c><intuition></c>, <c><strategy></c> e <c><obstacle></c>, logo depois da
-      afirmação: os pontinhos aparecem no fim dela, e a gaveta abre entre a afirmação e a
-      prova do passo.
+      afirmação. Num passo de primeiro nível, elas são pregas da mesma folha, com o nome
+      impresso na dobra, e continuam à mão com o passo fechado; num passo dentro de outro,
+      são dobras estreitas na coluna do texto.
 
       Cada <c><hyp></c> no enunciado ganha um rótulo, (H1), (H2), …, e uma
       <c><ref></c> para ela diz "(H1)". A prévia de uma hipótese mostra em que passos a
@@ -273,7 +324,7 @@
         <row>
           <column mono="true">step</column>
           <column><c>id</c> (opcional; sem ele, vira <c>resultado-step-2.1</c>)</column>
-          <column>Diretamente dentro de uma <c><proof></c>, inclusive a de outro passo</column>
+          <column>Diretamente dentro de uma <c><proof></c> ou <c><solution></c>, inclusive a prova de outro passo</column>
         </row>
         <row>
           <column mono="true">hyp</column>

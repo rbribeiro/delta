@@ -63,6 +63,16 @@
         e o teorema do valor intermediário dá um ponto fixo em $(0, 1)$. Assim $q < 1$,
         e $\rho = 1 - q$ satisfaz <ref to="eq:rho"/>.
       </proof>
+
+      <exercise id="ex:unica">
+        Mostre que, para $c > 1$, a equação <ref to="eq:rho"/> tem exatamente uma solução
+        em $(0, 1)$.
+        <solution>
+          Seja $g(\rho) = 1 - \rho - e^{-c\rho}$. Temos $g(0) = 0$, $g'(0) = c - 1 > 0$ e
+          $g(1) = -e^{-c} < 0$. Como $g$ é estritamente côncava, ela tem no máximo dois
+          zeros em $[0, 1]$: o zero trivial e um único $\rho_c \in (0, 1)$.
+        </solution>
+      </exercise>
     </section>
   </chapter>
 </document>

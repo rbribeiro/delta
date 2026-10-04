@@ -45,6 +45,7 @@ class DeltaCite extends HTMLElement {
     card.className = "cite-pop";
     let filled = false;
     const pop = popover(cite, card, {
+      hover: true,
       onOpen: () => {
         if (filled) return;
         filled = true;

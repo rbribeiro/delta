@@ -1,9 +1,11 @@
 /* understanding.css — reader aids on a result or a proof step (<intuition>, <strategy>,
-   <obstacle>) and planned results (status="open"). LIVE: buildLens (runtime/elements/
-   aid.ts) leaves .lens-dots on the box's top border and hangs a .lens-drawer after the
-   box, one .lens-panel open at a time; on a step the dots follow the claim and the drawer
-   sits under it. Kept low-key: the box is the statement and nothing else, and an aid as
-   long as the proof extends the page, not the box. Tokens via var(--delta-*). */
+   <obstacle>). LIVE: buildFolds (runtime/elements/aid.ts) turns each aid into a .fold
+   under the box's sheet (or under a step's claim): closed, a .fold-strip of creased paper
+   (a valley and a mountain, its name on hover); open, a .fold-panel that unfolds in place
+   with the aid's name in its .fold-head, which folds it back. A named fold (a step's aid,
+   data-named) prints the name on its strip. The box's outline follows
+   the creases (theorems.css draws the edge as a filter). Kept low-key: the long text of an
+   aid sits in the body colour on an almost neutral tint. Tokens via var(--delta-*). */
 
 @layer delta.components {
 
@@ -13,64 +15,67 @@ delta-obstacle {
   display: block;
 }
 
-/* -- Aid colours: one per kind (tokens in base.css), shared by its dot and its drawer */
+/* -- Aid colours: one per kind (tokens in base.css), for its name and its tint */
 [data-aid="intuition"] { --aid-hue: var(--delta-aid-intuition); }
 [data-aid="strategy"]  { --aid-hue: var(--delta-aid-strategy); }
 [data-aid="obstacle"]  { --aid-hue: var(--delta-aid-obstacle); }
 
-/* -- Dots: on the box's top border, opposite the label ---------------- */
-.lens-dots {
-  position: absolute;
-  top: 0;
-  right: 18px;
-  transform: translateY(-50%);
-  display: flex;
-  gap: 2px;
-  padding: 0 4px;
-  /* The box's own border colour (same mix as .box in theorems.css): a bead on the rule. */
-  background: color-mix(in oklab,
-                        var(--delta-env-tone, var(--delta-paper)) calc(var(--delta-env-tint, 0) * 100%),
-                        var(--delta-env-border));
-  border-radius: var(--delta-radius-pill);
+.fold {
+  --fold-bg: var(--box-bg, var(--delta-env-bg));
+  --fold-tint: color-mix(in oklab, var(--aid-hue) 6%, var(--fold-bg));
+  --fold-inset: 14px; /* how far the sides step in at the crease */
+  position: relative;
 }
-.lens-dot {
+
+/* -- Closed: a strip of folded paper ---------------------------------- */
+.fold-strip {
   appearance: none;
   position: relative;
-  width: 18px;
-  height: 18px;
+  display: block;
+  width: 100%;
+  height: 24px;
+  margin: 0;
   padding: 0;
   border: 0;
   background: none;
   cursor: pointer;
+  transition: filter var(--delta-dur-fast) var(--delta-ease);
 }
-/* The visible dot is small; the button around it is a comfortable target. */
-.lens-dot::before {
-  content: "";
-  position: absolute;
-  inset: 5px;
-  border-radius: 50%;
-  border: 1.5px solid var(--aid-hue);
-  background: color-mix(in oklab, var(--aid-hue) 35%, var(--delta-paper));
-  transition: transform var(--delta-dur-fast) var(--delta-ease),
-              background var(--delta-dur-fast) var(--delta-ease);
-}
-.lens-dot:hover::before { transform: scale(1.25); }
-.lens-dot[aria-expanded="true"]::before { background: var(--aid-hue); transform: scale(1.25); }
-.lens-dot:focus-visible {
+.fold-strip:hover { filter: brightness(1.025); }
+.fold-strip:focus-visible {
   outline: 2px solid var(--delta-accent-ink);
-  outline-offset: 1px;
-  border-radius: 50%;
+  outline-offset: -2px;
 }
-/* The name shows on hover/focus, like a tooltip, so the dots can stay wordless. */
-.lens-dot::after {
+/* The valley: the tinted underside of the fold, lit at the top, shadowed into the crease. */
+.fold-valley,
+.fold-mountain {
+  display: block;
+}
+.fold-valley {
+  height: 13px;
+  background: linear-gradient(to bottom, var(--delta-fold-lit), transparent 25%, var(--delta-fold-shade)),
+              var(--fold-tint);
+  clip-path: polygon(0 0, 100% 0, calc(100% - var(--fold-inset)) 100%, var(--fold-inset) 100%);
+}
+/* The mountain: the paper coming back out of the crease, under a softer shadow. */
+.fold-mountain {
+  height: 11px;
+  background: linear-gradient(to bottom, var(--delta-fold-shade-2), transparent 85%),
+              var(--fold-bg);
+  clip-path: polygon(var(--fold-inset) 0, calc(100% - var(--fold-inset)) 0, 100% 100%, 0 100%);
+}
+/* The name, like a tooltip, so the strip can stay wordless. */
+.fold-strip::after {
   content: attr(data-label);
   position: absolute;
   bottom: calc(100% + 4px);
-  right: 50%;
-  transform: translateX(50%);
-  padding: 2px 7px;
-  font-family: var(--delta-sans);
-  font-size: 10px;
+  right: var(--fold-inset);
+  z-index: 2;
+  padding: 5px 8px;
+  font-family: var(--delta-serif);
+  font-size: 10.5px;
+  font-weight: var(--delta-weight-strong);
+  line-height: 1;
   letter-spacing: var(--delta-tracking-cap);
   text-transform: uppercase;
   white-space: nowrap;
@@ -81,105 +86,164 @@ delta-obstacle {
   pointer-events: none;
   transition: opacity var(--delta-dur-fast) var(--delta-ease);
 }
-.lens-dot:hover::after,
-.lens-dot:focus-visible::after { opacity: 1; }
+.fold-strip:hover::after,
+.fold-strip:focus-visible::after { opacity: 1; }
 
-/* -- Drawer: hangs under the box, so the statement keeps its size ---- */
-.box.has-drawer {
-  margin-bottom: 0;
-  border-bottom-left-radius: var(--delta-radius-sm);
-  border-bottom-right-radius: var(--delta-radius-sm);
+/* -- Open: the panel, unfolded in place ------------------------------- */
+.fold-panel {
+  position: relative;
+  overflow: hidden;
+  background: var(--fold-tint);
+  border-top: var(--delta-hairline) dashed color-mix(in oklab, var(--aid-hue) 35%, transparent);
 }
-.lens-drawer {
-  margin: 0 14px var(--delta-block-gap);
-  padding: 10px 18px 12px;
-  border: var(--delta-hairline) solid var(--delta-rule-soft);
-  border-top: 0;
-  border-radius: 0 0 var(--delta-radius) var(--delta-radius);
-  background: color-mix(in oklab, var(--delta-env-bg) 60%, var(--delta-paper));
-  font-size: 0.92em;
-  line-height: 1.55;
-  color: var(--delta-ink-soft);
-}
-.lens-drawer[hidden],
-.box.is-collapsed + .lens-drawer,
-.lens-panel[hidden] { display: none; }
-
-.lens-panel {
-  border-left: 2px solid var(--aid-hue);
-  padding-left: 12px;
-}
-.lens-head {
+.fold-panel[hidden],
+.fold-strip[hidden] { display: none; }
+.fold-head {
+  appearance: none;
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 2px;
+  width: 100%;
+  margin: 0;
+  padding: 16px var(--box-pad-x, 24px) 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-family: var(--delta-serif);
+  font-size: 11.5px;
+  font-weight: var(--delta-weight-strong);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--aid-hue);
+  transition: opacity var(--delta-dur-fast) var(--delta-ease);
 }
-.lens-name {
-  font-family: var(--delta-sans);
-  font-size: 10px;
-  letter-spacing: var(--delta-tracking-cap);
+.fold-head:hover { opacity: 0.75; }
+.fold-head:focus-visible {
+  outline: 2px solid var(--delta-accent-ink);
+  outline-offset: -2px;
+}
+.fold-caret { font-size: 9px; letter-spacing: 0; opacity: 0.6; }
+.fold-body {
+  padding: 8px var(--box-pad-x, 24px) 20px;
+  font-size: 0.97em;
+  color: var(--delta-ink);
+}
+.fold-body > :first-child { margin-top: 0; }
+.fold-body > :last-child { margin-bottom: 0; }
+/* The crease's light and shadow, fading out as the panel flattens. */
+.fold-crease {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to bottom, var(--delta-fold-lit), transparent 22%,
+                              var(--delta-fold-shade) 50%, var(--delta-fold-shade-2) 56%,
+                              transparent 92%);
+  opacity: 0;
+}
+
+/* -- Motion: unfold opens the crease, refold closes it back into a strip */
+.fold.is-unfolding > .fold-panel { animation: fold-unfold .55s cubic-bezier(.2, .7, .25, 1); }
+.fold.is-unfolding .fold-crease { animation: fold-crease-out .55s ease-out; }
+.fold.is-unfolding .fold-head,
+.fold.is-unfolding .fold-body {
+  transform-origin: top center;
+  animation: fold-text-unfold .55s cubic-bezier(.2, .7, .25, 1);
+}
+.fold.is-refolding > .fold-panel { animation: fold-refold .38s cubic-bezier(.55, 0, .8, .3) forwards; }
+.fold.is-refolding .fold-crease { animation: fold-crease-in .38s ease-in forwards; }
+.fold.is-refolding .fold-head,
+.fold.is-refolding .fold-body {
+  transform-origin: top center;
+  animation: fold-text-refold .38s ease-in forwards;
+}
+@keyframes fold-unfold {
+  0%   { max-height: 24px;
+         clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 50%, 100% 100%, 0 100%, 14px 50%); }
+  55%  { clip-path: polygon(0 0, 100% 0, calc(100% - 4px) 50%, 100% 100%, 0 100%, 4px 50%); }
+  100% { max-height: 100vh;
+         clip-path: polygon(0 0, 100% 0, 100% 50%, 100% 100%, 0 100%, 0 50%); }
+}
+@keyframes fold-refold {
+  0%   { max-height: 340px;
+         clip-path: polygon(0 0, 100% 0, 100% 50%, 100% 100%, 0 100%, 0 50%); }
+  100% { max-height: 24px;
+         clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 50%, 100% 100%, 0 100%, 14px 50%); }
+}
+@keyframes fold-crease-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes fold-crease-in  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fold-text-unfold {
+  from { transform: scaleY(.45); opacity: .3; }
+  to   { transform: none; opacity: 1; }
+}
+@keyframes fold-text-refold {
+  from { transform: none; opacity: 1; }
+  to   { transform: scaleY(.45); opacity: .2; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fold.is-unfolding *, .fold.is-refolding *,
+  .fold.is-unfolding > .fold-panel, .fold.is-refolding > .fold-panel { animation: none !important; }
+}
+
+/* -- In a ref pop-over the box is flattened (reference.css): the folds sit flush under
+   the statement, and their tooltips (clipped by the card's scroller) give way to the
+   panel's own header. */
+.xref-pop-body .folds { margin-top: 10px; }
+.xref-pop-body .fold { --fold-inset: 8px; }
+.xref-pop-body .fold-head,
+.xref-pop-body .fold-body { padding-inline: 12px; }
+.xref-pop-body .fold-strip::after { display: none; }
+
+/* -- Named folds: a step's aids, pleats of the proof's sheet (proofstructure.css). The
+   name is printed in the valley, on the claim column, so the strip needs no tooltip; the
+   open panel's text lines up on the same column. */
+.fold-label { display: none; }
+.fold[data-named] { --fold-inset: var(--pleat-inset, 12px); }
+.fold[data-named] .fold-valley {
+  display: flex;
+  align-items: center;
+  height: 20px;
+  padding: 1px calc(var(--fold-inset) + 24px) 0 var(--step-col, 52px);
+  background: linear-gradient(to bottom, var(--delta-fold-lit), var(--delta-fold-shade-2) 55%, var(--delta-fold-shade)),
+              var(--fold-tint);
+}
+.fold[data-named] .fold-label {
+  display: inline;
+  font-family: var(--delta-serif);
+  font-size: 9.5px;
+  font-weight: var(--delta-weight-strong);
+  line-height: 1;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--aid-hue);
 }
-.lens-close {
-  appearance: none;
-  border: 0;
-  background: none;
-  padding: 0 2px;
-  cursor: pointer;
-  font-size: 15px;
-  line-height: 1;
-  color: var(--delta-mute);
+.fold[data-named] .fold-mountain { height: 8px; }
+.fold[data-named] .fold-strip { height: auto; }
+.fold[data-named] .fold-strip::after { display: none; }
+.fold[data-named] .fold-head {
+  padding: 12px var(--box-pad-x, 24px) 0 var(--step-col, 52px);
+  font-size: 9.5px;
+  letter-spacing: 0.15em;
 }
-.lens-close:hover { color: var(--delta-ink); }
-
-/* -- In a ref pop-over the box is flattened (reference.css), so there is no
-   border to sit on: the dots join the flow as a row under the statement, and
-   the drawer spans the card. No negative inline margin: the body is a scroller and
-   would clip the bead's left end. */
-.xref-pop-body .lens-dots {
-  position: static;
-  transform: none;
-  width: fit-content;
-  margin-top: 8px;
-}
-.xref-pop-body .lens-drawer {
-  margin: 8px 0 0;
-  border-top: var(--delta-hairline) solid var(--delta-rule-soft);
-  border-radius: var(--delta-radius-sm);
-}
-/* Tooltips would be clipped by the card's scroller; the drawer names the aid anyway. */
-.xref-pop-body .lens-dot::after { display: none; }
-
-/* -- On a proof step: no box to sit on, so the dots follow the claim inline and the
-   drawer hangs under the claim, indented like the step's own proof (proofstructure.css). */
-delta-step-claim > .lens-dots {
-  position: static;
-  transform: none;
-  display: inline-flex;
-  vertical-align: middle;
-  background: none;
-}
-delta-step > .lens-drawer,
-delta-step > * > .lens-drawer {
-  margin: 0.25em 0 0.5em 2.2em;
-  border-top: var(--delta-hairline) solid var(--delta-rule-soft);
-  border-radius: var(--delta-radius-sm);
+.fold[data-named] .fold-body {
+  padding: 6px var(--box-pad-x, 24px) 14px var(--step-col, 52px);
 }
 
-/* -- Planned results (status="open"): a hollow, dashed box ------------- */
-.box[data-status="open"] {
-  border-style: dashed;
-  background: transparent;
-  box-shadow: none;
+/* -- On a flat step (a sub-step, a step in a preview): no sheet to pleat, so the folds
+   hang under the claim, indented like the step's own proof and rounded at their ends. */
+delta-step:not(.step-pleat) .folds {
+  margin: 0.35em 0 0.5em 2.2em;
+  --fold-bg: var(--box-well, var(--delta-paper));
+  --box-pad-x: 14px;
 }
+delta-step:not(.step-pleat) .fold-panel { border-radius: var(--delta-radius-sm); }
+delta-step:not(.step-pleat) .fold-head { padding-top: 10px; }
+delta-step:not(.step-pleat) .fold-body { padding-bottom: 12px; }
 
 @media print {
-  /* Paper cannot unfold: print every aid under its box. */
-  .lens-drawer[hidden], .lens-panel[hidden] { display: block; }
-  .lens-panel + .lens-panel { margin-top: 10px; }
-  .lens-dots, .lens-close { display: none; }
+  /* Paper cannot unfold: print every aid open, without its strip. */
+  .fold-panel[hidden] { display: block; }
+  .fold-strip, .fold-caret { display: none; }
+  .fold-crease { display: none; }
 }
 
 }

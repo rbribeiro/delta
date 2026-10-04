@@ -1,6 +1,7 @@
 /* collapse.css — collapsible sections & environments (`collapsible`/`collapsed`).
    The runtime (applyCollapsible in runtime/elements/shared.ts) turns the label — a
-   section heading, a `.box-tag`, or a proof `.proof-lead` — into a `.collapse-toggle`
+   section heading, a box's `.box-head`, a proof `.proof-lead` or a joined proof's
+   `.proof-bar` — into a `.collapse-toggle`
    and moves the body into a `.collapse-body`; folding sets `.is-collapsed` on the
    host. Here: the caret, the affordance, and the hide. Tokens via var(--delta-*). */
 
@@ -11,9 +12,9 @@
   -webkit-user-select: none;
   user-select: none;
 }
-/* Headings & proof leads anchor the gutter sign (the .box-tag is already
-   position:absolute and parks its sign inline instead). */
-.collapse-toggle:not(.box-tag) {
+/* Headings & proof leads anchor the gutter sign (a box header parks its sign inline
+   instead, and a proof bar has its own caret). */
+.collapse-toggle:not(.box-head, .proof-bar) {
   position: relative;
 }
 .collapse-toggle:focus-visible {
@@ -42,7 +43,7 @@
    flex row). `right:100%` sits it just left of the text; centring on the label
    keeps it level with the text (a flex container resolves an abspos child's
    static position to the top, so `top:auto` would float it above the number). */
-.collapse-toggle:not(.box-tag)::before {
+.collapse-toggle:not(.box-head, .proof-bar)::before {
   position: absolute;
   right: 100%;
   top: 50%;
@@ -52,19 +53,19 @@
   line-height: 1;
 }
 
-/* Box tag: a compact inline sign inside the floating pill. */
-.box-tag.collapse-toggle::before {
-  margin-right: 0.45em;
+/* Box header: a compact inline sign before the label. A proof bar: none (its caret). */
+.box-head.collapse-toggle::before {
+  margin-right: -0.2em;
 }
+.proof-bar.collapse-toggle::before { content: none; }
 
 .is-collapsed > .collapse-body {
   display: none;
 }
 
-/* A folded box collapses to a compact bar that still carries its floating tag. */
-.box.is-collapsed {
-  padding-top: 12px;
-  padding-bottom: 12px;
+/* A folded box collapses to its header (theorems.css hides what hangs under it). */
+.box.is-collapsed .box-head {
+  padding-bottom: 14px;
 }
 
 }

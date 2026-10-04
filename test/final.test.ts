@@ -61,8 +61,9 @@ describe("--final", () => {
     expect(doc).toContain("loose prose");
     expect(doc).toContain("inserted.");
     expect(doc).not.toContain("deleted.");
-    expect(doc).not.toMatch(/<delta-[a-z]+[^>]*\b(status|by|verified-by)=/);
-    expect(doc).toContain('<delta-lemma id="l" num="1.1">');
+    expect(doc).not.toMatch(/<delta-[a-z]+[^>]*\b(status|by|verified-by|verified-on)=/);
+    // The proof is further down the same section: the box links to it.
+    expect(doc).toContain('<delta-lemma id="l" num="1.1" data-proof-at="l-proof"');
     // the accepted <new> side survives as rendered math; the <old> side is gone
     expect(doc).toContain("x &gt; 0"); // KaTeX's TeX annotation of the kept side
     expect(doc).not.toContain("x &lt; 0");
@@ -125,6 +126,17 @@ describe("--final and the proof graph", () => {
     expect(body(html)).toContain('data-eff="verified"');
     expect(body(html)).not.toContain("status=");
     expect(body(html)).not.toContain("verified-by=");
+  });
+
+  it("drops the stamp's day and the pending-proof footer, keeps the link to a remote proof", () => {
+    const src = `<document><section id="s"><title>S</title>
+      <lemma id="l">x</lemma> Prose. <proof of="l" status="verified" verified-by="rb" verified-on="2026-09-13">ok</proof>
+      <lemma id="o" status="open">y</lemma></section></document>`;
+    const { html } = compile(src, true);
+    expect(body(html)).not.toContain("verified-on=");
+    expect(body(html)).not.toContain('data-proof="pending"');
+    expect(body(html)).toContain('data-proof-at="l-proof"');
+    expect(compile(src, false).html).toContain('data-proof="pending"');
   });
 
   it("numbers citations the same in review and final builds", () => {

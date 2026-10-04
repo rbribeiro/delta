@@ -5,7 +5,7 @@ import { escapeAttr, escapeHtml } from "./preprocess.ts";
 import { katexCss } from "./katex-css.ts";
 import { plainText } from "./paper.ts";
 import { stringsFor } from "../language/strings.ts";
-import { HEADING_TAGS } from "../language/tags.ts";
+import { HEADING_TAGS, PROOF_TAGS } from "../language/tags.ts";
 import { CORE_CSS, RUNTIME_JS, THEMES } from "../generated/assets.ts";
 
 const DEFAULT_TYPE = "article";
@@ -138,6 +138,12 @@ function renderTemplates(ctx: CompileContext, globalById: Map<string, ElementNod
       if (HEADING_TAGS.has(node.tag)) {
         const titleEl = titleOf(node);
         snapshot = element(node.tag, node.attrs, titleEl ? [titleEl] : []);
+      } else if (node.children.some((c) => c.type === "element" && PROOF_TAGS.has(c.tag))) {
+        // A preview shows the statement: a proof nested in it stays behind.
+        const statement = node.children.filter(
+          (c) => c.type !== "element" || !PROOF_TAGS.has(c.tag),
+        );
+        snapshot = element(node.tag, node.attrs, statement);
       }
       // A cross-file target may carry math this file didn't render itself.
       ctx.mathUsed ||= containsMath([snapshot]);

@@ -107,7 +107,7 @@ Say you want `<remark>`, numbered alongside theorems.
    [strings.ts](../src/language/strings.ts) (`en`, `pt`, …).
 4. **Add `delta-remark`** to the two lists at the top of
    [components/theorems.css](../src/styles/components/theorems.css) (block display and the
-   family tone). Box environments share `.box`/`.box-tag`, so nothing else is needed.
+   family tone). Box environments share the `.box` card, so nothing else is needed.
 5. **Add a numbering test case** in [test/numbering.test.ts](../test/numbering.test.ts).
 
 No pass code changes. [test/language.test.ts](../test/language.test.ts) fails if step 2, 3 or
@@ -208,7 +208,7 @@ the same way.
 | `jumpTo(id)`, `linkJump(a, id, file)` | go to a target the Delta way: deck page, unfold, scroll, flash; cross-file navigates |
 | `templateFor(id)` | the pop-over snapshot the compiler shipped for `id` |
 | `copyButton(cls, label, text)` | a Copy button with the "Copied" feedback |
-| `applyCollapsible`, `applyStatus` | folding; the status/author pill |
+| `applyCollapsible` | folding (the status word/stamp is `applyStatus` in `status.ts`) |
 
 Localized text goes through `t(key, fallback)` or `nameOf(tag)` from
 [i18n.ts](../src/runtime/i18n.ts), never a literal; JSON islands are read with

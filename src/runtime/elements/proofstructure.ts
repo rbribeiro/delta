@@ -1,19 +1,53 @@
 /**
  * Structured proofs and hypotheses (the compiler's structure.ts numbered them):
  *
- * - <step num="1.2"> — a numbered claim with its own folding proof. The number is put in
- *   front of the claim; the step's aids (<intuition>, <strategy>, <obstacle>) become dots
- *   after it, opening a drawer under the claim (aid.ts `buildLens`).
+ * - <step num="1.2"> — a numbered claim with its proof. A top-level step of a proof drawn
+ *   as a sheet (a proof joined to its box, or a standalone proof with steps) is a pleat of
+ *   that sheet: folded, its number and claim are printed on the fold; a click lays it flat
+ *   and shows its proof. Its aids are named folds of the same sheet, under the claim, and
+ *   stay reachable while the step is folded. Any other step (a sub-step, a step in a ref
+ *   preview) reads flat: number, claim, its proof right below, its aids narrow folds in
+ *   its column. Steps never fold inside steps.
  * - <hyp num="H1"> — a hypothesis in a statement, labelled "(H1)". Its <hyp-uses> child
  *   (where the proof uses it, or that it doesn't; its counterexamples) is hidden in the
  *   page and shown only in a ref's preview of the hypothesis. The labels come from t().
- * - `stepLevels` — the proof's "Steps 1 2 3 All" control: level k unfolds the proofs of
- *   steps above level k, so the reader sees the claims down to level k.
+ * - `stepsControl` — the sheet's "Steps only · Full proof", which folds or lays flat every
+ *   top-level step at once.
+ *
+ * The environments upgrade first (elements/index.ts), so a step finds its sheet already
+ * drawn and its own proof already marked `.step-body` (environment.ts).
  */
 
 import { t } from "../i18n.ts";
-import { buildLens } from "./aid.ts";
+import { REFOLD_MS, buildFolds } from "./aid.ts";
 import { button, setFolded } from "./shared.ts";
+import { applyStatus } from "./status.ts";
+
+/** The proof, solution or step `el` belongs to: its nearest such ancestor. */
+export const ownerOf = (el: Element): Element | null =>
+  el.parentElement?.closest("delta-step, delta-proof, delta-solution") ?? null;
+
+/** `step`'s own part matching `selector`: never a nested step's (it may sit in a <change>). */
+const own = (step: Element, selector: string): HTMLElement | undefined =>
+  [...step.querySelectorAll<HTMLElement>(selector)].find((e) => ownerOf(e) === step);
+
+/** The direct child of `step` that holds `el` (`el` itself, or a <change> around it). */
+function topOf(step: Element, el: Element): Element {
+  let top = el;
+  while (top.parentElement && top.parentElement !== step) top = top.parentElement;
+  return top;
+}
+
+/** The nearest sibling of `el` that shows something (not blank text, not a comment). */
+function shown(el: Element, dir: "previousSibling" | "nextSibling"): Node | null {
+  let n = el[dir];
+  while (
+    n &&
+    (n.nodeType === Node.COMMENT_NODE || (n.nodeType === Node.TEXT_NODE && !n.textContent?.trim()))
+  )
+    n = n[dir];
+  return n;
+}
 
 class DeltaStep extends HTMLElement {
   connectedCallback(): void {
@@ -22,18 +56,97 @@ class DeltaStep extends HTMLElement {
     const num = document.createElement("span");
     num.className = "step-num";
     num.textContent = this.getAttribute("num") ?? "";
-    // The step's own claim: possibly inside a <change><new>, never a nested step's.
-    const claim = [...this.querySelectorAll("delta-step-claim")].find(
-      (c) => c.closest("delta-step") === this,
-    );
-    (claim ?? this).prepend(num, " ");
-    // Its aids (<intuition>, …): dots after the claim, drawer between claim and proof.
-    const lens = buildLens(this);
-    if (lens && claim) {
-      claim.append(" ", lens.dots);
-      claim.after(lens.drawer);
+    const claim = own(this, "delta-step-claim");
+    const proof = own(this, "delta-proof");
+    const sheet = ownerOf(this);
+    const pleat =
+      this.getAttribute("depth") === "1" &&
+      sheet !== null &&
+      (sheet.classList.contains("proof-foot") || sheet.classList.contains("proof-sheet")) &&
+      !this.closest(".xref-pop-body");
+    if (!pleat) {
+      // Flat: the number in front of the claim, the aids under it, the proof below.
+      (claim ?? this).prepend(num, " ");
+      const folds = buildFolds(this);
+      if (folds) (claim ? topOf(this, claim) : num).after(folds);
+      if (proof) applyStatus(proof, claim ?? null);
+      return;
     }
+
+    // A pleat of the sheet: a header row holding the number and the claim (the valley of
+    // the fold, with the mountain under it), the aids as named folds, then the proof,
+    // which the header folds.
+    this.classList.add("step-pleat");
+    // Pleats stack edge to edge; the first one meets the bar, the last one the QED.
+    const before = shown(this, "previousSibling");
+    if (before === null) this.classList.add("at-top");
+    else if (before instanceof Element && before.localName === "delta-step")
+      this.classList.add("after-step");
+    const after = shown(this, "nextSibling");
+    if (after instanceof Element && after.localName === "delta-step")
+      this.classList.add("before-step");
+    if (after === null || (after instanceof Element && after.classList.contains("proof-qed")))
+      this.classList.add("at-end");
+    const head = document.createElement("div");
+    head.className = "step-head";
+    const text = document.createElement("span");
+    text.className = "step-text";
+    if (claim) text.append(topOf(this, claim));
+    head.append(num, text);
+    if (proof) applyStatus(proof, head);
+    const mountain = document.createElement("span");
+    mountain.className = "step-mountain";
+    mountain.setAttribute("aria-hidden", "true");
+    this.prepend(head, mountain);
+    const folds = buildFolds(this, { named: true });
+    if (folds) mountain.after(folds);
+    if (!proof) return; // nothing to unfold: the claim lies flat
+
+    this.classList.add("has-body");
+    const caret = document.createElement("span");
+    caret.className = "step-caret";
+    caret.setAttribute("aria-hidden", "true");
+    head.append(caret);
+    head.classList.add("collapse-toggle");
+    head.setAttribute("role", "button");
+    head.tabIndex = 0;
+    setFolded(this, proof.getAttribute("collapsed") !== "false");
+    const flip = (): void => foldStep(this, !this.classList.contains("is-collapsed"));
+    head.addEventListener("click", flip);
+    head.addEventListener("keydown", (e: KeyboardEvent) => {
+      if (e.target !== head || (e.key !== "Enter" && e.key !== " ")) return;
+      e.preventDefault();
+      flip();
+    });
+    proof.addEventListener("animationend", (e) => {
+      if (e.target === proof) this.classList.remove("is-unfolding");
+    });
   }
+}
+
+const timers = new WeakMap<Element, number>();
+
+/** Folds or lays flat a pleated step, the paper moving unless the reader asked for less motion. */
+export function foldStep(step: HTMLElement, folding: boolean): void {
+  clearTimeout(timers.get(step));
+  step.classList.remove("is-unfolding", "is-refolding");
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!folding) {
+    const was = step.classList.contains("is-collapsed");
+    setFolded(step, false);
+    if (was && !still) step.classList.add("is-unfolding");
+    return;
+  }
+  if (step.classList.contains("is-collapsed")) return;
+  if (still) return setFolded(step, true);
+  step.classList.add("is-refolding");
+  timers.set(
+    step,
+    window.setTimeout(() => {
+      step.classList.remove("is-refolding");
+      setFolded(step, true);
+    }, REFOLD_MS),
+  );
 }
 
 class DeltaHyp extends HTMLElement {
@@ -66,40 +179,43 @@ function labelled(key: string, fallback: string, text?: string): typeof HTMLElem
 }
 
 /**
- * The "Steps 1 2 … All" control for a proof whose steps nest `depth` levels deep. Level k
- * shows every claim down to level k: the proofs of steps at levels below k unfold, the
- * rest fold. "All" unfolds every step proof.
+ * "Steps only · Full proof" for the sheet `proof`: folds every top-level step, or lays
+ * them all flat. Each button is pressed while the steps are all that way; a step folded
+ * by hand (or unfolded by a jump to it) updates them.
  */
-export function stepLevels(proof: HTMLElement, depth: number): HTMLElement {
+export function stepsControl(proof: HTMLElement): HTMLElement {
   const box = document.createElement("span");
-  box.className = "step-levels";
-  const name = document.createElement("span");
-  name.className = "step-levels-label";
-  name.textContent = t("stepLevel", "Steps");
-  box.append(name);
-
-  const buttons: HTMLButtonElement[] = [];
-  const show = (k: number, active: HTMLButtonElement): void => {
-    for (const p of proof.querySelectorAll<HTMLElement>("delta-proof[data-depth]")) {
-      setFolded(p, Number(p.dataset.depth) >= k);
-    }
-    for (const b of buttons) b.setAttribute("aria-pressed", String(b === active));
+  box.className = "steps-control";
+  const steps = (): HTMLElement[] =>
+    [...proof.querySelectorAll<HTMLElement>("delta-step.step-pleat.has-body")].filter(
+      (s) => ownerOf(s) === proof,
+    );
+  const folded = button("", t("onlySteps", "Steps only"));
+  const flat = button("", t("fullProof", "Full proof"));
+  const sync = (): void => {
+    const all = steps();
+    const shut = all.filter((s) => s.classList.contains("is-collapsed")).length;
+    folded.setAttribute("aria-pressed", String(all.length > 0 && shut === all.length));
+    flat.setAttribute("aria-pressed", String(all.length > 0 && shut === 0));
   };
-  const add = (label: string, k: number): void => {
-    const b = button("", label);
-    b.title = t("stepLevelHint", "Expand the proof to this level");
-    // The control sits in the proof's lead, which may itself be a fold toggle.
+  for (const [b, folding] of [
+    [folded, true],
+    [flat, false],
+  ] as const) {
+    // The control sits in the proof's bar, which is itself a fold toggle.
     b.addEventListener("click", (e) => {
       e.stopPropagation();
-      show(k, b);
+      for (const s of steps()) foldStep(s, folding);
     });
     b.addEventListener("keydown", (e) => e.stopPropagation());
-    buttons.push(b);
     box.append(b);
-  };
-  for (let k = 1; k <= depth; k++) add(String(k), k);
-  add(t("all", "All"), Infinity);
-  buttons[0].setAttribute("aria-pressed", "true");
+  }
+  // The steps upgrade after the sheet: watch them once they have.
+  queueMicrotask(() => {
+    const watch = new MutationObserver(sync);
+    for (const s of steps()) watch.observe(s, { attributes: true, attributeFilter: ["class"] });
+    sync();
+  });
   return box;
 }
 

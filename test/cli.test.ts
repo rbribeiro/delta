@@ -150,10 +150,14 @@ describe("delta verify", () => {
     const out = JSON.parse(r.stdout);
     expect(out.against).toMatch(/^[0-9a-f]{12}$/);
     const text = readFileSync(join(dir, "p.dlt"), "utf8");
-    expect(text).toContain(
-      `<proof of="a" by="claude" status="verified" verified-by="rodrigo" against="${out.against}">p</proof>`,
+    expect(text).toMatch(
+      new RegExp(
+        `<proof of="a" by="claude" status="verified" verified-by="rodrigo" verified-on="\\d{4}-\\d{2}-\\d{2}" against="${out.against}">p</proof>`,
+      ),
     );
-    expect(text.replace(/ status="verified" verified-by="rodrigo" against="\w+"/, "")).toBe(SRC);
+    expect(
+      text.replace(/ status="verified" verified-by="rodrigo" verified-on="[\d-]+" against="\w+"/, ""),
+    ).toBe(SRC);
     expect(deltaIn(dir, "lint", "--json").stdout).not.toContain('"stale"');
   });
 
@@ -210,7 +214,7 @@ describe("delta verify on a proof without `of`", () => {
     const r = deltaIn(dir, "verify", "a", "--by", "rodrigo");
     expect(r.status).toBe(0);
     expect(readFileSync(join(dir, "p.dlt"), "utf8")).toMatch(
-      /<proof status="verified" verified-by="rodrigo" against="\w+"\/>/,
+      /<proof status="verified" verified-by="rodrigo" verified-on="[\d-]+" against="\w+"\/>/,
     );
   });
 });

@@ -29,7 +29,14 @@ export interface ProjectConfig {
 /** The `<document>` attributes a project may default via the `[document]` table. Only a
  *  path-shaped `theme` needs resolution; the rest ride raw onto `doc.attrs`. Any other key
  *  is ignored. */
-const DOCUMENT_DEFAULT_KEYS = ["type", "theme", "theme-accent", "theme-mode", "lang"] as const;
+const DOCUMENT_DEFAULT_KEYS = [
+  "type",
+  "theme",
+  "theme-accent",
+  "theme-mode",
+  "lang",
+  "proofs",
+] as const;
 
 export interface ConfigResult {
   config?: ProjectConfig;
@@ -49,9 +56,10 @@ export interface ConfigResult {
  *   theme-accent = "blue"
  *   theme-mode   = "dark"
  *   lang         = "en"
+ *   proofs       = "open"                  #   joined proofs start unfolded
  *
  * Inputs and `out` are resolved relative to the toml's own directory. The optional
- * `[document]` table sets defaults (`type`/`theme`/`theme-accent`/`theme-mode`/`lang`)
+ * `[document]` table sets defaults (`type`/`theme`/`theme-accent`/`theme-mode`/`lang`/`proofs`)
  * applied to every file, each overridable by a per-document attribute. Any problem is
  * an `error` diagnostic on the toml.
  */

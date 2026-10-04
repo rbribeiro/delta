@@ -105,7 +105,7 @@ describe("buildReview", () => {
     });
     expect(p).toMatchObject({
       tag: "proof",
-      id: "proof-of-l",
+      id: "l-proof", // the auto id of a proof away from its result
       status: "sketch",
       by: "ai",
       text: "Proof — p",

@@ -51,7 +51,7 @@ export interface Verification {
 
 /**
  * A human's sign-off on the result `id`: its (first) proof gets `status="verified"`,
- * `verified-by` (when `by` is given) and `against`, the hash of what was checked (its
+ * `verified-by` (when `by` is given), `verified-on` (today, for the page's stamp) and `against`, the hash of what was checked (its
  * statement, its proof, and the statements it uses; see graph-hash.ts), written into the
  * source file in place. Editing any of those later makes the verification stale.
  *
@@ -88,6 +88,7 @@ export function verify(
   const attrs: Record<string, string> = {
     status: "verified",
     ...(by ? { "verified-by": by } : {}),
+    "verified-on": today(),
     against: node.hash,
   };
   const { file, start } = proof.src;
@@ -96,4 +97,11 @@ export function verify(
   // The edit is inside the opening tag, so the lines before it are unchanged.
   const line = text.slice(0, start).split("\n").length;
   return { id, against: node.hash, ...(by ? { verifiedBy: by } : {}), file, line, warnings };
+}
+
+/** Today as `YYYY-MM-DD`, in local time (the day the human signed). */
+function today(): string {
+  const d = new Date();
+  const pad = (n: number): string => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }

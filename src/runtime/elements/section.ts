@@ -3,7 +3,9 @@
  * child into a real heading, prefixed by the compile-time number.
  */
 
-import { applyCollapsible, applyStatus, kindOf, renderMeta } from "./shared.ts";
+import { nameOf } from "../i18n.ts";
+import { applyCollapsible, kindOf, renderMeta } from "./shared.ts";
+import { applyStatus } from "./status.ts";
 import { HEADING_LEVEL } from "../../language/tags.ts";
 
 // tag → the heading class the structure stylesheet targets
@@ -47,9 +49,24 @@ class DeltaSection extends HTMLElement {
       numEl.textContent = num;
       heading.append(numEl, " ");
     }
-    heading.append(...title.childNodes);
+    // A chapter opens big: its numeral set large and light beside a small-caps
+    // "Chapter 2" over the title (structure.css lays the three out).
+    let text: HTMLElement = heading;
+    if (tag === "chapter") {
+      if (num) {
+        const kicker = document.createElement("span");
+        kicker.className = "chapter-kicker";
+        kicker.setAttribute("aria-hidden", "true"); // the numeral already says it
+        kicker.textContent = `${nameOf("chapter")} ${num}`;
+        heading.append(kicker);
+      }
+      text = document.createElement("span");
+      text.className = "chapter-name";
+      heading.append(text);
+    }
+    text.append(...title.childNodes);
     title.replaceWith(heading);
-    applyStatus(this, heading); // status="draft" by="…" on a section → pill after the title
+    applyStatus(this, text); // status="draft" by="…" on a section → its mark after the title
 
     renderMeta(this);
 

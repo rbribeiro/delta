@@ -6,13 +6,15 @@
  *     <strategy>How the proof goes (<ref to="lem:coupling"/>).</strategy>
  *   </lemma>
  *
- * An aid can be as long as the proof, so it never lives inside the box: `buildLens`
- * (called by the environment) leaves a small cluster of coloured dots on the box's top
- * border, opposite the label, and moves the aids into a drawer that hangs *under* the
- * box. A dot opens its aid in the drawer (one at a time); the box keeps the size of its
- * statement. A <step> has no box: its dots follow the step's claim and its drawer hangs
- * between the claim and the step's proof (proofstructure.ts). The compiler validated
- * placement and stamped `collapsed` (every aid hidden unless the author opened it).
+ * Each aid is a fold of the box's paper, under the statement: closed, a thin folded strip
+ * (its name shows on hover); open, a tinted panel that unfolds in place, named in its own
+ * header, which folds it back. The order is always intuition, strategy, obstacle, and each
+ * opens on its own. `buildFolds` (called by the environment) returns the folds for the
+ * box to place. A top-level <step> of a proof's sheet places them under its claim as
+ * named folds (`named`: the name printed on the strip), pleats of the same sheet; a step
+ * elsewhere keeps them narrow, inside its column (proofstructure.ts).
+ * The compiler validated placement and stamped `collapsed` (every aid closed unless the
+ * author opened it).
  */
 
 import { t } from "../i18n.ts";
@@ -23,73 +25,101 @@ import { button, kindOf } from "./shared.ts";
 const AIDS = [...AID_TAGS];
 const SELECTOR = AIDS.map((a) => `:scope > delta-${a}`).join(", ");
 
-/** The dots (for the box's top border) and the drawer (for right after the box). */
-export interface Lens {
-  dots: HTMLElement;
-  drawer: HTMLElement;
-}
+/** How long the paper takes to fold back (the `fold-refold` animation in understanding.css). */
+export const REFOLD_MS = 380;
 
 /**
- * Moves `host`'s direct aid children into a drawer and returns it with its dots, or
- * null when the host has none. The caller places the drawer after the host, so an open
- * aid extends the page below the box instead of stretching it. In a ref pop-over
- * preview everything starts folded: the preview is the statement plus the dots.
+ * Moves `host`'s direct aid children into folds and returns them in a `.folds` block, or
+ * null when it has none. In a ref pop-over preview every fold starts closed: the preview
+ * is the statement. `named` prints each aid's name on its closed strip.
  */
-export function buildLens(host: HTMLElement): Lens | null {
+export function buildFolds(host: HTMLElement, { named = false } = {}): HTMLElement | null {
   const aids = [...host.querySelectorAll<HTMLElement>(SELECTOR)].sort(
     (a, b) => AIDS.indexOf(kindOf(a)) - AIDS.indexOf(kindOf(b)),
   );
   if (aids.length === 0) return null;
 
-  const dots = document.createElement("span");
-  dots.className = "lens-dots";
-  const drawer = document.createElement("div");
-  drawer.className = "lens-drawer";
-
-  const buttons = new Map<HTMLElement, HTMLButtonElement>();
-  let open: HTMLElement | null = null;
-  const show = (target: HTMLElement | null): void => {
-    open = target;
-    for (const [aid, button] of buttons) {
-      aid.hidden = aid !== target;
-      button.setAttribute("aria-expanded", String(aid === target));
-    }
-    drawer.hidden = target === null;
-    host.classList.toggle("has-drawer", target !== null);
-  };
-
-  for (const aid of aids) {
-    const kind = kindOf(aid);
-    const label = t(kind, kind);
-
-    const dot = button("lens-dot");
-    dot.dataset.aid = kind;
-    dot.dataset.label = label;
-    dot.setAttribute("aria-label", label);
-    dot.addEventListener("click", () => show(open === aid ? null : aid));
-    buttons.set(aid, dot);
-    dots.append(dot);
-
-    // The panel names itself (the dots are unlabelled) and closes from its own header.
-    aid.classList.add("lens-panel");
-    aid.dataset.aid = kind;
-    const head = document.createElement("div");
-    head.className = "lens-head";
-    const name = document.createElement("span");
-    name.className = "lens-name";
-    name.textContent = label;
-    const close = button("lens-close", "\u00d7"); // ×
-    close.setAttribute("aria-label", t("close", "Close"));
-    close.addEventListener("click", () => {
-      show(null);
-      dot.focus();
-    });
-    head.append(name, close);
-    aid.prepend(head);
-    drawer.append(aid);
-  }
-
+  const folds = document.createElement("div");
+  folds.className = "folds";
   const inPreview = host.closest(".xref-pop-body") !== null;
-  show(inPreview ? null : (aids.find((a) => a.getAttribute("collapsed") === "false") ?? null));
-  return { dots, drawer };
+  for (const aid of aids) {
+    const f = fold(aid, !inPreview && aid.getAttribute("collapsed") === "false");
+    if (named) f.dataset.named = "true";
+    folds.append(f);
+  }
+  return folds;
+}
+
+/** One aid as a fold: the closed strip, and the panel it unfolds into. */
+function fold(aid: HTMLElement, open: boolean): HTMLElement {
+  const kind = kindOf(aid);
+  const label = t(kind, kind);
+  const el = document.createElement("div");
+  el.className = "fold";
+  el.dataset.aid = kind;
+
+  // Closed: a valley and a mountain of folded paper, wordless but for the tooltip (a
+  // named fold prints its name in the valley instead).
+  const strip = button("fold-strip");
+  strip.dataset.label = label;
+  strip.setAttribute("aria-label", label);
+  const valley = document.createElement("span");
+  valley.className = "fold-valley";
+  const printed = document.createElement("span");
+  printed.className = "fold-label";
+  printed.setAttribute("aria-hidden", "true");
+  printed.textContent = label;
+  valley.append(printed);
+  const mountain = document.createElement("span");
+  mountain.className = "fold-mountain";
+  strip.append(valley, mountain);
+
+  // Open: the aid on a tinted panel, under a header that folds it back.
+  const panel = document.createElement("div");
+  panel.className = "fold-panel";
+  const name = document.createElement("span");
+  name.className = "fold-name";
+  name.textContent = label;
+  const caret = document.createElement("span");
+  caret.className = "fold-caret";
+  caret.setAttribute("aria-hidden", "true");
+  caret.textContent = "▴"; // ▴
+  const head = button("fold-head", name, caret);
+  aid.classList.add("fold-body");
+  const crease = document.createElement("span");
+  crease.className = "fold-crease";
+  crease.setAttribute("aria-hidden", "true");
+  panel.append(head, aid, crease);
+  el.append(strip, panel);
+
+  let timer: number | undefined;
+  /** Opens or closes the fold; `focus` takes the keyboard once it is showing. */
+  const set = (opening: boolean, animate: boolean, focus?: HTMLElement): void => {
+    clearTimeout(timer);
+    el.classList.toggle("is-open", opening);
+    strip.setAttribute("aria-expanded", String(opening));
+    head.setAttribute("aria-expanded", String(opening));
+    el.classList.remove("is-unfolding", "is-refolding");
+    if (opening) {
+      strip.hidden = true;
+      panel.hidden = false;
+      if (animate) el.classList.add("is-unfolding");
+      focus?.focus({ preventScroll: true });
+      return;
+    }
+    const close = (): void => {
+      el.classList.remove("is-refolding");
+      panel.hidden = true;
+      strip.hidden = false;
+      focus?.focus({ preventScroll: true });
+    };
+    if (!animate || matchMedia("(prefers-reduced-motion: reduce)").matches) return close();
+    el.classList.add("is-refolding");
+    timer = window.setTimeout(close, REFOLD_MS);
+  };
+  strip.addEventListener("click", () => set(true, true, head));
+  head.addEventListener("click", () => set(false, true, strip));
+  el.addEventListener("animationend", () => el.classList.remove("is-unfolding"));
+  set(open, false);
+  return el;
 }

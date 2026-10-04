@@ -109,7 +109,7 @@
         </header>
         <row>
           <column mono="true">--delta-trust-open, -heuristic, -sketch, -verified, -formalized</column>
-          <column>A confiança de uma prova: as caixas e a legenda do mapa da prova e as etiquetas desses estados</column>
+          <column>A confiança de uma prova: as caixas e a legenda do mapa da prova e as etiquetas desses estados no painel de revisão</column>
         </row>
         <row>
           <column mono="true">--delta-proof-alert</column>
@@ -117,11 +117,27 @@
         </row>
         <row>
           <column mono="true">--delta-aid-intuition, -strategy, -obstacle</column>
-          <column>Os pontinhos e a gaveta de intuição, estratégia e obstáculo</column>
+          <column>O nome e o leve tom das dobras de intuição, estratégia e obstáculo</column>
+        </row>
+        <row>
+          <column mono="true">--delta-fold-lit, -shade, -shade-2</column>
+          <column>A luz e as sombras que fazem uma dobra fechada parecer papel vincado</column>
+        </row>
+        <row>
+          <column mono="true">--delta-status-dash, --delta-status-grid</column>
+          <column>O papel do trabalho em andamento: a borda tracejada e o quadriculado ou pautado</column>
+        </row>
+        <row>
+          <column mono="true">--delta-stamp-ink, -stale, -blend, -bright</column>
+          <column>O carimbo de um resultado conferido: a tinta quando a equipe não dá cor a quem conferiu, a tinta desbotada de um carimbo desatualizado, a mistura com o papel e o quanto a tinta clareia no modo escuro</column>
+        </row>
+        <row>
+          <column mono="true">--delta-env-bg, -well, -border, -shadow</column>
+          <column>A ficha de um ambiente: o papel, o rodapé (a barra da demonstração), a borda e a sombra</column>
         </row>
         <row>
           <column mono="true">--delta-tone-theorem, -definition, -example, -remark, -exercise</column>
-          <column>O rótulo de cada família de ambientes</column>
+          <column>A cor de cada família de ambientes: o preenchimento do rótulo, com <c>--delta-env-tag-fill: 1</c>, e o tom da borda, com <c>--delta-env-tint</c> entre 0 e 1</column>
         </row>
         <row>
           <column mono="true">--delta-code-keyword, -string, -number, -comment, -name</column>

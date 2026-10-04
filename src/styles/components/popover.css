@@ -55,6 +55,11 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* A closed bubble is hidden whatever its content's styles say: a component that gives its
+   bubble a `display` would otherwise beat the browser's own `[popover]` hiding, and the
+   closed bubble would stay painted where it last was. */
+.delta-pop[popover]:not(:popover-open) { display: none !important; }
+
 /* Fallback when the Popover API is unavailable: shown only via .is-open. */
 .delta-pop:not([popover]) { display: none; }
 .delta-pop.is-open:not([popover]) { display: block; }

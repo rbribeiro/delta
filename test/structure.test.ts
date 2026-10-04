@@ -27,14 +27,20 @@ const PROOF = doc(`
   <counterexample breaks="h:2">$x = 1/2$.</counterexample>`);
 
 describe("structured proofs", () => {
-  it("number steps by their place (ids for those without), and fold each step's proof", () => {
+  it("number steps by their place (ids for those without), and fold each top-level step's proof", () => {
     const { html, diagnostics } = build(PROOF);
     expect(diagnostics.filter((d) => d.severity === "error")).toEqual([]);
     expect(html).toContain('<delta-step id="st:1" num="1" depth="1">');
     expect(html).toContain('<delta-step num="2" depth="1" id="thm:t-step-2">');
     expect(html).toContain('<delta-step num="2.1" depth="2" id="thm:t-step-2.1">');
-    expect(html).toMatch(/<delta-proof collapsible="true" collapsed="true" data-depth="2">/);
-    expect(html).toMatch(/<delta-proof of="thm:t" data-step-depth="2"/);
+    expect(html).toMatch(
+      /<delta-step id="st:1"[^>]*>.*?<delta-proof collapsible="true" collapsed="true">/s,
+    );
+    // a sub-step's proof reads inside its step: it never folds
+    expect(html).toMatch(/<delta-step num="2\.1"[^>]*>.*?<delta-proof>/s);
+    expect(html).toMatch(
+      /<delta-proof of="thm:t" data-attached="true" collapsed="true" data-step-depth="2"/,
+    );
   });
 
   it("keep a step's <claim> out of the numbered claim environment", () => {
@@ -57,6 +63,17 @@ describe("structured proofs", () => {
     expect(text).toContain('<lemma id="lem:a">A.</lemma>'); // what the proof uses
   });
 
+  it("number a solution's steps after its exercise", () => {
+    const { html, diagnostics } = build(
+      doc(
+        `<exercise id="ex">E.</exercise><solution><step><claim>a</claim><proof>p</proof></step></solution>`,
+      ),
+    );
+    expect(diagnostics.filter((d) => d.severity === "error")).toEqual([]);
+    expect(html).toContain('<delta-step num="1" depth="1" id="ex-step-1">');
+    expect(html).toMatch(/<delta-solution [^>]*data-step-depth="1"/);
+  });
+
   it("reject misplaced pieces", () => {
     const { diagnostics } = build(
       doc(
@@ -65,7 +82,7 @@ describe("structured proofs", () => {
     );
     const errors = diagnostics.filter((d) => d.severity === "error").map((d) => d.message);
     expect(errors).toEqual([
-      "<step> must be directly inside a <proof> (a step's own <proof> included); found inside <section>",
+      "<step> must be directly inside a <proof> or <solution> (a step's own <proof> included); found inside <section>",
       "step 1 has no <claim>: say what the step establishes",
       "<hyp> must be in the statement of a result (theorem, lemma, …), not in a proof or an aid",
     ]);
@@ -217,5 +234,96 @@ describe("aids on a step", () => {
     expect(diagnostics.map((d) => d.message)).toEqual([
       expect.stringMatching(/<step> has more than one <intuition>/),
     ]);
+  });
+});
+
+describe("proofs joined to their box", () => {
+  // In the page only: a remote proof is also snapshotted for its box's link preview.
+  const attached = (html: string) =>
+    [...html.split("<template data-delta-pop")[0].matchAll(/<delta-(proof|solution)\b[^>]*>/g)]
+      .filter((m) => !m[0].includes("data-depth"))
+      .map((m) => /data-attached="true"/.test(m[0]));
+
+  it("joins a proof right after its result, the second proof after it, and one nested in it", () => {
+    const { graph, html } = build(
+      doc(`<lemma id="a">A.</lemma>
+      <proof>One.</proof>
+      <proof>Two.</proof>
+      <lemma id="b">B.<proof>Inside.</proof></lemma>
+      <lemma id="c">C.</lemma>
+      <comment by="x">A note between them parts nothing.</comment>
+      <proof of="c">Three.</proof>`),
+    );
+    expect(attached(html)).toEqual([true, true, true, true]);
+    expect(graph.nodes.get("a")!.proofs).toHaveLength(2);
+    expect(graph.nodes.get("b")!.proofs).toHaveLength(1);
+    expect(graph.nodes.get("c")!.proofs).toHaveLength(1);
+    expect(html).toContain('<delta-proof data-of="b" data-attached="true" collapsed="true">');
+  });
+
+  it("joins a solution to its exercise, with or without ids", () => {
+    const { html } = build(
+      doc(`<exercise>E.</exercise><solution>S.</solution>
+      <problem id="p">P.<solution>Inside.</solution></problem>`),
+    );
+    expect(attached(html)).toEqual([true, true]);
+  });
+
+  it("leaves a proof away from its result alone, with an id its box links to", () => {
+    const { html } = build(
+      doc(`<lemma id="a">A.</lemma> Prose. <proof of="a">Far.</proof>
+      <lemma id="b">B.</lemma><lemma id="z">Z.</lemma><proof of="b">Not next to b.</proof>`),
+    );
+    expect(attached(html)).toEqual([false, false]);
+    expect(html).toContain('<delta-proof of="a" id="a-proof"');
+    expect(html).toContain(
+      '<delta-lemma id="a" num="1.1" data-proof-at="a-proof" data-proof-at-tag="proof" data-proof-at-num="">',
+    );
+  });
+
+  it('starts joined proofs folded, unless the author or <document proofs="open"> says otherwise', () => {
+    const folded = (src: string) =>
+      [...build(src).html.matchAll(/<delta-proof [^>]*collapsed="(\w+)"/g)].map((m) => m[1]);
+    const body = `<section><title>S</title><lemma id="a">A.</lemma><proof>P.</proof>
+      <lemma id="b">B.</lemma><proof collapsed="false">Q.</proof></section>`;
+    expect(folded(`<document>${body}</document>`)).toEqual(["true", "false"]);
+    expect(folded(`<document proofs="open">${body}</document>`)).toEqual(["false", "false"]);
+    expect(folded(`<document type="presentation"><slide>${body}</slide></document>`)).toEqual([
+      "false",
+      "false",
+    ]);
+  });
+
+  it("names the heading a remote proof sits under, and marks an open result with no proof", () => {
+    const { html } = build(
+      `<document><section id="s1"><title>A</title><theorem id="t">T.</theorem>
+        <lemma id="o" status="open">O.</lemma></section>
+        <section id="s2"><title>B</title><proof of="t">P.</proof></section></document>`,
+    );
+    expect(html).toContain(
+      'data-proof-at="t-proof" data-proof-at-tag="section" data-proof-at-num="2"',
+    );
+    expect(html).toContain('<delta-lemma id="o" status="open" num="1.1" data-proof="pending">');
+  });
+
+  it("keeps a nested proof out of the statement: its hash, its preview, `delta show`", () => {
+    const nested = build(
+      doc(`<lemma id="l">If $x$ then $y$.<proof>Because $z$.</proof></lemma>
+      <theorem id="t">By <ref to="l"/>.</theorem>`),
+    );
+    const after = build(
+      doc(`<lemma id="l">If $x$ then $y$.</lemma><proof>Because $z$.</proof>
+      <theorem id="t">By <ref to="l"/>.</theorem>`),
+    );
+    expect(nested.graph.nodes.get("l")!.hash).toBe(after.graph.nodes.get("l")!.hash);
+    expect(nested.graph.nodes.get("t")!.hash).toBe(after.graph.nodes.get("t")!.hash);
+    const preview = /<template data-delta-pop="l">(.*?)<\/template>/s.exec(nested.html)![1];
+    expect(preview).not.toContain("delta-proof");
+    const rel = (f: string) => basename(f);
+    const shown = showData(nested.graph, "l", rel, false)!;
+    expect(shown.statement!.source).not.toContain("Because");
+    expect(shown.proofs[0].source).toContain("Because");
+    const context = showData(nested.graph, "t", rel, true)!.context!;
+    expect(context[0].statement!.source).not.toContain("Because");
   });
 });

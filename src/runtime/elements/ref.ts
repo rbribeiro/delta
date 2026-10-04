@@ -1,7 +1,8 @@
 /**
  * <ref to="id"> — a cross-reference. The compiler resolved the target's number
  * (`data-target-num`) and kind (`data-target-tag`), so the link reads "Theorem 1.1" (localized via `t`)
- * unless the author supplied their own text. Clicking opens a `.delta-pop` card
+ * unless the author supplied their own text. Resting the mouse on it (or clicking, or
+ * tapping) opens a `.delta-pop` card
  * previewing the target — cloned from the inert `<template data-delta-pop="id">`
  * the emitter shipped, so no fetch — with a button that jumps to it and flashes
  * it. An unresolved ref (no `data-target-num`/`data-target-tag`) is left as inert text.
@@ -62,6 +63,7 @@ export function wireRefPopover(trigger: HTMLElement, { to, num, kind, href }: Re
 
   let filled = false;
   const pop = popover(trigger, card, {
+    hover: true, // a mouse previews by resting on the link; a click pins it
     onOpen: () => {
       if (filled) return;
       filled = true;

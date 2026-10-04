@@ -133,11 +133,17 @@
      without touching every other card in the document. */
   --delta-env-bg:       var(--delta-surface-1);
   --delta-env-border:   var(--delta-rule);
+  /* The soft shadow under a box (a CSS filter follows the folds' silhouette, so this is a
+     colour, not a box-shadow list); scaled by --delta-elevation like every shadow. */
+  --delta-env-shadow:   rgb(60 50 30 / calc(.10 * var(--delta-elevation)));
+  /* The foot of a box — the bar of a joined proof or solution, "Proof in Section 2.3" —
+     a shade between the card and the page, like a well cut into the card. */
+  --delta-env-well:     color-mix(in oklab, var(--delta-paper) 65%, var(--delta-env-bg));
 
-  /* Environment TONES — one per environment family, used to fill the label pill.
-     They all default to the page colour, i.e. the quiet outlined pill this design
-     has always had; a theme remaps them to brand colours to get a set of
-     differently-coloured environments. `theorems.css` assigns the right tone to
+  /* Environment TONES — one per environment family: the fill of the label when a
+     theme turns it into a pill (--delta-env-tag-fill), and the tint of the card's edge
+     (--delta-env-tint). They default to the page colour, which shows nothing; a theme
+     remaps them to brand colours to get a set of differently-coloured environments. `theorems.css` assigns the right tone to
      each family *on the element*, because a var() inside a custom property is
      substituted where it is DECLARED — putting the lookup at :root would freeze
      every environment to one tone. */
@@ -147,7 +153,8 @@
   --delta-tone-remark:     var(--delta-paper);
   --delta-tone-exercise:   var(--delta-paper);
   --delta-env-tag-ink:     var(--delta-accent-ink);
-  --delta-env-tag-border:  var(--delta-rule);
+  /* 0 = the label is bare small caps; 1 = a pill filled with the family tone. */
+  --delta-env-tag-fill:    0;
 
   /* Proof TRUST — one colour per level of the order open < heuristic < sketch <
      verified < formalized. The proof map's boxes and legend and the status pills of
@@ -162,11 +169,30 @@
      resting on something weaker than itself, an unused hypothesis. */
   --delta-proof-alert:      var(--delta-warn);
 
-  /* Reader AIDS on a result or a step — the dot and the drawer rule of each kind
+  /* Reader AIDS on a result or a step — the name and the faint tint of each kind's fold
      (components/understanding.css). */
   --delta-aid-intuition:    var(--delta-accent-ink);
   --delta-aid-strategy:     var(--delta-ink-soft);
   --delta-aid-obstacle:     var(--delta-warn);
+  /* The light and the shadows that make a closed fold read as creased paper: the lit top
+     of the valley, the shadow at its bottom, the softer one under the mountain. Shadows
+     stay dark in dark mode, so the [data-mode] blocks restate them. */
+  --delta-fold-lit:         rgb(255 255 255 / .7);
+  --delta-fold-shade:       rgb(60 45 25 / .16);
+  --delta-fold-shade-2:     rgb(60 45 25 / .08);
+
+  /* STATUS as material (components/status.css): the dashed edge of unfinished work, the
+     faint grid or ruling of its paper, and the rubber stamp of a checked result — in the
+     checker's colour when the team gives one, else this ink; a stale stamp fades to the
+     second. The blend lets the stamp's ink sit *in* the paper (multiply on light). */
+  --delta-status-dash:      var(--delta-mute);
+  --delta-status-grid:      color-mix(in oklab, var(--delta-ink) 7%, transparent);
+  --delta-stamp-ink:        var(--delta-trust-verified);
+  --delta-stamp-stale:      var(--delta-mute);
+  --delta-stamp-blend:      multiply;
+  /* How far a checker's stamp moves from their palette's deep ink toward its bright tone:
+     none on light paper, all the way in dark mode (the [data-mode] blocks). */
+  --delta-stamp-bright:     0%;
 
   /* The play button drawn over a video's poster image (components/figure.css). It sits
      on a photo, not on the page, so it ignores dark mode: a dark disc with a white
@@ -315,6 +341,13 @@
                         0 14px 36px rgb(0 0 0 / calc(.55 * var(--delta-elevation)));
   --delta-shadow-code:  0 1px 1px rgb(0 0 0 / calc(.40 * var(--delta-elevation))),
                         0 10px 28px rgb(0 0 0 / calc(.55 * var(--delta-elevation)));
+
+  --delta-env-shadow:   rgb(0 0 0 / calc(.40 * var(--delta-elevation)));
+  --delta-fold-lit:     rgb(255 255 255 / .05);
+  --delta-fold-shade:   rgb(0 0 0 / .42);
+  --delta-fold-shade-2: rgb(0 0 0 / .22);
+  --delta-stamp-blend:  screen;
+  --delta-stamp-bright: 100%;
 }
 @media (prefers-color-scheme: dark) {
   [data-mode="auto"] {
@@ -345,6 +378,13 @@
                           0 14px 36px rgb(0 0 0 / calc(.55 * var(--delta-elevation)));
     --delta-shadow-code:  0 1px 1px rgb(0 0 0 / calc(.40 * var(--delta-elevation))),
                           0 10px 28px rgb(0 0 0 / calc(.55 * var(--delta-elevation)));
+
+    --delta-env-shadow:   rgb(0 0 0 / calc(.40 * var(--delta-elevation)));
+  --delta-fold-lit:     rgb(255 255 255 / .05);
+    --delta-fold-shade:   rgb(0 0 0 / .42);
+    --delta-fold-shade-2: rgb(0 0 0 / .22);
+    --delta-stamp-blend:  screen;
+    --delta-stamp-bright: 100%;
   }
 }
 
@@ -1204,7 +1244,7 @@ delta-code .tok-attr { color: var(--delta-code-fg); }
 }
 
 /* collab.css — shared chrome for the collaboration components (<comment>, <todo>,
-   <change>, status pills, <review>; runtime/elements/collab.ts). Here: the author chip
+   <change>, status marks, <review>; runtime/elements/collab.ts). Here: the author chip
    `.who` that memberChip() builds for every `by`/`for`, the document-wide
    `html[data-review="off"]` switch (the <review> panel's "annotations" toggle) that hides
    every annotation for a clean read, and the print rule — paper never prints its review
@@ -1259,17 +1299,27 @@ delta-code .tok-attr { color: var(--delta-code-fg); }
 /* -- Clean reading view: the panel's "annotations" switch ------------- */
 html[data-review="off"] delta-comment,
 html[data-review="off"] delta-todo,
-html[data-review="off"] .status-pill,
+html[data-review="off"] .status-mark,
 html[data-review="off"] .status-bar,
+html[data-review="off"] .proof-pending,
 html[data-review="off"] .chg-marker { display: none; }
+/* …and the paper goes back to plain: no grid, no ruling, no dashes, the shadow back. */
+html[data-review="off"] .box[data-status] {
+  --box-edge: 0 solid transparent;
+  --box-bg: var(--delta-env-bg);
+  --box-well: var(--delta-env-well);
+  filter: drop-shadow(0 0 0.6px var(--box-edge-color)) drop-shadow(0 2px 4px var(--delta-env-shadow));
+}
+html[data-review="off"] .box[data-status] > .box-sheet { background-image: none; }
 
 /* -- Print: the paper, never its review marks -------------------------- */
 @media print {
   delta-comment,
   delta-todo,
   delta-review,
-  .status-pill,
+  .status-mark,
   .status-bar,
+  .proof-pending,
   .chg-marker { display: none !important; }
 }
 
@@ -1277,7 +1327,8 @@ html[data-review="off"] .chg-marker { display: none; }
 
 /* collapse.css — collapsible sections & environments (`collapsible`/`collapsed`).
    The runtime (applyCollapsible in runtime/elements/shared.ts) turns the label — a
-   section heading, a `.box-tag`, or a proof `.proof-lead` — into a `.collapse-toggle`
+   section heading, a box's `.box-head`, a proof `.proof-lead` or a joined proof's
+   `.proof-bar` — into a `.collapse-toggle`
    and moves the body into a `.collapse-body`; folding sets `.is-collapsed` on the
    host. Here: the caret, the affordance, and the hide. Tokens via var(--delta-*). */
 
@@ -1288,9 +1339,9 @@ html[data-review="off"] .chg-marker { display: none; }
   -webkit-user-select: none;
   user-select: none;
 }
-/* Headings & proof leads anchor the gutter sign (the .box-tag is already
-   position:absolute and parks its sign inline instead). */
-.collapse-toggle:not(.box-tag) {
+/* Headings & proof leads anchor the gutter sign (a box header parks its sign inline
+   instead, and a proof bar has its own caret). */
+.collapse-toggle:not(.box-head, .proof-bar) {
   position: relative;
 }
 .collapse-toggle:focus-visible {
@@ -1319,7 +1370,7 @@ html[data-review="off"] .chg-marker { display: none; }
    flex row). `right:100%` sits it just left of the text; centring on the label
    keeps it level with the text (a flex container resolves an abspos child's
    static position to the top, so `top:auto` would float it above the number). */
-.collapse-toggle:not(.box-tag)::before {
+.collapse-toggle:not(.box-head, .proof-bar)::before {
   position: absolute;
   right: 100%;
   top: 50%;
@@ -1329,19 +1380,19 @@ html[data-review="off"] .chg-marker { display: none; }
   line-height: 1;
 }
 
-/* Box tag: a compact inline sign inside the floating pill. */
-.box-tag.collapse-toggle::before {
-  margin-right: 0.45em;
+/* Box header: a compact inline sign before the label. A proof bar: none (its caret). */
+.box-head.collapse-toggle::before {
+  margin-right: -0.2em;
 }
+.proof-bar.collapse-toggle::before { content: none; }
 
 .is-collapsed > .collapse-body {
   display: none;
 }
 
-/* A folded box collapses to a compact bar that still carries its floating tag. */
-.box.is-collapsed {
-  padding-top: 12px;
-  padding-bottom: 12px;
+/* A folded box collapses to its header (theorems.css hides what hangs under it). */
+.box.is-collapsed .box-head {
+  padding-bottom: 14px;
 }
 
 }
@@ -1445,8 +1496,9 @@ delta-comment.note-hidden { display: none; }
   margin-right: 0.3em;
   font-size: 0.9em;
 }
-/* Inside a label (box tag, heading, proof lead) the marker sits on the text line. */
-.box-tag .note-marker,
+/* Inside a label (box header, heading, proof lead or bar) the marker sits on the text line. */
+.box-head .note-marker,
+.proof-bar .note-marker,
 .proof-lead .note-marker,
 h1 .note-marker, h2 .note-marker, h3 .note-marker, h4 .note-marker {
   vertical-align: middle;
@@ -2213,6 +2265,11 @@ delta-item { display: list-item; margin-left: 1.5em; }
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* A closed bubble is hidden whatever its content's styles say: a component that gives its
+   bubble a `display` would otherwise beat the browser's own `[popover]` hiding, and the
+   closed bubble would stay painted where it last was. */
+.delta-pop[popover]:not(:popover-open) { display: none !important; }
+
 /* Fallback when the Popover API is unavailable: shown only via .is-open. */
 .delta-pop:not([popover]) { display: none; }
 .delta-pop.is-open:not([popover]) { display: block; }
@@ -2355,15 +2412,22 @@ delta-pm-key[data-eff="open"]::before { border-style: dashed; }
 
 }
 
-/* proofstructure.css — structured proofs (<step>/<claim>, the "Steps 1 2 … All" level
-   control), hypotheses (<hyp> and the "used in" facts its preview shows) and the
+/* proofstructure.css — structured proofs (<step>/<claim>, the sheet's "Steps only · Full
+   proof" control), hypotheses (<hyp> and the "used in" facts its preview shows) and the
    <counterexample> box. LIVE: runtime/elements/proofstructure.ts adds .step-num, .hyp-num
-   and .step-levels; the compiler folded every step's proof and numbered everything.
+   and .steps-control.
+
+   A top-level step of a proof's sheet (.step-pleat) is a pleat of that sheet: folded, its
+   header is the valley of a fold with the number and the claim printed on it and a
+   mountain under it, so the card's outline zig-zags (the box draws its edge as a filter,
+   theorems.css); laid flat, the header is a plain row over the step's proof. Its aids are
+   named folds (understanding.css) of the same sheet. Pleats run edge to edge across the
+   sheet's padding, and everything inside lines up on the claim column. Any other step
+   (a sub-step, a step in a preview) is flat: number, claim, proof right below.
    Tokens via var(--delta-*). */
 
 @layer delta.components {
 
-/* -- Steps: numbered claims, each proof folded under its claim --------- */
 delta-step {
   display: block;
   margin: 0.6em 0;
@@ -2380,55 +2444,175 @@ delta-step-claim {
   letter-spacing: 0.02em;
   color: var(--delta-accent-ink);
 }
-/* A step's proof sits under its claim, indented, a little quieter. */
-delta-step > delta-proof {
-  margin: 0.25em 0 0.5em 2.2em;
-  padding-left: 0.9em;
-  border-left: var(--delta-hairline) solid var(--delta-rule-soft);
-  font-size: 0.97em;
-}
-delta-step > delta-proof > .proof-lead,
-delta-step > delta-proof > .collapse-toggle {
-  font-size: 0.92em;
+delta-proof.step-body,
+delta-solution.step-body {
+  margin: 0;
 }
 
-/* -- The level control, in the proof's lead ----------------------------- */
-.step-levels {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  margin-left: 0.6em;
-  font-family: var(--delta-sans);
-  font-size: 10.5px;
-  font-style: normal;
-  vertical-align: 0.1em;
+/* -- A pleat of the sheet ------------------------------------------------ */
+delta-step.step-pleat {
+  --step-col: calc(var(--box-pad-x, 24px) + 28px); /* where the claim starts */
+  --pleat-inset: 12px;
+  --fold-bg: var(--box-well, var(--delta-env-well));
+  margin: 0.9em calc(-1 * var(--box-pad-x, 24px));
 }
-.step-levels-label {
-  margin-right: 4px;
-  letter-spacing: var(--delta-tracking-cap);
+.step-pleat.after-step { margin-top: 0; }
+.step-pleat.before-step { margin-bottom: 0; }
+.step-pleat.at-top { margin-top: calc(-1 * var(--sheet-pad-top, 16px)); }
+.step-pleat.at-end { margin-bottom: 0.4em; }
+.step-pleat.at-end + .proof-qed { display: block; margin: 0; text-align: right; }
+
+.step-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  padding: 14px 20px 12px var(--box-pad-x, 24px);
+  border-top: var(--delta-hairline) solid var(--delta-rule-soft);
+  font-style: italic;
+  line-height: 1.4;
+  color: var(--delta-ink);
+  transition: color var(--delta-dur-fast) var(--delta-ease), filter var(--delta-dur-fast) var(--delta-ease);
+}
+.step-head > .step-num {
+  flex: none;
+  min-width: 0;
+  width: calc(var(--step-col) - var(--box-pad-x, 24px));
+  font-family: var(--delta-serif);
+  font-size: 0.82em;
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+}
+.step-text { flex: 1; min-width: 0; }
+.step-text > delta-step-claim { display: inline; }
+.step-head > .status-mark { margin-left: 12px; }
+.step-caret {
+  flex: none;
+  margin-left: 12px;
+  font-style: normal;
+  font-size: 9px;
+  color: var(--delta-mute);
+  opacity: 0.7;
+}
+.step-caret::before { content: "\25b4"; } /* ▴ */
+.step-head.collapse-toggle::before { content: none; }
+.step-head.collapse-toggle:hover { color: var(--delta-accent-ink); }
+.step-head.collapse-toggle:focus-visible { outline-offset: -2px; border-radius: 0; }
+.step-mountain { display: none; }
+
+/* Folded: the header becomes the valley (lit at the top, shadowed into the crease), the
+   mountain comes back out under it. */
+.step-pleat.is-collapsed > .step-head {
+  padding: 10px calc(20px + var(--pleat-inset)) 9px var(--box-pad-x, 24px);
+  border-top: 0;
+  background: linear-gradient(to bottom, var(--delta-fold-lit), var(--delta-fold-shade-2) 55%, var(--delta-fold-shade)),
+              var(--fold-bg);
+  clip-path: polygon(0 0, 100% 0, calc(100% - var(--pleat-inset)) 100%, var(--pleat-inset) 100%);
+  color: var(--delta-ink-soft);
+}
+.step-pleat.is-collapsed > .step-head:hover { filter: brightness(1.03); }
+.step-pleat.is-collapsed > .step-head .step-caret { display: none; }
+.step-pleat.is-collapsed > .step-mountain {
+  display: block;
+  height: 9px;
+  background: linear-gradient(to bottom, var(--delta-fold-shade-2), transparent 60%), var(--fold-bg);
+  clip-path: polygon(var(--pleat-inset) 0, calc(100% - var(--pleat-inset)) 0, 100% 100%, 0 100%);
+}
+.step-pleat.is-collapsed > .step-body { display: none; }
+
+/* Flat: the step's proof on the claim column. */
+.step-pleat > .step-body {
+  position: relative;
+  padding: 0 var(--box-pad-x, 24px) 16px var(--step-col);
+}
+.step-pleat > .folds + .step-body { padding-top: 14px; }
+.step-pleat > .step-body > :first-child { margin-top: 0; }
+.step-pleat > .step-body > :last-child { margin-bottom: 0; }
+
+/* The paper unfolding, and folding back (the crease keyframes are understanding.css's). */
+.step-pleat.is-unfolding > .step-body {
+  overflow: hidden;
+  transform-origin: top center;
+  animation: step-unfold .55s cubic-bezier(.2, .7, .25, 1);
+}
+.step-pleat.is-refolding > .step-body {
+  overflow: hidden;
+  transform-origin: top center;
+  animation: step-refold .38s cubic-bezier(.55, 0, .8, .3) forwards;
+}
+@keyframes step-unfold {
+  0%   { max-height: 0; opacity: .3;
+         clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 50%, 100% 100%, 0 100%, 12px 50%); }
+  55%  { clip-path: polygon(0 0, 100% 0, calc(100% - 4px) 50%, 100% 100%, 0 100%, 4px 50%); }
+  100% { max-height: 100vh; opacity: 1;
+         clip-path: polygon(0 0, 100% 0, 100% 50%, 100% 100%, 0 100%, 0 50%); }
+}
+@keyframes step-refold {
+  0%   { max-height: 520px; opacity: 1;
+         clip-path: polygon(0 0, 100% 0, 100% 50%, 100% 100%, 0 100%, 0 50%); }
+  100% { max-height: 0; opacity: .2;
+         clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 50%, 100% 100%, 0 100%, 12px 50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .step-pleat > .step-body { animation: none !important; }
+}
+
+/* -- Flat steps: a sub-step, a step in a preview -------------------------- */
+delta-step:not(.step-pleat) > delta-step-claim,
+delta-step:not(.step-pleat) > delta-change delta-step-claim {
+  font-style: italic;
+}
+delta-step:not(.step-pleat) > .step-body {
+  margin: 0.25em 0 0 2.2em;
+  font-size: 0.97em;
+}
+.step-pleat delta-step:not(.step-pleat) { margin: 0.8em 0; }
+
+/* -- "Steps only · Full proof", in the sheet's bar ------------------------ */
+.steps-control {
+  display: inline-flex;
+  gap: 14px;
+  margin-left: auto;
+  font-style: normal;
+}
+.steps-control button {
+  appearance: none;
+  margin: 0;
+  padding: 0 0 3px;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: none;
+  cursor: pointer;
+  font-family: var(--delta-serif);
+  font-size: 10.5px;
+  font-weight: var(--delta-weight-strong);
+  line-height: 1;
+  letter-spacing: 0.13em;
   text-transform: uppercase;
+  white-space: nowrap;
   color: var(--delta-mute);
 }
-.step-levels button {
-  appearance: none;
-  min-width: 1.9em;
-  padding: 1px 6px;
-  border: var(--delta-hairline) solid var(--delta-rule-soft);
-  border-radius: var(--delta-radius-pill);
-  background: var(--delta-paper);
-  color: var(--delta-ink-soft);
-  font: inherit;
-  cursor: pointer;
+.steps-control button:hover { color: var(--delta-ink-soft); }
+.steps-control button[aria-pressed="true"] {
+  color: var(--delta-ink);
+  border-bottom-color: var(--delta-ink);
 }
-.step-levels button:hover { border-color: var(--delta-accent); color: var(--delta-accent-ink); }
-.step-levels button[aria-pressed="true"] {
-  border-color: var(--delta-accent);
-  background: var(--delta-accent-soft);
-  color: var(--delta-accent-ink);
-}
-.step-levels button:focus-visible {
+.steps-control button:focus-visible {
   outline: 2px solid var(--delta-accent-ink);
-  outline-offset: 1px;
+  outline-offset: 2px;
+}
+.proof-bar > .steps-control + .status-mark { margin-left: 0; }
+.is-collapsed > .proof-bar .steps-control { visibility: hidden; }
+
+@media print {
+  .step-pleat.is-collapsed > .step-body { display: block; }
+  .step-pleat.is-collapsed > .step-head {
+    background: none;
+    clip-path: none;
+    border-top: var(--delta-hairline) solid var(--delta-rule-soft);
+  }
+  .step-pleat.is-collapsed > .step-mountain,
+  .step-caret,
+  .steps-control { display: none; }
 }
 
 /* -- Hypotheses ---------------------------------------------------------- */
@@ -2556,13 +2740,18 @@ delta-ref { display: inline; }
 .xref-pop-body img { max-height: 30vh; width: auto; }
 
 /* Flatten a cloned theorem .box so it reads as plain preview content
-   (no floating pill, border, or shadow inside the small card). */
+   (no paper, edge or shadow inside the small card). */
 .xref-pop-body .box {
-  margin: 0; padding: 0; border: 0; box-shadow: none; background: none;
+  --box-bg: transparent;
+  --box-edge: 0 solid transparent;
+  --box-pad-x: 0px;
+  margin: 0;
+  filter: none;
 }
-.xref-pop-body .box-tag {
-  position: static; margin: 0 0 4px; transform: none;
-}
+.xref-pop-body .box-head { padding: 0; min-height: 0; margin-bottom: 4px; }
+.xref-pop-body .box-body { padding: 0; }
+.xref-pop-body .box-sheet { background-image: none; }
+.xref-pop-body .box.has-folds::after { display: none; }
 .xref-pop-body :is(h2, h3, h4) { margin: 0; }
 
 /* Brief accent flash on the target when the reader jumps to it. */
@@ -2578,13 +2767,72 @@ delta-ref { display: inline; }
    runtime/elements/review.ts). A `.toc`-like card: header (+ "Copy as text"), the
    `.review-stat` summary chips, the two switches (`.review-switch` annotations on/off,
    `.review-seg` change view), `.review-filter` chips (members, statuses) and the
-   `.review-item` rows grouped by kind. Reuses `.status-pill` (status.css) and `.who`
-   (collab.css). Sheds its card chrome inside a <floating> panel. Hidden in print
+   `.review-item` rows grouped by kind, each with a `.status-pill` (below) and `.who`
+   chips (collab.css). Sheds its card chrome inside a <floating> panel. Hidden in print
    (collab.css). Tokens via var(--delta-*). */
 
 @layer delta.components {
 
 delta-review { display: block; }
+
+/* -- Status pills: each row's status, coloured by trust like the proof map --- */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  vertical-align: middle;
+  font-family: var(--delta-sans);
+  font-size: 9.5px;
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1;
+  padding: 3px 7px;
+  border-radius: var(--delta-radius-pill);
+  border: 1px solid var(--delta-rule);
+  background: var(--delta-surface-2);
+  color: var(--delta-ink-soft);
+  white-space: nowrap;
+}
+.status-pill[data-status="draft"] {
+  color: var(--delta-mute);
+  border-style: dashed;
+}
+/* The trust levels read the trust tokens (base.css), like the proof map does. */
+.status-pill[data-status="heuristic"],
+.status-pill[data-status="sketch"] {
+  color: var(--pill-trust);
+  border-style: dashed;
+  border-color: color-mix(in oklab, var(--pill-trust) 50%, transparent);
+}
+.status-pill[data-status="heuristic"] { --pill-trust: var(--delta-trust-heuristic); }
+.status-pill[data-status="sketch"]    { --pill-trust: var(--delta-trust-sketch); }
+.status-pill[data-status="open"] {
+  color: var(--delta-trust-open);
+  border-style: dashed;
+  background: transparent;
+}
+/* A verification whose checked content changed since (see graph.ts): redo it. */
+.status-pill[data-status="stale"] {
+  color: var(--delta-proof-alert);
+  border-style: dashed;
+  border-color: color-mix(in oklab, var(--delta-proof-alert) 50%, transparent);
+  background: transparent;
+}
+.status-pill[data-status="review"] {
+  color: var(--delta-warn);
+  border-color: color-mix(in oklab, var(--delta-warn) 50%, transparent);
+  background: color-mix(in oklab, var(--delta-warn) 10%, var(--delta-paper));
+}
+.status-pill[data-status="verified"],
+.status-pill[data-status="formalized"] {
+  color: var(--pill-trust);
+  border-color: color-mix(in oklab, var(--pill-trust) 50%, transparent);
+  background: color-mix(in oklab, var(--pill-trust) 10%, var(--delta-paper));
+}
+.status-pill[data-status="verified"]   { --pill-trust: var(--delta-trust-verified); }
+.status-pill[data-status="formalized"] { --pill-trust: var(--delta-trust-formalized); }
 
 .review {
   margin: var(--delta-block-gap) 0;
@@ -3113,92 +3361,209 @@ delta-sidenote { display: block; }
   }
 }
 
-/* status.css — the maturity / authorship marks any block may carry (applyStatus in
-   runtime/elements/shared.ts): `status="draft|sketch|review|verified"`, `by`,
-   `verified-by`. The `.status-pill` sits in the block's label (box tag, proof lead,
-   heading) or, for <draft> (runtime/elements/draft.ts), in a `.status-bar` row on top.
-   Unfinished blocks (draft/sketch) read as unfinished: a dashed edge. Uses the design
-   system's --delta-ok / --delta-warn status tokens. Hiding (review switch, print) is in
-   collab.css. Tokens via var(--delta-*). */
+/* status.css — the maturity / authorship mark any block may carry (applyStatus in
+   runtime/elements/status.ts): `status`, `by`, `verified-by`, `verified-on`. The
+   `.status-mark` sits at the end of the block's header (box header, proof bar or lead,
+   heading) or, for <draft>, in a `.status-bar` row on top.
+
+   While the work is in progress the mark is one quiet word in small caps, and the box's
+   paper tells the rest: draft and heuristic on squared paper, sketch on ruled paper, both
+   with a dashed edge; an open result is only its dashed outline; under review it is plain
+   paper. Checked (verified, formalized), the word becomes a rubber stamp in the checker's
+   ink; a stale verification keeps its stamp, faded and struck through. Hovering
+   either (or clicking, which pins it) opens the history (.status-history, a .delta-pop bubble). Hiding (the
+   review switch, print) is in collab.css. Tokens via var(--delta-*). */
 
 @layer delta.components {
 
-.status-pill {
+.status-mark {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
   vertical-align: middle;
-  font-family: var(--delta-sans);
-  font-size: 9.5px;
-  font-weight: 700;
   font-style: normal;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+}
+
+/* -- In progress: one word ------------------------------------------- */
+.status-word {
+  appearance: none;
+  margin: 0;
+  padding: 2px 0 3px;
+  border: 0;
+  border-bottom: 1px dotted var(--delta-rule);
+  background: none;
+  cursor: pointer;
+  font-family: var(--delta-serif);
+  font-size: 10.5px;
+  font-weight: var(--delta-weight-strong);
+  font-style: normal;
   line-height: 1;
-  padding: 3px 7px;
-  border-radius: var(--delta-radius-pill);
-  border: 1px solid var(--delta-rule);
-  background: var(--delta-surface-2);
-  color: var(--delta-ink-soft);
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--delta-mute);
+}
+.status-word:hover { color: var(--delta-ink-soft); }
+
+/* -- Checked: the rubber stamp --------------------------------------- */
+.status-stamp {
+  /* The checker's colour (data-accent, from the team): its deep ink on light paper, its
+     bright tone in dark mode (--delta-stamp-bright); without one, the stamp ink. */
+  --stamp-ink: var(--delta-stamp-ink);
+  appearance: none;
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  margin: -4px 0;
+  padding: 4px 9px 3px;
+  border: 2px solid var(--stamp-ink);
+  border-radius: 5px;
+  /* the inner rule of a double-ruled stamp */
+  box-shadow: inset 0 0 0 2px var(--box-bg, var(--delta-env-bg)), inset 0 0 0 3px var(--stamp-ink);
+  background: none;
+  cursor: pointer;
+  font-family: var(--delta-serif);
+  font-style: normal;
+  color: var(--stamp-ink);
+  mix-blend-mode: var(--delta-stamp-blend);
+  opacity: 0.85;
+  transform: rotate(-6deg);
+  /* Uneven inking: the stamp is pressed harder on its upper left. */
+  -webkit-mask-image: radial-gradient(130% 100% at 28% 30%, #000 50%, rgb(0 0 0 / .5) 100%);
+  mask-image: radial-gradient(130% 100% at 28% 30%, #000 50%, rgb(0 0 0 / .5) 100%);
+  animation: status-stamp-in .45s cubic-bezier(.2, .8, .3, 1.2) both;
+}
+.status-stamp[data-accent] {
+  --stamp-ink: color-mix(in oklab, var(--delta-accent) var(--delta-stamp-bright), var(--delta-accent-ink));
+}
+.stamp-word {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
   white-space: nowrap;
 }
-.status-pill .who { font-size: 10.5px; }
-.status-pill[data-status="draft"] {
+.stamp-sub {
+  font-size: 8.5px;
+  font-weight: var(--delta-weight-strong);
+  line-height: 1;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+/* Stale: the check no longer holds. The stamp fades and is struck through. */
+.status-mark[data-status="stale"] .status-stamp {
+  --stamp-ink: var(--delta-stamp-stale);
+  opacity: 0.45;
+}
+.status-mark[data-status="stale"] .status-stamp::after {
+  content: "";
+  position: absolute;
+  left: -6px;
+  right: -6px;
+  top: 50%;
+  height: 1.5px;
+  background: var(--delta-stamp-stale);
+  transform: rotate(-8deg);
+}
+.status-stamp:focus-visible,
+.status-word:focus-visible {
+  outline: 2px solid var(--delta-accent-ink);
+  outline-offset: 3px;
+}
+@keyframes status-stamp-in {
+  0%   { transform: rotate(-6deg) scale(1.5); opacity: 0; }
+  70%  { transform: rotate(-6deg) scale(.97); }
+  100% { transform: rotate(-6deg) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .status-stamp { animation: none; }
+}
+
+/* In a heading or a lead the mark follows the text; a heading's stamp is no bigger. */
+.proof-lead .status-mark { margin-left: 0.4em; }
+:is(h1, h2, h3, h4) .status-mark { margin-left: 0.6em; }
+
+/* -- The history, inside its .delta-pop bubble (which owns padding and display) -- */
+.status-history {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  width: min(260px, 70vw);
+  font-family: var(--delta-serif);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--delta-ink-soft);
+}
+.status-history-title {
+  font-size: 10.5px;
+  font-weight: var(--delta-weight-strong);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: var(--delta-mute);
-  border-style: dashed;
 }
-/* The trust levels read the trust tokens (base.css), like the proof map does. */
-.status-pill[data-status="heuristic"],
-.status-pill[data-status="sketch"] {
-  color: var(--pill-trust);
-  border-style: dashed;
-  border-color: color-mix(in oklab, var(--pill-trust) 50%, transparent);
+.status-history-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
 }
-.status-pill[data-status="heuristic"] { --pill-trust: var(--delta-trust-heuristic); }
-.status-pill[data-status="sketch"]    { --pill-trust: var(--delta-trust-sketch); }
-.status-pill[data-status="open"] {
-  color: var(--delta-trust-open);
-  border-style: dashed;
-  background: transparent;
+.status-history-row b { font-weight: var(--delta-weight-strong); color: var(--delta-ink); }
+/* A person in a circle, an agent in a square, in the member's colour. */
+.status-avatar {
+  --delta-accent-ink: color-mix(in oklab, var(--delta-accent) 64%, var(--delta-ink));
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--delta-accent-ink) 16%, var(--delta-paper));
+  color: var(--delta-accent-ink);
+  font-size: 10.5px;
+  font-weight: var(--delta-weight-strong);
+  line-height: 1;
 }
-/* A verification whose checked content changed since (see graph.ts): redo it. */
-.status-pill[data-status="stale"] {
-  color: var(--delta-proof-alert);
-  border-style: dashed;
-  border-color: color-mix(in oklab, var(--delta-proof-alert) 50%, transparent);
-  background: transparent;
-}
-.status-pill[data-status="review"] {
-  color: var(--delta-warn);
-  border-color: color-mix(in oklab, var(--delta-warn) 50%, transparent);
-  background: color-mix(in oklab, var(--delta-warn) 10%, var(--delta-paper));
-}
-.status-pill[data-status="verified"],
-.status-pill[data-status="formalized"] {
-  color: var(--pill-trust);
-  border-color: color-mix(in oklab, var(--pill-trust) 50%, transparent);
-  background: color-mix(in oklab, var(--pill-trust) 10%, var(--delta-paper));
-}
-.status-pill[data-status="verified"]   { --pill-trust: var(--delta-trust-verified); }
-.status-pill[data-status="formalized"] { --pill-trust: var(--delta-trust-formalized); }
-.status-check { color: var(--delta-ok); font-size: 1.15em; }
+.status-avatar[data-kind="agent"] { border-radius: 5px; }
+.status-history-note { font-style: italic; color: var(--delta-mute); }
 
-/* In a label the pill follows the text. */
-.box-tag .status-pill { margin-left: 0.4em; }
-.proof-lead .status-pill { margin-left: 0.4em; }
-h1 .status-pill, h2 .status-pill, h3 .status-pill, h4 .status-pill { margin-left: 0.6em; font-size: 10px; }
-/* A collapsed box keeps its pill readable at the box-tag's smaller size. */
-.box-tag .status-pill .who-badge { font-size: 8px; }
+/* -- Paper: what the status is made of --------------------------------
+   On a box, the sheet takes the texture and every part of the card the dashed edge
+   (theorems.css reads --box-edge), and the shadow goes: unfinished work lies flat. */
+.box:is([data-status="draft"], [data-status="heuristic"], [data-status="sketch"], [data-status="open"]),
+.proof-sheet:is([data-status="draft"], [data-status="heuristic"], [data-status="sketch"]) {
+  --box-edge: var(--delta-hairline) dashed var(--delta-status-dash);
+  filter: none;
+}
+/* Squared paper: a draft, a heuristic argument. */
+.box:is([data-status="draft"], [data-status="heuristic"]) > .box-sheet {
+  background-image: linear-gradient(var(--delta-status-grid) 1px, transparent 1px),
+                    linear-gradient(90deg, var(--delta-status-grid) 1px, transparent 1px);
+  background-size: 18px 18px;
+  background-position: 0 6px;
+}
+/* Ruled paper, one rule per line of text: a sketch. */
+.box[data-status="sketch"] > .box-sheet {
+  background-image: linear-gradient(transparent calc(100% - 1px), var(--delta-status-grid) 1px);
+  background-size: 100% calc(var(--delta-leading) * 1em);
+  /* a rule under each line of the statement, below the header */
+  background-position: 0 10px;
+}
+/* No paper at all: a result planned but not written, only its outline. */
+.box[data-status="open"] {
+  --box-bg: transparent;
+  --box-well: transparent;
+}
+.box[data-status="open"] > :is(.proof-foot, .box-foot) {
+  border-top-style: dashed;
+  border-top-color: var(--delta-status-dash);
+}
 
-/* Unfinished blocks: dashed edge. */
-.box[data-status="draft"],
-.box[data-status="heuristic"],
-.box[data-status="sketch"] { border-style: dashed; }
-delta-proof[data-status="draft"],
-delta-proof[data-status="heuristic"],
-delta-proof[data-status="sketch"],
-delta-solution[data-status="draft"],
-delta-solution[data-status="sketch"] {
+/* A proof standing alone (not joined to its box, no sheet of its own, not a step's):
+   a dashed outline while unfinished. */
+delta-proof:not(.proof-foot, .proof-sheet, .step-body):is([data-status="draft"], [data-status="heuristic"], [data-status="sketch"]),
+delta-solution:not(.proof-foot, .proof-sheet, .step-body):is([data-status="draft"], [data-status="sketch"]) {
   outline: 1px dashed var(--delta-rule);
   outline-offset: 6px;
   border-radius: var(--delta-radius-sm);
@@ -3274,6 +3639,37 @@ delta-document > delta-title {
   font-variation-settings: var(--delta-font-variation-display);
   text-wrap: balance;
 }
+/* A numbered chapter opens big: its numeral set large and light, beside a small-caps
+   "Chapter 2" over the title (section.ts adds .chapter-kicker and .chapter-name). */
+h1.chapter-title:has(> .chapter-kicker) {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: end;
+  column-gap: 28px;
+  row-gap: 12px;
+}
+h1.chapter-title > .num {
+  grid-row: 1 / 3;
+  font-size: 2.35em;
+  font-weight: 300;
+  line-height: 0.74;
+  letter-spacing: 0;
+  color: color-mix(in oklab, var(--delta-num) 35%, var(--delta-paper));
+}
+.chapter-kicker {
+  grid-column: 2;
+  font-size: 12px;
+  font-weight: var(--delta-weight-strong);
+  line-height: 1;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-variation-settings: normal;
+  color: var(--delta-accent-ink);
+}
+.chapter-name { grid-column: 2; }
+@media (max-width: 640px) {
+  h1.chapter-title:has(> .chapter-kicker) { column-gap: 16px; }
+}
 .chapter-title em,
 delta-document > delta-title em {
   font-style: italic;
@@ -3339,7 +3735,7 @@ h3.sub {
    every level shares one consistent treatment. */
 h2.section .num,
 h3.sub .num,
-h4.subsub .num { color: var(--delta-num); margin-right: 0.4em; }
+h4.subsub .num { color: var(--delta-num); font-weight: 400; margin-right: 0.55em; }
 
 h4.subsub {
   font-family: var(--delta-serif);
@@ -3530,10 +3926,14 @@ delta-table { display: block; margin: var(--delta-block-gap) 0; }
 
 }
 
-/* theorems.css — math-environment boxes (.box, .box-tag, .box-title, .box.example)
-   and the <proof>/<solution> formatting. LIVE: DeltaEnvironment adds .box plus a
-   floating .box-tag to box environments, and gives proof/solution the italic lead
-   (proof also gets a QED mark). Consumes tokens via var(--delta-*). */
+/* theorems.css — math-environment cards (.box: .box-sheet with .box-head and .box-body,
+   then folds and a foot) and the <proof>/<solution> formatting. LIVE: DeltaEnvironment
+   builds the card; a proof or solution joined to its box becomes its foot (.proof-foot,
+   a .proof-bar that unfolds it), a proof with steps away from its box a sheet of its own
+   (.proof-sheet, the same bar on top), any other gets the italic lead (proof also a QED
+   mark). The steps' pleats are in proofstructure.css.
+   The folds are in understanding.css, the status marks and paper in status.css.
+   Consumes tokens via var(--delta-*). */
 
 @layer delta.components {
 
@@ -3572,52 +3972,102 @@ delta-counterexample       { --delta-env-tone: var(--delta-tone-example); }
 delta-remark               { --delta-env-tone: var(--delta-tone-remark); }
 delta-exercise, delta-problem { --delta-env-tone: var(--delta-tone-exercise); }
 
-/* -- .box and label --------------------------------------------------- */
-.box {
-  /* The border is the neutral rule tinted toward the family tone by
-     --delta-env-tint (0 = neutral, the default, so this is a no-op until a theme
-     opts in; 1 = the tone itself). Expressed as a mix rather than a second set of
-     per-family tokens, so a theme dials the whole effect with one number. */
-  border: var(--delta-hairline) solid
-          color-mix(in oklab,
-                    var(--delta-env-tone, var(--delta-paper)) calc(var(--delta-env-tint, 0) * 100%),
-                    var(--delta-env-border));
-  background: var(--delta-env-bg);
-  border-radius: var(--delta-radius);
-  padding: 20px 24px 18px;
+/* -- The card --------------------------------------------------------
+   A box is one sheet of paper with parts hung under it: the sheet (header + statement),
+   the folds of its aids (understanding.css), and its foot (a joined proof or solution,
+   or where the proof is). Each part paints its own strip of the card; the box itself
+   paints nothing but the edge and the shadow, as a filter, so the outline follows the
+   folds' creases instead of drawing a rectangle around them. The edge is the neutral
+   rule tinted toward the family tone by --delta-env-tint (0 = neutral, the default; a
+   theme dials the whole effect with that one number). Unfinished work trades the
+   shadow for a dashed edge (--box-edge, status.css). A standalone proof sheet is made
+   of the same paper. */
+.box,
+.proof-sheet {
+  --box-r: var(--delta-radius-lg);
+  --box-bg: var(--delta-env-bg);
+  --box-well: var(--delta-env-well);
+  --box-edge: 0 solid transparent;
+  --box-pad-x: 24px;
+  --box-edge-color: color-mix(in oklab,
+                              var(--delta-env-tone, var(--delta-paper)) calc(var(--delta-env-tint, 0) * 100%),
+                              var(--delta-env-border));
   margin: var(--delta-block-gap) 0;
   position: relative;
-  box-shadow: var(--delta-shadow);
+  filter: drop-shadow(0 0 0.6px var(--box-edge-color))
+          drop-shadow(0 2px 4px var(--delta-env-shadow));
 }
-/* The label pill straddles the top border like a fieldset legend, but stays in
-   NORMAL FLOW — a fit-content block lifted onto the border by a negative top
-   margin — so a title too long for one line wraps and PUSHES the content down
-   instead of being absolutely positioned on top of it. max-width keeps a long
-   pill inside the box (box-sizing is border-box globally). */
-.box-tag {
+.box-sheet {
+  background-color: var(--box-bg);
+  border: var(--box-edge);
+  border-bottom: 0;
+  border-radius: var(--box-r) var(--box-r) 0 0;
+}
+/* Nothing hangs under the sheet (or the box is folded): the sheet closes the card. */
+.box:not(.has-folds, .has-foot) > .box-sheet,
+.box.is-collapsed > .box-sheet {
+  border-bottom: var(--box-edge);
+  border-radius: var(--box-r);
+}
+/* Folds and no foot: a narrow strip of the sheet closes the card under the last fold. */
+.box.has-folds::after {
+  content: "";
   display: block;
-  width: fit-content;
-  max-width: 100%;
-  margin: -30px 0 12px;
-  font-family: var(--delta-sans);
-  font-size: 10.5px;
+  height: 14px;
+  background: var(--box-bg);
+  border: var(--box-edge);
+  border-top: 0;
+  border-radius: 0 0 var(--box-r) var(--box-r);
+}
+/* Folded, the box is its header: what hangs under the sheet goes too. */
+.box.is-collapsed > :not(.box-sheet),
+.box.is-collapsed::after { display: none; }
+
+/* -- Header: "LEMMA 2.1.2  Coupling", the status mark at the far end -- */
+.box-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 10px;
+  row-gap: 6px;
+  min-height: 30px;
+  padding: 16px 20px 0 var(--box-pad-x);
+}
+/* --delta-env-tag-fill (0 by default) fills the label with the family tone: a theme of
+   signage pills (impatech) sets it to 1; padding and fill scale with it, so at 0 the
+   label is bare text aligned with the statement. */
+.box-tag {
+  --fill: var(--delta-env-tag-fill, 0);
+  padding: calc(var(--fill) * 2px) calc(var(--fill) * 8px);
+  margin-left: calc(var(--fill) * -8px);
+  border-radius: var(--delta-radius-sm);
+  background: color-mix(in oklab, var(--delta-env-tone, var(--delta-paper)) calc(var(--fill) * 100%), transparent);
+  font-family: var(--delta-serif);
+  font-size: 12px;
+  font-weight: var(--delta-weight-strong);
   line-height: 1.35;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+  white-space: nowrap;
   color: var(--delta-env-tag-ink);
-  background: var(--delta-env-tone, var(--delta-paper));
-  padding: 2px 9px;
-  border-radius: var(--delta-radius-sm);
-  border: var(--delta-hairline) solid var(--delta-env-tag-border);
 }
-/* The author's title rides in the label pill, parenthesised and slightly
-   subordinate so the environment kind + number still reads first. */
+/* An exercise is the reader's to do, not a fact: its label steps back. */
+:is(delta-exercise, delta-problem) > .box-sheet .box-tag { color: var(--delta-mute); }
+/* The author's title follows the label, quieter, in italics. */
 .box-tag-title {
-  font-weight: 400;
-  opacity: 0.7;
+  font-style: italic;
+  font-size: 0.89em;
+  line-height: 1.35;
+  color: var(--delta-mute);
+  text-wrap: balance;
 }
-.box-tag-title::before { content: "("; }
-.box-tag-title::after  { content: ")"; }
+.box-head > .status-mark { margin-left: auto; }
+
+.box-body {
+  padding: 10px var(--box-pad-x) 20px;
+}
+.box-body > :first-child { margin-top: 0; }
+.box-body > :last-child { margin-bottom: 0; }
 
 .box-title {
   font-weight: var(--delta-weight-strong);
@@ -3626,8 +4076,81 @@ delta-exercise, delta-problem { --delta-env-tone: var(--delta-tone-exercise); }
   letter-spacing: -0.003em;
 }
 .box.example {
-  background: color-mix(in oklab, var(--delta-accent-soft) 35%, var(--delta-paper));
-  border-color: color-mix(in oklab, var(--delta-accent) 30%, var(--delta-rule));
+  --box-bg: color-mix(in oklab, var(--delta-accent-soft) 35%, var(--delta-paper));
+}
+
+/* -- Foot: a joined proof or solution, or where the proof is ----------- */
+.box > .proof-foot,
+.box > .box-foot,
+.box > .collapse-body > .proof-foot,
+.box > .collapse-body > .box-foot {
+  margin: 0;
+  background: var(--box-well);
+  border: var(--box-edge);
+  border-top: var(--delta-hairline) solid var(--delta-rule-soft);
+}
+.box :is(.proof-foot, .box-foot):last-child {
+  border-radius: 0 0 var(--box-r) var(--box-r);
+}
+.box-foot {
+  padding: 12px var(--box-pad-x);
+  font-style: italic;
+  font-size: 0.94em;
+  line-height: 1.4;
+  color: var(--delta-ink-soft);
+}
+.box-foot.proof-pending { color: var(--delta-mute); }
+
+/* The bar: "Proof ▸" (or "Show solution ▸"); the whole bar is the fold's toggle. */
+.proof-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  padding: 12px 20px 12px var(--box-pad-x);
+  font-style: italic;
+  font-size: 0.94em;
+  line-height: 1.4;
+  color: var(--delta-ink-soft);
+  transition: color var(--delta-dur-fast) var(--delta-ease);
+}
+.proof-bar:hover { color: var(--delta-accent-ink); }
+.proof-bar > .status-mark { margin-left: auto; }
+.proof-bar-caret {
+  margin-left: auto;
+  font-style: normal;
+  font-size: 11px;
+  color: var(--delta-mute);
+}
+.proof-bar > .status-mark + .proof-bar-caret,
+.proof-bar-name + .proof-bar-caret { margin-left: 0; }
+.proof-bar-caret::before { content: "\25be"; } /* ▾ */
+.is-collapsed > .proof-bar .proof-bar-caret::before { content: "\25b8"; } /* ▸ */
+.proof-bar .when-open,
+.is-collapsed > .proof-bar .when-folded { display: inline; }
+.proof-bar .when-folded,
+.is-collapsed > .proof-bar .when-open { display: none; }
+
+/* The proof itself, unfolded under its bar. */
+.proof-foot > .collapse-body,
+.proof-sheet > .collapse-body {
+  padding: var(--sheet-pad-top) var(--box-pad-x) 18px;
+  border-top: var(--delta-hairline) dashed var(--delta-rule-soft);
+}
+.proof-foot,
+.proof-sheet { --sheet-pad-top: 16px; }
+
+/* A proof with steps standing alone: the foot of a card without the card above it. */
+.proof-sheet {
+  background: var(--box-well);
+  border: var(--box-edge);
+  border-radius: var(--box-r);
+}
+.proof-sheet > .collapse-body { border-radius: 0 0 var(--box-r) var(--box-r); }
+
+/* A box in a narrow column keeps its parts aligned on the same inset. */
+@media (max-width: 640px) {
+  .box { --box-pad-x: 16px; }
 }
 
 /* -- Box meta: a quiet provenance footer ------------------------------ */
@@ -3670,13 +4193,11 @@ delta-solution {
   transform: translateY(-1px);
 }
 
-/* -- Narrow-viewport tweaks ------------------------------------------- */
-@media (max-width: 640px) {
-  .box { padding: 18px 16px 14px; }
-}
-
 @media print {
-  .box { break-inside: avoid; }
+  .box-sheet { break-inside: avoid; }
+  /* Paper cannot unfold: a folded proof prints, without its bar's caret. */
+  .proof-foot.is-collapsed > .collapse-body { display: block; }
+  .proof-bar-caret { display: none; }
 }
 
 }
@@ -3838,11 +4359,13 @@ delta-todo { display: block; }
 }
 
 /* understanding.css — reader aids on a result or a proof step (<intuition>, <strategy>,
-   <obstacle>) and planned results (status="open"). LIVE: buildLens (runtime/elements/
-   aid.ts) leaves .lens-dots on the box's top border and hangs a .lens-drawer after the
-   box, one .lens-panel open at a time; on a step the dots follow the claim and the drawer
-   sits under it. Kept low-key: the box is the statement and nothing else, and an aid as
-   long as the proof extends the page, not the box. Tokens via var(--delta-*). */
+   <obstacle>). LIVE: buildFolds (runtime/elements/aid.ts) turns each aid into a .fold
+   under the box's sheet (or under a step's claim): closed, a .fold-strip of creased paper
+   (a valley and a mountain, its name on hover); open, a .fold-panel that unfolds in place
+   with the aid's name in its .fold-head, which folds it back. A named fold (a step's aid,
+   data-named) prints the name on its strip. The box's outline follows
+   the creases (theorems.css draws the edge as a filter). Kept low-key: the long text of an
+   aid sits in the body colour on an almost neutral tint. Tokens via var(--delta-*). */
 
 @layer delta.components {
 
@@ -3852,64 +4375,67 @@ delta-obstacle {
   display: block;
 }
 
-/* -- Aid colours: one per kind (tokens in base.css), shared by its dot and its drawer */
+/* -- Aid colours: one per kind (tokens in base.css), for its name and its tint */
 [data-aid="intuition"] { --aid-hue: var(--delta-aid-intuition); }
 [data-aid="strategy"]  { --aid-hue: var(--delta-aid-strategy); }
 [data-aid="obstacle"]  { --aid-hue: var(--delta-aid-obstacle); }
 
-/* -- Dots: on the box's top border, opposite the label ---------------- */
-.lens-dots {
-  position: absolute;
-  top: 0;
-  right: 18px;
-  transform: translateY(-50%);
-  display: flex;
-  gap: 2px;
-  padding: 0 4px;
-  /* The box's own border colour (same mix as .box in theorems.css): a bead on the rule. */
-  background: color-mix(in oklab,
-                        var(--delta-env-tone, var(--delta-paper)) calc(var(--delta-env-tint, 0) * 100%),
-                        var(--delta-env-border));
-  border-radius: var(--delta-radius-pill);
+.fold {
+  --fold-bg: var(--box-bg, var(--delta-env-bg));
+  --fold-tint: color-mix(in oklab, var(--aid-hue) 6%, var(--fold-bg));
+  --fold-inset: 14px; /* how far the sides step in at the crease */
+  position: relative;
 }
-.lens-dot {
+
+/* -- Closed: a strip of folded paper ---------------------------------- */
+.fold-strip {
   appearance: none;
   position: relative;
-  width: 18px;
-  height: 18px;
+  display: block;
+  width: 100%;
+  height: 24px;
+  margin: 0;
   padding: 0;
   border: 0;
   background: none;
   cursor: pointer;
+  transition: filter var(--delta-dur-fast) var(--delta-ease);
 }
-/* The visible dot is small; the button around it is a comfortable target. */
-.lens-dot::before {
-  content: "";
-  position: absolute;
-  inset: 5px;
-  border-radius: 50%;
-  border: 1.5px solid var(--aid-hue);
-  background: color-mix(in oklab, var(--aid-hue) 35%, var(--delta-paper));
-  transition: transform var(--delta-dur-fast) var(--delta-ease),
-              background var(--delta-dur-fast) var(--delta-ease);
-}
-.lens-dot:hover::before { transform: scale(1.25); }
-.lens-dot[aria-expanded="true"]::before { background: var(--aid-hue); transform: scale(1.25); }
-.lens-dot:focus-visible {
+.fold-strip:hover { filter: brightness(1.025); }
+.fold-strip:focus-visible {
   outline: 2px solid var(--delta-accent-ink);
-  outline-offset: 1px;
-  border-radius: 50%;
+  outline-offset: -2px;
 }
-/* The name shows on hover/focus, like a tooltip, so the dots can stay wordless. */
-.lens-dot::after {
+/* The valley: the tinted underside of the fold, lit at the top, shadowed into the crease. */
+.fold-valley,
+.fold-mountain {
+  display: block;
+}
+.fold-valley {
+  height: 13px;
+  background: linear-gradient(to bottom, var(--delta-fold-lit), transparent 25%, var(--delta-fold-shade)),
+              var(--fold-tint);
+  clip-path: polygon(0 0, 100% 0, calc(100% - var(--fold-inset)) 100%, var(--fold-inset) 100%);
+}
+/* The mountain: the paper coming back out of the crease, under a softer shadow. */
+.fold-mountain {
+  height: 11px;
+  background: linear-gradient(to bottom, var(--delta-fold-shade-2), transparent 85%),
+              var(--fold-bg);
+  clip-path: polygon(var(--fold-inset) 0, calc(100% - var(--fold-inset)) 0, 100% 100%, 0 100%);
+}
+/* The name, like a tooltip, so the strip can stay wordless. */
+.fold-strip::after {
   content: attr(data-label);
   position: absolute;
   bottom: calc(100% + 4px);
-  right: 50%;
-  transform: translateX(50%);
-  padding: 2px 7px;
-  font-family: var(--delta-sans);
-  font-size: 10px;
+  right: var(--fold-inset);
+  z-index: 2;
+  padding: 5px 8px;
+  font-family: var(--delta-serif);
+  font-size: 10.5px;
+  font-weight: var(--delta-weight-strong);
+  line-height: 1;
   letter-spacing: var(--delta-tracking-cap);
   text-transform: uppercase;
   white-space: nowrap;
@@ -3920,105 +4446,164 @@ delta-obstacle {
   pointer-events: none;
   transition: opacity var(--delta-dur-fast) var(--delta-ease);
 }
-.lens-dot:hover::after,
-.lens-dot:focus-visible::after { opacity: 1; }
+.fold-strip:hover::after,
+.fold-strip:focus-visible::after { opacity: 1; }
 
-/* -- Drawer: hangs under the box, so the statement keeps its size ---- */
-.box.has-drawer {
-  margin-bottom: 0;
-  border-bottom-left-radius: var(--delta-radius-sm);
-  border-bottom-right-radius: var(--delta-radius-sm);
+/* -- Open: the panel, unfolded in place ------------------------------- */
+.fold-panel {
+  position: relative;
+  overflow: hidden;
+  background: var(--fold-tint);
+  border-top: var(--delta-hairline) dashed color-mix(in oklab, var(--aid-hue) 35%, transparent);
 }
-.lens-drawer {
-  margin: 0 14px var(--delta-block-gap);
-  padding: 10px 18px 12px;
-  border: var(--delta-hairline) solid var(--delta-rule-soft);
-  border-top: 0;
-  border-radius: 0 0 var(--delta-radius) var(--delta-radius);
-  background: color-mix(in oklab, var(--delta-env-bg) 60%, var(--delta-paper));
-  font-size: 0.92em;
-  line-height: 1.55;
-  color: var(--delta-ink-soft);
-}
-.lens-drawer[hidden],
-.box.is-collapsed + .lens-drawer,
-.lens-panel[hidden] { display: none; }
-
-.lens-panel {
-  border-left: 2px solid var(--aid-hue);
-  padding-left: 12px;
-}
-.lens-head {
+.fold-panel[hidden],
+.fold-strip[hidden] { display: none; }
+.fold-head {
+  appearance: none;
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 2px;
+  width: 100%;
+  margin: 0;
+  padding: 16px var(--box-pad-x, 24px) 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-family: var(--delta-serif);
+  font-size: 11.5px;
+  font-weight: var(--delta-weight-strong);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--aid-hue);
+  transition: opacity var(--delta-dur-fast) var(--delta-ease);
 }
-.lens-name {
-  font-family: var(--delta-sans);
-  font-size: 10px;
-  letter-spacing: var(--delta-tracking-cap);
+.fold-head:hover { opacity: 0.75; }
+.fold-head:focus-visible {
+  outline: 2px solid var(--delta-accent-ink);
+  outline-offset: -2px;
+}
+.fold-caret { font-size: 9px; letter-spacing: 0; opacity: 0.6; }
+.fold-body {
+  padding: 8px var(--box-pad-x, 24px) 20px;
+  font-size: 0.97em;
+  color: var(--delta-ink);
+}
+.fold-body > :first-child { margin-top: 0; }
+.fold-body > :last-child { margin-bottom: 0; }
+/* The crease's light and shadow, fading out as the panel flattens. */
+.fold-crease {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to bottom, var(--delta-fold-lit), transparent 22%,
+                              var(--delta-fold-shade) 50%, var(--delta-fold-shade-2) 56%,
+                              transparent 92%);
+  opacity: 0;
+}
+
+/* -- Motion: unfold opens the crease, refold closes it back into a strip */
+.fold.is-unfolding > .fold-panel { animation: fold-unfold .55s cubic-bezier(.2, .7, .25, 1); }
+.fold.is-unfolding .fold-crease { animation: fold-crease-out .55s ease-out; }
+.fold.is-unfolding .fold-head,
+.fold.is-unfolding .fold-body {
+  transform-origin: top center;
+  animation: fold-text-unfold .55s cubic-bezier(.2, .7, .25, 1);
+}
+.fold.is-refolding > .fold-panel { animation: fold-refold .38s cubic-bezier(.55, 0, .8, .3) forwards; }
+.fold.is-refolding .fold-crease { animation: fold-crease-in .38s ease-in forwards; }
+.fold.is-refolding .fold-head,
+.fold.is-refolding .fold-body {
+  transform-origin: top center;
+  animation: fold-text-refold .38s ease-in forwards;
+}
+@keyframes fold-unfold {
+  0%   { max-height: 24px;
+         clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 50%, 100% 100%, 0 100%, 14px 50%); }
+  55%  { clip-path: polygon(0 0, 100% 0, calc(100% - 4px) 50%, 100% 100%, 0 100%, 4px 50%); }
+  100% { max-height: 100vh;
+         clip-path: polygon(0 0, 100% 0, 100% 50%, 100% 100%, 0 100%, 0 50%); }
+}
+@keyframes fold-refold {
+  0%   { max-height: 340px;
+         clip-path: polygon(0 0, 100% 0, 100% 50%, 100% 100%, 0 100%, 0 50%); }
+  100% { max-height: 24px;
+         clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 50%, 100% 100%, 0 100%, 14px 50%); }
+}
+@keyframes fold-crease-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes fold-crease-in  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fold-text-unfold {
+  from { transform: scaleY(.45); opacity: .3; }
+  to   { transform: none; opacity: 1; }
+}
+@keyframes fold-text-refold {
+  from { transform: none; opacity: 1; }
+  to   { transform: scaleY(.45); opacity: .2; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fold.is-unfolding *, .fold.is-refolding *,
+  .fold.is-unfolding > .fold-panel, .fold.is-refolding > .fold-panel { animation: none !important; }
+}
+
+/* -- In a ref pop-over the box is flattened (reference.css): the folds sit flush under
+   the statement, and their tooltips (clipped by the card's scroller) give way to the
+   panel's own header. */
+.xref-pop-body .folds { margin-top: 10px; }
+.xref-pop-body .fold { --fold-inset: 8px; }
+.xref-pop-body .fold-head,
+.xref-pop-body .fold-body { padding-inline: 12px; }
+.xref-pop-body .fold-strip::after { display: none; }
+
+/* -- Named folds: a step's aids, pleats of the proof's sheet (proofstructure.css). The
+   name is printed in the valley, on the claim column, so the strip needs no tooltip; the
+   open panel's text lines up on the same column. */
+.fold-label { display: none; }
+.fold[data-named] { --fold-inset: var(--pleat-inset, 12px); }
+.fold[data-named] .fold-valley {
+  display: flex;
+  align-items: center;
+  height: 20px;
+  padding: 1px calc(var(--fold-inset) + 24px) 0 var(--step-col, 52px);
+  background: linear-gradient(to bottom, var(--delta-fold-lit), var(--delta-fold-shade-2) 55%, var(--delta-fold-shade)),
+              var(--fold-tint);
+}
+.fold[data-named] .fold-label {
+  display: inline;
+  font-family: var(--delta-serif);
+  font-size: 9.5px;
+  font-weight: var(--delta-weight-strong);
+  line-height: 1;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--aid-hue);
 }
-.lens-close {
-  appearance: none;
-  border: 0;
-  background: none;
-  padding: 0 2px;
-  cursor: pointer;
-  font-size: 15px;
-  line-height: 1;
-  color: var(--delta-mute);
+.fold[data-named] .fold-mountain { height: 8px; }
+.fold[data-named] .fold-strip { height: auto; }
+.fold[data-named] .fold-strip::after { display: none; }
+.fold[data-named] .fold-head {
+  padding: 12px var(--box-pad-x, 24px) 0 var(--step-col, 52px);
+  font-size: 9.5px;
+  letter-spacing: 0.15em;
 }
-.lens-close:hover { color: var(--delta-ink); }
-
-/* -- In a ref pop-over the box is flattened (reference.css), so there is no
-   border to sit on: the dots join the flow as a row under the statement, and
-   the drawer spans the card. No negative inline margin: the body is a scroller and
-   would clip the bead's left end. */
-.xref-pop-body .lens-dots {
-  position: static;
-  transform: none;
-  width: fit-content;
-  margin-top: 8px;
-}
-.xref-pop-body .lens-drawer {
-  margin: 8px 0 0;
-  border-top: var(--delta-hairline) solid var(--delta-rule-soft);
-  border-radius: var(--delta-radius-sm);
-}
-/* Tooltips would be clipped by the card's scroller; the drawer names the aid anyway. */
-.xref-pop-body .lens-dot::after { display: none; }
-
-/* -- On a proof step: no box to sit on, so the dots follow the claim inline and the
-   drawer hangs under the claim, indented like the step's own proof (proofstructure.css). */
-delta-step-claim > .lens-dots {
-  position: static;
-  transform: none;
-  display: inline-flex;
-  vertical-align: middle;
-  background: none;
-}
-delta-step > .lens-drawer,
-delta-step > * > .lens-drawer {
-  margin: 0.25em 0 0.5em 2.2em;
-  border-top: var(--delta-hairline) solid var(--delta-rule-soft);
-  border-radius: var(--delta-radius-sm);
+.fold[data-named] .fold-body {
+  padding: 6px var(--box-pad-x, 24px) 14px var(--step-col, 52px);
 }
 
-/* -- Planned results (status="open"): a hollow, dashed box ------------- */
-.box[data-status="open"] {
-  border-style: dashed;
-  background: transparent;
-  box-shadow: none;
+/* -- On a flat step (a sub-step, a step in a preview): no sheet to pleat, so the folds
+   hang under the claim, indented like the step's own proof and rounded at their ends. */
+delta-step:not(.step-pleat) .folds {
+  margin: 0.35em 0 0.5em 2.2em;
+  --fold-bg: var(--box-well, var(--delta-paper));
+  --box-pad-x: 14px;
 }
+delta-step:not(.step-pleat) .fold-panel { border-radius: var(--delta-radius-sm); }
+delta-step:not(.step-pleat) .fold-head { padding-top: 10px; }
+delta-step:not(.step-pleat) .fold-body { padding-bottom: 12px; }
 
 @media print {
-  /* Paper cannot unfold: print every aid under its box. */
-  .lens-drawer[hidden], .lens-panel[hidden] { display: block; }
-  .lens-panel + .lens-panel { margin-top: 10px; }
-  .lens-dots, .lens-close { display: none; }
+  /* Paper cannot unfold: print every aid open, without its strip. */
+  .fold-panel[hidden] { display: block; }
+  .fold-strip, .fold-caret { display: none; }
+  .fold-crease { display: none; }
 }
 
 }
@@ -4352,13 +4937,13 @@ delta-footer {
   </delta-footer>
 </delta-document>
 <script type="application/json" id="delta-toc">[{"level":2,"id":"inicio","num":"","title":"Início","file":"index.html"},{"level":2,"id":"documentacao","num":"1","title":"Documentação","file":"documentacao.html"},{"level":3,"id":"doc-instalar","num":"1.1","title":"Comece em três linhas","file":"documentacao.html"},{"level":3,"id":"doc-exemplo","num":"1.2","title":"Como se escreve","file":"documentacao.html"},{"level":3,"id":"doc-principios","num":"1.3","title":"O que orienta o projeto","file":"documentacao.html"},{"level":3,"id":"doc-onde","num":"1.4","title":"Por onde seguir","file":"documentacao.html"},{"level":2,"id":"comecar","num":"2","title":"Primeiros passos","file":"comecar.html"},{"level":3,"id":"passo-node","num":"2.1","title":"Instalar o Node.js","file":"comecar.html"},{"level":3,"id":"passo-delta","num":"2.2","title":"Instalar o Delta","file":"comecar.html"},{"level":3,"id":"passo-documento","num":"2.3","title":"Escrever o primeiro documento","file":"comecar.html"},{"level":3,"id":"passo-compilar","num":"2.4","title":"Compilar","file":"comecar.html"},{"level":3,"id":"passo-erros","num":"2.5","title":"Quando algo dá errado","file":"comecar.html"},{"level":3,"id":"passo-adiante","num":"2.6","title":"Para onde ir agora","file":"comecar.html"},{"level":2,"id":"galeria","num":"3","title":"Galeria","file":"galeria.html"},{"level":3,"id":"galeria-livros","num":"3.1","title":"Livros","file":"galeria.html"},{"level":3,"id":"galeria-artigos","num":"3.2","title":"Artigos","file":"galeria.html"},{"level":3,"id":"galeria-apresentacoes","num":"3.3","title":"Apresentações","file":"galeria.html"},{"level":2,"id":"cli","num":"4","title":"Linha de comando","file":"cli.html"},{"level":3,"id":"sobre-comando","num":"4.1","title":"O comando","file":"cli.html"},{"level":3,"id":"cmd-build","num":"4.2","title":"delta build","file":"cli.html"},{"level":3,"id":"cmd-review","num":"4.3","title":"delta review","file":"cli.html"},{"level":3,"id":"cmd-grafo","num":"4.4","title":"O grafo da prova: outline, show, uses, graph, lint","file":"cli.html"},{"level":3,"id":"cmd-verify","num":"4.5","title":"delta verify","file":"cli.html"},{"level":3,"id":"cmd-agent-guide","num":"4.6","title":"delta agent-guide","file":"cli.html"},{"level":3,"id":"cmd-create","num":"4.7","title":"delta create","file":"cli.html"},{"level":3,"id":"cmd-install","num":"4.8","title":"delta install","file":"cli.html"},{"level":3,"id":"sobre-saida","num":"4.9","title":"Códigos de saída","file":"cli.html"},{"level":2,"id":"estrutura","num":"5","title":"Estrutura"},{"level":3,"id":"tag-document","num":"5.1","title":"&lt;document&gt;"},{"level":3,"id":"tag-title","num":"5.2","title":"&lt;title&gt;"},{"level":3,"id":"tag-secoes","num":"5.3","title":"&lt;chapter&gt;, &lt;section&gt;, &lt;subsection&gt;, &lt;subsubsection&gt;"},{"level":3,"id":"tag-eyebrow-intro","num":"5.4","title":"&lt;eyebrow&gt; e &lt;intro&gt;"},{"level":3,"id":"tag-meta","num":"5.5","title":"&lt;meta&gt; e &lt;meta-item&gt;"},{"level":3,"id":"tag-toc","num":"5.6","title":"&lt;toc&gt;"},{"level":3,"id":"tag-floating","num":"5.7","title":"&lt;floating&gt;"},{"level":3,"id":"sobre-frontmatter","num":"5.8","title":"Folha de rosto"},{"level":2,"id":"matematica","num":"6","title":"Matemática","file":"matematica.html"},{"level":3,"id":"sobre-math-inline","num":"6.1","title":"Matemática no meio da frase","file":"matematica.html"},{"level":3,"id":"tag-m","num":"6.2","title":"&lt;m&gt;","file":"matematica.html"},{"level":3,"id":"tag-equation","num":"6.3","title":"&lt;equation&gt;","file":"matematica.html"},{"level":3,"id":"tag-equations","num":"6.4","title":"&lt;equations&gt;","file":"matematica.html"},{"level":3,"id":"sobre-ref-math","num":"6.5","title":"Referências dentro da matemática","file":"matematica.html"},{"level":2,"id":"ambientes","num":"7","title":"Ambientes","file":"ambientes.html"},{"level":3,"id":"sobre-familia-teorema","num":"7.1","title":"A família do teorema","file":"ambientes.html"},{"level":3,"id":"sobre-outros-ambientes","num":"7.2","title":"Definições, exemplos e exercícios","file":"ambientes.html"},{"level":3,"id":"tag-proof","num":"7.3","title":"&lt;proof&gt; e &lt;solution&gt;","file":"ambientes.html"},{"level":3,"id":"sobre-entendimento","num":"7.4","title":"Entendendo um resultado","file":"ambientes.html"},{"level":3,"id":"sobre-provas-estruturadas","num":"7.5","title":"Provas em passos e hipóteses","file":"ambientes.html"},{"level":3,"id":"sobre-mapa-prova","num":"7.6","title":"O mapa da prova","file":"ambientes.html"},{"level":3,"id":"sobre-ambiente-atributos","num":"7.7","title":"Atributos comuns a todos os ambientes","file":"ambientes.html"},{"level":2,"id":"referencias","num":"8","title":"Referências e citações","file":"referencias.html"},{"level":3,"id":"tag-ref","num":"8.1","title":"&lt;ref&gt;","file":"referencias.html"},{"level":3,"id":"tag-bibliography","num":"8.2","title":"&lt;bibliography&gt; e &lt;paper&gt;","file":"referencias.html"},{"level":3,"id":"tag-cite","num":"8.3","title":"&lt;cite&gt;","file":"referencias.html"},{"level":2,"id":"midia","num":"9","title":"Mídia","file":"midia.html"},{"level":3,"id":"tag-figure","num":"9.1","title":"&lt;figure&gt;","file":"midia.html"},{"level":3,"id":"tag-video-audio","num":"9.2","title":"&lt;video&gt; e &lt;audio&gt;","file":"midia.html"},{"level":3,"id":"tag-youtube","num":"9.3","title":"&lt;youtube&gt;","file":"midia.html"},{"level":3,"id":"tag-interactive","num":"9.4","title":"&lt;interactive&gt;","file":"midia.html"},{"level":3,"id":"tag-caption","num":"9.5","title":"&lt;caption&gt;","file":"midia.html"},{"level":2,"id":"layout","num":"10","title":"Prosa e layout","file":"layout.html"},{"level":3,"id":"tag-list","num":"10.1","title":"&lt;list&gt; e &lt;item&gt;","file":"layout.html"},{"level":3,"id":"tag-table","num":"10.2","title":"&lt;table&gt;","file":"layout.html"},{"level":3,"id":"tag-columns","num":"10.3","title":"&lt;columns&gt; e &lt;column&gt;","file":"layout.html"},{"level":3,"id":"tag-box","num":"10.4","title":"&lt;box&gt;","file":"layout.html"},{"level":3,"id":"tag-hint-sidenote","num":"10.5","title":"&lt;hint&gt; e &lt;sidenote&gt;","file":"layout.html"},{"level":3,"id":"tag-code","num":"10.6","title":"&lt;code&gt; e &lt;c&gt;","file":"layout.html"},{"level":3,"id":"sobre-inline","num":"10.7","title":"Marcação no meio da frase","file":"layout.html"},{"level":2,"id":"apresentacoes","num":"11","title":"Apresentações","file":"apresentacoes.html"},{"level":3,"id":"sobre-tipo-presentation","num":"11.1","title":"Ligando o modo apresentação","file":"apresentacoes.html"},{"level":3,"id":"tag-cover","num":"11.2","title":"&lt;cover&gt;","file":"apresentacoes.html"},{"level":3,"id":"tag-slide","num":"11.3","title":"&lt;slide&gt;","file":"apresentacoes.html"},{"level":3,"id":"sobre-reveal","num":"11.4","title":"Revelação por etapas","file":"apresentacoes.html"},{"level":3,"id":"tag-progress","num":"11.5","title":"&lt;progress&gt;","file":"apresentacoes.html"},{"level":2,"id":"projetos","num":"12","title":"Projetos multi-arquivo","file":"projetos.html"},{"level":3,"id":"tag-include","num":"12.1","title":"&lt;include&gt;","file":"projetos.html"},{"level":3,"id":"sobre-project-toml","num":"12.2","title":"O arquivo project.toml","file":"projetos.html"},{"level":3,"id":"sobre-projeto-compartilhado","num":"12.3","title":"O que os arquivos compartilham","file":"projetos.html"},{"level":3,"id":"sobre-toc-project","num":"12.4","title":"Sumário do projeto inteiro","file":"projetos.html"},{"level":3,"id":"sobre-cli-projeto","num":"12.5","title":"Criando um projeto","file":"projetos.html"},{"level":2,"id":"colaboracao","num":"13","title":"Colaboração","file":"colaboracao.html"},{"level":3,"id":"colab-ideia","num":"","title":"A ideia","file":"colaboracao.html"},{"level":3,"id":"tag-team","num":"","title":"&lt;team&gt; e &lt;member&gt;","file":"colaboracao.html"},{"level":3,"id":"tag-comment","num":"","title":"&lt;comment&gt; e &lt;reply&gt;","file":"colaboracao.html"},{"level":3,"id":"tag-todo","num":"","title":"&lt;todo&gt;","file":"colaboracao.html"},{"level":3,"id":"tag-change","num":"","title":"&lt;change&gt;, &lt;old&gt; e &lt;new&gt;","file":"colaboracao.html"},{"level":3,"id":"colab-status","num":"","title":"status, by, verified-by e &lt;draft&gt;","file":"colaboracao.html"},{"level":3,"id":"tag-review","num":"","title":"&lt;review&gt;","file":"colaboracao.html"},{"level":3,"id":"colab-final","num":"","title":"Publicar e consultar","file":"colaboracao.html"},{"level":3,"id":"colab-agentes","num":"","title":"Trabalhando com um agente","file":"colaboracao.html"},{"level":2,"id":"temas","num":"14","title":"Temas e pacotes","file":"temas.html"},{"level":3,"id":"sobre-theme-accent","num":"14.1","title":"Cor de destaque e modo escuro","file":"temas.html"},{"level":3,"id":"tag-theme","num":"14.2","title":"&lt;document theme&gt;","file":"temas.html"},{"level":3,"id":"sobre-tokens","num":"14.3","title":"Escrevendo um tema","file":"temas.html"},{"level":3,"id":"tag-import","num":"14.4","title":"&lt;import&gt;","file":"temas.html"},{"level":3,"id":"sobre-escrever-pacote","num":"14.5","title":"Escrevendo um pacote","file":"temas.html"},{"level":2,"id":"api","num":"15","title":"API do runtime","file":"api.html"},{"level":3,"id":"sobre-quando","num":"15.1","title":"Quando o seu script roda","file":"api.html"},{"level":3,"id":"sobre-window-delta","num":"15.2","title":"O objeto window.Delta","file":"api.html"},{"level":3,"id":"api-popover","num":"15.3","title":"Delta.popover","file":"api.html"},{"level":3,"id":"api-t","num":"15.4","title":"Delta.t","file":"api.html"},{"level":3,"id":"api-deck","num":"15.5","title":"Delta.deck","file":"api.html"},{"level":3,"id":"api-review","num":"15.6","title":"Delta.review","file":"api.html"},{"level":3,"id":"sobre-contrato","num":"15.7","title":"O que não é contrato","file":"api.html"},{"level":2,"id":"compilador","num":"16","title":"Por dentro do compilador","file":"compilador.html"},{"level":3,"id":"sobre-duas-regras","num":"16.1","title":"As duas regras","file":"compilador.html"},{"level":3,"id":"sobre-tres-conceitos","num":"16.2","title":"As três estruturas","file":"compilador.html"},{"level":3,"id":"sobre-pipeline","num":"16.3","title":"O pipeline, passo a passo","file":"compilador.html"},{"level":3,"id":"sobre-contexto","num":"16.4","title":"O contexto, campo a campo","file":"compilador.html"},{"level":3,"id":"sobre-numeracao-entre-arquivos","num":"16.5","title":"A numeração entre arquivos","file":"compilador.html"},{"level":3,"id":"sobre-emit","num":"16.6","title":"O que sai: o HTML","file":"compilador.html"},{"level":3,"id":"sobre-diagnosticos","num":"16.7","title":"Diagnósticos, não exceções","file":"compilador.html"},{"level":3,"id":"sobre-onde-ler","num":"16.8","title":"Onde ler","file":"compilador.html"},{"level":2,"id":"contribuir","num":"17","title":"Contribuir com o compilador","file":"contribuir.html"},{"level":3,"id":"passo-ambiente","num":"17.1","title":"O ambiente","file":"contribuir.html"},{"level":3,"id":"passo-tres-formas","num":"17.2","title":"As três formas de um recurso","file":"contribuir.html"},{"level":3,"id":"passo-anatomia-de-um-passo","num":"17.3","title":"A anatomia de um passo","file":"contribuir.html"},{"level":3,"id":"passo-adicionar-um-passo","num":"17.4","title":"Acrescentar um passo, do início ao fim","file":"contribuir.html"},{"level":3,"id":"passo-adicionar-ambiente","num":"17.5","title":"Acrescentar um ambiente numerado","file":"contribuir.html"},{"level":3,"id":"passo-testes","num":"17.6","title":"Testes","file":"contribuir.html"},{"level":3,"id":"passo-checklist","num":"17.7","title":"Antes do pull request","file":"contribuir.html"}]</script>
-<script type="application/json" id="delta-i18n">{"theorem":"Teorema","proposition":"Proposição","lemma":"Lema","corollary":"Corolário","conjecture":"Conjectura","definition":"Definição","example":"Exemplo","claim":"Afirmação","observation":"Observação","exercise":"Exercício","problem":"Problema","proof":"Demonstração","solution":"Solução","remark":"Comentário","chapter":"Capítulo","section":"Seção","subsection":"Subseção","subsubsection":"Subsubseção","equations":"Equações","equation":"Equação","figure":"Figura","interactive":"Interativo","table":"Tabela","video":"Vídeo","youtube":"Vídeo","audio":"Áudio","contents":"Sumário","hint":"Dica","references":"Referências","close":"Fechar","code":"Código","copy":"Copiar","copied":"Copiado","prevSlide":"Slide anterior","nextSlide":"Próximo slide","watchOnYoutube":"Assistir no YouTube","noVideo":"Sem fonte de vídeo.","noAudio":"Sem fonte de áudio.","noImage":"Imagem não encontrada.","abstract":"Resumo","keywords":"Palavras-chave","msc":"Classificação por Assunto (MSC)","received":"Recebido","revised":"Revisado","accepted":"Aceito","submitted":"Submetido","date":"Data","acknowledgements":"Agradecimentos","funding":"Financiamento","comment":"Anotação","todo":"Tarefa","tasks":"Tarefas","change":"Alteração","reply":"Resposta","open":"Em aberto","resolved":"Resolvida","doing":"Em andamento","done":"Concluída","draft":"Rascunho","heuristic":"Heurística","sketch":"Esboço","review":"Em revisão","verified":"Verificado","formalized":"Formalizado","stale":"Desatualizado","human":"humano","agent":"agente","insert":"Inserido","delete":"Removido","replace":"Substituído","pending":"Pendente","reviewPanel":"Revisão","annotations":"Anotações","changes":"Alterações","markup":"Marcação","final":"Final","original":"Original","copyText":"Copiar como texto","openComments":"anotações abertas","openTasks":"tarefas abertas","pendingChanges":"alterações pendentes","blocks":"Blocos","all":"Todos","nothingToReview":"Nada a revisar","high":"Alta","normal":"Normal","low":"Baixa","due":"Prazo","by":"por","for":"para","verifiedBy":"verificado por","note":"Nota","jumpTo":"Ir para","intuition":"Intuição","strategy":"Estratégia","obstacle":"Obstáculo","step":"Passo","hyp":"Hipótese","counterexample":"Contraexemplo","usedIn":"Usada em","notUsed":"Não usada na demonstração","theProof":"a demonstração","brokenBy":"Necessária, veja","stepLevel":"Passos","stepLevelHint":"Abrir a demonstração até este nível"}</script>
+<script type="application/json" id="delta-i18n">{"theorem":"Teorema","proposition":"Proposição","lemma":"Lema","corollary":"Corolário","conjecture":"Conjectura","definition":"Definição","example":"Exemplo","claim":"Afirmação","observation":"Observação","exercise":"Exercício","problem":"Problema","proof":"Demonstração","solution":"Solução","remark":"Comentário","chapter":"Capítulo","section":"Seção","subsection":"Subseção","subsubsection":"Subsubseção","equations":"Equações","equation":"Equação","figure":"Figura","interactive":"Interativo","table":"Tabela","video":"Vídeo","youtube":"Vídeo","audio":"Áudio","contents":"Sumário","hint":"Dica","references":"Referências","close":"Fechar","code":"Código","copy":"Copiar","copied":"Copiado","prevSlide":"Slide anterior","nextSlide":"Próximo slide","watchOnYoutube":"Assistir no YouTube","noVideo":"Sem fonte de vídeo.","noAudio":"Sem fonte de áudio.","noImage":"Imagem não encontrada.","abstract":"Resumo","keywords":"Palavras-chave","msc":"Classificação por Assunto (MSC)","received":"Recebido","revised":"Revisado","accepted":"Aceito","submitted":"Submetido","date":"Data","acknowledgements":"Agradecimentos","funding":"Financiamento","comment":"Anotação","todo":"Tarefa","tasks":"Tarefas","change":"Alteração","reply":"Resposta","open":"Em aberto","resolved":"Resolvida","doing":"Em andamento","done":"Concluída","draft":"Rascunho","heuristic":"Heurística","sketch":"Esboço","review":"Em revisão","verified":"Verificado","formalized":"Formalizado","stale":"Desatualizado","human":"humano","agent":"agente","insert":"Inserido","delete":"Removido","replace":"Substituído","pending":"Pendente","reviewPanel":"Revisão","annotations":"Anotações","changes":"Alterações","markup":"Marcação","final":"Final","original":"Original","copyText":"Copiar como texto","openComments":"anotações abertas","openTasks":"tarefas abertas","pendingChanges":"alterações pendentes","blocks":"Blocos","all":"Todos","nothingToReview":"Nada a revisar","high":"Alta","normal":"Normal","low":"Baixa","due":"Prazo","by":"por","for":"para","verifiedBy":"verificado por","note":"Nota","jumpTo":"Ir para","intuition":"Intuição","strategy":"Estratégia","obstacle":"Obstáculo","step":"Passo","hyp":"Hipótese","counterexample":"Contraexemplo","usedIn":"Usada em","notUsed":"Não usada na demonstração","theProof":"a demonstração","brokenBy":"Necessária, veja","onlySteps":"Só passos","fullProof":"Completo","showSolution":"Ver solução","hideSolution":"Esconder solução","proofIn":"Demonstração na","proofInChapter":"Demonstração no","seeProof":"Ver demonstração","proofPending":"Demonstração pendente","writtenBy":"Escrito por","proposedBy":"Proposto por","checkedBy":"Conferido por","staleNote":"Mudou depois da conferência."}</script>
 <script>
-"use strict";(()=>{var ie=new Map;function V(n,e){if(ie.has(n))return ie.get(n);let t=e,o=document.getElementById(n);try{o&&(t=JSON.parse(o.textContent||"null")??e)}catch{t=e}return ie.set(n,t),t}function l(n,e){return V("delta-i18n",{})[n]??e??n}function j(n){return l(n,n.charAt(0).toUpperCase()+n.slice(1))}function de(){let n=V("delta-review",{});return{team:n.team??[],items:n.items??[]}}function Xe(n){if(n)return de().team.find(e=>e.id===n)}function D(n){return Xe(n)?.color}function k(n){if(!n)return null;let e=document.createElement("span");e.className="who";let t=Xe(n);if(!t)return e.classList.add("who-free"),e.textContent=n,e;e.setAttribute("data-accent",t.color),e.title=t.kind==="agent"?`${t.name} \xB7 ${l("agent","agent")}`:t.name;let o=document.createElement("i");o.className="who-dot",o.setAttribute("aria-hidden","true");let a=document.createElement("span");if(a.className="who-name",a.textContent=t.name,e.append(o,a),t.kind==="agent"){let r=document.createElement("b");r.className="who-badge",r.textContent=l("agent","agent"),e.append(r)}return e}var J="delta:review",q={get annotations(){return document.documentElement.dataset.review!=="off"},setAnnotations(n){n?delete document.documentElement.dataset.review:document.documentElement.dataset.review="off",document.dispatchEvent(new CustomEvent(J))},get changes(){let n=document.documentElement.dataset.changes;return n==="final"||n==="original"?n:"markup"},setChanges(n){n==="markup"?delete document.documentElement.dataset.changes:document.documentElement.dataset.changes=n,document.dispatchEvent(new CustomEvent(J))}};function S(n){return n.tagName.toLowerCase().replace(/^delta-/,"")}function L(n,...e){let t=document.createElement("button");return t.type="button",n&&(t.className=n),t.append(...e),t}function ce(n,e="center"){let t=document.getElementById(n);return t?(It(t),t.scrollIntoView({block:e,behavior:"smooth"}),t.classList.add("is-xref-target"),t.addEventListener("animationend",()=>t.classList.remove("is-xref-target"),{once:!0}),!0):!1}function le(n,e="center"){return window.Delta?.deck?.goToId(n)?!0:ce(n,e)}function K(n,e,t,{block:o="center",before:a}={}){n.addEventListener("click",r=>{a?.(),!t&&le(e,o)&&r.preventDefault()})}function Q(n){return Ye??(Ye=new Map([...document.querySelectorAll("template[data-delta-pop]")].map(e=>[e.dataset.deltaPop??"",e]))),Ye.get(n)}var Ye;function R(n){let e=n.querySelector(":scope > delta-title");if(!e)return;let t=Ot(e),o=[...e.childNodes];return e.remove(),{nodes:o,text:t}}function Ot(n){let e=n.cloneNode(!0);for(let t of e.querySelectorAll(".katex-html, annotation"))t.remove();return e.textContent?.replace(/\s+/g," ").trim()??""}function _(n,e){return j(n)+(e?` ${e}`:"")}function z(n){let e=n.querySelector(":scope > delta-meta");if(!e)return null;let t=document.createElement("div");t.className="box-meta";for(let o of e.querySelectorAll(":scope > delta-meta-item")){let a=o.getAttribute("key");if(!a||!o.textContent?.trim())continue;let r=document.createElement("span");r.className="k",r.textContent=a;let d=document.createElement("span");d.className="v",d.append(...o.childNodes);let m=document.createElement("span");m.className="box-meta-item",m.append(r,d),t.append(m)}return t.childElementCount?(e.replaceWith(t),t):(e.remove(),null)}function Z(n,e,t){let o=L(n,e);return o.addEventListener("click",()=>{navigator.clipboard?.writeText(t()).then(()=>{o.textContent=l("copied","Copied"),o.classList.add("is-copied"),setTimeout(()=>{o.textContent=e,o.classList.remove("is-copied")},1400)})}),o}function ee(n,e){n.classList.toggle("is-collapsed",e),n.querySelector(":scope > .collapse-toggle")?.setAttribute("aria-expanded",String(!e))}function It(n){for(let e=n.parentElement?.closest(".is-collapsed");e;e=e.parentElement?.closest(".is-collapsed"))ee(e,!1)}function te(n){let e=document.createDocumentFragment(),t=r=>n.querySelector(`:scope > delta-${r}`),o=["author","title","journal","year"].map(t).filter(r=>r!==null);o.forEach((r,d)=>{d>0&&e.append(". ");let m=document.createElement("span");m.className=`paper-${S(r)}`;for(let i of r.childNodes)m.append(i.cloneNode(!0));e.append(m)}),o.length&&e.append(".");let a=t("link")??t("url");return a&&(e.append(" "),e.append(a.cloneNode(!0))),e}function U(n,e){let t=n.getAttribute("collapsed")==="true";if(!t&&n.getAttribute("collapsible")!=="true")return;let o=document.createElement("div");for(o.className="collapse-body";e.nextSibling;)o.append(e.nextSibling);n.append(o),e.classList.add("collapse-toggle"),e.setAttribute("role","button"),e.tabIndex=0;let a=d=>ee(n,d);a(t);let r=()=>a(!n.classList.contains("is-collapsed"));e.addEventListener("click",r),e.addEventListener("keydown",d=>{(d.key==="Enter"||d.key===" ")&&(d.preventDefault(),r())})}function F(n,e){let t=n.getAttribute("status"),o=n.getAttribute("by"),a=n.getAttribute("verified-by");if(!t&&!o&&!a)return;t&&(n.dataset.status=t);let r=document.createElement("span");if(r.className="status-pill",t){r.dataset.status=t;let i=document.createElement("span");i.className="status-label",i.textContent=l(t,t),r.append(i)}let d=k(o);d&&r.append(d);let m=k(a);if(m){let i=document.createElement("span");i.className="status-check",i.title=l("verifiedBy","verified by"),i.textContent="\u2713",r.append(i,m)}if(e)e.append(" ",r);else{let i=document.createElement("div");i.className="status-bar",i.append(r),n.prepend(i)}}var ne={chapter:1,section:2,subsection:3,subsubsection:4},Bt=new Set(Object.keys(ne)),qt=new Set(["theorem","proposition","lemma","corollary","conjecture","claim","definition"]),me=new Set([...qt,"example","counterexample","observation","remark","exercise","problem"]),pe=new Set(["proof","solution"]),ue=new Set([...me,...pe]);var Je=new Set(["intuition","strategy","obstacle"]),_t=new Set(["m","math","equation","equations"]),Ft=new Set(["code","c"]),gn=new Set([..._t,...Ft]);var bn=new Set([...Bt,...ue,"equation","equations","figure","video","youtube","audio","table","code","list","box","columns","draft","todo","abstract","interactive"]);var Gt={chapter:"chapter-title",section:"section",subsection:"sub",subsubsection:"subsub"},fe=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelector(":scope > delta-title");if(!e)return;if(document.documentElement.dataset.type==="presentation"){let r=document.createElement("delta-slide");r.setAttribute("divider","true"),F(this,e),r.appendChild(e),this.prepend(r);return}let t=S(this),o=document.createElement(`h${ne[t]??2}`);o.className=Gt[t]??"section";let a=this.getAttribute("num");if(a){let r=document.createElement("span");r.className="num",r.textContent=a,o.append(r," ")}o.append(...e.childNodes),e.replaceWith(o),F(this,o),z(this),U(this,o)}};function Qe(){for(let n of Object.keys(ne))customElements.define(`delta-${n}`,class extends fe{})}var he=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelector(":scope > delta-title"),t=document.createElement("div");t.className="slide-body";for(let o of[...this.childNodes])o!==e&&t.append(o);if(e){let o=document.createElement("h2");o.className="slide-title",o.append(...e.childNodes),e.replaceWith(o);let a=document.createElement("div");a.className="slide-rule";let r=document.createElement("span");r.className="slide-rule-fill",a.append(r),o.after(a)}this.append(t)}};function Ze(){customElements.define("delta-slide",he)}var ge=[...Je],jt=ge.map(n=>`:scope > delta-${n}`).join(", ");function oe(n){let e=[...n.querySelectorAll(jt)].sort((i,s)=>ge.indexOf(S(i))-ge.indexOf(S(s)));if(e.length===0)return null;let t=document.createElement("span");t.className="lens-dots";let o=document.createElement("div");o.className="lens-drawer";let a=new Map,r=null,d=i=>{r=i;for(let[s,c]of a)s.hidden=s!==i,c.setAttribute("aria-expanded",String(s===i));o.hidden=i===null,n.classList.toggle("has-drawer",i!==null)};for(let i of e){let s=S(i),c=l(s,s),u=L("lens-dot");u.dataset.aid=s,u.dataset.label=c,u.setAttribute("aria-label",c),u.addEventListener("click",()=>d(r===i?null:i)),a.set(i,u),t.append(u),i.classList.add("lens-panel"),i.dataset.aid=s;let b=document.createElement("div");b.className="lens-head";let v=document.createElement("span");v.className="lens-name",v.textContent=c;let p=L("lens-close","\xD7");p.setAttribute("aria-label",l("close","Close")),p.addEventListener("click",()=>{d(null),u.focus()}),b.append(v,p),i.prepend(b),o.append(i)}let m=n.closest(".xref-pop-body")!==null;return d(m?null:e.find(i=>i.getAttribute("collapsed")==="false")??null),{dots:t,drawer:o}}var be=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=document.createElement("span");e.className="step-num",e.textContent=this.getAttribute("num")??"";let t=[...this.querySelectorAll("delta-step-claim")].find(a=>a.closest("delta-step")===this);(t??this).prepend(e," ");let o=oe(this);o&&t&&(t.append(" ",o.dots),t.after(o.drawer))}},ve=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=document.createElement("span");e.className="hyp-num",e.textContent=`(${this.getAttribute("num")??""})`,this.prepend(e," ")}};function se(n,e,t){return class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;if(this.dataset.deltaReady="1",t!==void 0){this.textContent=l(n,e);return}let o=document.createElement("span");o.className="hyp-uses-label",o.textContent=`${l(n,e)}: `,this.prepend(o)}}}function et(n,e){let t=document.createElement("span");t.className="step-levels";let o=document.createElement("span");o.className="step-levels-label",o.textContent=l("stepLevel","Steps"),t.append(o);let a=[],r=(m,i)=>{for(let s of n.querySelectorAll("delta-proof[data-depth]"))ee(s,Number(s.dataset.depth)>=m);for(let s of a)s.setAttribute("aria-pressed",String(s===i))},d=(m,i)=>{let s=L("",m);s.title=l("stepLevelHint","Expand the proof to this level"),s.addEventListener("click",c=>{c.stopPropagation(),r(i,s)}),s.addEventListener("keydown",c=>c.stopPropagation()),a.push(s),t.append(s)};for(let m=1;m<=e;m++)d(String(m),m);return d(l("all","All"),1/0),a[0].setAttribute("aria-pressed","true"),t}function tt(){customElements.define("delta-step",be),customElements.define("delta-hyp",ve),customElements.define("delta-hyp-used",se("usedIn","Used in")),customElements.define("delta-hyp-needed",se("brokenBy","Needed, see")),customElements.define("delta-hyp-unused",se("notUsed","Not used in the proof","")),customElements.define("delta-hyp-in-proof",se("theProof","the proof",""))}var Ee=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=S(this);pe.has(e)?this.renderProof(e):me.has(e)&&this.renderBox(e)}renderProof(e){let t=document.createElement("span");t.className="proof-lead",t.append(j(e));let o=this.getAttribute("of"),a=this.getAttribute("data-target-tag"),r=this.getAttribute("data-target-num");if(o&&a&&r){let s=document.createElement("delta-ref");s.setAttribute("to",o),s.setAttribute("data-target-num",r),s.setAttribute("data-target-tag",a),t.append(" ",s)}let d=R(this);d&&t.append(" (",...d.nodes,")"),t.append("."),this.prepend(t," "),F(this,t);let m=Number(this.getAttribute("data-step-depth")??0);m>0&&t.append(" ",et(this,m));let i=document.createElement("span");i.className="proof-qed",i.textContent="\u25A1",this.append(i),U(this,t)}renderBox(e){this.classList.add("box"),(e==="example"||e==="counterexample")&&this.classList.add("example");let t=document.createElement("span");t.className="box-tag",t.textContent=_(e,this.getAttribute("num"));let o=R(this);if(o){let d=document.createElement("span");d.className="box-tag-title",d.append(...o.nodes),t.append(" ",d)}this.prepend(t),F(this,t);let a=z(this);a&&this.append(a);let r=oe(this);r&&(this.append(r.dots),this.after(r.drawer)),U(this,t)}};function nt(){for(let n of ue)customElements.define(`delta-${n}`,class extends Ee{})}var ye=class extends HTMLElement{connectedCallback(){this.dataset.deltaReady||(this.dataset.deltaReady="1",z(this))}};function ot(){customElements.define("delta-document",ye)}var xe=class extends HTMLElement{connectedCallback(){this.dataset.deltaReady||(this.dataset.deltaReady="1",this.classList.add("sidenote"))}};function st(){customElements.define("delta-sidenote",xe)}function X(n,e,t,o="video-cap"){let a=n.querySelector(":scope > delta-caption");if(!a)return;a.classList.add(o);let r=document.createElement("span");r.className="lbl",r.textContent=_(e,t),a.prepend(r," ")}function ae(n,e){let t=document.createElement("div");t.className="video-frame",t.append(e),n.prepend(t)}function Ce(n){let e=document.createElement("div");return e.className="video-missing",e.textContent=n,e}function Dt(n){if(n=(n||"").trim(),/^[\w-]{11}$/.test(n))return n;try{let e=new URL(n);if(e.hostname==="youtu.be")return e.pathname.slice(1,12);if(e.searchParams.has("v"))return e.searchParams.get("v");let t=e.pathname.match(/\/(?:embed|shorts)\/([\w-]{11})/);if(t)return t[1]}catch{}return""}var Le=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("video");let e=Dt(this.getAttribute("src"));if(!e){console.warn("delta-youtube: no valid video ID found in src",this.getAttribute("src"));return}if(location.protocol==="file:"){let t=document.createElement("a");t.className="yt-facade video-media",t.href=`https://www.youtube.com/watch?v=${e}`,t.target="_blank",t.rel="noopener",t.setAttribute("aria-label",l("watchOnYoutube","Watch on YouTube"));let o=document.createElement("img");o.src=`https://i.ytimg.com/vi/${e}/hqdefault.jpg`,o.alt="",o.loading="lazy";let a=document.createElement("span");a.className="yt-play",a.setAttribute("aria-hidden","true"),t.append(o,a),ae(this,t)}else{let t=document.createElement("iframe");t.src=`https://www.youtube.com/embed/${e}`,t.allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",t.allowFullscreen=!0,t.className="video-media",t.loading="lazy",ae(this,t)}X(this,"video",this.getAttribute("num"))}},we=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("video");let e=this.getAttribute("src");if(!e){this.prepend(Ce(l("noVideo","No video source.")));return}let t=document.createElement("video");t.src=e,t.controls=!0,t.className="video-media";for(let o of["poster","loop","muted","autoplay","playsinline"])this.hasAttribute(o)&&t.setAttribute(o,this.getAttribute(o)??"");ae(this,t),X(this,"video",this.getAttribute("num"))}},ke=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("video");let e=this.getAttribute("src");if(!e){this.prepend(Ce(l("noAudio","No audio source.")));return}let t=document.createElement("audio");t.src=e,t.controls=!0,t.className="audio-media",this.hasAttribute("loop")&&(t.loop=!0),ae(this,t),X(this,"audio",this.getAttribute("num"))}},Ne=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("figure");let e=this.getAttribute("src");if(!e)this.prepend(Ce(l("noImage","Image not found.")));else{let t=document.createElement("div");t.className="figure-frame";let o=document.createElement("img");o.src=e;let a=this.getAttribute("alt");a&&(o.alt=a),t.append(o),this.prepend(t)}X(this,"figure",this.getAttribute("num"),"figure-cap")}},Ae=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("interactive");let e=this.querySelector(":scope > delta-caption"),t=document.createElement("div");t.className="interactive-frame";for(let o of[...this.childNodes])o!==e&&t.append(o);this.prepend(t),X(this,"interactive",this.getAttribute("num"),"interactive-cap")}};function at(){customElements.define("delta-youtube",Le),customElements.define("delta-video",we),customElements.define("delta-audio",ke),customElements.define("delta-figure",Ne),customElements.define("delta-interactive",Ae)}var re=typeof HTMLElement<"u"&&typeof HTMLElement.prototype.showPopover=="function",G=8,Te=12,W=null;function N(n,e,t={}){let{onOpen:o,onClose:a,gap:r=10,triggerClick:d=!0}=t;e.classList.add("delta-pop"),re&&e.setAttribute("popover","manual"),e.parentElement!==document.body&&document.body.appendChild(e),n.setAttribute("aria-haspopup","dialog");let m=!1;function i(){let w=n.getBoundingClientRect(),A=document.documentElement.clientWidth,$=document.documentElement.clientHeight,H=$-G-(w.bottom+r),I=w.top-r-G;e.style.maxHeight="",e.classList.remove("is-capped");let C=e.getBoundingClientRect(),P=C.height>H&&I>H,h=P?I:H;C.height>h&&(e.style.maxHeight=`${Math.max(0,Math.floor(h))}px`,e.classList.add("is-capped"),C=e.getBoundingClientRect()),e.classList.toggle("is-above",P);let E=P?w.top-r-C.height:w.bottom+r,x=Math.min(Math.max(G,E),Math.max(G,$-C.height-G)),f=Math.min(Math.max(G,w.left),Math.max(G,A-C.width-G));e.style.top=`${Math.round(x)}px`,e.style.left=`${Math.round(f)}px`;let y=Math.max(Te,C.width-Te),T=Math.min(Math.max(Te,w.left+w.width/2-f),y);e.style.setProperty("--arrow-x",`${Math.round(T)}px`)}let s=()=>i(),c=typeof ResizeObserver<"u"?new ResizeObserver(()=>m&&i()):null,u=w=>{w.key==="Escape"&&p()},b=w=>{let A=w.target;!e.contains(A)&&!n.contains(A)&&p()};function v(){m||(W&&W!==p&&W(),o?.(e,n),re?e.showPopover():e.classList.add("is-open"),i(),window.addEventListener("scroll",s,{capture:!0,passive:!0}),window.addEventListener("resize",s),document.addEventListener("keydown",u),c?.observe(e),setTimeout(()=>document.addEventListener("pointerdown",b),0),m=!0,W=p,n.setAttribute("aria-expanded","true"))}function p(){m&&(re?e.matches(":popover-open")&&e.hidePopover():e.classList.remove("is-open"),e.classList.remove("is-above","is-capped"),window.removeEventListener("scroll",s,{capture:!0}),window.removeEventListener("resize",s),document.removeEventListener("keydown",u),document.removeEventListener("pointerdown",b),c?.disconnect(),m=!1,W===p&&(W=null),n.setAttribute("aria-expanded","false"),a?.(e,n))}function g(){m?p():v()}re&&e.addEventListener("toggle",w=>{w.newState==="closed"&&m&&p()});let O=w=>{w.preventDefault(),g()};return d&&(n.addEventListener("click",O),n.setAttribute("aria-expanded","false")),{open:v,close:p,toggle:g,reposition:i,get isOpen(){return m},destroy(){p(),d&&n.removeEventListener("click",O),e.remove()}}}var Re=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=R(this),t=this.getAttribute("show-icon")!=="false",o=document.createElement("div");o.append(...this.childNodes);let a=L("hint-trigger");if(t){let r=document.createElement("span");r.className="hint-marker",r.textContent="\u{1F4A1} ",a.append(r)}a.append(...e?.text?e.nodes:[l("hint","Hint")]),this.append(a),N(a,o)}};function rt(){customElements.define("delta-hint",Re)}var Me=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=parseInt(this.getAttribute("depth")??"2",10),t=this.getAttribute("scope")==="project",o=V("delta-toc",[]).filter(s=>s.level-1<=e&&(t||!s.file));if(o.length===0)return;let a=document.createElement("nav");a.className="toc";let r=R(this);a.setAttribute("aria-label",r?.text||l("contents","Contents"));let d=document.createElement("div");d.className="toc-title",d.append(...r?.nodes??[l("contents","Contents")]),a.append(d);let m=document.createElement("ol");m.className="toc-list";let i=[{level:o[0].level,ol:m}];for(let s of o){for(;i.length>1&&s.level<i[i.length-1].level;)i.pop();let c=i[i.length-1];if(s.level>c.level){let p=c.ol.lastElementChild,g=document.createElement("ol");g.className="toc-sub",(p??c.ol).append(g),i.push({level:s.level,ol:g}),c=i[i.length-1]}let u=document.createElement("li");u.className="toc-item";let b=document.createElement("a");if(b.className="toc-link",b.href=s.file?`${s.file}#${s.id}`:`#${s.id}`,s.num){let p=document.createElement("span");p.className="toc-num",p.textContent=s.num,b.append(p," ")}let v=document.createElement("span");v.className="toc-text",v.innerHTML=s.title,b.append(v),K(b,s.id,s.file,{block:"start"}),u.append(b),c.ol.append(u)}a.append(m),this.replaceChildren(a)}};function it(){customElements.define("delta-toc",Me)}var Se=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=R(this),t=e?.text||l("contents","Contents"),o=()=>e?Kt(document.createElement("span"),e.nodes):t,a=L("floating-fab");a.setAttribute("aria-label",t);let r=document.createElement("span");r.className="floating-icon",r.setAttribute("aria-hidden","true"),r.textContent="\u2630",a.append(r,o());let d=document.createElement("div");d.className="floating-panel";let m=document.createElement("div");m.className="floating-hd";let i=document.createElement("span");i.className="floating-title",i.append(o());let s=L("floating-x","\xD7");s.setAttribute("aria-label",l("close","Close")),m.append(i,s);let c=document.createElement("div");c.className="floating-body",c.append(...this.childNodes),d.append(m,c),this.append(a);let u=N(a,d,{gap:12});s.addEventListener("click",()=>u.close()),c.addEventListener("click",b=>{b.target.closest("a")&&u.close()})}};function Kt(n,e){for(let t of e)n.append(t.cloneNode(!0));return n}function dt(){customElements.define("delta-floating",Se)}var Ut='<svg class="ext-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"/></svg>',He=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("to");if(!e)return;let t=document.createElement("a");for(t.className="ext-link",t.href=e,t.target="_blank",t.rel="noopener noreferrer";this.firstChild;)t.appendChild(this.firstChild);this.appendChild(t),t.insertAdjacentHTML("beforeend",Ut)}};function ct(){customElements.define("delta-link",He)}var Vt='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>';function lt(n,e){return n==="hyp"?`(${e})`:e?`${j(n)} ${e}`:j(n)}function mt(n,{to:e,num:t,kind:o,href:a}){let r=lt(o,t),d=document.createElement("div");d.className="xref-pop";let m=document.createElement("div");m.className="xref-pop-head";let i=document.createElement("span");i.className="xref-pop-label",i.textContent=r;let s=L("xref-go");s.title=r,s.setAttribute("aria-label",r),s.innerHTML=Vt,m.append(i,s);let c=document.createElement("div");c.className="xref-pop-body",d.append(m,c);let u=!1,b=N(n,d,{onOpen:()=>{if(u)return;u=!0;let v=Q(e);if(!v)return;let p=v.content.cloneNode(!0);for(let g of p.querySelectorAll("[id]"))g.removeAttribute("id");for(let g of p.querySelectorAll("[collapsed], [collapsible]"))g.removeAttribute("collapsed"),g.removeAttribute("collapsible");c.append(p)}});s.addEventListener("click",v=>{v.preventDefault(),b.close(),a?location.href=a:le(e)})}var $e=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("to")??"",t=this.getAttribute("data-target-num"),o=this.getAttribute("data-target-tag"),a=this.getAttribute("data-target-href");if(!o||t===null)return;let r=(this.textContent??"").trim().length>0,d=L("xref");r?d.append(...this.childNodes):d.textContent=lt(o,t),this.replaceChildren(d),mt(d,{to:e,num:t,kind:o,href:a})}};function pt(){for(let n of document.querySelectorAll(".katex [data-delta-ref-to]")){let{deltaRefTo:e,deltaRefNum:t,deltaRefTag:o,deltaRefHref:a}=n.dataset;!e||!t||!o||(n.classList.add("math-xref"),n.setAttribute("role","link"),n.tabIndex=0,n.addEventListener("keydown",r=>{(r.key==="Enter"||r.key===" ")&&(r.preventDefault(),n.click())}),mt(n,{to:e,num:t,kind:o,href:a}))}}function ut(){customElements.define("delta-ref",$e)}var Pe=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelectorAll(":scope > delta-paper");if(e.length===0)return;let t=document.createElement("section");t.className="notes";let o=document.createElement("h4");o.append(...R(this)?.nodes??[l("references","References")]),t.append(o);let a=document.createElement("ol");for(let r of e){let d=document.createElement("li");r.id&&(d.id=r.id),d.append(te(r)),a.append(d)}t.append(a),this.replaceChildren(t)}};function ft(){customElements.define("delta-bibliography",Pe)}var Oe=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=(this.getAttribute("data-cite-nums")??"").split(",").filter(Boolean),t=(this.getAttribute("data-cite-ids")??"").split(",").filter(Boolean),o=this.getAttribute("data-cite-file");if(e.length===0){this.classList.add("cite-missing");return}let a=document.createElement("span");a.className="cite",a.append("["),e.forEach((i,s)=>{s>0&&a.append(", ");let c=document.createElement("a");c.textContent=i,a.append(c)}),a.append("]"),this.replaceChildren(a);let r=document.createElement("div");r.className="cite-pop";let d=!1,m=N(a,r,{onOpen:()=>{d||(d=!0,t.forEach((i,s)=>{let c=document.createElement("div");c.className="cite-pop-item";let u=document.createElement("a");u.className="cite-pop-num",u.href=o?`${o}#${i}`:`#${i}`,u.textContent=`[${e[s]}]`,K(u,i,o,{before:()=>m.close()});let b=document.createElement("span");b.className="cite-pop-text";let v=Q(i)?.content.querySelector("delta-paper");v&&b.append(te(v)),c.append(u,b),r.append(c)}))}})}};function ht(){customElements.define("delta-cite",Oe)}var Ie=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.textContent??"",t=document.createElement("pre");t.className="code-src";let o=document.createElement("code");for(;this.firstChild;)o.append(this.firstChild);t.append(o);let a=document.createElement("div");if(a.className="code-body",this.getAttribute("lines")!=="false"){let s=e.replace(/\n$/,"").split(`
-`).length,c=document.createElement("span");c.className="code-gutter",c.setAttribute("aria-hidden","true"),c.textContent=Array.from({length:s},(u,b)=>String(b+1)).join(`
-`),a.append(c)}a.append(t);let r=document.createElement("div");r.className="code-head";let d=this.getAttribute("lang"),m=document.createElement("span");m.className="code-lang",m.textContent=(d||l("code","Code")).toUpperCase(),r.append(m,Z("code-copy",l("copy","Copy"),()=>e)),this.append(r,a);let i=this.getAttribute("num");if(i){let s=document.createElement("div");s.className="code-cap";let c=document.createElement("span");c.className="lbl",c.textContent=_("code",i),s.append(c," "),this.append(s)}U(this,r)}};function gt(){customElements.define("delta-code",Ie)}var Y={ordered:!1,marker:"bullet"},Be={1:{ordered:!0,marker:"decimal"},number:{ordered:!0,marker:"decimal"},numbers:{ordered:!0,marker:"decimal"},numbered:{ordered:!0,marker:"decimal"},decimal:{ordered:!0,marker:"decimal"},a:{ordered:!0,marker:"alpha"},alpha:{ordered:!0,marker:"alpha"},alphabetical:{ordered:!0,marker:"alpha"},A:{ordered:!0,marker:"alpha-upper"},"alpha-upper":{ordered:!0,marker:"alpha-upper"},i:{ordered:!0,marker:"roman"},roman:{ordered:!0,marker:"roman"},I:{ordered:!0,marker:"roman-upper"},"roman-upper":{ordered:!0,marker:"roman-upper"},bullet:Y,disc:Y,dot:Y,dash:{ordered:!1,marker:"dash"},none:{ordered:!1,marker:"none"}};function zt(n){if(n.getAttribute("numbered")==="true")return Be.number;let e=(n.getAttribute("marker")??"").trim();return e?Be[e]??Be[e.toLowerCase()]??Y:Y}var qe=class extends HTMLElement{connectedCallback(){this.dataset.deltaReady||(this.dataset.deltaReady="1",this._render())}_render(){let e=zt(this),t=document.createElement(e.ordered?"ol":"ul");if(t.className="delta-list",t.dataset.marker=e.marker,e.ordered){let o=parseInt(this.getAttribute("start")??"",10);Number.isFinite(o)&&(t.style.counterReset=`delta-item ${o-1}`,t.setAttribute("start",String(o)))}this.querySelectorAll(":scope > delta-item").forEach(o=>{let a=document.createElement("li");a.className="delta-list-item";for(let r of["reveal","reveal-order"]){let d=o.getAttribute(r);d!==null&&a.setAttribute(r,d)}a.append(...o.childNodes),t.append(a)}),this.replaceChildren(t)}};function bt(){customElements.define("delta-list",qe)}function vt(n,e,t,o,a){let r=e.getAttribute("align");a&&r&&(o[t]=r),r||(r=o[t]),r==="right"?n.classList.add("num"):r==="center"&&(n.style.textAlign="center"),e.getAttribute("mono")==="true"&&n.classList.add("mono")}var _e=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("delta-table");let e=this.querySelector(":scope > delta-title"),t=this.querySelector(":scope > delta-caption"),o=this.getAttribute("num"),a=null;if(e||t||o){if(a=document.createElement("div"),a.className="table-head",e||o){let u=document.createElement("span");u.className="table-lbl",u.textContent=_("table",o),a.append(u)}if(e){let u=document.createElement("span");u.className="table-title",u.append(...e.childNodes),a.append(u)}if(t){let u=document.createElement("span");u.className="table-cap",u.append(...t.childNodes),a.append(u)}}let r=document.createElement("table");r.className="t";let d=[],m=this.querySelector(":scope > delta-header");if(m){let u=document.createElement("thead"),b=document.createElement("tr");m.querySelectorAll(":scope > delta-column").forEach((v,p)=>{let g=document.createElement("th");vt(g,v,p,d,!0),g.append(...v.childNodes),b.append(g)}),u.append(b),r.append(u)}let i=document.createElement("tbody");this.querySelectorAll(":scope > delta-row").forEach(u=>{let b=document.createElement("tr");u.querySelectorAll(":scope > delta-column").forEach((v,p)=>{let g=document.createElement("td");vt(g,v,p,d,!1),g.append(...v.childNodes),b.append(g)}),i.append(b)}),r.append(i);let s=document.createElement("div");s.className="table-wrap";let c=this.getAttribute("max-height");c&&(s.style.maxHeight=c,s.style.overflowY="auto"),s.append(r),this.replaceChildren(...a?[a]:[],s)}};function Et(){customElements.define("delta-table",_e)}var Wt=/^\d*\.?\d+(fr)?$/,Fe=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("gap");e&&(this.style.gap=e);for(let t of this.querySelectorAll(":scope > delta-column")){let o=t.getAttribute("width");if(!o)continue;let a=Wt.test(o.trim())?`${parseFloat(o)} 1 0`:`0 1 ${o}`;t.style.setProperty("--col-flex",a)}}};function yt(){customElements.define("delta-columns",Fe)}var xt={keywords:"Keywords",msc:"Mathematics Subject Classification",received:"Received",revised:"Revised",accepted:"Accepted",submitted:"Submitted",date:"Date",acknowledgements:"Acknowledgements",funding:"Funding"},Xt=new Set(["acknowledgements","funding"]),Ge=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=document.createElement("div");e.className="abstract-label",e.textContent=l("abstract","Abstract");let t=document.createElement("div");t.className="abstract-body",t.append(...this.childNodes),this.append(e,t)}},je=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady||(this.dataset.deltaReady="1",this.closest("delta-slide")))return;let e=S(this),t=Xt.has(e);this.classList.add(t?"fm-block":"fm-line");let o=document.createElement("span");o.className="fm-label",o.textContent=l(e,xt[e]??e),this.prepend(o,t?" ":": ")}};function Lt(){customElements.define("delta-abstract",Ge);for(let n of Object.keys(xt))customElements.define(`delta-${n}`,class extends je{})}var wt=["blue","purple","orange","teal","pink","green","red","indigo","sky","lime","yellow","slate"];var Yt=new Set(wt),Jt={danger:"red",warning:"orange",tip:"green",note:"blue"},De=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("color")?.trim()||Jt[this.getAttribute("type")?.trim().toLowerCase()??""];e&&(Yt.has(e.toLowerCase())?this.setAttribute("data-accent",e.toLowerCase()):this.style.setProperty("--delta-accent",e));let t=this.querySelector(":scope > delta-title"),o=null;t&&(o=document.createElement("div"),o.className="box-heading",o.append(...t.childNodes),t.remove());let a=document.createElement("div");a.className="box-body",a.append(...this.childNodes),o&&this.append(o),this.append(a)}};function kt(){customElements.define("delta-box",De)}var Ke=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("by"),t=this.getAttribute("status")??"open",o=this.getAttribute("num"),a=D(e),r=[...this.querySelectorAll(":scope > delta-reply")];for(let c of r)c.remove();let d=Qt(this,r,{by:e,status:t,date:this.getAttribute("date")});if(a&&d.setAttribute("data-accent",a),this.closest(".delta-pop")){this.parentElement?.classList.contains("xref-pop-body")?(d.classList.add("note-static"),this.replaceChildren(d)):this.classList.add("note-hidden");return}let m=`${l("comment","Comment")}${o?` ${o}`:""}`,i=L("note-marker",o??"\u2022");i.title=m,i.setAttribute("aria-label",m),a&&i.setAttribute("data-accent",a),t==="resolved"&&i.classList.add("is-resolved"),i.addEventListener("click",c=>c.stopPropagation()),i.addEventListener("keydown",c=>c.stopPropagation()),this.replaceChildren(i),N(i,d);let s=this.getAttribute("on");if(s){let c=document.getElementById(s);if(c&&!c.contains(this)){let u=c.querySelector(":scope > .box-tag, :scope > h1, :scope > h2, :scope > h3, :scope > h4, :scope > .proof-lead");u?u.append(" ",this):c.after(this)}}}};function Qt(n,e,t){let o=document.createElement("div");o.className="note-pop";let a=document.createElement("div");a.className="note-head";let r=k(t.by);if(r&&a.append(r),t.date){let i=document.createElement("span");i.className="note-date",i.textContent=t.date,a.append(i)}let d=document.createElement("span");d.className="note-status",d.dataset.status=t.status,d.textContent=l(t.status,t.status),a.append(d);let m=document.createElement("div");if(m.className="note-body",m.append(...n.childNodes),o.append(a,m),e.length){let i=document.createElement("div");i.className="note-replies";for(let s of e){let c=document.createElement("div");c.className="note-reply";let u=document.createElement("div");u.className="note-reply-head";let b=k(s.getAttribute("by"));b&&u.append(b);let v=s.getAttribute("date");if(v){let g=document.createElement("span");g.className="note-date",g.textContent=v,u.append(g)}let p=document.createElement("div");p.className="note-reply-body",p.append(...s.childNodes),c.append(u,p),i.append(c)}o.append(i)}return o}function Nt(){customElements.define("delta-comment",Ke)}var At={open:"\u2610",doing:"\u25D0",done:"\u2611"},Ue=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("status")??"open",t=this.getAttribute("priority")??"normal",o=this.getAttribute("num"),a=this.getAttribute("for"),r=this.getAttribute("by"),d=this.getAttribute("due");this.classList.add("todo"),this.dataset.status=e,this.dataset.priority=t;let m=D(a)??D(r);m&&this.setAttribute("data-accent",m);let i=document.createElement("span");i.className="todo-state",i.setAttribute("aria-hidden","true"),i.textContent=At[e]??At.open;let s=document.createElement("div");if(s.className="todo-text",o){let p=document.createElement("span");p.className="todo-num",p.textContent=`${l("todo","Task")} ${o}`,s.append(p," ")}s.append(...this.childNodes),this.setAttribute("aria-label",`${l("todo","Task")}${o?` ${o}`:""}: ${l(e,e)}`);let c=document.createElement("div");c.className="todo-meta";let u=k(a);if(u){let p=document.createElement("span");p.className="todo-for",p.append(`${l("for","for")} `,u),c.append(p)}let b=k(r);if(b&&r!==a){let p=document.createElement("span");p.className="todo-by",p.append(`${l("by","by")} `,b),c.append(p)}if(d){let p=document.createElement("span");p.className="todo-due",p.textContent=`${l("due","Due")} ${d}`,c.append(p)}if(t!=="normal"){let p=document.createElement("span");p.className="todo-prio",p.dataset.priority=t,p.textContent=l(t,t),c.append(p)}this.replaceChildren(i,s),c.childElementCount&&this.append(c);let v=this.getAttribute("on");if(v){let p=document.getElementById(v);p&&!p.contains(this)&&(p.querySelector(":scope > h1, :scope > h2, :scope > h3, :scope > h4")??p).after(this)}}};function Ct(){customElements.define("delta-todo",Ue)}var Ve=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",F(this,null);let e=this.getAttribute("note");if(e){let t=document.createElement("span");t.className="status-note",t.textContent=e,this.querySelector(":scope > .status-bar")?.append(t)}}};function Tt(){customElements.define("delta-draft",Ve)}var ze=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("by"),t=this.getAttribute("kind")??"insert",o=this.getAttribute("num"),a=D(e);this.classList.add("chg"),this.dataset.kind=t,this.getAttribute("block")==="true"&&this.classList.add("chg-block"),a&&this.setAttribute("data-accent",a);let r=[...this.querySelectorAll(":scope > delta-old")],d=[...this.querySelectorAll(":scope > delta-new")];if(r.length===0&&d.length===0){let g=document.createElement("delta-new");g.append(...this.childNodes),this.append(g),d=[g]}for(let g of r)g.classList.add("chg-del");for(let g of d)g.classList.add("chg-ins");let m=`${l("change","Change")}${o?` ${o}`:""} \xB7 ${l(t,t)}`,i=L("chg-marker",o??"\u0394");i.title=m,i.setAttribute("aria-label",m),i.addEventListener("click",g=>g.stopPropagation()),i.addEventListener("keydown",g=>g.stopPropagation());let s=document.createElement("div");s.className="chg-pop",a&&s.setAttribute("data-accent",a);let c=document.createElement("div");c.className="chg-pop-head";let u=k(e);u&&c.append(u);let b=this.getAttribute("date");if(b){let g=document.createElement("span");g.className="chg-date",g.textContent=b,c.append(g)}let v=document.createElement("span");v.className="chg-kind",v.dataset.kind=t,v.textContent=l(t,t),c.append(v),s.append(c);let p=this.getAttribute("note");if(p){let g=document.createElement("div");g.className="chg-note",g.textContent=p,s.append(g)}this.prepend(i),N(i,s)}};function Rt(){customElements.define("delta-change",ze)}var Zt=["comment","todo","change","status"],en={comment:"annotations",todo:"tasks",change:"changes",status:"blocks"},tn={comment:"Comments",todo:"Tasks",change:"Changes",status:"Blocks"},Mt={comment:"C",todo:"T",change:"\u0394",status:""},nn=["markup","final","original"],We=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=de(),t=this.getAttribute("scope")==="project",o=e.items.filter(f=>t||!f.file),a=R(this),r=document.createElement("section");r.className="review",r.setAttribute("aria-label",a?.text||l("reviewPanel","Review"));let d=document.createElement("div");d.className="review-hd";let m=document.createElement("span");m.className="review-title",m.append(...a?.nodes??[l("reviewPanel","Review")]);let i=Z("review-copy",l("copyText","Copy as text"),()=>E().map(sn).join(`
-`));d.append(m,i);let s=document.createElement("div");s.className="review-summary";let c=(f,y)=>{let T=document.createElement("span");T.className="review-stat";let M=document.createElement("b");M.textContent=String(f),T.append(M,` ${y}`),s.append(T)};c(o.filter(f=>f.kind==="comment"&&f.status==="open").length,l("openComments","open comments")),c(o.filter(f=>f.kind==="todo"&&f.status!=="done").length,l("openTasks","open tasks")),c(o.filter(f=>f.kind==="change").length,l("pendingChanges","pending changes"));let u=new Map;for(let f of o)f.kind==="status"&&u.set(f.status,(u.get(f.status)??0)+1);for(let[f,y]of u)c(y,l(f,f));let b=document.createElement("div");b.className="review-controls";let v=L("review-switch",l("annotations","Annotations"));v.addEventListener("click",()=>q.setAnnotations(!q.annotations));let p=document.createElement("div");p.className="review-seg",p.setAttribute("role","group");let g=document.createElement("span");g.className="review-seg-label",g.textContent=l("changes","Changes"),p.append(g);let O=nn.map(f=>{let y=L("",l(f,f));return y.dataset.mode=f,y.addEventListener("click",()=>q.setChanges(f)),p.append(y),y});b.append(v,p);let w=()=>{v.setAttribute("aria-pressed",String(q.annotations));for(let f of O)f.classList.toggle("is-active",f.dataset.mode===q.changes)};w(),document.addEventListener(J,w);let A=document.createElement("div");A.className="review-filters";let $=new Set,H=new Set,I=new Set,C=new Set;for(let f of o){for(let y of[f.by,f.for,f.verifiedBy])y&&I.add(y);C.add(f.status)}let P=(f,y,T,M)=>{let B=L(`review-filter ${f}`,y);B.dataset[f==="review-filter-member"?"member":"status"]=M,B.addEventListener("click",()=>{T.has(M)?T.delete(M):T.add(M),B.classList.toggle("is-active",T.has(M)),x()}),A.append(B)};for(let f of I)P("review-filter-member",k(f)??f,$,f);for(let f of C)P("review-filter-status",l(f,f),H,f);let h=document.createElement("div");h.className="review-list";let E=()=>o.filter(f=>($.size===0||[f.by,f.for,f.verifiedBy].some(y=>y&&$.has(y)))&&(H.size===0||H.has(f.status))),x=()=>{h.replaceChildren();let f=E();if(f.length===0){let y=document.createElement("p");y.className="review-empty",y.textContent=l("nothingToReview","Nothing to review"),h.append(y);return}for(let y of Zt){let T=f.filter(B=>B.kind===y);if(T.length===0)continue;let M=document.createElement("div");M.className="review-group-title",M.textContent=l(en[y],tn[y]),h.append(M);for(let B of T)h.append(on(B))}};x(),r.append(d,s,b),A.childElementCount&&r.append(A),r.append(h),this.replaceChildren(r)}};function on(n){let e=document.createElement("div");e.className="review-item",e.dataset.kind=n.kind,e.dataset.status=n.status;let t=document.createElement("div");t.className="review-item-hd";let o=document.createElement("a");o.className="review-jump",o.href=n.file?`${n.file}#${n.id}`:`#${n.id}`;let a=document.createElement("span");a.className="review-num",a.textContent=n.kind==="status"?`${l(n.tag,n.tag)}${n.num?` ${n.num}`:""}`:`${Mt[n.kind]}${n.num??""}`,o.append(a),K(o,n.id,n.file),t.append(o);let r=document.createElement("span");if(r.className="status-pill",r.dataset.status=n.status,r.textContent=l(n.status,n.status),t.append(r),n.kind==="change"&&n.changeKind){let s=document.createElement("span");s.className="status-pill",s.textContent=l(n.changeKind,n.changeKind),t.append(s)}if(n.kind==="todo"&&n.priority&&n.priority!=="normal"){let s=document.createElement("span");s.className="status-pill review-prio",s.dataset.priority=n.priority,s.textContent=l(n.priority,n.priority),t.append(s)}let d=k(n.by);d&&t.append(d);let m=k(n.for);if(m){let s=document.createElement("span");s.className="review-for",s.append(`${l("for","for")} `,m),t.append(s)}let i=k(n.verifiedBy);if(i){let s=document.createElement("span");s.className="review-for",s.append("\u2713 ",i),t.append(s)}if(n.date){let s=document.createElement("span");s.className="review-date",s.textContent=n.date,t.append(s)}if(n.due){let s=document.createElement("span");s.className="review-date",s.textContent=`${l("due","Due")} ${n.due}`,t.append(s)}if(e.append(t),n.kind==="status"){if(n.html){let s=document.createElement("div");s.className="review-text review-block-title",s.innerHTML=n.html,e.append(s)}}else{let s=document.createElement("div");s.className="review-text",s.innerHTML=n.html,e.append(s)}if(n.note){let s=document.createElement("div");s.className="review-note",s.textContent=n.note,e.append(s)}for(let s of n.replies??[]){let c=document.createElement("div");c.className="review-reply";let u=k(s.by);u&&c.append(u," ");let b=document.createElement("span");b.innerHTML=s.html,c.append(b),e.append(c)}if(n.heading){let s=document.createElement("a");s.className="review-loc",s.href=n.file?`${n.file}#${n.heading.id}`:`#${n.heading.id}`,s.innerHTML=`\xA7${n.heading.num?` ${n.heading.num}`:""} ${n.heading.title}`,K(s,n.heading.id,n.file),e.append(s)}return e}function sn(n){let e=n.kind==="status"?"":`${Mt[n.kind]}${n.num??""} `,t=[n.by&&`${l("by","by")} ${n.by}`,n.for&&`${l("for","for")} ${n.for}`].filter(Boolean).join(", "),o=n.heading?` (\xA7${n.heading.num||""})`:"",a=[`${e}[${l(n.status,n.status)}]${t?` ${t}`:""}: ${n.text}${o}`];n.note&&a.push(`    ${l("note","Note")}: ${n.note}`);for(let r of n.replies??[])a.push(`    \u21B3 ${r.by??"?"}: ${r.text}`);return a.join(`
-`)}function St(){customElements.define("delta-review",We)}function Ht(){ot(),Qe(),Ze(),nt(),tt(),st(),at(),rt(),it(),dt(),ct(),ut(),ft(),ht(),gt(),bt(),Et(),yt(),Lt(),kt(),Nt(),Ct(),Tt(),Rt(),St()}function $t(){let n=document.documentElement;if(n.dataset.type!=="presentation")return null;let e=[...document.querySelectorAll("delta-slide")];if(e.length===0)return null;n.classList.add("deck-js"),document.querySelector("delta-progress")&&n.classList.add("deck-progress-on");let t=0,o=0,a=0,r=[],d=h=>Math.max(0,Math.min(e.length-1,h)),m=h=>[...h.querySelectorAll('[reveal="true"]')].map((E,x)=>({el:E,order:E.hasAttribute("reveal-order")?Number(E.getAttribute("reveal-order")):x})).sort((E,x)=>E.order-x.order).map(E=>E.el),i=e.map(m),s=(h,E)=>i[h].forEach((x,f)=>x.classList.toggle("is-revealed",f<E)),c=()=>{let h=(t+1)/e.length;n.style.setProperty("--deck-progress-prev",String(a)),n.style.setProperty("--deck-progress",String(h)),a=h},u=(h,E)=>{e[t]?.classList.remove("is-active"),t=d(h),o=E?i[t].length:0,s(t,o),c(),e[t].classList.add("is-active");for(let x of r)x(t,e.length)},b=()=>{o<i[t].length?s(t,++o):t<e.length-1&&u(t+1,!1)},v=()=>{o>0?s(t,--o):t>0&&u(t-1,!0)},p=h=>u(h,!1);document.addEventListener("keydown",h=>{let E=h.target;if(!(E&&(E.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(E.tagName)))&&!(h.metaKey||h.ctrlKey||h.altKey))switch(h.key){case"ArrowRight":case"ArrowDown":case"PageDown":case" ":h.preventDefault(),b();break;case"ArrowLeft":case"ArrowUp":case"PageUp":h.preventDefault(),v();break;case"Home":h.preventDefault(),p(0);break;case"End":h.preventDefault(),p(e.length-1);break}});let g=(h,E,x,f)=>{let y=L(`deck-nav ${h}`,E);return y.setAttribute("aria-label",x),y.addEventListener("click",f),y},O=document.createElement("div");O.className="deck-controls",O.append(g("deck-prev","\u2039",l("prevSlide","Previous slide"),v),g("deck-next","\u203A",l("nextSlide","Next slide"),b)),document.body.append(O);let w=0,A=0;document.addEventListener("touchstart",h=>{w=h.touches[0].clientX,A=h.touches[0].clientY},{passive:!0}),document.addEventListener("touchend",h=>{let E=h.changedTouches[0].clientX-w,x=h.changedTouches[0].clientY-A;Math.abs(E)>50&&Math.abs(E)>Math.abs(x)*1.5&&(E<0?b:v)()},{passive:!0});let $=h=>document.querySelector(`delta-slide[cover="true"] ${h}`)?.textContent?.trim()??"",H=(h,E)=>{let x=document.createElement("span");return x.className=h,x.textContent=E,x},I=$("delta-author"),C=$("delta-affiliation"),P=[...I?[H("tb-author",I)]:[],...C?[H("tb-affiliation",C)]:[]];if(P.length){let h=document.createElement("div");h.className="deck-topbar eyebrow",P.forEach((E,x)=>{x>0&&h.append(" \xB7 "),h.append(E)}),document.body.append(h),r.push(E=>h.classList.toggle("topbar-hidden",e[E].matches('[cover="true"], [divider="true"]')))}return u(0,!1),{get index(){return t},get total(){return e.length},go:p,next:b,prev:v,goToId(h){let E=document.getElementById(h);if(!E)return!1;let x=E.closest("delta-slide")??E.querySelector("delta-slide"),f=x?e.indexOf(x):-1;return f<0?!1:(p(f),!0)},onChange(h){r.push(h),h(t,e.length)}}}Ht();pt();var an=$t();window.Delta={popover:N,t:l,deck:an,review:q};var Pt=()=>{location.hash.length>1&&ce(decodeURIComponent(location.hash.slice(1)))};Pt();window.addEventListener("hashchange",Pt);})();
+"use strict";(()=>{var fe=new Map;function Y(t,e){if(fe.has(t))return fe.get(t);let n=e,o=document.getElementById(t);try{o&&(n=JSON.parse(o.textContent||"null")??e)}catch{n=e}return fe.set(t,n),n}function l(t,e){return Y("delta-i18n",{})[t]??e??t}function I(t){return l(t,t.charAt(0).toUpperCase()+t.slice(1))}function H(t){return t.tagName.toLowerCase().replace(/^delta-/,"")}function L(t,...e){let n=document.createElement("button");return n.type="button",t&&(n.className=t),n.append(...e),n}function he(t,e="center"){let n=document.getElementById(t);return n?(on(n),n.scrollIntoView({block:e,behavior:"smooth"}),n.classList.add("is-xref-target"),n.addEventListener("animationend",()=>n.classList.remove("is-xref-target"),{once:!0}),!0):!1}function ge(t,e="center"){return window.Delta?.deck?.goToId(t)?!0:he(t,e)}function X(t,e,n,{block:o="center",before:s}={}){t.addEventListener("click",a=>{s?.(),!n&&ge(e,o)&&a.preventDefault()})}function se(t){return at??(at=new Map([...document.querySelectorAll("template[data-delta-pop]")].map(e=>[e.dataset.deltaPop??"",e]))),at.get(t)}var at;function S(t){let e=t.querySelector(":scope > delta-title");if(!e)return;let n=nn(e),o=[...e.childNodes];return e.remove(),{nodes:o,text:n}}function nn(t){let e=t.cloneNode(!0);for(let n of e.querySelectorAll(".katex-html, annotation"))n.remove();return e.textContent?.replace(/\s+/g," ").trim()??""}function F(t,e){return I(t)+(e?` ${e}`:"")}function J(t){let e=t.querySelector(":scope > delta-meta");if(!e)return null;let n=document.createElement("div");n.className="box-meta";for(let o of e.querySelectorAll(":scope > delta-meta-item")){let s=o.getAttribute("key");if(!s||!o.textContent?.trim())continue;let a=document.createElement("span");a.className="k",a.textContent=s;let i=document.createElement("span");i.className="v",i.append(...o.childNodes);let c=document.createElement("span");c.className="box-meta-item",c.append(a,i),n.append(c)}return n.childElementCount?(e.replaceWith(n),n):(e.remove(),null)}function ae(t,e,n){let o=L(t,e);return o.addEventListener("click",()=>{navigator.clipboard?.writeText(n()).then(()=>{o.textContent=l("copied","Copied"),o.classList.add("is-copied"),setTimeout(()=>{o.textContent=e,o.classList.remove("is-copied")},1400)})}),o}function z(t,e){t.classList.toggle("is-collapsed",e),t.querySelector(":scope > .collapse-toggle")?.setAttribute("aria-expanded",String(!e))}function on(t){for(let e=t.parentElement?.closest(".is-collapsed");e;e=e.parentElement?.closest(".is-collapsed"))z(e,!1)}function ie(t){let e=document.createDocumentFragment(),n=a=>t.querySelector(`:scope > delta-${a}`),o=["author","title","journal","year"].map(n).filter(a=>a!==null);o.forEach((a,i)=>{i>0&&e.append(". ");let c=document.createElement("span");c.className=`paper-${H(a)}`;for(let d of a.childNodes)c.append(d.cloneNode(!0));e.append(c)}),o.length&&e.append(".");let s=n("link")??n("url");return s&&(e.append(" "),e.append(s.cloneNode(!0))),e}function D(t,e){let n=t.getAttribute("collapsed")==="true";if(!n&&t.getAttribute("collapsible")!=="true")return;let o=document.createElement("div");for(o.className="collapse-body";e.nextSibling;)o.append(e.nextSibling);t.append(o),e.classList.add("collapse-toggle"),e.setAttribute("role","button"),e.tabIndex=0;let s=i=>z(t,i);s(n);let a=()=>s(!t.classList.contains("is-collapsed"));e.addEventListener("click",a),e.addEventListener("keydown",i=>{(i.key==="Enter"||i.key===" ")&&(i.preventDefault(),a())})}var re=typeof HTMLElement<"u"&&typeof HTMLElement.prototype.showPopover=="function",j=8,sn=120,an=160,be=12,Q=null;function C(t,e,n={}){let{onOpen:o,onClose:s,gap:a=10,triggerClick:i=!0,hover:c=!1}=n;e.classList.add("delta-pop"),re&&e.setAttribute("popover","manual"),e.parentElement!==document.body&&document.body.appendChild(e),t.setAttribute("aria-haspopup","dialog");let d=!1;function r(){let v=t.getBoundingClientRect(),N=document.documentElement.clientWidth,T=document.documentElement.clientHeight,_=T-j-(v.bottom+a),V=v.top-a-j;e.style.maxHeight="",e.classList.remove("is-capped");let U=e.getBoundingClientRect(),ue=U.height>_&&V>_,ot=ue?V:_;U.height>ot&&(e.style.maxHeight=`${Math.max(0,Math.floor(ot))}px`,e.classList.add("is-capped"),U=e.getBoundingClientRect()),e.classList.toggle("is-above",ue);let Qt=ue?v.top-a-U.height:v.bottom+a,Zt=Math.min(Math.max(j,Qt),Math.max(j,T-U.height-j)),st=Math.min(Math.max(j,v.left),Math.max(j,N-U.width-j));e.style.top=`${Math.round(Zt)}px`,e.style.left=`${Math.round(st)}px`;let en=Math.max(be,U.width-be),tn=Math.min(Math.max(be,v.left+v.width/2-st),en);e.style.setProperty("--arrow-x",`${Math.round(tn)}px`)}let m="",p=()=>{if(!d)return!1;let v=t.getBoundingClientRect(),N=document.documentElement.clientHeight;if(v.bottom<0||v.top>N||v.width===0&&v.height===0)return h(),!1;let T=`${v.left},${v.top},${v.width},${v.height}`;return T!==m&&(m=T,r()),!0},f=()=>{p()},g=typeof ResizeObserver<"u"?new ResizeObserver(()=>d&&r()):null,u=v=>{v.key==="Escape"&&h()},E=v=>{let N=v.target;!e.contains(N)&&!t.contains(N)&&h()},M=0,P=()=>{p()&&(M=requestAnimationFrame(P))},k=!1,A,q=c&&typeof matchMedia=="function"&&matchMedia("(hover: hover) and (pointer: fine)").matches,K=(v,N)=>[t,e].some(T=>{let _=T.getBoundingClientRect(),V=a+2;return v>=_.left-V&&v<=_.right+V&&N>=_.top-V&&N<=_.bottom+V}),B=v=>{!k||v.pointerType!=="mouse"||(clearTimeout(A),A=void 0,K(v.clientX,v.clientY)||(A=window.setTimeout(h,an)))};function O(){d||(Q&&Q!==h&&Q(),d=!0,Q=h,t.setAttribute("aria-expanded","true"),window.addEventListener("scroll",f,{capture:!0,passive:!0}),window.addEventListener("resize",f),document.addEventListener("keydown",u),document.addEventListener("pointermove",B,{passive:!0}),setTimeout(()=>d&&document.addEventListener("pointerdown",E),0),o?.(e,t),re?e.matches(":popover-open")||e.showPopover():e.classList.add("is-open"),r(),g?.observe(e),m="",M=requestAnimationFrame(P))}function h(){d&&(d=!1,k=!1,clearTimeout(A),A=void 0,cancelAnimationFrame(M),re?e.matches(":popover-open")&&e.hidePopover():e.classList.remove("is-open"),e.classList.remove("is-above","is-capped"),window.removeEventListener("scroll",f,{capture:!0}),window.removeEventListener("resize",f),document.removeEventListener("keydown",u),document.removeEventListener("pointerdown",E),document.removeEventListener("pointermove",B),g?.disconnect(),Q===h&&(Q=null),t.setAttribute("aria-expanded","false"),s?.(e,t))}function y(){d?h():O()}re&&e.addEventListener("toggle",v=>{v.newState==="closed"&&d&&h()});let w=v=>{v.preventDefault(),v.stopPropagation(),d&&k?(k=!1,clearTimeout(A),A=void 0):y()};i&&(t.addEventListener("click",w),t.setAttribute("aria-expanded","false"));let b=v=>{v.pointerType!=="mouse"||d||(clearTimeout(A),A=window.setTimeout(()=>{A=void 0,!d&&(O(),k=!0)},sn))},x=v=>{v.pointerType==="mouse"&&!d&&(clearTimeout(A),A=void 0)};return q&&(t.addEventListener("pointerenter",b),t.addEventListener("pointerleave",x)),{open:O,close:h,toggle:y,reposition:r,get isOpen(){return d},destroy(){h(),i&&t.removeEventListener("click",w),t.removeEventListener("pointerenter",b),t.removeEventListener("pointerleave",x),e.remove()}}}function Ee(){let t=Y("delta-review",{});return{team:t.team??[],items:t.items??[]}}function Z(t){if(t)return Ee().team.find(e=>e.id===t)}function W(t){return Z(t)?.color}function R(t){if(!t)return null;let e=document.createElement("span");e.className="who";let n=Z(t);if(!n)return e.classList.add("who-free"),e.textContent=t,e;e.setAttribute("data-accent",n.color),e.title=n.kind==="agent"?`${n.name} \xB7 ${l("agent","agent")}`:n.name;let o=document.createElement("i");o.className="who-dot",o.setAttribute("aria-hidden","true");let s=document.createElement("span");if(s.className="who-name",s.textContent=n.name,e.append(o,s),n.kind==="agent"){let a=document.createElement("b");a.className="who-badge",a.textContent=l("agent","agent"),e.append(a)}return e}var de="delta:review",G={get annotations(){return document.documentElement.dataset.review!=="off"},setAnnotations(t){t?delete document.documentElement.dataset.review:document.documentElement.dataset.review="off",document.dispatchEvent(new CustomEvent(de))},get changes(){let t=document.documentElement.dataset.changes;return t==="final"||t==="original"?t:"markup"},setChanges(t){t==="markup"?delete document.documentElement.dataset.changes:document.documentElement.dataset.changes=t,document.dispatchEvent(new CustomEvent(de))}};var rn=new Set(["verified","formalized","stale"]);function $(t,e,n=t){let o=n.getAttribute("status"),s=n.getAttribute("by"),a=n.getAttribute("verified-by");if(!o&&!s&&!a)return;o&&(t.dataset.status=o);let i=dn(n);if(e)e.append(" ",i);else{let c=document.createElement("div");c.className="status-bar",c.append(i),t.prepend(c)}}function dn(t){let e=t.getAttribute("status"),n=Z(t.getAttribute("by")),o=Z(t.getAttribute("verified-by")),s=o?.name??t.getAttribute("verified-by"),a=t.getAttribute("verified-on"),i=document.createElement("span");i.className="status-mark",e&&(i.dataset.status=e);let c;if(e&&rn.has(e)){c=L("status-stamp"),o&&(c.dataset.accent=o.color);let d=document.createElement("span");d.className="stamp-word",d.textContent=`${e==="formalized"?"\u220E":"\u2713"} ${l(e==="stale"?"verified":e,e)}`,c.append(d);let r=[s?cn(s):"",a?mn(a):""].filter(Boolean).join(" \xB7 ");if(r){let m=document.createElement("span");m.className="stamp-sub",m.textContent=r,c.append(m)}c.setAttribute("aria-label",l(e,e))}else c=L("status-word"),c.textContent=e?l(e,e):n?.name??t.getAttribute("by")??"";return i.append(c),fn(c,()=>un(t,e,n,o,s,a)),i}function cn(t){let e=t.trim().split(/\s+/);return e.length<2?t:`${e[0][0]}. ${e.at(-1)}`}var ln=["I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"];function mn(t){let e=/^(\d{4})-(\d{2})-(\d{2})/.exec(t);return e?`${Number(e[3])}.${ln[Number(e[2])-1]??e[2]}.${e[1].slice(2)}`:t}function pn(t){let e=new Date(`${t}T12:00:00`);if(Number.isNaN(e.getTime()))return t;let n=document.documentElement.lang||void 0;return e.toLocaleDateString(n,{day:"numeric",month:"short",year:"numeric"})}function un(t,e,n,o,s,a){let i=document.createElement("div");if(i.className="status-history",e){let d=document.createElement("div");d.className="status-history-title",d.textContent=l(e,e),i.append(d)}let c=n?.name??t.getAttribute("by");if(c){let d=e==="open"?l("proposedBy","Proposed by"):l("writtenBy","Written by");i.append(it(n,c,d))}if(s){let d=it(o,s,l("checkedBy","Checked by"));a&&d.querySelector(".status-history-text").append(`, ${pn(a)}`),i.append(d)}if(e==="stale"){let d=document.createElement("div");d.className="status-history-note",d.textContent=l("staleNote","It changed after it was checked."),i.append(d)}return i}function it(t,e,n){let o=document.createElement("div");o.className="status-history-row";let s=document.createElement("span");s.className="status-avatar",s.setAttribute("aria-hidden","true"),s.textContent=e.trim()[0]?.toUpperCase()??"?",t&&(s.dataset.accent=t.color,s.dataset.kind=t.kind);let a=document.createElement("span");a.className="status-history-text";let i=document.createElement("b");return i.textContent=e,a.append(`${n} `,i),t?.kind==="agent"&&a.append(` (${l("agent","agent")})`),o.append(s,a),o}function fn(t,e){let n=document.createElement("div"),o=!1;C(t,n,{gap:8,hover:!0,onOpen:()=>{o||(o=!0,n.append(e()))}}),t.addEventListener("keydown",s=>{(s.key==="Enter"||s.key===" ")&&s.stopPropagation()})}var ce={chapter:1,section:2,subsection:3,subsubsection:4},hn=new Set(Object.keys(ce)),gn=new Set(["theorem","proposition","lemma","corollary","conjecture","claim","definition"]),ve=new Set([...gn,"example","counterexample","observation","remark","exercise","problem"]),le=new Set(["proof","solution"]);var ye=new Set([...ve,...le]);var rt=new Set(["intuition","strategy","obstacle"]),bn=new Set(["m","math","equation","equations"]),En=new Set(["code","c"]),eo=new Set([...bn,...En]);var to=new Set([...hn,...ye,"equation","equations","figure","video","youtube","audio","table","code","list","box","columns","draft","todo","abstract","interactive"]);var vn={chapter:"chapter-title",section:"section",subsection:"sub",subsubsection:"subsub"},xe=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelector(":scope > delta-title");if(!e)return;if(document.documentElement.dataset.type==="presentation"){let i=document.createElement("delta-slide");i.setAttribute("divider","true"),$(this,e),i.appendChild(e),this.prepend(i);return}let n=H(this),o=document.createElement(`h${ce[n]??2}`);o.className=vn[n]??"section";let s=this.getAttribute("num");if(s){let i=document.createElement("span");i.className="num",i.textContent=s,o.append(i," ")}let a=o;if(n==="chapter"){if(s){let i=document.createElement("span");i.className="chapter-kicker",i.setAttribute("aria-hidden","true"),i.textContent=`${I("chapter")} ${s}`,o.append(i)}a=document.createElement("span"),a.className="chapter-name",o.append(a)}a.append(...e.childNodes),e.replaceWith(o),$(this,a),J(this),D(this,o)}};function dt(){for(let t of Object.keys(ce))customElements.define(`delta-${t}`,class extends xe{})}var Le=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelector(":scope > delta-title"),n=document.createElement("div");n.className="slide-body";for(let o of[...this.childNodes])o!==e&&n.append(o);if(e){let o=document.createElement("h2");o.className="slide-title",o.append(...e.childNodes),e.replaceWith(o);let s=document.createElement("div");s.className="slide-rule";let a=document.createElement("span");a.className="slide-rule-fill",s.append(a),o.after(s)}this.append(n)}};function ct(){customElements.define("delta-slide",Le)}var we=[...rt],yn=we.map(t=>`:scope > delta-${t}`).join(", "),Ne=380;function ee(t,{named:e=!1}={}){let n=[...t.querySelectorAll(yn)].sort((a,i)=>we.indexOf(H(a))-we.indexOf(H(i)));if(n.length===0)return null;let o=document.createElement("div");o.className="folds";let s=t.closest(".xref-pop-body")!==null;for(let a of n){let i=xn(a,!s&&a.getAttribute("collapsed")==="false");e&&(i.dataset.named="true"),o.append(i)}return o}function xn(t,e){let n=H(t),o=l(n,n),s=document.createElement("div");s.className="fold",s.dataset.aid=n;let a=L("fold-strip");a.dataset.label=o,a.setAttribute("aria-label",o);let i=document.createElement("span");i.className="fold-valley";let c=document.createElement("span");c.className="fold-label",c.setAttribute("aria-hidden","true"),c.textContent=o,i.append(c);let d=document.createElement("span");d.className="fold-mountain",a.append(i,d);let r=document.createElement("div");r.className="fold-panel";let m=document.createElement("span");m.className="fold-name",m.textContent=o;let p=document.createElement("span");p.className="fold-caret",p.setAttribute("aria-hidden","true"),p.textContent="\u25B4";let f=L("fold-head",m,p);t.classList.add("fold-body");let g=document.createElement("span");g.className="fold-crease",g.setAttribute("aria-hidden","true"),r.append(f,t,g),s.append(a,r);let u,E=(M,P,k)=>{if(clearTimeout(u),s.classList.toggle("is-open",M),a.setAttribute("aria-expanded",String(M)),f.setAttribute("aria-expanded",String(M)),s.classList.remove("is-unfolding","is-refolding"),M){a.hidden=!0,r.hidden=!1,P&&s.classList.add("is-unfolding"),k?.focus({preventScroll:!0});return}let A=()=>{s.classList.remove("is-refolding"),r.hidden=!0,a.hidden=!1,k?.focus({preventScroll:!0})};if(!P||matchMedia("(prefers-reduced-motion: reduce)").matches)return A();s.classList.add("is-refolding"),u=window.setTimeout(A,Ne)};return a.addEventListener("click",()=>E(!0,!0,f)),f.addEventListener("click",()=>E(!1,!0,a)),s.addEventListener("animationend",()=>s.classList.remove("is-unfolding")),E(e,!1),s}var te=t=>t.parentElement?.closest("delta-step, delta-proof, delta-solution")??null,lt=(t,e)=>[...t.querySelectorAll(e)].find(n=>te(n)===t);function mt(t,e){let n=e;for(;n.parentElement&&n.parentElement!==t;)n=n.parentElement;return n}function pt(t,e){let n=t[e];for(;n&&(n.nodeType===Node.COMMENT_NODE||n.nodeType===Node.TEXT_NODE&&!n.textContent?.trim());)n=n[e];return n}var Ae=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=document.createElement("span");e.className="step-num",e.textContent=this.getAttribute("num")??"";let n=lt(this,"delta-step-claim"),o=lt(this,"delta-proof"),s=te(this);if(!(this.getAttribute("depth")==="1"&&s!==null&&(s.classList.contains("proof-foot")||s.classList.contains("proof-sheet"))&&!this.closest(".xref-pop-body"))){(n??this).prepend(e," ");let u=ee(this);u&&(n?mt(this,n):e).after(u),o&&$(o,n??null);return}this.classList.add("step-pleat");let i=pt(this,"previousSibling");i===null?this.classList.add("at-top"):i instanceof Element&&i.localName==="delta-step"&&this.classList.add("after-step");let c=pt(this,"nextSibling");c instanceof Element&&c.localName==="delta-step"&&this.classList.add("before-step"),(c===null||c instanceof Element&&c.classList.contains("proof-qed"))&&this.classList.add("at-end");let d=document.createElement("div");d.className="step-head";let r=document.createElement("span");r.className="step-text",n&&r.append(mt(this,n)),d.append(e,r),o&&$(o,d);let m=document.createElement("span");m.className="step-mountain",m.setAttribute("aria-hidden","true"),this.prepend(d,m);let p=ee(this,{named:!0});if(p&&m.after(p),!o)return;this.classList.add("has-body");let f=document.createElement("span");f.className="step-caret",f.setAttribute("aria-hidden","true"),d.append(f),d.classList.add("collapse-toggle"),d.setAttribute("role","button"),d.tabIndex=0,z(this,o.getAttribute("collapsed")!=="false");let g=()=>ft(this,!this.classList.contains("is-collapsed"));d.addEventListener("click",g),d.addEventListener("keydown",u=>{u.target!==d||u.key!=="Enter"&&u.key!==" "||(u.preventDefault(),g())}),o.addEventListener("animationend",u=>{u.target===o&&this.classList.remove("is-unfolding")})}},ut=new WeakMap;function ft(t,e){clearTimeout(ut.get(t)),t.classList.remove("is-unfolding","is-refolding");let n=matchMedia("(prefers-reduced-motion: reduce)").matches;if(!e){let o=t.classList.contains("is-collapsed");z(t,!1),o&&!n&&t.classList.add("is-unfolding");return}if(!t.classList.contains("is-collapsed")){if(n)return z(t,!0);t.classList.add("is-refolding"),ut.set(t,window.setTimeout(()=>{t.classList.remove("is-refolding"),z(t,!0)},Ne))}}var ke=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=document.createElement("span");e.className="hyp-num",e.textContent=`(${this.getAttribute("num")??""})`,this.prepend(e," ")}};function me(t,e,n){return class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;if(this.dataset.deltaReady="1",n!==void 0){this.textContent=l(t,e);return}let o=document.createElement("span");o.className="hyp-uses-label",o.textContent=`${l(t,e)}: `,this.prepend(o)}}}function ht(t){let e=document.createElement("span");e.className="steps-control";let n=()=>[...t.querySelectorAll("delta-step.step-pleat.has-body")].filter(i=>te(i)===t),o=L("",l("onlySteps","Steps only")),s=L("",l("fullProof","Full proof")),a=()=>{let i=n(),c=i.filter(d=>d.classList.contains("is-collapsed")).length;o.setAttribute("aria-pressed",String(i.length>0&&c===i.length)),s.setAttribute("aria-pressed",String(i.length>0&&c===0))};for(let[i,c]of[[o,!0],[s,!1]])i.addEventListener("click",d=>{d.stopPropagation();for(let r of n())ft(r,c)}),i.addEventListener("keydown",d=>d.stopPropagation()),e.append(i);return queueMicrotask(()=>{let i=new MutationObserver(a);for(let c of n())i.observe(c,{attributes:!0,attributeFilter:["class"]});a()}),e}function gt(){customElements.define("delta-step",Ae),customElements.define("delta-hyp",ke),customElements.define("delta-hyp-used",me("usedIn","Used in")),customElements.define("delta-hyp-needed",me("brokenBy","Needed, see")),customElements.define("delta-hyp-unused",me("notUsed","Not used in the proof","")),customElements.define("delta-hyp-in-proof",me("theProof","the proof",""))}var bt=t=>t.hasAttribute("status")||t.hasAttribute("by")||t.hasAttribute("verified-by"),Ln=new Set(["comment","todo"]),Te=t=>t!==null&&le.has(H(t))&&t.getAttribute("data-attached")==="true",Ce=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=H(this);le.has(e)?Te(this)?this.renderSheet(e):te(this)?.localName==="delta-step"?this.classList.add("step-body"):this.hasAttribute("data-step-depth")?this.renderSheet(e,!0):this.renderProof(e):ve.has(e)&&this.renderBox(e)}renderProof(e){let n=document.createElement("span");n.className="proof-lead",n.append(I(e));let o=this.targetRef();o&&n.append(" ",o);let s=S(this);s&&n.append(" (",...s.nodes,")"),n.append("."),this.prepend(n," "),$(this,n),this.append(Et()),D(this,n)}targetRef(){let e=this.getAttribute("of"),n=this.getAttribute("data-target-tag"),o=this.getAttribute("data-target-num");if(!e||!n||!o)return null;let s=document.createElement("delta-ref");return s.setAttribute("to",e),s.setAttribute("data-target-num",o),s.setAttribute("data-target-tag",n),s}renderSheet(e,n=!1){this.classList.add(n?"proof-sheet":"proof-foot");let o=document.createElement("div");o.className="proof-bar";let s=document.createElement("span");if(s.className="proof-bar-name",e==="solution"){let d=document.createElement("span");d.className="when-folded",d.textContent=l("showSolution","Show solution");let r=document.createElement("span");r.className="when-open",r.textContent=l("hideSolution","Hide solution"),s.append(d,r)}else s.append(I(e));let a=n?this.targetRef():null;a&&s.append(" ",a);let i=S(this);i&&s.append(" (",...i.nodes,")"),o.append(s),this.hasAttribute("data-step-depth")&&o.append(ht(this)),this.hasAttribute("data-status-shown")||$(this,o);let c=document.createElement("span");c.className="proof-bar-caret",c.setAttribute("aria-hidden","true"),this.hasAttribute("data-step-depth")?s.after(c):o.append(c),this.prepend(o),e==="proof"&&this.append(Et()),this.hasAttribute("collapsed")||this.setAttribute("collapsible","true"),D(this,o)}renderBox(e){this.classList.add("box"),(e==="example"||e==="counterexample")&&this.classList.add("example");let n=document.createElement("div");n.className="box-head";let o=document.createElement("span");o.className="box-tag",o.textContent=F(e,this.getAttribute("num")),n.append(o);let s=S(this);if(s){let g=document.createElement("span");g.className="box-tag-title",g.append(...s.nodes),n.append(g)}let a=[...this.children].filter(Te);for(let g=this.nextElementSibling;g;g=g.nextElementSibling)if(!Ln.has(H(g))){if(!Te(g))break;a.push(g)}for(let g of a)g.remove();let i=document.createElement("div");i.className="box-body",i.append(...this.childNodes);let c=document.createElement("div");c.className="box-sheet",c.append(n,i),this.append(c);let d=a[0],r=!bt(this)&&d&&bt(d)?d:this;r!==this&&r.setAttribute("data-status-shown","true"),$(this,n,r);let m=J(i);m&&i.append(m);let p=ee(i);p&&this.append(p);let f=a.length?null:this.footNote();this.append(...a),f&&this.append(f),a.length||f?this.classList.add("has-foot"):p&&this.classList.add("has-folds"),D(this,n)}footNote(){if(this.closest(".xref-pop-body"))return null;let e=document.createElement("div");e.className="box-foot";let n=this.getAttribute("data-proof-at");if(n){let o=this.getAttribute("data-proof-at-tag")??"proof",s=document.createElement("delta-ref");s.setAttribute("to",n),s.setAttribute("data-target-tag",o),s.setAttribute("data-target-num",this.getAttribute("data-proof-at-num")??"");let a=this.getAttribute("data-proof-at-href");if(a&&s.setAttribute("data-target-href",a),e.classList.add("proof-elsewhere"),o==="proof")s.textContent=l("seeProof","See the proof"),e.append(s);else{let i=o==="chapter"?l("proofInChapter","Proof in"):l("proofIn","Proof in");e.append(`${i} `,s)}return e}return this.getAttribute("data-proof")==="pending"?(e.classList.add("proof-pending"),e.textContent=l("proofPending","Proof pending"),e):null}};function Et(){let t=document.createElement("span");return t.className="proof-qed",t.textContent="\u25A1",t}function vt(){for(let t of ye)customElements.define(`delta-${t}`,class extends Ce{})}var Me=class extends HTMLElement{connectedCallback(){this.dataset.deltaReady||(this.dataset.deltaReady="1",J(this))}};function yt(){customElements.define("delta-document",Me)}var Se=class extends HTMLElement{connectedCallback(){this.dataset.deltaReady||(this.dataset.deltaReady="1",this.classList.add("sidenote"))}};function xt(){customElements.define("delta-sidenote",Se)}function ne(t,e,n,o="video-cap"){let s=t.querySelector(":scope > delta-caption");if(!s)return;s.classList.add(o);let a=document.createElement("span");a.className="lbl",a.textContent=F(e,n),s.prepend(a," ")}function pe(t,e){let n=document.createElement("div");n.className="video-frame",n.append(e),t.prepend(n)}function Oe(t){let e=document.createElement("div");return e.className="video-missing",e.textContent=t,e}function wn(t){if(t=(t||"").trim(),/^[\w-]{11}$/.test(t))return t;try{let e=new URL(t);if(e.hostname==="youtu.be")return e.pathname.slice(1,12);if(e.searchParams.has("v"))return e.searchParams.get("v");let n=e.pathname.match(/\/(?:embed|shorts)\/([\w-]{11})/);if(n)return n[1]}catch{}return""}var Re=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("video");let e=wn(this.getAttribute("src"));if(!e){console.warn("delta-youtube: no valid video ID found in src",this.getAttribute("src"));return}if(location.protocol==="file:"){let n=document.createElement("a");n.className="yt-facade video-media",n.href=`https://www.youtube.com/watch?v=${e}`,n.target="_blank",n.rel="noopener",n.setAttribute("aria-label",l("watchOnYoutube","Watch on YouTube"));let o=document.createElement("img");o.src=`https://i.ytimg.com/vi/${e}/hqdefault.jpg`,o.alt="",o.loading="lazy";let s=document.createElement("span");s.className="yt-play",s.setAttribute("aria-hidden","true"),n.append(o,s),pe(this,n)}else{let n=document.createElement("iframe");n.src=`https://www.youtube.com/embed/${e}`,n.allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",n.allowFullscreen=!0,n.className="video-media",n.loading="lazy",pe(this,n)}ne(this,"video",this.getAttribute("num"))}},He=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("video");let e=this.getAttribute("src");if(!e){this.prepend(Oe(l("noVideo","No video source.")));return}let n=document.createElement("video");n.src=e,n.controls=!0,n.className="video-media";for(let o of["poster","loop","muted","autoplay","playsinline"])this.hasAttribute(o)&&n.setAttribute(o,this.getAttribute(o)??"");pe(this,n),ne(this,"video",this.getAttribute("num"))}},$e=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("video");let e=this.getAttribute("src");if(!e){this.prepend(Oe(l("noAudio","No audio source.")));return}let n=document.createElement("audio");n.src=e,n.controls=!0,n.className="audio-media",this.hasAttribute("loop")&&(n.loop=!0),pe(this,n),ne(this,"audio",this.getAttribute("num"))}},Pe=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("figure");let e=this.getAttribute("src");if(!e)this.prepend(Oe(l("noImage","Image not found.")));else{let n=document.createElement("div");n.className="figure-frame";let o=document.createElement("img");o.src=e;let s=this.getAttribute("alt");s&&(o.alt=s),n.append(o),this.prepend(n)}ne(this,"figure",this.getAttribute("num"),"figure-cap")}},Ie=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("interactive");let e=this.querySelector(":scope > delta-caption"),n=document.createElement("div");n.className="interactive-frame";for(let o of[...this.childNodes])o!==e&&n.append(o);this.prepend(n),ne(this,"interactive",this.getAttribute("num"),"interactive-cap")}};function Lt(){customElements.define("delta-youtube",Re),customElements.define("delta-video",He),customElements.define("delta-audio",$e),customElements.define("delta-figure",Pe),customElements.define("delta-interactive",Ie)}var qe=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=S(this),n=this.getAttribute("show-icon")!=="false",o=document.createElement("div");o.append(...this.childNodes);let s=L("hint-trigger");if(n){let a=document.createElement("span");a.className="hint-marker",a.textContent="\u{1F4A1} ",s.append(a)}s.append(...e?.text?e.nodes:[l("hint","Hint")]),this.append(s),C(s,o)}};function wt(){customElements.define("delta-hint",qe)}var Be=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=parseInt(this.getAttribute("depth")??"2",10),n=this.getAttribute("scope")==="project",o=Y("delta-toc",[]).filter(r=>r.level-1<=e&&(n||!r.file));if(o.length===0)return;let s=document.createElement("nav");s.className="toc";let a=S(this);s.setAttribute("aria-label",a?.text||l("contents","Contents"));let i=document.createElement("div");i.className="toc-title",i.append(...a?.nodes??[l("contents","Contents")]),s.append(i);let c=document.createElement("ol");c.className="toc-list";let d=[{level:o[0].level,ol:c}];for(let r of o){for(;d.length>1&&r.level<d[d.length-1].level;)d.pop();let m=d[d.length-1];if(r.level>m.level){let u=m.ol.lastElementChild,E=document.createElement("ol");E.className="toc-sub",(u??m.ol).append(E),d.push({level:r.level,ol:E}),m=d[d.length-1]}let p=document.createElement("li");p.className="toc-item";let f=document.createElement("a");if(f.className="toc-link",f.href=r.file?`${r.file}#${r.id}`:`#${r.id}`,r.num){let u=document.createElement("span");u.className="toc-num",u.textContent=r.num,f.append(u," ")}let g=document.createElement("span");g.className="toc-text",g.innerHTML=r.title,f.append(g),X(f,r.id,r.file,{block:"start"}),p.append(f),m.ol.append(p)}s.append(c),this.replaceChildren(s)}};function Nt(){customElements.define("delta-toc",Be)}var _e=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=S(this),n=e?.text||l("contents","Contents"),o=()=>e?Nn(document.createElement("span"),e.nodes):n,s=L("floating-fab");s.setAttribute("aria-label",n);let a=document.createElement("span");a.className="floating-icon",a.setAttribute("aria-hidden","true"),a.textContent="\u2630",s.append(a,o());let i=document.createElement("div");i.className="floating-panel";let c=document.createElement("div");c.className="floating-hd";let d=document.createElement("span");d.className="floating-title",d.append(o());let r=L("floating-x","\xD7");r.setAttribute("aria-label",l("close","Close")),c.append(d,r);let m=document.createElement("div");m.className="floating-body",m.append(...this.childNodes),i.append(c,m),this.append(s);let p=C(s,i,{gap:12});r.addEventListener("click",()=>p.close()),m.addEventListener("click",f=>{f.target.closest("a")&&p.close()})}};function Nn(t,e){for(let n of e)t.append(n.cloneNode(!0));return t}function At(){customElements.define("delta-floating",_e)}var An='<svg class="ext-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"/></svg>',Fe=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("to");if(!e)return;let n=document.createElement("a");for(n.className="ext-link",n.href=e,n.target="_blank",n.rel="noopener noreferrer";this.firstChild;)n.appendChild(this.firstChild);this.appendChild(n),n.insertAdjacentHTML("beforeend",An)}};function kt(){customElements.define("delta-link",Fe)}var kn='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>';function Tt(t,e){return t==="hyp"?`(${e})`:e?`${I(t)} ${e}`:I(t)}function Ct(t,{to:e,num:n,kind:o,href:s}){let a=Tt(o,n),i=document.createElement("div");i.className="xref-pop";let c=document.createElement("div");c.className="xref-pop-head";let d=document.createElement("span");d.className="xref-pop-label",d.textContent=a;let r=L("xref-go");r.title=a,r.setAttribute("aria-label",a),r.innerHTML=kn,c.append(d,r);let m=document.createElement("div");m.className="xref-pop-body",i.append(c,m);let p=!1,f=C(t,i,{hover:!0,onOpen:()=>{if(p)return;p=!0;let g=se(e);if(!g)return;let u=g.content.cloneNode(!0);for(let E of u.querySelectorAll("[id]"))E.removeAttribute("id");for(let E of u.querySelectorAll("[collapsed], [collapsible]"))E.removeAttribute("collapsed"),E.removeAttribute("collapsible");m.append(u)}});r.addEventListener("click",g=>{g.preventDefault(),f.close(),s?location.href=s:ge(e)})}var De=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("to")??"",n=this.getAttribute("data-target-num"),o=this.getAttribute("data-target-tag"),s=this.getAttribute("data-target-href");if(!o||n===null)return;let a=(this.textContent??"").trim().length>0,i=L("xref");a?i.append(...this.childNodes):i.textContent=Tt(o,n),this.replaceChildren(i),Ct(i,{to:e,num:n,kind:o,href:s})}};function Mt(){for(let t of document.querySelectorAll(".katex [data-delta-ref-to]")){let{deltaRefTo:e,deltaRefNum:n,deltaRefTag:o,deltaRefHref:s}=t.dataset;!e||!n||!o||(t.classList.add("math-xref"),t.setAttribute("role","link"),t.tabIndex=0,t.addEventListener("keydown",a=>{(a.key==="Enter"||a.key===" ")&&(a.preventDefault(),t.click())}),Ct(t,{to:e,num:n,kind:o,href:s}))}}function St(){customElements.define("delta-ref",De)}var je=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.querySelectorAll(":scope > delta-paper");if(e.length===0)return;let n=document.createElement("section");n.className="notes";let o=document.createElement("h4");o.append(...S(this)?.nodes??[l("references","References")]),n.append(o);let s=document.createElement("ol");for(let a of e){let i=document.createElement("li");a.id&&(i.id=a.id),i.append(ie(a)),s.append(i)}n.append(s),this.replaceChildren(n)}};function Rt(){customElements.define("delta-bibliography",je)}var Ge=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=(this.getAttribute("data-cite-nums")??"").split(",").filter(Boolean),n=(this.getAttribute("data-cite-ids")??"").split(",").filter(Boolean),o=this.getAttribute("data-cite-file");if(e.length===0){this.classList.add("cite-missing");return}let s=document.createElement("span");s.className="cite",s.append("["),e.forEach((d,r)=>{r>0&&s.append(", ");let m=document.createElement("a");m.textContent=d,s.append(m)}),s.append("]"),this.replaceChildren(s);let a=document.createElement("div");a.className="cite-pop";let i=!1,c=C(s,a,{hover:!0,onOpen:()=>{i||(i=!0,n.forEach((d,r)=>{let m=document.createElement("div");m.className="cite-pop-item";let p=document.createElement("a");p.className="cite-pop-num",p.href=o?`${o}#${d}`:`#${d}`,p.textContent=`[${e[r]}]`,X(p,d,o,{before:()=>c.close()});let f=document.createElement("span");f.className="cite-pop-text";let g=se(d)?.content.querySelector("delta-paper");g&&f.append(ie(g)),m.append(p,f),a.append(m)}))}})}};function Ht(){customElements.define("delta-cite",Ge)}var Ke=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.textContent??"",n=document.createElement("pre");n.className="code-src";let o=document.createElement("code");for(;this.firstChild;)o.append(this.firstChild);n.append(o);let s=document.createElement("div");if(s.className="code-body",this.getAttribute("lines")!=="false"){let r=e.replace(/\n$/,"").split(`
+`).length,m=document.createElement("span");m.className="code-gutter",m.setAttribute("aria-hidden","true"),m.textContent=Array.from({length:r},(p,f)=>String(f+1)).join(`
+`),s.append(m)}s.append(n);let a=document.createElement("div");a.className="code-head";let i=this.getAttribute("lang"),c=document.createElement("span");c.className="code-lang",c.textContent=(i||l("code","Code")).toUpperCase(),a.append(c,ae("code-copy",l("copy","Copy"),()=>e)),this.append(a,s);let d=this.getAttribute("num");if(d){let r=document.createElement("div");r.className="code-cap";let m=document.createElement("span");m.className="lbl",m.textContent=F("code",d),r.append(m," "),this.append(r)}D(this,a)}};function $t(){customElements.define("delta-code",Ke)}var oe={ordered:!1,marker:"bullet"},Ve={1:{ordered:!0,marker:"decimal"},number:{ordered:!0,marker:"decimal"},numbers:{ordered:!0,marker:"decimal"},numbered:{ordered:!0,marker:"decimal"},decimal:{ordered:!0,marker:"decimal"},a:{ordered:!0,marker:"alpha"},alpha:{ordered:!0,marker:"alpha"},alphabetical:{ordered:!0,marker:"alpha"},A:{ordered:!0,marker:"alpha-upper"},"alpha-upper":{ordered:!0,marker:"alpha-upper"},i:{ordered:!0,marker:"roman"},roman:{ordered:!0,marker:"roman"},I:{ordered:!0,marker:"roman-upper"},"roman-upper":{ordered:!0,marker:"roman-upper"},bullet:oe,disc:oe,dot:oe,dash:{ordered:!1,marker:"dash"},none:{ordered:!1,marker:"none"}};function Tn(t){if(t.getAttribute("numbered")==="true")return Ve.number;let e=(t.getAttribute("marker")??"").trim();return e?Ve[e]??Ve[e.toLowerCase()]??oe:oe}var Ue=class extends HTMLElement{connectedCallback(){this.dataset.deltaReady||(this.dataset.deltaReady="1",this._render())}_render(){let e=Tn(this),n=document.createElement(e.ordered?"ol":"ul");if(n.className="delta-list",n.dataset.marker=e.marker,e.ordered){let o=parseInt(this.getAttribute("start")??"",10);Number.isFinite(o)&&(n.style.counterReset=`delta-item ${o-1}`,n.setAttribute("start",String(o)))}this.querySelectorAll(":scope > delta-item").forEach(o=>{let s=document.createElement("li");s.className="delta-list-item";for(let a of["reveal","reveal-order"]){let i=o.getAttribute(a);i!==null&&s.setAttribute(a,i)}s.append(...o.childNodes),n.append(s)}),this.replaceChildren(n)}};function Pt(){customElements.define("delta-list",Ue)}function It(t,e,n,o,s){let a=e.getAttribute("align");s&&a&&(o[n]=a),a||(a=o[n]),a==="right"?t.classList.add("num"):a==="center"&&(t.style.textAlign="center"),e.getAttribute("mono")==="true"&&t.classList.add("mono")}var Xe=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",this.classList.add("delta-table");let e=this.querySelector(":scope > delta-title"),n=this.querySelector(":scope > delta-caption"),o=this.getAttribute("num"),s=null;if(e||n||o){if(s=document.createElement("div"),s.className="table-head",e||o){let p=document.createElement("span");p.className="table-lbl",p.textContent=F("table",o),s.append(p)}if(e){let p=document.createElement("span");p.className="table-title",p.append(...e.childNodes),s.append(p)}if(n){let p=document.createElement("span");p.className="table-cap",p.append(...n.childNodes),s.append(p)}}let a=document.createElement("table");a.className="t";let i=[],c=this.querySelector(":scope > delta-header");if(c){let p=document.createElement("thead"),f=document.createElement("tr");c.querySelectorAll(":scope > delta-column").forEach((g,u)=>{let E=document.createElement("th");It(E,g,u,i,!0),E.append(...g.childNodes),f.append(E)}),p.append(f),a.append(p)}let d=document.createElement("tbody");this.querySelectorAll(":scope > delta-row").forEach(p=>{let f=document.createElement("tr");p.querySelectorAll(":scope > delta-column").forEach((g,u)=>{let E=document.createElement("td");It(E,g,u,i,!1),E.append(...g.childNodes),f.append(E)}),d.append(f)}),a.append(d);let r=document.createElement("div");r.className="table-wrap";let m=this.getAttribute("max-height");m&&(r.style.maxHeight=m,r.style.overflowY="auto"),r.append(a),this.replaceChildren(...s?[s]:[],r)}};function Ot(){customElements.define("delta-table",Xe)}var Cn=/^\d*\.?\d+(fr)?$/,ze=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("gap");e&&(this.style.gap=e);for(let n of this.querySelectorAll(":scope > delta-column")){let o=n.getAttribute("width");if(!o)continue;let s=Cn.test(o.trim())?`${parseFloat(o)} 1 0`:`0 1 ${o}`;n.style.setProperty("--col-flex",s)}}};function qt(){customElements.define("delta-columns",ze)}var Bt={keywords:"Keywords",msc:"Mathematics Subject Classification",received:"Received",revised:"Revised",accepted:"Accepted",submitted:"Submitted",date:"Date",acknowledgements:"Acknowledgements",funding:"Funding"},Mn=new Set(["acknowledgements","funding"]),We=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=document.createElement("div");e.className="abstract-label",e.textContent=l("abstract","Abstract");let n=document.createElement("div");n.className="abstract-body",n.append(...this.childNodes),this.append(e,n)}},Ye=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady||(this.dataset.deltaReady="1",this.closest("delta-slide")))return;let e=H(this),n=Mn.has(e);this.classList.add(n?"fm-block":"fm-line");let o=document.createElement("span");o.className="fm-label",o.textContent=l(e,Bt[e]??e),this.prepend(o,n?" ":": ")}};function _t(){customElements.define("delta-abstract",We);for(let t of Object.keys(Bt))customElements.define(`delta-${t}`,class extends Ye{})}var Ft=["blue","purple","orange","teal","pink","green","red","indigo","sky","lime","yellow","slate"];var Sn=new Set(Ft),Rn={danger:"red",warning:"orange",tip:"green",note:"blue"},Je=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("color")?.trim()||Rn[this.getAttribute("type")?.trim().toLowerCase()??""];e&&(Sn.has(e.toLowerCase())?this.setAttribute("data-accent",e.toLowerCase()):this.style.setProperty("--delta-accent",e));let n=this.querySelector(":scope > delta-title"),o=null;n&&(o=document.createElement("div"),o.className="box-heading",o.append(...n.childNodes),n.remove());let s=document.createElement("div");s.className="box-body",s.append(...this.childNodes),o&&this.append(o),this.append(s)}};function Dt(){customElements.define("delta-box",Je)}var Qe=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("by"),n=this.getAttribute("status")??"open",o=this.getAttribute("num"),s=W(e),a=[...this.querySelectorAll(":scope > delta-reply")];for(let m of a)m.remove();let i=Hn(this,a,{by:e,status:n,date:this.getAttribute("date")});if(s&&i.setAttribute("data-accent",s),this.closest(".delta-pop")){this.parentElement?.classList.contains("xref-pop-body")?(i.classList.add("note-static"),this.replaceChildren(i)):this.classList.add("note-hidden");return}let c=`${l("comment","Comment")}${o?` ${o}`:""}`,d=L("note-marker",o??"\u2022");d.title=c,d.setAttribute("aria-label",c),s&&d.setAttribute("data-accent",s),n==="resolved"&&d.classList.add("is-resolved"),d.addEventListener("click",m=>m.stopPropagation()),d.addEventListener("keydown",m=>m.stopPropagation()),this.replaceChildren(d),C(d,i);let r=this.getAttribute("on");if(r){let m=document.getElementById(r);if(m&&!m.contains(this)){let p=m.querySelector(":scope > .box-sheet > .box-head, :scope > h1, :scope > h2, :scope > h3, :scope > h4, :scope > .proof-lead, :scope > .proof-bar"),f=p?.querySelector(":scope > .status-mark");f?f.before(this," "):p?p.append(" ",this):m.after(this)}}}};function Hn(t,e,n){let o=document.createElement("div");o.className="note-pop";let s=document.createElement("div");s.className="note-head";let a=R(n.by);if(a&&s.append(a),n.date){let d=document.createElement("span");d.className="note-date",d.textContent=n.date,s.append(d)}let i=document.createElement("span");i.className="note-status",i.dataset.status=n.status,i.textContent=l(n.status,n.status),s.append(i);let c=document.createElement("div");if(c.className="note-body",c.append(...t.childNodes),o.append(s,c),e.length){let d=document.createElement("div");d.className="note-replies";for(let r of e){let m=document.createElement("div");m.className="note-reply";let p=document.createElement("div");p.className="note-reply-head";let f=R(r.getAttribute("by"));f&&p.append(f);let g=r.getAttribute("date");if(g){let E=document.createElement("span");E.className="note-date",E.textContent=g,p.append(E)}let u=document.createElement("div");u.className="note-reply-body",u.append(...r.childNodes),m.append(p,u),d.append(m)}o.append(d)}return o}function jt(){customElements.define("delta-comment",Qe)}var Gt={open:"\u2610",doing:"\u25D0",done:"\u2611"},Ze=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("status")??"open",n=this.getAttribute("priority")??"normal",o=this.getAttribute("num"),s=this.getAttribute("for"),a=this.getAttribute("by"),i=this.getAttribute("due");this.classList.add("todo"),this.dataset.status=e,this.dataset.priority=n;let c=W(s)??W(a);c&&this.setAttribute("data-accent",c);let d=document.createElement("span");d.className="todo-state",d.setAttribute("aria-hidden","true"),d.textContent=Gt[e]??Gt.open;let r=document.createElement("div");if(r.className="todo-text",o){let u=document.createElement("span");u.className="todo-num",u.textContent=`${l("todo","Task")} ${o}`,r.append(u," ")}r.append(...this.childNodes),this.setAttribute("aria-label",`${l("todo","Task")}${o?` ${o}`:""}: ${l(e,e)}`);let m=document.createElement("div");m.className="todo-meta";let p=R(s);if(p){let u=document.createElement("span");u.className="todo-for",u.append(`${l("for","for")} `,p),m.append(u)}let f=R(a);if(f&&a!==s){let u=document.createElement("span");u.className="todo-by",u.append(`${l("by","by")} `,f),m.append(u)}if(i){let u=document.createElement("span");u.className="todo-due",u.textContent=`${l("due","Due")} ${i}`,m.append(u)}if(n!=="normal"){let u=document.createElement("span");u.className="todo-prio",u.dataset.priority=n,u.textContent=l(n,n),m.append(u)}this.replaceChildren(d,r),m.childElementCount&&this.append(m);let g=this.getAttribute("on");if(g){let u=document.getElementById(g);u&&!u.contains(this)&&(u.querySelector(":scope > h1, :scope > h2, :scope > h3, :scope > h4")??u).after(this)}}};function Kt(){customElements.define("delta-todo",Ze)}var et=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1",$(this,null);let e=this.getAttribute("note");if(e){let n=document.createElement("span");n.className="status-note",n.textContent=e,this.querySelector(":scope > .status-bar")?.append(n)}}};function Vt(){customElements.define("delta-draft",et)}var tt=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=this.getAttribute("by"),n=this.getAttribute("kind")??"insert",o=this.getAttribute("num"),s=W(e);this.classList.add("chg"),this.dataset.kind=n,this.getAttribute("block")==="true"&&this.classList.add("chg-block"),s&&this.setAttribute("data-accent",s);let a=[...this.querySelectorAll(":scope > delta-old")],i=[...this.querySelectorAll(":scope > delta-new")];if(a.length===0&&i.length===0){let E=document.createElement("delta-new");E.append(...this.childNodes),this.append(E),i=[E]}for(let E of a)E.classList.add("chg-del");for(let E of i)E.classList.add("chg-ins");let c=`${l("change","Change")}${o?` ${o}`:""} \xB7 ${l(n,n)}`,d=L("chg-marker",o??"\u0394");d.title=c,d.setAttribute("aria-label",c),d.addEventListener("click",E=>E.stopPropagation()),d.addEventListener("keydown",E=>E.stopPropagation());let r=document.createElement("div");r.className="chg-pop",s&&r.setAttribute("data-accent",s);let m=document.createElement("div");m.className="chg-pop-head";let p=R(e);p&&m.append(p);let f=this.getAttribute("date");if(f){let E=document.createElement("span");E.className="chg-date",E.textContent=f,m.append(E)}let g=document.createElement("span");g.className="chg-kind",g.dataset.kind=n,g.textContent=l(n,n),m.append(g),r.append(m);let u=this.getAttribute("note");if(u){let E=document.createElement("div");E.className="chg-note",E.textContent=u,r.append(E)}this.prepend(d),C(d,r)}};function Ut(){customElements.define("delta-change",tt)}var $n=["comment","todo","change","status"],Pn={comment:"annotations",todo:"tasks",change:"changes",status:"blocks"},In={comment:"Comments",todo:"Tasks",change:"Changes",status:"Blocks"},Xt={comment:"C",todo:"T",change:"\u0394",status:""},On=["markup","final","original"],nt=class extends HTMLElement{connectedCallback(){if(this.dataset.deltaReady)return;this.dataset.deltaReady="1";let e=Ee(),n=this.getAttribute("scope")==="project",o=e.items.filter(b=>n||!b.file),s=S(this),a=document.createElement("section");a.className="review",a.setAttribute("aria-label",s?.text||l("reviewPanel","Review"));let i=document.createElement("div");i.className="review-hd";let c=document.createElement("span");c.className="review-title",c.append(...s?.nodes??[l("reviewPanel","Review")]);let d=ae("review-copy",l("copyText","Copy as text"),()=>y().map(Bn).join(`
+`));i.append(c,d);let r=document.createElement("div");r.className="review-summary";let m=(b,x)=>{let v=document.createElement("span");v.className="review-stat";let N=document.createElement("b");N.textContent=String(b),v.append(N,` ${x}`),r.append(v)};m(o.filter(b=>b.kind==="comment"&&b.status==="open").length,l("openComments","open comments")),m(o.filter(b=>b.kind==="todo"&&b.status!=="done").length,l("openTasks","open tasks")),m(o.filter(b=>b.kind==="change").length,l("pendingChanges","pending changes"));let p=new Map;for(let b of o)b.kind==="status"&&p.set(b.status,(p.get(b.status)??0)+1);for(let[b,x]of p)m(x,l(b,b));let f=document.createElement("div");f.className="review-controls";let g=L("review-switch",l("annotations","Annotations"));g.addEventListener("click",()=>G.setAnnotations(!G.annotations));let u=document.createElement("div");u.className="review-seg",u.setAttribute("role","group");let E=document.createElement("span");E.className="review-seg-label",E.textContent=l("changes","Changes"),u.append(E);let M=On.map(b=>{let x=L("",l(b,b));return x.dataset.mode=b,x.addEventListener("click",()=>G.setChanges(b)),u.append(x),x});f.append(g,u);let P=()=>{g.setAttribute("aria-pressed",String(G.annotations));for(let b of M)b.classList.toggle("is-active",b.dataset.mode===G.changes)};P(),document.addEventListener(de,P);let k=document.createElement("div");k.className="review-filters";let A=new Set,q=new Set,K=new Set,B=new Set;for(let b of o){for(let x of[b.by,b.for,b.verifiedBy])x&&K.add(x);B.add(b.status)}let O=(b,x,v,N)=>{let T=L(`review-filter ${b}`,x);T.dataset[b==="review-filter-member"?"member":"status"]=N,T.addEventListener("click",()=>{v.has(N)?v.delete(N):v.add(N),T.classList.toggle("is-active",v.has(N)),w()}),k.append(T)};for(let b of K)O("review-filter-member",R(b)??b,A,b);for(let b of B)O("review-filter-status",l(b,b),q,b);let h=document.createElement("div");h.className="review-list";let y=()=>o.filter(b=>(A.size===0||[b.by,b.for,b.verifiedBy].some(x=>x&&A.has(x)))&&(q.size===0||q.has(b.status))),w=()=>{h.replaceChildren();let b=y();if(b.length===0){let x=document.createElement("p");x.className="review-empty",x.textContent=l("nothingToReview","Nothing to review"),h.append(x);return}for(let x of $n){let v=b.filter(T=>T.kind===x);if(v.length===0)continue;let N=document.createElement("div");N.className="review-group-title",N.textContent=l(Pn[x],In[x]),h.append(N);for(let T of v)h.append(qn(T))}};w(),a.append(i,r,f),k.childElementCount&&a.append(k),a.append(h),this.replaceChildren(a)}};function qn(t){let e=document.createElement("div");e.className="review-item",e.dataset.kind=t.kind,e.dataset.status=t.status;let n=document.createElement("div");n.className="review-item-hd";let o=document.createElement("a");o.className="review-jump",o.href=t.file?`${t.file}#${t.id}`:`#${t.id}`;let s=document.createElement("span");s.className="review-num",s.textContent=t.kind==="status"?`${l(t.tag,t.tag)}${t.num?` ${t.num}`:""}`:`${Xt[t.kind]}${t.num??""}`,o.append(s),X(o,t.id,t.file),n.append(o);let a=document.createElement("span");if(a.className="status-pill",a.dataset.status=t.status,a.textContent=l(t.status,t.status),n.append(a),t.kind==="change"&&t.changeKind){let r=document.createElement("span");r.className="status-pill",r.textContent=l(t.changeKind,t.changeKind),n.append(r)}if(t.kind==="todo"&&t.priority&&t.priority!=="normal"){let r=document.createElement("span");r.className="status-pill review-prio",r.dataset.priority=t.priority,r.textContent=l(t.priority,t.priority),n.append(r)}let i=R(t.by);i&&n.append(i);let c=R(t.for);if(c){let r=document.createElement("span");r.className="review-for",r.append(`${l("for","for")} `,c),n.append(r)}let d=R(t.verifiedBy);if(d){let r=document.createElement("span");r.className="review-for",r.append("\u2713 ",d),n.append(r)}if(t.date){let r=document.createElement("span");r.className="review-date",r.textContent=t.date,n.append(r)}if(t.due){let r=document.createElement("span");r.className="review-date",r.textContent=`${l("due","Due")} ${t.due}`,n.append(r)}if(e.append(n),t.kind==="status"){if(t.html){let r=document.createElement("div");r.className="review-text review-block-title",r.innerHTML=t.html,e.append(r)}}else{let r=document.createElement("div");r.className="review-text",r.innerHTML=t.html,e.append(r)}if(t.note){let r=document.createElement("div");r.className="review-note",r.textContent=t.note,e.append(r)}for(let r of t.replies??[]){let m=document.createElement("div");m.className="review-reply";let p=R(r.by);p&&m.append(p," ");let f=document.createElement("span");f.innerHTML=r.html,m.append(f),e.append(m)}if(t.heading){let r=document.createElement("a");r.className="review-loc",r.href=t.file?`${t.file}#${t.heading.id}`:`#${t.heading.id}`,r.innerHTML=`\xA7${t.heading.num?` ${t.heading.num}`:""} ${t.heading.title}`,X(r,t.heading.id,t.file),e.append(r)}return e}function Bn(t){let e=t.kind==="status"?"":`${Xt[t.kind]}${t.num??""} `,n=[t.by&&`${l("by","by")} ${t.by}`,t.for&&`${l("for","for")} ${t.for}`].filter(Boolean).join(", "),o=t.heading?` (\xA7${t.heading.num||""})`:"",s=[`${e}[${l(t.status,t.status)}]${n?` ${n}`:""}: ${t.text}${o}`];t.note&&s.push(`    ${l("note","Note")}: ${t.note}`);for(let a of t.replies??[])s.push(`    \u21B3 ${a.by??"?"}: ${a.text}`);return s.join(`
+`)}function zt(){customElements.define("delta-review",nt)}function Wt(){yt(),dt(),ct(),vt(),gt(),xt(),Lt(),wt(),Nt(),At(),kt(),St(),Rt(),Ht(),$t(),Pt(),Ot(),qt(),_t(),Dt(),jt(),Kt(),Vt(),Ut(),zt()}function Yt(){let t=document.documentElement;if(t.dataset.type!=="presentation")return null;let e=[...document.querySelectorAll("delta-slide")];if(e.length===0)return null;t.classList.add("deck-js"),document.querySelector("delta-progress")&&t.classList.add("deck-progress-on");let n=0,o=0,s=0,a=[],i=h=>Math.max(0,Math.min(e.length-1,h)),c=h=>[...h.querySelectorAll('[reveal="true"]')].map((y,w)=>({el:y,order:y.hasAttribute("reveal-order")?Number(y.getAttribute("reveal-order")):w})).sort((y,w)=>y.order-w.order).map(y=>y.el),d=e.map(c),r=(h,y)=>d[h].forEach((w,b)=>w.classList.toggle("is-revealed",b<y)),m=()=>{let h=(n+1)/e.length;t.style.setProperty("--deck-progress-prev",String(s)),t.style.setProperty("--deck-progress",String(h)),s=h},p=(h,y)=>{e[n]?.classList.remove("is-active"),n=i(h),o=y?d[n].length:0,r(n,o),m(),e[n].classList.add("is-active");for(let w of a)w(n,e.length)},f=()=>{o<d[n].length?r(n,++o):n<e.length-1&&p(n+1,!1)},g=()=>{o>0?r(n,--o):n>0&&p(n-1,!0)},u=h=>p(h,!1);document.addEventListener("keydown",h=>{let y=h.target;if(!(y&&(y.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(y.tagName)))&&!(h.metaKey||h.ctrlKey||h.altKey))switch(h.key){case"ArrowRight":case"ArrowDown":case"PageDown":case" ":h.preventDefault(),f();break;case"ArrowLeft":case"ArrowUp":case"PageUp":h.preventDefault(),g();break;case"Home":h.preventDefault(),u(0);break;case"End":h.preventDefault(),u(e.length-1);break}});let E=(h,y,w,b)=>{let x=L(`deck-nav ${h}`,y);return x.setAttribute("aria-label",w),x.addEventListener("click",b),x},M=document.createElement("div");M.className="deck-controls",M.append(E("deck-prev","\u2039",l("prevSlide","Previous slide"),g),E("deck-next","\u203A",l("nextSlide","Next slide"),f)),document.body.append(M);let P=0,k=0;document.addEventListener("touchstart",h=>{P=h.touches[0].clientX,k=h.touches[0].clientY},{passive:!0}),document.addEventListener("touchend",h=>{let y=h.changedTouches[0].clientX-P,w=h.changedTouches[0].clientY-k;Math.abs(y)>50&&Math.abs(y)>Math.abs(w)*1.5&&(y<0?f:g)()},{passive:!0});let A=h=>document.querySelector(`delta-slide[cover="true"] ${h}`)?.textContent?.trim()??"",q=(h,y)=>{let w=document.createElement("span");return w.className=h,w.textContent=y,w},K=A("delta-author"),B=A("delta-affiliation"),O=[...K?[q("tb-author",K)]:[],...B?[q("tb-affiliation",B)]:[]];if(O.length){let h=document.createElement("div");h.className="deck-topbar eyebrow",O.forEach((y,w)=>{w>0&&h.append(" \xB7 "),h.append(y)}),document.body.append(h),a.push(y=>h.classList.toggle("topbar-hidden",e[y].matches('[cover="true"], [divider="true"]')))}return p(0,!1),{get index(){return n},get total(){return e.length},go:u,next:f,prev:g,goToId(h){let y=document.getElementById(h);if(!y)return!1;let w=y.closest("delta-slide")??y.querySelector("delta-slide"),b=w?e.indexOf(w):-1;return b<0?!1:(u(b),!0)},onChange(h){a.push(h),h(n,e.length)}}}Wt();Mt();var _n=Yt();window.Delta={popover:C,t:l,deck:_n,review:G};var Jt=()=>{location.hash.length>1&&he(decodeURIComponent(location.hash.slice(1)))};Jt();window.addEventListener("hashchange",Jt);})();
 </script>
 
 </body>

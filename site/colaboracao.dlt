@@ -300,9 +300,21 @@ Daí <change by="claude" date="2026-09-12" note="sinal trocado"><old>$x < 0$</ol
 
       Em que pé está cada pedaço. Qualquer ambiente, demonstração ou seção aceita três
       atributos: <c>status</c> diz a maturidade, <c>by</c> quem escreveu o bloco e
-      <c>verified-by</c> quem conferiu. O cabeçalho ganha uma etiqueta discreta; blocos
-      em rascunho ou esboço ficam com a borda tracejada. Para prosa solta, sem cabeçalho
-      onde pendurar a etiqueta, existe o envoltório <c><draft></c>.
+      <c>verified-by</c> quem conferiu. Enquanto o bloco está em trabalho, o estado é só
+      uma palavra em versalete cinza no fim do cabeçalho, e o papel da caixa conta o
+      resto: rascunho e heurístico em papel quadriculado, esboço em papel pautado, os dois
+      com a borda tracejada; um resultado em aberto é só o contorno tracejado; em revisão,
+      papel liso. Conferido ou formalizado, a palavra dá lugar a um carimbo com a tinta de
+      quem conferiu, o nome e o dia. Se o que foi conferido mudar, o carimbo desbota e
+      leva um risco. Passar o mouse na palavra ou no carimbo (ou tocar nele) mostra quem
+      escreveu e quem conferiu, como na prévia de uma referência; um clique deixa a
+      prévia aberta.
+
+      Quando a demonstração está juntada à caixa do resultado (veja
+      <ref to="tag-proof">&lt;proof&gt;</ref>) e o resultado não tem <c>status</c>
+      próprio, o cabeçalho mostra o da primeira demonstração, que é a confiança do
+      resultado. Para prosa solta, sem cabeçalho onde pôr a palavra, existe o envoltório
+      <c><draft></c>.
 
       <table numbered="false">
         <header>
@@ -318,7 +330,7 @@ Daí <change by="claude" date="2026-09-12" note="sinal trocado"><old>$x < 0$</ol
         <row>
           <column mono="true">status</column>
           <column mono="true">open</column>
-          <column>Só em resultados (teorema, lema, …): enunciado planejado, ainda sem demonstração. A caixa fica vazada e tracejada</column>
+          <column>Só em resultados (teorema, lema, …): enunciado planejado, ainda sem demonstração. A caixa fica vazada e tracejada, com o rodapé "Demonstração pendente"</column>
         </row>
         <row>
           <column mono="true">by</column>
@@ -331,6 +343,11 @@ Daí <change by="claude" date="2026-09-12" note="sinal trocado"><old>$x < 0$</ol
           <column>Quem conferiu o bloco</column>
         </row>
         <row>
+          <column mono="true">verified-on</column>
+          <column mono="true">AAAA-MM-DD</column>
+          <column>O dia da conferência, impresso no carimbo. O <c>delta verify</c> escreve sozinho</column>
+        </row>
+        <row>
           <column mono="true">note</column>
           <column mono="true">texto</column>
           <column>Só em <c><draft></c>: o que ainda falta</column>
@@ -338,7 +355,7 @@ Daí <change by="claude" date="2026-09-12" note="sinal trocado"><old>$x < 0$</ol
       </table>
 
       <code lang="xml" numbered="false">
-<lemma id="lem-compacto" status="verified" by="claude" verified-by="rodrigo">...</lemma>
+<lemma id="lem-compacto" status="verified" by="claude" verified-by="rodrigo" verified-on="2026-09-13">...</lemma>
 <proof of="lem-compacto" status="sketch" by="claude">...</proof>
 <section id="sec-aplicacoes" status="draft">...</section>
 <lemma id="lem-cota" status="open">Enunciado de um lema que ainda falta provar.</lemma>
@@ -352,7 +369,7 @@ Daí <change by="claude" date="2026-09-12" note="sinal trocado"><old>$x < 0$</ol
       <em>esboço</em>, ambos de Claude). Um lema verificado, um lema planejado e um
       rascunho:
 
-      <lemma id="demo-colab-lem-ver" status="verified" by="claude" verified-by="rodrigo">
+      <lemma id="demo-colab-lem-ver" status="verified" by="claude" verified-by="rodrigo" verified-on="2026-09-13">
         <title>Compacto é limitado</title>
         Todo subconjunto compacto de $\mathbb{R}$ é limitado.
       </lemma>

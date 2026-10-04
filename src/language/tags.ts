@@ -46,6 +46,16 @@ export const BOX_TAGS: ReadonlySet<string> = new Set([
 /** Environments drawn inline with an italic lead ("Proof."); proof also gets a QED mark. */
 export const PROOF_TAGS: ReadonlySet<string> = new Set(["proof", "solution"]);
 
+/**
+ * What each proof-like tag proves: a proof proves a result, a solution solves an exercise
+ * or a problem. A proof (or solution) nested in, or right after, what it proves joins its
+ * box as a footer (`linkProofs`).
+ */
+export const PROVES: Readonly<Record<string, ReadonlySet<string>>> = {
+  proof: RESULT_TAGS,
+  solution: new Set(["exercise", "problem"]),
+};
+
 /** Every theorem-like environment; the runtime defines one element per tag. */
 export const ENVIRONMENT_TAGS: ReadonlySet<string> = new Set([...BOX_TAGS, ...PROOF_TAGS]);
 
@@ -55,7 +65,7 @@ export const REF_TAGS: ReadonlySet<string> = new Set(["ref", "solution", "proof"
 /** `\ref{id}` / `\eqref{id}` inside math: group 1 is the command, group 2 the id. */
 export const MATH_REF = /\\(eqref|ref)\{([^}]*)\}/g;
 
-/** Reader aids that hang under a result or a proof step as dots + a drawer. */
+/** Reader aids that fold under a result or a proof step. */
 export const AID_TAGS: ReadonlySet<string> = new Set(["intuition", "strategy", "obstacle"]);
 
 /** Tags whose content is LaTeX, rendered by KaTeX at compile time. */

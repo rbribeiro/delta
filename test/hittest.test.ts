@@ -130,14 +130,15 @@ describe.skipIf(!BROWSER)("collaboration runtime", () => {
     const out = evaluate(
       compileSrc(COLLAB_DOC),
       `const c=document.getElementById("c-on");
-       const inTag=c.parentElement.classList.contains("box-tag");
+       const inTag=c.parentElement.classList.contains("box-head");
        const resolved=c.querySelector(".note-marker").classList.contains("is-resolved");
-       const pill=document.querySelector("#thm .box-tag .status-pill");
-       const proofPill=document.querySelector('delta-proof[status="sketch"] .proof-lead .status-pill');
+       const mark=document.querySelector("#thm .box-head .status-mark");
+       const proofMark=document.querySelector('#thm delta-proof[status="sketch"] .proof-bar .status-mark');
        document.title="RESULT::inTag="+inTag+",resolved="+resolved
-         +",thmPill="+(pill&&pill.dataset.status)+",proofPill="+(proofPill&&proofPill.dataset.status);`,
+         +",thmMark="+(mark&&mark.dataset.status)+",proofMark="+(proofMark&&proofMark.dataset.status);`,
     );
-    expect(out).toBe("inTag=true,resolved=true,thmPill=review,proofPill=sketch");
+    // The theorem shows its own status; its joined proof (past the comment) shows its own.
+    expect(out).toBe("inTag=true,resolved=true,thmMark=review,proofMark=sketch");
   });
 
   it("hides every annotation under the review switch and restores it", () => {
@@ -145,7 +146,7 @@ describe.skipIf(!BROWSER)("collaboration runtime", () => {
       compileSrc(COLLAB_DOC),
       `const vis=el=>getComputedStyle(el).display!=="none";
        const c=document.getElementById("c-inline"), t=document.getElementById("t1");
-       const pill=document.querySelector("#thm .status-pill"), bar=document.querySelector("delta-draft .status-bar");
+       const pill=document.querySelector("#thm .status-mark"), bar=document.querySelector("delta-draft .status-bar");
        const before=[c,t,pill,bar].every(vis);
        window.Delta.review.setAnnotations(false);
        const off=document.documentElement.dataset.review==="off" && ![c,t,pill,bar].some(vis);
