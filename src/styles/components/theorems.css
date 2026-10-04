@@ -147,7 +147,8 @@ delta-exercise, delta-problem { --delta-env-tone: var(--delta-tone-exercise); }
   margin: 0 0 6px;
   letter-spacing: -0.003em;
 }
-.box.example {
+/* A counterexample is the one box on tinted paper: it breaks the rule the others state. */
+delta-counterexample.box {
   --box-bg: color-mix(in oklab, var(--delta-accent-soft) 35%, var(--delta-paper));
 }
 

@@ -3,12 +3,15 @@
 
 @layer delta.components {
 
+  /* The space around a display is the formula's, not a block's: the same 1em that
+     KaTeX gives a `$$…$$` in running text, so a tagged equation sits as close to its
+     sentence as an untagged one (LaTeX's display skip, not a paragraph break). */
   delta-equation,
   delta-equations,
   delta-math {
     display: block;
     position: relative;
-    margin: var(--delta-block-gap) 0;
+    margin: 1em 0;
   }
 
   /* A display formula wider than the text column would push the whole page into
@@ -23,12 +26,9 @@
     overflow-y: hidden;
     padding-top: 0.3em;
   }
-  /* The math tags supply their own block margin. */
-  delta-equation .katex-display,
-  delta-equations .katex-display,
-  delta-math .katex-display {
-    margin: 0;
-  }
+  /* The math tags supply their own block margin; KaTeX's around .katex-display is
+     removed by an unlayered rule next to KaTeX's sheet (compiler/katex-css.ts), since
+     no rule in these layers can override that sheet. */
 
   /* Numbered equations lay out as two grid tracks: the (scrollable) equation and
      the number. The number track is `auto` — it reserves EXACTLY the width of

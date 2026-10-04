@@ -127,7 +127,6 @@ class DeltaEnvironment extends HTMLElement {
    */
   private renderBox(kind: string): void {
     this.classList.add("box");
-    if (kind === "example" || kind === "counterexample") this.classList.add("example");
     const head = document.createElement("div");
     head.className = "box-head";
     const tag = document.createElement("span");

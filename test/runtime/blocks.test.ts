@@ -44,7 +44,11 @@ describe.skipIf(!BROWSER)("media, tables and boxes", () => {
       </section></document>`,
       `return { figure: text(".figure-cap .lbl"), missing: text(".video-missing"), table: text(".table-lbl") };`,
     );
-    expect(r).toEqual({ figure: "Figura 1.1", missing: "Imagem não encontrada.", table: "Tabela 1.1" });
+    expect(r).toEqual({
+      figure: "Figura 1.1",
+      missing: "Imagem não encontrada.",
+      table: "Tabela 1.1",
+    });
   });
 
   it("colours a box from a palette name, a type preset, or a literal colour", () => {
@@ -70,5 +74,18 @@ describe.skipIf(!BROWSER)("presentations", () => {
        return { seq };`,
     );
     expect(r.seq).toEqual([0, 1, 0]);
+  });
+});
+
+describe.skipIf(!BROWSER)("display math", () => {
+  it("sits as close to its sentence with <equation> as with $$…$$", () => {
+    const r = inspect(
+      `<document>Before <equation id="e">x = 1</equation> between $$y = 2$$ after.</document>`,
+      `const top = (el) => parseFloat(getComputedStyle(el).marginTop);
+       const eq = $("delta-equation");
+       return { tagged: top(eq) + top($(".katex-display", eq)), untagged: top($(".katex-display:not(delta-equation *)")) };`,
+    );
+    // The tag carries the margin itself and none inside; $$…$$ carries KaTeX's.
+    expect(r.tagged).toBe(r.untagged);
   });
 });

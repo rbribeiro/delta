@@ -54,8 +54,8 @@
        so it re-derives correctly under theme-mode="dark". */
     --delta-accent:       var(--delta-lime);
     --delta-accent-ink:   oklch(0.46 0.135 130);
-    /* `.box.example` mixes this 35% into the page, so the wash is pitched so that
-       an example box lands on the SAME off-white as every other environment
+    /* A counterexample box mixes this 35% into the page, so the wash is pitched so that
+       it lands on the SAME off-white as every other environment
        (L≈0.984) with only a faint lime cast — the interiors must stay uniform, the
        pills do the distinguishing. Re-derive if --delta-surface-1 moves:
        soft_L = (target - 0.65) / 0.35, then solve the mix below for the grey. */
