@@ -40,19 +40,16 @@ delta-step.step-pleat {
   --step-col: calc(var(--box-pad-x, 24px) + 28px); /* where the claim starts */
   --pleat-inset: 12px;
   --fold-bg: var(--box-well, var(--delta-env-well));
-  margin: 0.9em calc(-1 * var(--box-pad-x, 24px));
+  margin: 0; /* pleats meet the sheet's other parts edge to edge */
 }
-.step-pleat.after-step { margin-top: 0; }
-.step-pleat.before-step { margin-bottom: 0; }
-.step-pleat.at-top { margin-top: calc(-1 * var(--sheet-pad-top, 16px)); }
-.step-pleat.at-end { margin-bottom: 0.4em; }
-.step-pleat.at-end + .proof-qed { display: block; margin: 0; text-align: right; }
 
 .step-head {
   display: flex;
   align-items: baseline;
   gap: 0;
   padding: 14px 20px 12px var(--box-pad-x, 24px);
+  background: var(--fold-bg);
+  border-inline: var(--box-edge, 0 solid transparent);
   border-top: var(--delta-hairline) solid var(--delta-rule-soft);
   font-style: italic;
   line-height: 1.4;
@@ -84,12 +81,14 @@ delta-step.step-pleat {
 .step-head.collapse-toggle:hover { color: var(--delta-accent-ink); }
 .step-head.collapse-toggle:focus-visible { outline-offset: -2px; border-radius: 0; }
 .step-mountain { display: none; }
+/* Right under the bar, the bar's own rule is enough. */
+.collapse-body > .step-pleat:first-child > .step-head { border-top: 0; }
 
 /* Folded: the header becomes the valley (lit at the top, shadowed into the crease), the
    mountain comes back out under it. */
 .step-pleat.is-collapsed > .step-head {
   padding: 10px calc(20px + var(--pleat-inset)) 9px var(--box-pad-x, 24px);
-  border-top: 0;
+  border: 0;
   background: linear-gradient(to bottom, var(--delta-fold-lit), var(--delta-fold-shade-2) 55%, var(--delta-fold-shade)),
               var(--fold-bg);
   clip-path: polygon(0 0, 100% 0, calc(100% - var(--pleat-inset)) 100%, var(--pleat-inset) 100%);
@@ -109,6 +108,8 @@ delta-step.step-pleat {
 .step-pleat > .step-body {
   position: relative;
   padding: 0 var(--box-pad-x, 24px) 16px var(--step-col);
+  background: var(--fold-bg);
+  border-inline: var(--box-edge, 0 solid transparent);
 }
 .step-pleat > .folds + .step-body { padding-top: 14px; }
 .step-pleat > .step-body > :first-child { margin-top: 0; }

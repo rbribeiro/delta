@@ -220,6 +220,58 @@ delta-exercise, delta-problem { --delta-env-tone: var(--delta-tone-exercise); }
 }
 .proof-sheet > .collapse-body { border-radius: 0 0 var(--box-r) var(--box-r); }
 
+/* A sheet with steps paints no paper of its own: its parts do, each its strip (the bar,
+   the .sheet-runs of prose, the open steps; proofstructure.css), so the cut corners of
+   the steps' pleats show the page and the card's edge follows them. */
+.box > .proof-foot.has-steps,
+.box > .collapse-body > .proof-foot.has-steps,
+.proof-sheet.has-steps {
+  background: none;
+  border: 0;
+}
+.has-steps > .proof-bar {
+  background: var(--box-well);
+  border-inline: var(--box-edge);
+}
+.box .has-steps > .proof-bar { border-top: var(--delta-hairline) solid var(--delta-rule-soft); }
+.proof-sheet.has-steps > .proof-bar {
+  border-top: var(--box-edge);
+  border-radius: var(--box-r) var(--box-r) 0 0;
+}
+.has-steps:not(.is-collapsed) > .proof-bar {
+  border-bottom: var(--delta-hairline) dashed var(--delta-rule-soft);
+}
+.has-steps > .collapse-body {
+  padding: 0;
+  border-top: 0;
+}
+.sheet-run {
+  padding: 14px var(--box-pad-x);
+  background: var(--box-well);
+  border-inline: var(--box-edge);
+}
+.sheet-run:first-child { padding-top: var(--sheet-pad-top); }
+.sheet-run > :first-child { margin-top: 0; }
+.sheet-run > :last-child { margin-bottom: 0; }
+/* The strip that closes the sheet: the QED, at the far end, or nothing. */
+.sheet-run.sheet-end {
+  padding-top: 6px;
+  padding-bottom: 14px;
+  text-align: right;
+}
+.sheet-run.sheet-end:empty { padding-block: 7px; }
+.sheet-run.sheet-end > .proof-qed { margin: 0; }
+/* The last part of the card rounds its corners: the closing strip, or the bar when the
+   proof is folded. */
+.box .proof-foot.has-steps:last-child > .collapse-body > .sheet-run:last-child,
+.proof-sheet > .collapse-body > .sheet-run:last-child,
+.box .proof-foot.has-steps.is-collapsed:last-child > .proof-bar,
+.proof-sheet.is-collapsed > .proof-bar {
+  border-bottom: var(--box-edge);
+  border-radius: 0 0 var(--box-r) var(--box-r);
+}
+.proof-sheet.is-collapsed > .proof-bar { border-radius: var(--box-r); }
+
 /* A box in a narrow column keeps its parts aligned on the same inset. */
 @media (max-width: 640px) {
   .box { --box-pad-x: 16px; }

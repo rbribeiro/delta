@@ -21,8 +21,11 @@
       <title>&lt;ref&gt;</title>
 
       Uma referência cruzada. O texto do link, "Teorema 3.1", é montado a partir
-      do alvo, com o rótulo no idioma do documento. Clicar abre uma prévia do alvo
-      e oferece um botão para saltar até ele.
+      do alvo, com o rótulo no idioma do documento. Repousar o mouse sobre ele (ou
+      clicar) abre uma prévia do alvo, com um botão para saltar até ele. A prévia só
+      põe o nome do alvo no topo quando o próprio alvo não o diz: um teorema, uma seção,
+      uma figura ou tabela numerada já trazem o seu rótulo, e o nome não se repete;
+      uma equação, que mostra só "(1.2)", ganha "Equação 1.2" em cima.
 
       <table numbered="false">
         <header>

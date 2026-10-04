@@ -22,7 +22,10 @@ describe.skipIf(!BROWSER)("<ref> and <toc>", () => {
        trigger.click();
        const expandedAfter = trigger.getAttribute("aria-expanded");
        const card = openPopover();
-       const cardLabel = text(".xref-pop-label", card);
+       const shows = (el) => !!el && getComputedStyle(el).display !== "none";
+       const cardLabel = shows($(".xref-pop-label", card)) ? text(".xref-pop-label", card) : null;
+       const cardTag = text(".box-tag", card);
+       const goShows = shows($(".xref-go", card));
        const cardBody = text(".xref-pop-body", card);
        const cardHasIds = !!$("[id]", card);
        key("Escape");
@@ -30,6 +33,10 @@ describe.skipIf(!BROWSER)("<ref> and <toc>", () => {
        trigger.click();
        click(".xref-go");
        const flashed = $("#a").classList.contains("is-xref-target");
+
+       const eqCard = (() => { $(".math-xref").click(); return openPopover(); })();
+       const eqLabel = shows($(".xref-pop-label", eqCard)) ? text(".xref-pop-label", eqCard) : null;
+       key("Escape");
 
        const marker = $(".math-xref");
        const mathLabel = marker.textContent;
@@ -44,7 +51,7 @@ describe.skipIf(!BROWSER)("<ref> and <toc>", () => {
        const foldedBefore = $("#s2").classList.contains("is-collapsed");
        click('.toc-link[href="#deep"]');
        return {
-         labels, expandedBefore, expandedAfter, cardLabel, cardBody, cardHasIds, expandedAfterEscape, flashed,
+         labels, expandedBefore, expandedAfter, cardLabel, cardTag, goShows, eqLabel, cardBody, cardHasIds, expandedAfterEscape, flashed,
          mathLabel, mathTabIndex, mathExpanded, toc, nested, tocLabel, foldedBefore,
          foldedAfter: $("#s2").classList.contains("is-collapsed"),
          deepFlashed: $("#deep").classList.contains("is-xref-target"),
@@ -59,9 +66,16 @@ describe.skipIf(!BROWSER)("<ref> and <toc>", () => {
   it("opens a preview card cloned from the target's snapshot, without its ids", () => {
     expect(facts().expandedBefore).toBe("false");
     expect(facts().expandedAfter).toBe("true");
-    expect(facts().cardLabel).toBe("Lemma 1.1");
+    expect(facts().cardBody).toContain("The statement.");
     expect(facts().cardBody).toContain("The statement.");
     expect(facts().cardHasIds).toBe(false); // the original keeps the anchor
+  });
+
+  it("names the target once: by the preview's own label when it has one, else over it", () => {
+    expect(facts().cardTag).toBe("Lemma 1.1"); // the lemma's card says it
+    expect(facts().cardLabel).toBe(null); // so the pop-over doesn't repeat it
+    expect(facts().goShows).toBe(true);
+    expect(facts().eqLabel).toBe("Equation 1.1"); // an equation shows only "(1.1)"
   });
 
   it("closes on Escape, and its go button jumps to the target", () => {

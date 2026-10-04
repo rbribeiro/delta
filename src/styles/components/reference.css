@@ -68,6 +68,22 @@ delta-ref { display: inline; }
   text-transform: uppercase;
   color: var(--delta-mute);
 }
+/* A preview that names itself (a theorem's card, a heading, a numbered title or
+   caption; ref.ts) needs no label over it. The jump button alone stays: at the far end
+   of the preview's own first line, which leaves it room; over a figure, on its own row. */
+.xref-pop.names-itself .xref-pop-label { display: none; }
+.xref-pop.names-itself:not(.label-below) > .xref-pop-head {
+  position: absolute;
+  top: 10px;
+  right: 13px;
+  margin: 0;
+}
+.xref-pop.label-below > .xref-pop-head { justify-content: flex-end; }
+.names-itself:not(.label-below) .xref-pop-body > :first-child :is(.box-head, .proof-bar, .table-head),
+.names-itself:not(.label-below) .xref-pop-body > :first-child > :is(h1, h2, h3, h4, h5, h6),
+.names-itself:not(.label-below) .xref-pop-body > :is(delta-proof, delta-solution):first-child {
+  padding-right: 34px;
+}
 .xref-go {
   flex: none;
   display: inline-flex;

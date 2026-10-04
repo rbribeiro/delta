@@ -96,6 +96,10 @@ delta-obstacle {
   background: var(--fold-tint);
   border-top: var(--delta-hairline) dashed color-mix(in oklab, var(--aid-hue) 35%, transparent);
 }
+/* A fold of the card's own paper keeps the card's edge on its sides (dashed while the
+   work is unfinished, status.css). */
+.box > .folds .fold-panel,
+.step-pleat > .folds .fold-panel { border-inline: var(--box-edge); }
 .fold-panel[hidden],
 .fold-strip[hidden] { display: none; }
 .fold-head {

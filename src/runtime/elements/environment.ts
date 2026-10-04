@@ -111,8 +111,13 @@ class DeltaEnvironment extends HTMLElement {
     else bar.append(caret);
     this.prepend(bar);
     if (kind === "proof") this.append(qed());
-    if (!this.hasAttribute("collapsed")) this.setAttribute("collapsible", "true");
+    // The bar always folds the sheet; `collapsed` only says how it starts.
+    this.setAttribute("collapsible", "true");
     applyCollapsible(this, bar);
+    if (this.hasAttribute("data-step-depth")) {
+      this.classList.add("has-steps");
+      paperRuns(this, this.querySelector<HTMLElement>(":scope > .collapse-body")!);
+    }
   }
 
   /**
@@ -207,6 +212,50 @@ class DeltaEnvironment extends HTMLElement {
       return foot;
     }
     return null;
+  }
+}
+
+/**
+ * A sheet with steps paints no paper of its own: its top-level steps are pleats whose
+ * cut corners must show the page, so the card's edge (a filter on the whole) zig-zags
+ * with them. Everything else in the sheet's body, each run of prose between steps, goes
+ * into a `.sheet-run` that paints its own strip of the sheet; a run holding only the QED
+ * (or an empty one, added when the sheet ends on a step) closes the sheet.
+ */
+function paperRuns(proof: HTMLElement, body: HTMLElement): void {
+  const blank = (n: Node): boolean =>
+    n.nodeType === Node.COMMENT_NODE || (n.nodeType === Node.TEXT_NODE && !n.textContent?.trim());
+  const pleat = (n: Node): boolean =>
+    n instanceof Element &&
+    (n.localName === "delta-step" ||
+      [...n.querySelectorAll("delta-step")].some((s) => ownerOf(s) === proof));
+  const runs: HTMLElement[] = [];
+  let run: HTMLElement | null = null;
+  for (const node of [...body.childNodes]) {
+    if (pleat(node)) {
+      run = null;
+      continue;
+    }
+    if (!run) {
+      if (blank(node)) continue; // between two steps: nothing to paint
+      run = document.createElement("div");
+      run.className = "sheet-run";
+      node.before(run);
+      runs.push(run);
+    }
+    run.append(node);
+  }
+  const last = runs.at(-1);
+  if (!last || last !== [...body.children].at(-1)) {
+    const end = document.createElement("div");
+    end.className = "sheet-run";
+    body.append(end);
+    runs.push(end);
+  }
+  for (const r of runs) {
+    const shown = [...r.childNodes].filter((n) => !blank(n));
+    if (shown.every((n) => n instanceof Element && n.classList.contains("proof-qed")))
+      r.classList.add("sheet-end");
   }
 }
 

@@ -38,17 +38,6 @@ function topOf(step: Element, el: Element): Element {
   return top;
 }
 
-/** The nearest sibling of `el` that shows something (not blank text, not a comment). */
-function shown(el: Element, dir: "previousSibling" | "nextSibling"): Node | null {
-  let n = el[dir];
-  while (
-    n &&
-    (n.nodeType === Node.COMMENT_NODE || (n.nodeType === Node.TEXT_NODE && !n.textContent?.trim()))
-  )
-    n = n[dir];
-  return n;
-}
-
 class DeltaStep extends HTMLElement {
   connectedCallback(): void {
     if (this.dataset.deltaReady) return;
@@ -77,16 +66,6 @@ class DeltaStep extends HTMLElement {
     // the fold, with the mountain under it), the aids as named folds, then the proof,
     // which the header folds.
     this.classList.add("step-pleat");
-    // Pleats stack edge to edge; the first one meets the bar, the last one the QED.
-    const before = shown(this, "previousSibling");
-    if (before === null) this.classList.add("at-top");
-    else if (before instanceof Element && before.localName === "delta-step")
-      this.classList.add("after-step");
-    const after = shown(this, "nextSibling");
-    if (after instanceof Element && after.localName === "delta-step")
-      this.classList.add("before-step");
-    if (after === null || (after instanceof Element && after.classList.contains("proof-qed")))
-      this.classList.add("at-end");
     const head = document.createElement("div");
     head.className = "step-head";
     const text = document.createElement("span");

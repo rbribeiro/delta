@@ -247,6 +247,10 @@ describe.skipIf(!BROWSER)("steps as pleats of the proof's sheet", () => {
        location.hash = "#s21";
        await sleep(50);
        const sheet = $("delta-proof.proof-sheet");
+       const bg = (el) => getComputedStyle(el).backgroundColor;
+       const paper = { foot: bg(foot), body: bg($(":scope > .collapse-body", foot)),
+                       runs: $$(":scope > .collapse-body > .sheet-run", foot).map((r) => [r.textContent.trim(), bg(r) !== "rgba(0, 0, 0, 0)"]),
+                       pleatCut: getComputedStyle($(":scope > .step-head", s1)).clipPath !== "none" };
        return {
          start, bodyHidden, afterOnly, opened, pressedStart, pressedMixed, afterFull, flat,
          headText: head.textContent,
@@ -258,6 +262,7 @@ describe.skipIf(!BROWSER)("steps as pleats of the proof's sheet", () => {
          sheet: !!sheet && !sheet.classList.contains("is-collapsed"),
          sheetRef: sheet && sheet.querySelector(".proof-bar delta-ref")?.getAttribute("to"),
          sheetPleat: $("#x1").classList.contains("step-pleat"),
+         paper,
        };`,
     ),
   );
@@ -296,6 +301,18 @@ describe.skipIf(!BROWSER)("steps as pleats of the proof's sheet", () => {
     expect(facts().noProofStep).toEqual({ pleat: true, button: null });
     expect(facts().leads).toBe(0);
     expect(facts().qeds).toBe(1);
+  });
+
+  it("paints the sheet in strips, so the pleats' cut corners show the page", () => {
+    expect(facts().paper).toEqual({
+      foot: "rgba(0, 0, 0, 0)",
+      body: "rgba(0, 0, 0, 0)",
+      runs: [
+        ["Intro.", true],
+        ["□", true],
+      ],
+      pleatCut: true,
+    });
   });
 
   it("unfolds the step around a jump target", () => {

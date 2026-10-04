@@ -5,7 +5,10 @@
  * tapping) opens a `.delta-pop` card
  * previewing the target — cloned from the inert `<template data-delta-pop="id">`
  * the emitter shipped, so no fetch — with a button that jumps to it and flashes
- * it. An unresolved ref (no `data-target-num`/`data-target-tag`) is left as inert text.
+ * it. The card names the target ("Equation 1.2") only when the preview does not name
+ * itself: a theorem's card, a heading, a captioned figure or table, a proof's lead
+ * already say what they are, so there the card is just the preview and its jump
+ * button. An unresolved ref (no `data-target-num`/`data-target-tag`) is left as inert text.
  *
  * The card/popover/jump wiring is shared (`wireRefPopover`) with `wireMathRefs`,
  * which upgrades the `\htmlData` marker spans the compiler bakes into KaTeX
@@ -35,6 +38,22 @@ function refLabel(kind: string, num: string): string {
   if (kind === "hyp") return `(${num})`; // hypotheses read "(H1)", as in the statement
   return num ? `${nameOf(kind)} ${num}` : nameOf(kind);
 }
+
+/**
+ * What makes a preview name itself: its own label as the first thing it shows (the box
+ * header "THEOREM 1.2", a heading, a numbered table title, a proof's lead or bar), or
+ * at the bottom (a figure's or a code listing's numbered caption). Matched on the preview's first element,
+ * so a label deeper inside (a figure in an item) does not count.
+ */
+const LABEL_ON_TOP = [
+  ".box",
+  ".proof-foot",
+  ".proof-sheet",
+  ":has(> :is(h1, h2, h3, h4, h5, h6))",
+  ":has(> .proof-lead)",
+  ":has(> .table-head > .table-lbl)",
+].join(", ");
+const LABEL_BELOW = ":has(> delta-caption > .lbl, > .code-cap > .lbl)";
 
 /**
  * Wires a trigger element with the <ref> behavior: a preview card filled lazily
@@ -78,6 +97,11 @@ export function wireRefPopover(trigger: HTMLElement, { to, num, kind, href }: Re
         el.removeAttribute("collapsible");
       }
       cardBody.append(clone);
+      // Upgraded on append: the preview has drawn its own label, or not. With one on top,
+      // the jump button sits at the end of that line; with one below, alone over the preview.
+      const first = cardBody.firstElementChild;
+      if (first?.matches(LABEL_ON_TOP)) card.classList.add("names-itself");
+      else if (first?.matches(LABEL_BELOW)) card.classList.add("names-itself", "label-below");
     },
   });
 
