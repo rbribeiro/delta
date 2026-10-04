@@ -2761,6 +2761,7 @@ delta-ref { display: inline; }
 .xref-pop-body .box {
   --box-bg: transparent;
   --box-edge: 0 solid transparent;
+  --edge-dash: transparent;
   --box-pad-x: 0px;
   margin: 0;
   filter: none;
@@ -3548,10 +3549,54 @@ delta-sidenote { display: block; }
 /* -- Paper: what the status is made of --------------------------------
    On a box, the sheet takes the texture and every part of the card the dashed edge
    (theorems.css reads --box-edge), and the shadow goes: unfinished work lies flat. */
+.box,
+.proof-sheet { --edge-dash: transparent; }
 .box:is([data-status="draft"], [data-status="heuristic"], [data-status="sketch"], [data-status="open"]),
 .proof-sheet:is([data-status="draft"], [data-status="heuristic"], [data-status="sketch"]) {
   --box-edge: var(--delta-hairline) dashed var(--delta-status-dash);
+  --edge-dash: var(--delta-status-dash);
   filter: none;
+}
+
+/* The folds are cut with clip-path, which borders cannot follow: the dashed edge goes
+   down each fold's slanted sides as a thin band in a dash pattern, the valley narrowing
+   toward its crease, the mountain widening back out (a pleated step the same). The
+   band is transparent unless the card is dashed (--edge-dash). */
+:is(.fold-valley, .fold-mountain, .step-mountain),
+.step-pleat.is-collapsed > .step-head { position: relative; }
+:is(.fold-valley, .fold-mountain, .step-mountain)::before,
+:is(.fold-valley, .fold-mountain, .step-mountain)::after,
+.step-pleat.is-collapsed > .step-head.collapse-toggle::before,
+.step-pleat.is-collapsed > .step-head::after {
+  --i: var(--fold-inset, var(--pleat-inset, 12px));
+  --w: calc(var(--delta-hairline) + 0.4px);
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  transform: none;
+  pointer-events: none;
+  background: repeating-linear-gradient(to bottom, var(--edge-dash) 0 3px, transparent 3px 6px);
+}
+.step-pleat.is-collapsed > .step-head.collapse-toggle::before,
+.step-pleat.is-collapsed > .step-head::after { --i: var(--pleat-inset, 12px); }
+/* Narrowing (a valley): the sides run from the top corners in to the crease. */
+.fold-valley::before,
+.step-pleat.is-collapsed > .step-head.collapse-toggle::before {
+  clip-path: polygon(0 0, var(--w) 0, calc(var(--i) + var(--w)) 100%, var(--i) 100%);
+}
+.fold-valley::after,
+.step-pleat.is-collapsed > .step-head::after {
+  clip-path: polygon(calc(100% - var(--w)) 0, 100% 0, calc(100% - var(--i)) 100%,
+                     calc(100% - var(--i) - var(--w)) 100%);
+}
+/* Widening (a mountain): from the crease back out to the bottom corners. */
+:is(.fold-mountain, .step-mountain)::before {
+  clip-path: polygon(var(--i) 0, calc(var(--i) + var(--w)) 0, var(--w) 100%, 0 100%);
+}
+:is(.fold-mountain, .step-mountain)::after {
+  clip-path: polygon(calc(100% - var(--i) - var(--w)) 0, calc(100% - var(--i)) 0, 100% 100%,
+                     calc(100% - var(--w)) 100%);
 }
 /* Squared paper: a draft, a heuristic argument. */
 .box:is([data-status="draft"], [data-status="heuristic"]) > .box-sheet {

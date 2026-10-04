@@ -116,6 +116,7 @@ delta-ref { display: inline; }
 .xref-pop-body .box {
   --box-bg: transparent;
   --box-edge: 0 solid transparent;
+  --edge-dash: transparent;
   --box-pad-x: 0px;
   margin: 0;
   filter: none;

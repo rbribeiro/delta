@@ -325,3 +325,15 @@ describe.skipIf(!BROWSER)("steps as pleats of the proof's sheet", () => {
     expect(facts().sheetPleat).toBe(true);
   });
 });
+
+describe.skipIf(!BROWSER)("the dashed edge of unfinished work", () => {
+  it("runs down the folds' slanted sides too, and only on a dashed card", () => {
+    const r = inspect(
+      `<document><lemma id="d" status="sketch">D.<intuition>I.</intuition></lemma><lemma id="s">S.<intuition>I.</intuition></lemma></document>`,
+      `const band = (id) => getComputedStyle($("#" + id + " .fold-valley"), "::before").backgroundImage;
+       return { dashed: band("d"), solid: band("s") };`,
+    );
+    expect(r.dashed).not.toMatch(/^repeating-linear-gradient\(rgba\(0, 0, 0, 0\) 0px/);
+    expect(r.solid).toMatch(/^repeating-linear-gradient\(rgba\(0, 0, 0, 0\) 0px/);
+  });
+});
