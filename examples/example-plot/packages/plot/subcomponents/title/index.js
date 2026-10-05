@@ -1,6 +1,8 @@
+// Title Subcomponent
 class DeltaTitle extends HTMLElement {
     build(plot) {
-        plot.title = this.innerHTML;
+        const opts = parseTitleOptions(this);
+        buildTitleHeader(plot, opts);
     }
 
     bind(plot) {}

@@ -1,5 +1,5 @@
 <document>
-  <import src="packages/plot-new" />
+  <import src="packages/plot" />
   <section>
     <title>Aritmética</title>
     Soma, subtração, multiplicação, divisão e o <c>+</c> unário (ignorado). As retas devem se cruzar em pontos inteiros fáceis de conferir.

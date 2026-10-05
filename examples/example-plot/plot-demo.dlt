@@ -10,7 +10,7 @@
     Página demonstrativa e referência técnica do componente plot, projetado para renderização interativa de curvas, eixos e pontos em um espaço bidimensional.
   </abstract>
 
-  <import src="packages/plot-new" />
+  <import src="packages/plot" />
 
   <section id="sec:plot">
     <eyebrow>Referência de Componentes</eyebrow>

@@ -2,12 +2,14 @@
   "js": "index.js",
   "css": "theme.css",
   "needs": [
-    "./utils/auxiliary",
-    "./utils/parsing",
-    "./utils/factory",
-    "./subcomponents/axis",
-    "./subcomponents/grid",
+    "./auxiliary",
+    "./factory",
+    "./data-handle",
+    "./actions",
     "./subcomponents/title",
+    "./subcomponents/grid",
+    "./subcomponents/axis",
+    "./subcomponents/point",
     "./subcomponents/points",
     "./subcomponents/function"
   ]
