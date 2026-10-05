@@ -1,18 +1,23 @@
 /**
  * <ref to="id"> — a cross-reference. The compiler resolved the target's number
  * (`data-target-num`) and kind (`data-target-tag`), so the link reads "Theorem 1.1" (localized via `t`)
- * unless the author supplied their own text. Clicking opens a `.delta-pop` card
+ * unless the author supplied their own text. Resting the mouse on it (or clicking, or
+ * tapping) opens a `.delta-pop` card
  * previewing the target — cloned from the inert `<template data-delta-pop="id">`
  * the emitter shipped, so no fetch — with a button that jumps to it and flashes
- * it. An unresolved ref (no `data-target-num`/`data-target-tag`) is left as inert text.
+ * it. The card names the target ("Equation 1.2") only when the preview does not name
+ * itself: a theorem's card, a heading, a captioned figure or table, a proof's lead
+ * already say what they are, so there the card is just the preview and its jump
+ * button. An unresolved ref (no `data-target-num`/`data-target-tag`) is left as inert text.
  *
  * The card/popover/jump wiring is shared (`wireRefPopover`) with `wireMathRefs`,
  * which upgrades the `\htmlData` marker spans the compiler bakes into KaTeX
  * output for `\ref{id}` / `\eqref{id}` — the same behavior, inside math.
  */
 
-import { t } from "../i18n";
-import { popover } from "../utils";
+import { nameOf } from "../i18n.ts";
+import { popover } from "../utils.ts";
+import { button, jumpTo, templateFor } from "./shared.ts";
 
 // Small "jump to" arrow for the pop-over's go-to button (sized by reference.css).
 const XREF_GO_ICON =
@@ -30,9 +35,25 @@ interface RefTarget {
 
 /** "Theorem 1.2" (localized kind + number), or just the kind for an unnumbered target. */
 function refLabel(kind: string, num: string): string {
-  const name = t(kind, kind.charAt(0).toUpperCase() + kind.slice(1));
-  return num ? `${name} ${num}` : name;
+  if (kind === "hyp") return `(${num})`; // hypotheses read "(H1)", as in the statement
+  return num ? `${nameOf(kind)} ${num}` : nameOf(kind);
 }
+
+/**
+ * What makes a preview name itself: its own label as the first thing it shows (the box
+ * header "THEOREM 1.2", a heading, a numbered table title, a proof's lead or bar), or
+ * at the bottom (a figure's or a code listing's numbered caption). Matched on the preview's first element,
+ * so a label deeper inside (a figure in an item) does not count.
+ */
+const LABEL_ON_TOP = [
+  ".box",
+  ".proof-foot",
+  ".proof-sheet",
+  ":has(> :is(h1, h2, h3, h4, h5, h6))",
+  ":has(> .proof-lead)",
+  ":has(> .table-head > .table-lbl)",
+].join(", ");
+const LABEL_BELOW = ":has(> delta-caption > .lbl, > .code-cap > .lbl)";
 
 /**
  * Wires a trigger element with the <ref> behavior: a preview card filled lazily
@@ -50,9 +71,7 @@ export function wireRefPopover(trigger: HTMLElement, { to, num, kind, href }: Re
   const labelEl = document.createElement("span");
   labelEl.className = "xref-pop-label";
   labelEl.textContent = label;
-  const go = document.createElement("button");
-  go.type = "button";
-  go.className = "xref-go";
+  const go = button("xref-go");
   go.title = label;
   go.setAttribute("aria-label", label);
   go.innerHTML = XREF_GO_ICON;
@@ -63,12 +82,11 @@ export function wireRefPopover(trigger: HTMLElement, { to, num, kind, href }: Re
 
   let filled = false;
   const pop = popover(trigger, card, {
+    hover: true, // a mouse previews by resting on the link; a click pins it
     onOpen: () => {
       if (filled) return;
       filled = true;
-      const tpl = [...document.querySelectorAll("template[data-delta-pop]")].find(
-        (el) => (el as HTMLTemplateElement).dataset.deltaPop === to,
-      ) as HTMLTemplateElement | undefined;
+      const tpl = templateFor(to);
       if (!tpl) return;
       const clone = tpl.content.cloneNode(true) as DocumentFragment;
       // Drop ids (the original keeps them — the go-to target) and unfold any
@@ -79,24 +97,20 @@ export function wireRefPopover(trigger: HTMLElement, { to, num, kind, href }: Re
         el.removeAttribute("collapsible");
       }
       cardBody.append(clone);
+      // Upgraded on append: the preview has drawn its own label, or not. With one on top,
+      // the jump button sits at the end of that line; with one below, alone over the preview.
+      const first = cardBody.firstElementChild;
+      if (first?.matches(LABEL_ON_TOP)) card.classList.add("names-itself");
+      else if (first?.matches(LABEL_BELOW)) card.classList.add("names-itself", "label-below");
     },
   });
 
   go.addEventListener("click", (e) => {
     e.preventDefault();
     pop.close();
-    if (window.Delta?.deck?.goToId(to)) return; // in a deck, page to the target's slide
-    if (href) {
+    if (href)
       location.href = href; // cross-file: navigate to the target's output (#id flashes on arrival)
-      return;
-    }
-    const target = document.getElementById(to);
-    if (!target) return;
-    target.scrollIntoView({ block: "center", behavior: "smooth" });
-    target.classList.add("is-xref-target");
-    target.addEventListener("animationend", () => target.classList.remove("is-xref-target"), {
-      once: true,
-    });
+    else jumpTo(to);
   });
 }
 
@@ -117,9 +131,7 @@ class DeltaRef extends HTMLElement {
 
     // The clickable link: the author's own text if any, else the composed label.
     const hasText = (this.textContent ?? "").trim().length > 0;
-    const trigger = document.createElement("button");
-    trigger.type = "button";
-    trigger.className = "xref";
+    const trigger = button("xref");
     if (hasText) trigger.append(...this.childNodes);
     else trigger.textContent = refLabel(kind, num);
     this.replaceChildren(trigger);
@@ -138,8 +150,12 @@ class DeltaRef extends HTMLElement {
  */
 export function wireMathRefs(): void {
   for (const span of document.querySelectorAll<HTMLElement>(".katex [data-delta-ref-to]")) {
-    const { deltaRefTo: to, deltaRefNum: num, deltaRefTag: kind, deltaRefHref: href } =
-      span.dataset;
+    const {
+      deltaRefTo: to,
+      deltaRefNum: num,
+      deltaRefTag: kind,
+      deltaRefHref: href,
+    } = span.dataset;
     if (!to || !num || !kind) continue;
     span.classList.add("math-xref");
     span.setAttribute("role", "link");
@@ -155,5 +171,5 @@ export function wireMathRefs(): void {
 }
 
 export function defineRef(): void {
-  customElements.define("delta-ref", class extends DeltaRef {});
+  customElements.define("delta-ref", DeltaRef);
 }

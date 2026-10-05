@@ -47,7 +47,8 @@ JSON, so an agent needs no browser.
 | `<comment by status date on id>` › `<reply by date>` | `status` = `open` (default) \| `resolved` | inline or block. `on="id"` anchors the marker to another element (its box tag / heading / proof lead) |
 | `<todo for by status priority due on id>` | `status` = `open` \| `doing` \| `done`; `priority` = `high` \| `normal` \| `low` | a block checklist row; `on="id"` places it right after the target |
 | `<change by date note id>` › `<old>` / `<new>` | `kind` inferred and written: `<old>`+`<new>` → `replace`, `<old>` only → `delete`, `<new>` only or bare content → `insert`; `block="true"` inferred when it wraps block content | inline or around whole blocks |
-| `status` / `by` / `verified-by` on any block | `status` = `draft` \| `sketch` \| `review` \| `verified` | environments, proofs, sections, `<draft>`. `by` = who wrote the block, `verified-by` = who checked it |
+| `status` / `by` / `verified-by` / `verified-on` on any block | `status` = `draft` \| `heuristic` \| `sketch` \| `review` \| `verified` \| `formalized` | environments, proofs, sections, `<draft>`. `by` = who wrote the block, `verified-by` = who checked it, `verified-on` = when (`delta verify` writes it) |
+| `status="open"` on a result | theorem, proposition, lemma, corollary, conjecture, claim, definition only | a planned result: statement, no proof yet. Rendered as a hollow dashed box; counts as unverified in `--final` |
 | `<draft by note>` | `status` defaults to `draft` | wrapper for loose prose with no header |
 | `<review scope>` | `scope="project"` lists every file of a project | the panel; works inside `<floating>` |
 
@@ -79,7 +80,7 @@ Pipeline (both `compileSource` and `compileProject`): `… → resolveIncludes �
   (`status="open"`, `priority="normal"`, `kind="replace"`, `block="true"`, `<draft
   status="draft">`), warns on anything outside the vocabularies, checks people against the
   team. Exports `changeParts` (shared with `final.ts`).
-- `environments.ts`: the three counters. `numbering.ts`: `OPAQUE`.
+- `language/environments.ts`: the three counters. `language/tags.ts`: `OPAQUE`.
 - `review.ts` `buildReview` / `buildProjectReview`: collects every item into `ctx.review`
   with its number, people, a plain-text rendering (`text`: math back from KaTeX's TeX
   annotation as `$…$`, refs as "Lemma 2.1"), its live body nodes, and the nearest
@@ -87,8 +88,10 @@ Pipeline (both `compileSource` and `compileProject`): `… → resolveIncludes �
   without an `id` get `<tag>-<num>` so the panel can jump. Validates `on=`.
 - `final.ts` `finalizeReview` (`--final` only, before bibliography and numbering): drops
   `comment`/`todo`/`review`/`team`, unwraps `draft`, accepts `change` (keeps `<new>` or the
-  bare insertion), strips `status`/`by`/`verified-by`, and warns once: `final build: 3 open
-  comments, 2 open tasks, 4 blocks not verified`.
+  bare insertion), and warns once: `final build: 3 open comments, 2 open tasks, 4 blocks
+  not verified`. `stripReviewMarks` (first step of render) then strips
+  `status`/`by`/`verified-by`/`verified-on`/`against`: later, because the proof graph reads a proof's
+  status as its trust and a final build's proof map still shows it.
 - `emit.ts` `renderReviewIsland`: `<script type="application/json" id="delta-review">`
   with `{ team, items? }` — `items` only when the document has a `<review>`. Absent when
   there is neither a team nor a panel, so plain documents are unchanged.
@@ -117,9 +120,12 @@ Pipeline (both `compileSource` and `compileProject`): `… → resolveIncludes �
   whole element into its `on=` target's label. A comment snapshotted into a `<ref>` preview
   renders statically.
 - `todo.ts`: the checklist row. `change.ts`: normalizes to `<delta-old class="chg-del">` /
-  `<delta-new class="chg-ins">` + a marker with who/when/why. `shared.ts` `applyStatus`:
-  the `.status-pill` every block label gets (hooked in `environment.ts`, `section.ts`,
-  `draft.ts`). `review.ts`: the panel.
+  `<delta-new class="chg-ins">` + a marker with who/when/why. `status.ts` `applyStatus`:
+  the `.status-mark` every block header gets — a small-caps word while in progress, a
+  rubber stamp in the checker's colour once verified or formalized (faded and struck
+  when stale), opening a who-wrote/who-checked history on hover (click pins it), like a ref preview (hooked in
+  `environment.ts`, `section.ts`, `draft.ts`; a box shows its first joined proof's status
+  when it has none). `review.ts`: the panel.
 - CSS: `collab.css` (chip, `data-review="off"`, print), `comment.css`, `todo.css`,
   `status.css`, `change.css` (the three views), `review.css`. Every element that carries
   `data-accent` re-derives `--delta-accent-ink/-soft` from its seed (as `box.css` does) so
@@ -137,7 +143,72 @@ delta review paper.dlt --json                      # { team, summary, items } (n
 Filters: `--status`, `--for`, `--by`, `--kind comment|todo|change|status`. The
 formatting lives in `src/review-report.ts` (pure functions).
 
+### The proof graph
+
+`buildGraph` (`src/compiler/graph.ts`, a pipeline step after numbering) reads a DAG off
+the refs the compiler already resolves. The nodes are results and definitions with an
+`id`. A `<ref>`, `\ref` or `\eqref` in the statement or `<proof of>` of v to u gives the
+edge u → v (a ref to an equation or figure counts for the result containing it); refs
+inside the four reader aids are narrative and give no edge. Trust is ordered
+`open < heuristic < sketch < verified < formalized`: own = the first proof's status
+(`draft` → heuristic, `review` → sketch, no status → sketch, no proof → open,
+definitions → verified), and eff = the minimum of own and every parent's eff. Nodes on a
+cycle are `open`.
+
+```
+delta outline [input] [--json]                 # sections + results, own → eff, file:line
+delta show <id> [input] [--context] [--json]   # exact source; --context adds parents' statements
+delta uses <id> [input] [--json]               # everything downstream
+delta graph [input] [--frontier] [--json]      # the DAG, or the work available now
+delta lint [input] [--json]                    # cycles, dangling refs, overclaims; exit 1 on errors
+```
+
+For readers, `<proof-map of="id"/>` (no `of`: the whole graph) draws a result's
+ancestors as a layered graph, laid out at compile time by `src/compiler/proofmap.ts`
+(bottom-up layers, dummy points on long edges, barycenter ordering). It emits an SVG of
+edges plus positioned `<pm-node>` boxes, each holding an ordinary `<ref>`, so the existing
+ref pass and runtime give every box its preview card and jump; boxes are coloured by
+effective trust (`proofmap.css`). No runtime code of its own.
+
+`delta verify <id> [--by name]` is the one command that edits a `.dlt`: it sets
+`status="verified"`, `verified-by`, `verified-on` (today, printed on the page's stamp) and
+`against="<hash>"` on the result's first proof,
+rewriting only those attributes of the opening tag (`src/verify.ts`). The hash
+(`checkedHash` in `graph.ts`, 12 hex chars of SHA-256) covers the result's statement, its
+proof, and its parents' statements, not their proofs; content is taken between the tags,
+with aids, titles, comments and todos cut and whitespace collapsed. A mismatch makes the
+verification stale: own trust drops to sketch, the proof's `status` is shown as `stale`,
+and `delta lint` reports it as an error. `verified` without `against` is a lint warning.
+
+Structured proofs: `<step>` (inside a `<proof>` or a `<solution>`) holds a `<claim>` and
+usually its own `<proof>`; `structure.ts` numbers steps 1, 2, 2.1…, ids the ones without
+(`<result>-step-2.1`), folds each top-level step's proof, and renames the step's `<claim>`
+to `<step-claim>` so the numbered `<claim>` environment is untouched. The runtime draws
+each top-level step as a pleat of the proof's sheet (a sub-step reads flat inside its
+step) and adds "Steps only · Full proof" to the proof's bar. `<hyp>` in a statement is numbered H1, H2… per result (a ref reads "(H1)"); refs
+to hypotheses are not edges: the graph records, per hypothesis, the steps of the owner's
+proof that use it, and `annotateHypotheses` injects that (plus `<counterexample
+breaks="hyp-id">`s) as a `<hyp-uses>` child shown only in the hypothesis's own preview.
+`lint` warns on unused hypotheses and unproved steps, and errors on a counterexample of an
+unknown hypothesis.
+
+Colours are semantic tokens in `base.css`, never literals or per-component choices:
+`--delta-trust-{open,heuristic,sketch,verified,formalized}` (proof map, legend, trust
+pills in the review panel), `--delta-proof-alert` (stale, cycles, weaker base, unused
+hypotheses), `--delta-aid-{intuition,strategy,obstacle}` (the aid folds), and the status
+paper and stamp (`--delta-status-{dash,grid}`, `--delta-stamp-{ink,stale,blend,bright}`). They
+default to the palette, so dark mode and themes follow.
+
+The input defaults to `./project.toml`. Formatting lives in `src/graph-report.ts`. Exact
+source slices come from spans the parser records (`ElementNode.src`, via the offset map
+`preprocessMapped` returns), and every position carries its file, so included files report
+correctly.
+
 ## Annotating a paper as an AI agent
+
+`delta agent-guide` prints the conventions below together with the proof workflow
+(architecture with `open` stubs → `graph --frontier` → `show --context` → a `sketch` →
+`lint` → a human's `delta verify`), in one screen. Its text lives in `src/agent-guide.ts`.
 
 If you are an agent editing a `.dlt` with a human:
 
@@ -147,8 +218,8 @@ If you are an agent editing a `.dlt` with a human:
    insertions as `<change by="…">…</change>`, deletions as `<change by="…"><old>…</old></change>`.
    Never edit inside someone's `<old>`. Add a short `note` with the reason.
 3. **Mark what you write.** New proofs and lemmas start as `status="sketch"` (or `draft`);
-   set `status="review"` when you believe they are complete. Only a human sets
-   `verified` and `verified-by`.
+   set `status="review"` when you believe they are complete. Only a human verifies, with
+   `delta verify <id> --by <name>` (never write `verified`, `verified-by`, `verified-on` or `against`).
 4. **Ask in place.** A doubt is a `<comment>` right where it applies (or `on="id"`); a
    request for work is a `<todo for="…">`. Resolve a thread by setting `status="resolved"`
    and, if useful, a `<reply>`; finish a task by setting `status="done"`.

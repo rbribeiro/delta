@@ -55,8 +55,9 @@ delta-comment.note-hidden { display: none; }
   margin-right: 0.3em;
   font-size: 0.9em;
 }
-/* Inside a label (box tag, heading, proof lead) the marker sits on the text line. */
-.box-tag .note-marker,
+/* Inside a label (box header, heading, proof lead or bar) the marker sits on the text line. */
+.box-head .note-marker,
+.proof-bar .note-marker,
 .proof-lead .note-marker,
 h1 .note-marker, h2 .note-marker, h3 .note-marker, h4 .note-marker {
   vertical-align: middle;

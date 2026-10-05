@@ -1,17 +1,6 @@
-import { describe, expect, it } from "vitest";
-import { elements, type ElementNode } from "../src/compiler/ast";
-import { createContext, type CompileContext } from "../src/compiler/context";
-import { numberDocument } from "../src/compiler/numbering";
-import { parse } from "../src/compiler/parse";
-import { preprocess } from "../src/compiler/preprocess";
-
-function numbered(src: string): { doc: ElementNode; ctx: CompileContext } {
-  const ctx = createContext("test.dlt");
-  const doc = parse(preprocess(src), ctx);
-  if (!doc) throw new Error("parse failed: " + JSON.stringify(ctx.diagnostics));
-  numberDocument(doc, ctx);
-  return { doc, ctx };
-}
+import { describe, expect, it } from "./harness.ts";
+import { elements, type ElementNode } from "../src/compiler/ast.ts";
+import { numbered } from "./helpers.ts";
 
 function numOf(doc: ElementNode, id: string): string | undefined {
   for (const el of elements(doc)) if (el.attrs.id === id) return el.attrs.num;
@@ -28,7 +17,7 @@ describe("numbering", () => {
     );
     expect(numOf(doc, "s1")).toBe("1");
     expect(numOf(doc, "a")).toBe("1.1");
-    expect(numOf(doc, "b")).toBe("1.1"); 
+    expect(numOf(doc, "b")).toBe("1.1");
     expect(numOf(doc, "s2")).toBe("2");
     expect(numOf(doc, "c")).toBe("2.1");
   });
@@ -79,9 +68,7 @@ describe("numbering", () => {
   });
 
   it("respects an explicit num and continues counting from it", () => {
-    const { doc } = numbered(
-      `<document><theorem id="a" num="5"/><theorem id="b"/></document>`,
-    );
+    const { doc } = numbered(`<document><theorem id="a" num="5"/><theorem id="b"/></document>`);
     expect(numOf(doc, "a")).toBe("5");
     expect(numOf(doc, "b")).toBe("6");
   });
@@ -98,9 +85,7 @@ describe("numbering", () => {
   });
 
   it("records every id in the registry for the reference pass", () => {
-    const { ctx } = numbered(
-      `<document><section id="s"><theorem id="t"/></section></document>`,
-    );
+    const { ctx } = numbered(`<document><section id="s"><theorem id="t"/></section></document>`);
     expect(ctx.registry.get("t")).toEqual({ tag: "theorem", num: "1.1" });
     expect(ctx.registry.get("s")).toEqual({ tag: "section", num: "1" });
   });
@@ -127,5 +112,29 @@ describe("numbering", () => {
     expect(numOf(doc, "c1")).toBe("1.1");
     expect(numOf(doc, "c2")).toBe("1.2");
     expect(numOf(doc, "c3")).toBe("2.1"); // reset by the new section
+  });
+});
+
+describe("counter resets", () => {
+  it("lets an unnumbered section restart nothing (LaTeX's \\section*)", () => {
+    const { doc } = numbered(
+      `<document>
+        <section id="s1"><theorem id="a"/><equation id="e1">x</equation></section>
+        <section id="s2" numbered="false"><theorem id="b"/><equation id="e2">y</equation></section>
+      </document>`,
+    );
+    expect(numOf(doc, "b")).toBe("1.2");
+    expect(numOf(doc, "e2")).toBe("1.2");
+  });
+
+  it("is transitive: a new chapter restarts what its sections restart", () => {
+    const { doc } = numbered(
+      `<document type="book">
+        <chapter id="c1"><section id="s"><theorem id="t1"/><equation id="e1">x</equation><equation id="e2">y</equation></section></chapter>
+        <chapter id="c2"><theorem id="t2"/><equation id="e3">z</equation></chapter>
+      </document>`,
+    );
+    expect(numOf(doc, "t2")).toBe("1");
+    expect(numOf(doc, "e3")).toBe("1");
   });
 });

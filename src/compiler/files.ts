@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { addDep, type CompileContext } from "./context";
+import { addDep, type CompileContext } from "./context.ts";
 
 /**
  * Helpers for the passes that read the author's *other* files: includes, the `.ref`
@@ -13,11 +13,13 @@ export function isRemote(src: string): boolean {
   return /^[a-z][a-z0-9+.-]*:\/\//i.test(src);
 }
 
-/** Reads a user file as UTF-8 and records it as a dependency of this compile. Throws like `readFileSync`. */
+/**
+ * Reads a user file as UTF-8 and records it as a dependency of this compile. Throws like
+ * `readFileSync`; a missing file is still recorded, so `--watch` rebuilds once it appears.
+ */
 export function readUserFile(ctx: CompileContext, abs: string): string {
-  const text = readFileSync(abs, "utf8");
   addDep(ctx, abs);
-  return text;
+  return readFileSync(abs, "utf8");
 }
 
 /**

@@ -11,7 +11,8 @@
  * offers views of it. Offline by construction: everything is read from inert in-page JSON.
  */
 
-import { t } from "../i18n";
+import { t } from "../i18n.ts";
+import { readIsland } from "../island.ts";
 
 export interface ReviewMember {
   id: string;
@@ -63,18 +64,10 @@ export interface ReviewData {
   items: ReviewItemData[];
 }
 
-// The #delta-review JSON island, parsed once (mirrors the i18n / toc caches).
-let cache: ReviewData | null = null;
+/** The `#delta-review` island (team + items); both lists empty when the page has none. */
 export function readReview(): ReviewData {
-  if (cache) return cache;
-  const el = document.getElementById("delta-review");
-  try {
-    const raw = el ? (JSON.parse(el.textContent || "{}") as Partial<ReviewData>) : {};
-    cache = { team: raw.team ?? [], items: raw.items ?? [] };
-  } catch {
-    cache = { team: [], items: [] };
-  }
-  return cache;
+  const raw = readIsland<Partial<ReviewData>>("delta-review", {});
+  return { team: raw.team ?? [], items: raw.items ?? [] };
 }
 
 export function member(id: string | null | undefined): ReviewMember | undefined {

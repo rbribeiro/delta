@@ -1,6 +1,7 @@
-import type { ElementNode } from "./ast";
-import { COUNTER_RESETS, ENVIRONMENTS, type EnvironmentSpec } from "./environments";
-import { warn, type CompileContext } from "./context";
+import type { ElementNode } from "./ast.ts";
+import { COUNTER_RESETS, ENVIRONMENTS, type EnvironmentSpec } from "../language/environments.ts";
+import { OPAQUE } from "../language/tags.ts";
+import { warn, type CompileContext } from "./context.ts";
 
 /**
  * Carried counter state. A single document starts fresh; a project threads one
@@ -21,23 +22,13 @@ export function freshNumbering(): NumberingState {
  * The function traverses the document tree, assigning numbers to elements based on their environment specifications. It also registers elements with IDs in the compilation context's registry.
  * @param doc - the root element of the document
  * @param ctx - the compilation context
- * @param state - the current numbering state, used to continue numbering across files
- * @returns the updated numbering state
+ * @param state - the current numbering state, used to continue numbering across files (updated in place)
  */
-/**
- * Tags whose *descendants* are neither numbered nor registered: collaboration markup
- * that a `--final` build removes (`comment`, `todo`) or rejects (`old`). An equation
- * quoted inside a comment must not shift the paper's numbering between the review build
- * and the final one. The element itself is still assigned/registered (comments and
- * tasks carry their own counters).
- */
-const OPAQUE = new Set(["comment", "todo", "old"]);
-
 export function numberDocument(
   doc: ElementNode,
   ctx: CompileContext,
   state: NumberingState = freshNumbering(),
-): NumberingState {
+): void {
   const { counters, display } = state;
 
   const assign = (el: ElementNode, spec: EnvironmentSpec): void => {
@@ -51,7 +42,7 @@ export function numberDocument(
     } else if (numbered) {
       const next = (counters[spec.counter] ?? 0) + 1;
       counters[spec.counter] = next;
-      // Display prefix only if there is a prefix counter and it is non-zero. 
+      // Display prefix only if there is a prefix counter and it is non-zero.
       // This avoids "0.1" for the first theorem in a sectionless document.
       const prefix =
         spec.prefixWith && (counters[spec.prefixWith] ?? 0) > 0
@@ -59,8 +50,16 @@ export function numberDocument(
           : "";
       el.attrs.num = `${prefix}${next}`;
       display[spec.counter] = el.attrs.num;
+    } else return; // numbered="false" took no number: nothing restarts (LaTeX's \section*)
+    reset(spec.counter);
+  };
+
+  /** Zeroes what `counter` resets, and what those reset in turn (a chapter restarts theorems too). */
+  const reset = (counter: string): void => {
+    for (const child of COUNTER_RESETS[counter] ?? []) {
+      counters[child] = 0;
+      reset(child);
     }
-    for (const reset of COUNTER_RESETS[spec.counter] ?? []) counters[reset] = 0;
   };
 
   const register = (el: ElementNode): void => {
@@ -85,5 +84,4 @@ export function numberDocument(
 
   register(doc);
   visit(doc);
-  return state;
 }

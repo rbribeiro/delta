@@ -1,19 +1,15 @@
-import { describe, expect, it } from "vitest";
-import { createContext, type CompileContext } from "../src/compiler/context";
-import { compileSource } from "../src/compiler/index";
+import { describe, expect, it } from "./harness.ts";
+import { compile as compileWith } from "./helpers.ts";
 
-function compile(src: string, final: boolean): { html: string; ctx: CompileContext } {
-  const ctx = createContext("test.dlt");
-  ctx.final = final;
-  const html = compileSource(src, ctx);
-  if (html === undefined) throw new Error("compile failed: " + JSON.stringify(ctx.diagnostics));
-  return { html, ctx };
-}
+const compile = (src: string, final: boolean) => compileWith(src, { final });
 
 /** The rendered document only: no inlined CSS/JS (whose comments mention tags) and no <template> snapshots. */
-const body = (html: string): string => html.slice(html.indexOf("<delta-document"), html.indexOf("</delta-document>"));
+const body = (html: string): string =>
+  html.slice(html.indexOf("<delta-document"), html.indexOf("</delta-document>"));
 const nums = (html: string): string[] =>
-  [...body(html).matchAll(/<delta-(theorem|equation|lemma)[^>]*\bnum="([^"]+)"/g)].map((m) => `${m[1]}:${m[2]}`);
+  [...body(html).matchAll(/<delta-(theorem|equation|lemma)[^>]*\bnum="([^"]+)"/g)].map(
+    (m) => `${m[1]}:${m[2]}`,
+  );
 
 const MARKED = `<document>
   <team><member id="ai" name="Claude" kind="agent"/></team>
@@ -47,15 +43,27 @@ describe("--final", () => {
   it("strips comments, tasks, the panel and the team; unwraps drafts; accepts changes; drops the marks", () => {
     const { html } = compile(MARKED, true);
     const doc = body(html);
-    for (const tag of ["comment", "reply", "todo", "review", "team", "member", "draft", "change", "old", "new"]) {
+    for (const tag of [
+      "comment",
+      "reply",
+      "todo",
+      "review",
+      "team",
+      "member",
+      "draft",
+      "change",
+      "old",
+      "new",
+    ]) {
       expect(doc, tag).not.toContain(`<delta-${tag}`);
     }
     expect(html).not.toContain('id="delta-review"');
     expect(doc).toContain("loose prose");
     expect(doc).toContain("inserted.");
     expect(doc).not.toContain("deleted.");
-    expect(doc).not.toMatch(/<delta-[a-z]+[^>]*\b(status|by|verified-by)=/);
-    expect(doc).toContain('<delta-lemma id="l" num="1.1">');
+    expect(doc).not.toMatch(/<delta-[a-z]+[^>]*\b(status|by|verified-by|verified-on)=/);
+    // The proof is further down the same section: the box links to it.
+    expect(doc).toContain('<delta-lemma id="l" num="1.1" data-proof-at="l-proof"');
     // the accepted <new> side survives as rendered math; the <old> side is gone
     expect(doc).toContain("x &gt; 0"); // KaTeX's TeX annotation of the kept side
     expect(doc).not.toContain("x &lt; 0");
@@ -78,7 +86,8 @@ describe("--final", () => {
     const { html, ctx } = compile(src, true);
     expect(body(html)).not.toContain("<delta-paper");
     expect(ctx.citedPapers).toEqual([]);
-    expect(body(compile(src, false).html)).toContain("<delta-paper");
+    // The review build agrees: a cite inside a comment numbers nothing (it stays inert).
+    expect(body(compile(src, false).html)).not.toContain("<delta-paper");
   });
 
   it("warns once with what is left undone", () => {
@@ -90,9 +99,12 @@ describe("--final", () => {
   });
 
   it("is silent when everything is resolved, done and verified", () => {
-    const { ctx, html } = compile(`<document><section id="s"><title>S</title>
+    const { ctx, html } = compile(
+      `<document><section id="s"><title>S</title>
       <lemma status="verified" verified-by="rb">x<comment by="a" status="resolved">ok</comment></lemma>
-      <todo for="a" status="done">did</todo></section></document>`, true);
+      <todo for="a" status="done">did</todo></section></document>`,
+      true,
+    );
     expect(ctx.diagnostics).toEqual([]);
     expect(html).not.toContain("<delta-comment");
   });
@@ -102,5 +114,39 @@ describe("--final", () => {
     expect(html).toContain("<delta-comment");
     expect(html).toContain("<delta-change");
     expect(ctx.diagnostics.some((d) => d.message.startsWith("final build"))).toBe(false);
+  });
+});
+
+describe("--final and the proof graph", () => {
+  it("still reads the trust of a verified proof (the proof map shows it), then drops the marks", () => {
+    const src = `<document><section id="s"><title>S</title>
+      <lemma id="l">x</lemma><proof of="l" status="verified" verified-by="rb">ok</proof>
+      <proof-map of="l"/></section></document>`;
+    const { html } = compile(src, true);
+    expect(body(html)).toContain('data-eff="verified"');
+    expect(body(html)).not.toContain("status=");
+    expect(body(html)).not.toContain("verified-by=");
+  });
+
+  it("drops the stamp's day and the pending-proof footer, keeps the link to a remote proof", () => {
+    const src = `<document><section id="s"><title>S</title>
+      <lemma id="l">x</lemma> Prose. <proof of="l" status="verified" verified-by="rb" verified-on="2026-09-13">ok</proof>
+      <lemma id="o" status="open">y</lemma></section></document>`;
+    const { html } = compile(src, true);
+    expect(body(html)).not.toContain("verified-on=");
+    expect(body(html)).not.toContain('data-proof="pending"');
+    expect(body(html)).toContain('data-proof-at="l-proof"');
+    expect(compile(src, false).html).toContain('data-proof="pending"');
+  });
+
+  it("numbers citations the same in review and final builds", () => {
+    const src = `<document>
+      <bibliography><paper id="p"><title>P</title><author>A</author><year>2000</year></paper>
+        <paper id="q"><title>Q</title><author>B</author><year>2001</year></paper></bibliography>
+      <section id="s"><title>S</title><comment by="a"><cite paper="p"/></comment> <cite paper="q"/></section>
+    </document>`;
+    for (const final of [false, true]) {
+      expect(body(compile(src, final).html)).toMatch(/<delta-cite paper="q" data-cite-nums="1"/);
+    }
   });
 });

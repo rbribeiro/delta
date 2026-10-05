@@ -115,8 +115,9 @@ const pop = Delta.popover(trigger, content, options);
       O que o controle faz por você: posiciona o conteúdo sob o gatilho, ou acima
       quando não há espaço embaixo; limita a altura ao lado com mais espaço (um
       conteúdo rolável rola por dentro); mantém o balão dentro da tela nos dois
-      eixos; aponta a seta para o gatilho; reposiciona ao rolar ou redimensionar;
-      fecha com Esc ou clique fora; e garante que só um balão fique aberto de cada
+      eixos; aponta a seta para o gatilho; acompanha o gatilho enquanto o balão está
+      aberto (e fecha quando ele sai da tela); fecha com Esc, clique fora ou um novo
+      clique no gatilho; e garante que só um balão fique aberto de cada
       vez. Usa a Popover API do navegador quando ela existe e um <c>position: fixed</c>
       quando não.
 
@@ -145,6 +146,11 @@ const pop = Delta.popover(trigger, content, options);
           <column mono="true">triggerClick</column>
           <column mono="true">true</column>
           <column>Liga o clique no gatilho ao abrir e fechar. Desligue para abrir por conta própria, com o controle devolvido.</column>
+        </row>
+        <row>
+          <column mono="true">hover</column>
+          <column mono="true">false</column>
+          <column>Num aparelho com mouse, abre quando o mouse para sobre o gatilho e fecha quando ele sai do gatilho e do balão; um clique deixa o balão aberto. No toque, continua abrindo com um toque. É assim que abrem as prévias de referências, citações e estados.</column>
         </row>
       </table>
 
@@ -286,7 +292,7 @@ Delta.t("termo", "Definição")   // o texto traduzido, ou "Definição"
       passe sempre um padrão, e trate-o como o texto que de fato aparecerá. O que
       <c>t</c> compra é reaproveitar os textos que o Delta já traduz (os nomes dos
       ambientes, os rótulos do painel de revisão), que ficam em
-      <c>src/compiler/strings.ts</c>.
+      <c>src/language/strings.ts</c>.
     </subsection>
 
     <subsection id="api-deck">

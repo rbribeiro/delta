@@ -10,3 +10,6 @@ CLAUDE.md
 .claude/
 .vscode
 mise.toml
+
+# Compiled examples: regenerate with `npm run example`, `example:project`, `example:collab`.
+examples/**/*.html

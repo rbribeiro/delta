@@ -1,49 +1,53 @@
 import { basename, dirname } from "node:path";
-import { elements, hasTag, textContent, titleOf, type ElementNode, type Node } from "./ast";
-import type { CompileContext } from "./context";
-import { escapeHtml } from "./preprocess";
-import { katexCss } from "./katex-css";
-import { resolveLang, stringsFor } from "./strings";
-import { CORE_CSS, RUNTIME_JS, THEMES } from "../generated/assets";
+import { element, hasTag, titleOf, type ElementNode, type Node } from "./ast.ts";
+import type { CompileContext } from "./context.ts";
+import { escapeAttr, escapeHtml } from "./preprocess.ts";
+import { katexCss } from "./katex-css.ts";
+import { plainText } from "./paper.ts";
+import { stringsFor } from "../language/strings.ts";
+import { HEADING_TAGS, PROOF_TAGS } from "../language/tags.ts";
+import { CORE_CSS, RUNTIME_JS, THEMES } from "../generated/assets.ts";
 
 const DEFAULT_TYPE = "article";
-const CONTAINER_TAGS = new Set(["chapter", "section", "subsection", "subsubsection"])
 
 /**
  * Serializes the AST into a standalone HTML file. Every tag becomes `<delta-tag>`
- * — the compiler ships data (num attributes, ids, pre-rendered math) and the inlined runtime renders them. 
+ * — the compiler ships data (num attributes, ids, pre-rendered math) and the inlined runtime renders them.
  * All CSS/JS/fonts are inlined; the output references no external resources. KaTeX CSS is included only when the
  * output carries math — rendered in this file, or arriving via a cross-file ref/cite snapshot or a project-wide ToC title.
- * 
+ *
  * @param doc - the root AST node of the document to emit
  * @param ctx - the compilation context, which contains information about the document and its dependencies
- * @param globalById - an optional map of element IDs to their corresponding AST nodes, used for cross-file references
- * 
+ * @param globalById - id → element across every file of the build (one file's ids on a single-file build)
+ *
  * @returns - the serialized HTML string
  */
 export function emit(
   doc: ElementNode,
   ctx: CompileContext,
-  globalById?: Map<string, ElementNode>,
+  globalById: Map<string, ElementNode>,
 ): string {
+  const strings = stringsFor(ctx.lang);
   const titleEl = titleOf(doc);
-  const title = titleEl ? textContent(titleEl).trim() : basename(ctx.file).replace(/\.dlt$/, "");
+  // plainText, not textContent: the rendered math in a title reads back as its `$…$` source.
+  const title = titleEl
+    ? plainText(titleEl.children, ctx, (tag) => strings[tag] ?? tag)
+    : basename(ctx.file).replace(/\.dlt$/, "");
 
   // `type` selects the @layer delta.theme overrides (article is the default).
   const type = doc.attrs.type ?? DEFAULT_TYPE;
   const themeCss = THEMES[type] ?? THEMES[DEFAULT_TYPE];
 
   // Localized UI strings for the document's language, inlined as an inert data
-  // island the runtime reads via t(). `<` is escaped so a string can't break out
-  // of the </script>.
-  const i18n = JSON.stringify(stringsFor(resolveLang(ctx.lang))).replace(/</g, "\\u003c");
+  // island the runtime reads via t().
+  const i18n = jsonIsland("delta-i18n", strings);
 
   const body = serialize(doc);
   // Snapshot every <ref> target into an inert <template> so the runtime can clone
   // it into a pop-over preview without a fetch. Only referenced ids are emitted.
   // On the project path `globalById` spans every file, so a cross-file target's
   // copy ships into this output too.
-  const templates = renderTemplates(doc, ctx, globalById);
+  const templates = renderTemplates(ctx, globalById);
   // Heading tree for <delta-toc>, shipped as an inert JSON island.
   const toc = renderTocIsland(ctx);
   // Collaboration data (<team> + the items a <review> panel lists), same shape.
@@ -77,7 +81,10 @@ export function emit(
   // use window.Delta; each registers its own delta-* custom elements.
   const packScripts = ctx.imports.length
     ? ctx.imports
-        .map((i) => `<script>\n/* pack: ${i.name ?? basename(dirname(i.source))} */\n${i.js}\n</script>`)
+        .map(
+          (i) =>
+            `<script>\n/* pack: ${i.name ?? basename(dirname(i.source))} */\n${i.js}\n</script>`,
+        )
         .join("\n") + "\n"
     : "";
 
@@ -96,7 +103,7 @@ ${head}
 </head>
 <body>
 ${body}
-${templates}${toc}${review}<script type="application/json" id="delta-i18n">${i18n}</script>
+${templates}${toc}${review}${i18n.trimEnd()}
 <script>
 ${RUNTIME_JS}
 </script>
@@ -106,44 +113,37 @@ ${packScripts}
 `;
 }
 
-
 /**
- * 
+ *
  * Builds an inert `<template data-delta-pop="id">…</template>` at the end of the page
- * for every element referenced by a `<ref>`/`<cite>`/`<solution of>`/`<proof of>` (recorded in `ctx.referencedIds`). 
- * The runtime clones a template into the pop-over preview, so no fetch is needed. On the project path the caller
- * passes a `globalById` that maps every element ID to its AST node across all files, so copying a node from another file still works. 
+ * for every element referenced by a `<ref>`/`<cite>`/`<solution of>`/`<proof of>` (recorded in `ctx.referencedIds`).
+ * The runtime clones a template into the pop-over preview, so no fetch is needed. `globalById` maps every
+ * element ID to its AST node across all files, so copying a node from another file still works.
  * Returns an empty string when nothing is referenced.
- * 
- * @param doc - the root AST node of the document to emit
+ *
  * @param ctx - the compilation context, which contains information about the document and its dependencies
- * @param globalById - an optional map of element IDs to their corresponding AST nodes, used for cross-file references
- * 
+ * @param globalById - id → element across every file of the build
+ *
  * @returns - the serialized HTML string of the templates for referenced IDs or empty string if no IDs are referenced
  */
-function renderTemplates(
-  doc: ElementNode,
-  ctx: CompileContext,
-  globalById?: Map<string, ElementNode>,
-): string {
+function renderTemplates(ctx: CompileContext, globalById: Map<string, ElementNode>): string {
   if (ctx.referencedIds.size === 0) return "";
-  const byId = globalById ?? new Map<string, ElementNode>();
-  if (!globalById) {
-    for (const el of elements(doc)) {
-      const id = el.attrs.id;
-      if (id && !byId.has(id)) byId.set(id, el);
-    }
-  }
   const out: string[] = [];
   for (const id of ctx.referencedIds) {
-    const node = byId.get(id);
+    const node = globalById.get(id);
     if (node) {
       // For elements that contain a lot of other elements such as chapters, sections, and so on
       // the template holds only the title
       let snapshot = node;
-      if (CONTAINER_TAGS.has(node.tag)) {
+      if (HEADING_TAGS.has(node.tag)) {
         const titleEl = titleOf(node);
-        snapshot = {type: "element", tag: node.tag, attrs: node.attrs, children: titleEl ? [titleEl] : []};
+        snapshot = element(node.tag, node.attrs, titleEl ? [titleEl] : []);
+      } else if (node.children.some((c) => c.type === "element" && PROOF_TAGS.has(c.tag))) {
+        // A preview shows the statement: a proof nested in it stays behind.
+        const statement = node.children.filter(
+          (c) => c.type !== "element" || !PROOF_TAGS.has(c.tag),
+        );
+        snapshot = element(node.tag, node.attrs, statement);
       }
       // A cross-file target may carry math this file didn't render itself.
       ctx.mathUsed ||= containsMath([snapshot]);
@@ -155,7 +155,7 @@ function renderTemplates(
 
 /**
  * Builds an inert `<script type="application/json" id="delta-toc">…</script>` element containing the table of contents data. The runtime reads this JSON to render the `<delta-toc>` component. Returns an empty string when there are no entries in the table of contents.
- * 
+ *
  * @param ctx - the compiler context
  * @returns - the serialized stringfied array of objects representing the table of contents as a `<script type="application/json" id="delta-toc">` element, or an empty string if there are no entries in the table of contents
  */
@@ -167,12 +167,11 @@ function renderTocIsland(ctx: CompileContext): string {
     level: e.level,
     id: e.id,
     num: e.num,
-    title: e.title.map(serialize).join(""),
+    title: e.title.map((n) => serialize(n)).join(""),
     // Present only for a project-wide entry whose section lives in another output.
     ...(e.file ? { file: e.file } : {}),
   }));
-  const json = JSON.stringify(data).replace(/</g, "\\u003c");
-  return `<script type="application/json" id="delta-toc">${json}</script>\n`;
+  return jsonIsland("delta-toc", data);
 }
 
 /**
@@ -188,7 +187,7 @@ function renderReviewIsland(doc: ElementNode, ctx: CompileContext): string {
   const ownItems = ctx.review.some((i) => !i.file);
   if (!hasPanel && !(ctx.team.size > 0 && ownItems)) return "";
 
-  const ser = (nodes: Node[]): string => nodes.map(serialize).join("");
+  const ser = (nodes: Node[]): string => nodes.map((n) => serialize(n)).join("");
   const data: Record<string, unknown> = { team: [...ctx.team.values()] };
   if (hasPanel) {
     // A project-wide panel may carry bodies/titles with math rendered in another file.
@@ -216,22 +215,38 @@ function renderReviewIsland(doc: ElementNode, ctx: CompileContext): string {
         on: i.on,
         text: i.text,
         html: ser(i.body),
-        replies: i.replies?.map((r) => compact({ by: r.by, date: r.date, text: r.text, html: ser(r.body) })),
+        replies: i.replies?.map((r) =>
+          compact({ by: r.by, date: r.date, text: r.text, html: ser(r.body) }),
+        ),
         heading: i.heading
-          ? { level: i.heading.level, num: i.heading.num, id: i.heading.id, title: ser(i.heading.title) }
+          ? {
+              level: i.heading.level,
+              num: i.heading.num,
+              id: i.heading.id,
+              title: ser(i.heading.title),
+            }
           : undefined,
         file: i.file,
       }),
     );
   }
+  return jsonIsland("delta-review", data);
+}
+
+/**
+ * An inert `<script type="application/json" id="…">` data island the runtime reads. `<` is
+ * escaped so no string in the data can close the `</script>`.
+ */
+function jsonIsland(id: string, data: unknown): string {
   const json = JSON.stringify(data).replace(/</g, "\\u003c");
-  return `<script type="application/json" id="delta-review">${json}</script>\n`;
+  return `<script type="application/json" id="${id}">${json}</script>\n`;
 }
 
 /** Drops undefined-valued keys so the island JSON stays small. */
 function compact<T extends Record<string, unknown>>(obj: T): Partial<T> {
   const out: Partial<T> = {};
-  for (const [k, v] of Object.entries(obj)) if (v !== undefined) (out as Record<string, unknown>)[k] = v;
+  for (const [k, v] of Object.entries(obj))
+    if (v !== undefined) (out as Record<string, unknown>)[k] = v;
   return out;
 }
 
@@ -239,12 +254,12 @@ function compact<T extends Record<string, unknown>>(obj: T): Partial<T> {
 function containsMath(nodes: Node[]): boolean {
   return nodes.some(
     (n) =>
-      (n.type === "raw" && n.kind === "math") ||
-      (n.type === "element" && containsMath(n.children)),
+      (n.type === "raw" && n.kind === "math") || (n.type === "element" && containsMath(n.children)),
   );
 }
 
-function serialize(node: Node): string {
+/** `inOld`: inside a `<change>`'s `<old>`, ids are dropped so the page has one element per id (the new one). */
+function serialize(node: Node, inOld = false): string {
   switch (node.type) {
     case "text":
       return escapeHtml(node.text);
@@ -253,14 +268,12 @@ function serialize(node: Node): string {
     case "element": {
       const tag = `delta-${node.tag}`;
       const attrs = Object.entries(node.attrs)
+        .filter(([k]) => !(inOld && k === "id"))
         .map(([k, v]) => ` ${k}="${escapeAttr(v)}"`)
         .join("");
+      const bare = inOld || node.tag === "old";
       // Custom elements cannot self-close in HTML; always emit an explicit close tag.
-      return `<${tag}${attrs}>${node.children.map(serialize).join("")}</${tag}>`;
+      return `<${tag}${attrs}>${node.children.map((c) => serialize(c, bare)).join("")}</${tag}>`;
     }
   }
-}
-
-function escapeAttr(s: string): string {
-  return escapeHtml(s).replace(/"/g, "&quot;");
 }

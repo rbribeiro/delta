@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { parse, TomlError } from "smol-toml";
-import type { Diagnostic } from "./context";
-import { isBuiltinThemeName } from "./theme";
+import { parseToml, TomlError } from "./toml.ts";
+import type { Diagnostic } from "./context.ts";
+import { isBuiltinThemeName } from "./theme.ts";
 
 /**
  * A resolved project: the ordered list of input `.dlt` files and the directory
@@ -29,7 +29,14 @@ export interface ProjectConfig {
 /** The `<document>` attributes a project may default via the `[document]` table. Only a
  *  path-shaped `theme` needs resolution; the rest ride raw onto `doc.attrs`. Any other key
  *  is ignored. */
-const DOCUMENT_DEFAULT_KEYS = ["type", "theme", "theme-accent", "theme-mode", "lang"] as const;
+const DOCUMENT_DEFAULT_KEYS = [
+  "type",
+  "theme",
+  "theme-accent",
+  "theme-mode",
+  "lang",
+  "proofs",
+] as const;
 
 export interface ConfigResult {
   config?: ProjectConfig;
@@ -37,7 +44,7 @@ export interface ConfigResult {
 }
 
 /**
- * Reads and validates a `project.toml`. 
+ * Reads and validates a `project.toml`.
  *
  *   inputs   = ["intro.dlt", "ch1.dlt"]  # ordered, required, relative to the toml
  *   out      = "dist"                     # output directory, optional (default ".")
@@ -49,9 +56,10 @@ export interface ConfigResult {
  *   theme-accent = "blue"
  *   theme-mode   = "dark"
  *   lang         = "en"
+ *   proofs       = "open"                  #   joined proofs start unfolded
  *
  * Inputs and `out` are resolved relative to the toml's own directory. The optional
- * `[document]` table sets defaults (`type`/`theme`/`theme-accent`/`theme-mode`/`lang`)
+ * `[document]` table sets defaults (`type`/`theme`/`theme-accent`/`theme-mode`/`lang`/`proofs`)
  * applied to every file, each overridable by a per-document attribute. Any problem is
  * an `error` diagnostic on the toml.
  */
@@ -71,7 +79,7 @@ export function loadProjectConfig(tomlPath: string): ConfigResult {
 
   let data: unknown;
   try {
-    data = parse(text);
+    data = parseToml(text);
   } catch (e) {
     const where = e instanceof TomlError ? ` (line ${e.line}, column ${e.column})` : "";
     return fail(`invalid TOML${where}: ${e instanceof Error ? e.message : String(e)}`);

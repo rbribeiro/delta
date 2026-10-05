@@ -115,6 +115,10 @@ delta build artigo.dlt -o artigo.html
           o primeiro documento.
         </item>
         <item>
+          <ref to="galeria">Galeria</ref>: livros, artigos e apresentações escritos em
+          Delta, para abrir e ler junto com o fonte.
+        </item>
+        <item>
           <ref to="cli">Linha de comando</ref>: cada comando e opção do
           <c>delta</c>, e os códigos de saída.
         </item>

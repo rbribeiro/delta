@@ -1,6 +1,8 @@
-import type { ElementNode, Node, Position } from "./ast";
-import { warn, type CompileContext } from "./context";
-import { RAW_TAGS } from "./preprocess";
+import type { ElementNode, Position } from "./ast.ts";
+import { warn, type CompileContext } from "./context.ts";
+import { changeParts } from "./paper.ts";
+import { BLOCK_TAGS, COLLAB_PARTS, RAW_TAGS, RESULT_TAGS } from "../language/tags.ts";
+import { TRUST_OF } from "../language/trust.ts";
 
 /**
  * The validation pass for the collaboration vocabulary — `<comment>`/`<reply>`, `<todo>`,
@@ -11,54 +13,25 @@ import { RAW_TAGS } from "./preprocess";
  * fixed vocabularies (so an agent's typo reads as a diagnostic, not as silently dropped
  * chrome), and checks every `by`/`for`/`verified-by` against `<team>` when one exists.
  *
- * Numbering (C1…Cn) is a row in environments.ts; collection into the review island is
+ * Numbering (C1…Cn) is a row in language/environments.ts; collection into the review island is
  * `buildReview` (review.ts), which runs after numbering so items carry their numbers.
  */
 
 const COMMENT_STATUS = new Set(["open", "resolved"]);
 const TODO_STATUS = new Set(["open", "doing", "done"]);
 const PRIORITY = new Set(["high", "normal", "low"]);
-const BLOCK_STATUS = new Set(["draft", "sketch", "review", "verified"]);
-
-/** Tags that are collaboration items themselves (their `status` vocab is their own). */
-export const COLLAB_TAGS = new Set(["comment", "todo", "change"]);
-/** Structural children of the items above; never blocks in their own right. */
-const COLLAB_PARTS = new Set(["reply", "old", "new", "team", "member", "review"]);
-
-/**
- * Block-level tags: a `<change>` wrapping one of these (directly, or inside its
- * `<old>`/`<new>`) is a block change and renders as such (`block="true"`).
- */
-const BLOCK_TAGS = new Set([
-  "chapter", "section", "subsection", "subsubsection",
-  "theorem", "proposition", "lemma", "corollary", "conjecture", "definition", "example",
-  "claim", "observation", "remark", "exercise", "problem", "proof", "solution",
-  "equation", "equations", "figure", "video", "youtube", "audio", "table", "code",
-  "list", "box", "columns", "draft", "todo", "abstract", "interactive",
-]);
+/** A block's `status`: the trust vocabulary (language/trust.ts), so the proof graph reads every value. */
+const BLOCK_STATUS = new Set(Object.keys(TRUST_OF));
 
 /** Warn when `id` names nobody in `<team>` (a no-op without a team — `by` is then free text). */
-function checkMember(ctx: CompileContext, id: string | undefined, pos: Position | undefined, attr: string): void {
+function checkMember(
+  ctx: CompileContext,
+  id: string | undefined,
+  pos: Position | undefined,
+  attr: string,
+): void {
   if (!id || ctx.team.size === 0) return;
   if (!ctx.team.has(id)) warn(ctx, `${attr}="${id}" is not a <member> of the <team>`, pos);
-}
-
-/** The pieces of a `<change>`: its `<old>`/`<new>` children and any loose ("bare") content. */
-export interface ChangeParts {
-  olds: ElementNode[];
-  news: ElementNode[];
-  /** Children that are neither `<old>` nor `<new>`: elements, raw nodes, non-blank text. */
-  bare: Node[];
-}
-
-export function changeParts(el: ElementNode): ChangeParts {
-  const parts: ChangeParts = { olds: [], news: [], bare: [] };
-  for (const c of el.children) {
-    if (c.type === "element" && c.tag === "old") parts.olds.push(c);
-    else if (c.type === "element" && c.tag === "new") parts.news.push(c);
-    else if (c.type === "text" ? /\S/.test(c.text) : true) parts.bare.push(c);
-  }
-  return parts;
 }
 
 export function resolveCollab(doc: ElementNode, ctx: CompileContext): void {
@@ -96,22 +69,38 @@ function walk(el: ElementNode, parent: ElementNode | null, ctx: CompileContext):
 function visitComment(el: ElementNode, parent: ElementNode | null, ctx: CompileContext): void {
   el.attrs.status ??= "open";
   if (!COMMENT_STATUS.has(el.attrs.status)) {
-    warn(ctx, `<comment> has unknown status "${el.attrs.status}" (expected open or resolved)`, el.pos);
+    warn(
+      ctx,
+      `<comment> has unknown status "${el.attrs.status}" (expected open or resolved)`,
+      el.pos,
+    );
   }
   checkMember(ctx, el.attrs.by, el.pos, "by");
   if (parent?.tag === "title") {
-    warn(ctx, '<comment> inside a <title> — place it after the element and anchor it with on="id" instead', el.pos);
+    warn(
+      ctx,
+      '<comment> inside a <title> — place it after the element and anchor it with on="id" instead',
+      el.pos,
+    );
   }
 }
 
 function visitTodo(el: ElementNode, ctx: CompileContext): void {
   el.attrs.status ??= "open";
   if (!TODO_STATUS.has(el.attrs.status)) {
-    warn(ctx, `<todo> has unknown status "${el.attrs.status}" (expected open, doing or done)`, el.pos);
+    warn(
+      ctx,
+      `<todo> has unknown status "${el.attrs.status}" (expected open, doing or done)`,
+      el.pos,
+    );
   }
   el.attrs.priority ??= "normal";
   if (!PRIORITY.has(el.attrs.priority)) {
-    warn(ctx, `<todo> has unknown priority "${el.attrs.priority}" (expected high, normal or low)`, el.pos);
+    warn(
+      ctx,
+      `<todo> has unknown priority "${el.attrs.priority}" (expected high, normal or low)`,
+      el.pos,
+    );
   }
   checkMember(ctx, el.attrs.for, el.pos, "for");
   checkMember(ctx, el.attrs.by, el.pos, "by");
@@ -125,14 +114,22 @@ function visitChange(el: ElementNode, ctx: CompileContext): void {
   const hasNew = parts.news.length > 0;
   const hasBare = parts.bare.length > 0;
   if (hasBare && (hasOld || hasNew)) {
-    warn(ctx, "<change> mixes loose content with <old>/<new>; put the new text inside <new>", el.pos);
+    warn(
+      ctx,
+      "<change> mixes loose content with <old>/<new>; put the new text inside <new>",
+      el.pos,
+    );
   }
   if (!hasOld && !hasNew && !hasBare) warn(ctx, "empty <change>", el.pos);
 
   const inferred = hasOld && hasNew ? "replace" : hasOld ? "delete" : "insert";
   const given = el.attrs.kind;
   if (given !== undefined && given !== inferred) {
-    warn(ctx, `<change kind="${given}"> disagrees with its content (${inferred}); using ${inferred}`, el.pos);
+    warn(
+      ctx,
+      `<change kind="${given}"> disagrees with its content (${inferred}); using ${inferred}`,
+      el.pos,
+    );
   }
   el.attrs.kind = inferred;
 
@@ -149,8 +146,15 @@ function visitChange(el: ElementNode, ctx: CompileContext): void {
 function visitBlock(el: ElementNode, ctx: CompileContext): void {
   if (el.tag === "draft") el.attrs.status ??= "draft";
   const status = el.attrs.status;
-  if (status !== undefined && !BLOCK_STATUS.has(status)) {
-    warn(ctx, `<${el.tag}> has unknown status "${status}" (expected draft, sketch, review or verified)`, el.pos);
+  // `open` marks a planned result: a statement with no proof yet.
+  const known = BLOCK_STATUS.has(status ?? "") || (status === "open" && RESULT_TAGS.has(el.tag));
+  if (status !== undefined && !known) {
+    const open = RESULT_TAGS.has(el.tag) ? ", open" : "";
+    warn(
+      ctx,
+      `<${el.tag}> has unknown status "${status}" (expected draft, heuristic, sketch, review${open}, verified or formalized)`,
+      el.pos,
+    );
   }
   checkMember(ctx, el.attrs.by, el.pos, "by");
   checkMember(ctx, el.attrs["verified-by"], el.pos, "verified-by");

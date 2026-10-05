@@ -1,6 +1,6 @@
 import { basename, dirname } from "node:path";
-import type { ElementNode } from "./ast";
-import type { ProjectConfig } from "./config";
+import type { ElementNode } from "./ast.ts";
+import type { ProjectConfig } from "./config.ts";
 import {
   error,
   hasErrors,
@@ -9,30 +9,40 @@ import {
   type LabelEntry,
   type ReviewItem,
   type TeamMember,
-} from "./context";
-import { readUserFile } from "./files";
-import { preprocess } from "./preprocess";
-import { parse } from "./parse";
-import { resolveIncludes } from "./include";
-import { applyDocumentDefaults } from "./document";
-import { describeFinal, finalizeReview, sumFinal, type FinalStats } from "./final";
-import { collectTeam } from "./team";
-import { expandAnimated } from "./animated";
-import { expandCover } from "./cover";
-import { resolveCollab } from "./collab";
-import { fillProjectBibliography, loadBibliography, numberCitations } from "./bibliography";
-import { freshNumbering, numberDocument, type NumberingState } from "./numbering";
-import { annotateCrossFileCites, annotateCrossFileRefs, buildIdMaps } from "./crossfile";
-import { renderMath } from "./math";
-import { highlightCode } from "./code";
-import { buildProjectToc } from "./toc";
-import { buildProjectReview } from "./review";
-import { resolveReferences } from "./references";
-import { inlineFigures } from "./figures";
-import { resolveTheme } from "./theme";
-import { resolveImports, resolvePack } from "./imports";
-import { resolveLineBreaks } from "./linebreaks";
-import { emit } from "./emit";
+} from "./context.ts";
+import { readUserFile } from "./files.ts";
+import { parseSource } from "./parse.ts";
+import { resolveIncludes } from "./include.ts";
+import { applyDocumentDefaults } from "./document.ts";
+import {
+  describeFinal,
+  finalizeReview,
+  stripReviewMarks,
+  sumFinal,
+  type FinalStats,
+} from "./final.ts";
+import { collectTeam } from "./team.ts";
+import { expandAnimated } from "./animated.ts";
+import { expandCover } from "./cover.ts";
+import { resolveCollab } from "./collab.ts";
+import { checkUnderstanding } from "./understanding.ts";
+import { linkProofs, structureProofs } from "./structure.ts";
+import { linkRemoteProofs } from "./proof-links.ts";
+import { fillProjectBibliography, loadBibliography, numberCitations } from "./bibliography.ts";
+import { freshNumbering, numberDocument, type NumberingState } from "./numbering.ts";
+import { annotateCrossFileCites, annotateCrossFileRefs, buildIdMaps } from "./crossfile.ts";
+import { renderMath } from "./math.ts";
+import { highlightCode } from "./code.ts";
+import { buildProjectToc } from "./toc.ts";
+import { buildProjectReview } from "./review.ts";
+import { resolveReferences } from "./references.ts";
+import { inlineFigures } from "./figures.ts";
+import { resolveTheme } from "./theme.ts";
+import { resolveImports, resolvePack } from "./imports.ts";
+import { resolveLineBreaks } from "./linebreaks.ts";
+import { emit } from "./emit.ts";
+import { annotateHypotheses, buildGraph, markStale, type ProofGraph } from "./graph.ts";
+import { layoutProofMaps } from "./proofmap.ts";
 
 /**
  * THE pipeline, declared as data. Every compilation — one `.dlt` or a whole project — is a list
@@ -66,6 +76,8 @@ export interface Shared {
   team: Map<string, TeamMember>;
   /** Counters continue file to file, so chapter 2 numbers after chapter 1. */
   numbering: NumberingState;
+  /** Auto-id counters (a result's k-th proof, a hypothesis's counterexamples), project-wide. */
+  autoIds: Map<string, number>;
   /** id → node, project-wide; emit snapshots cross-file pop-over targets from it. */
   globalById: Map<string, ElementNode>;
   /** id → home output name; cross-file links are built from it. */
@@ -75,6 +87,8 @@ export interface Shared {
   finalStats: FinalStats[];
   /** Every collaboration item, tagged with its home output (`delta review` prints this). */
   reviewItems: ReviewItem[];
+  /** The proof graph, once `buildGraph` ran (every compile that got past `load`). */
+  graph?: ProofGraph;
   /** The project's own context: `project.toml` packages land on its `imports`, project-level
    *  diagnostics (duplicate outputs, the --final summary) on its `diagnostics`. */
   project: CompileContext;
@@ -118,6 +132,13 @@ export interface CompileOptions {
   final?: boolean;
   /** Observe the pipeline step by step (the docs' pipeline explorer is built from this). */
   trace?: (event: TraceEvent) => void;
+  /**
+   * Stop after this step (or phase) and produce no HTML: the CLI's read-only commands
+   * need the graph or the review list, not a 1 MB page per file. `"buildGraph"` for the
+   * graph commands, `"buildProjectReview"` for `delta review`, `"render"` for everything
+   * except the HTML itself.
+   */
+  stopAfter?: string;
 }
 
 type Pass = (doc: ElementNode, ctx: CompileContext, shared: Shared, file: FileUnit) => void;
@@ -169,7 +190,7 @@ export const PIPELINE: Phase[] = [
         name: "parse",
         what: "preprocess (escape < > & inside math and raw tags), then strict XML → the generic AST.",
         each: (f) => {
-          if (f.source !== undefined) f.doc = parse(preprocess(f.source), f.ctx);
+          if (f.source !== undefined) f.doc = parseSource(f.source, f.ctx);
         },
       },
       {
@@ -184,9 +205,9 @@ export const PIPELINE: Phase[] = [
       },
       {
         name: "finalizeReview",
-        what: "--final only: strip comments/tasks/team, accept changes. Before numbering, so nothing stripped consumes a counter.",
+        what: "--final only: strip comments/tasks/team, accept changes. Before numbering, so nothing stripped consumes a counter. Block marks (status, by) stay for the graph.",
         each: perFile((doc, ctx, s) => {
-          s.finalStats.push(finalizeReview(doc, ctx, false));
+          s.finalStats.push(finalizeReview(doc, ctx));
         }),
       },
       {
@@ -196,12 +217,12 @@ export const PIPELINE: Phase[] = [
       },
       {
         name: "expandAnimated",
-        what: "Presentations only: animated=\"true\" → reveal=\"true\" on each child element.",
+        what: 'Presentations only: animated="true" → reveal="true" on each child element.',
         each: perFile(expandAnimated),
       },
       {
         name: "expandCover",
-        what: "Presentations only: <cover> → <slide cover=\"true\">.",
+        what: 'Presentations only: <cover> → <slide cover="true">.',
         each: perFile(expandCover),
       },
     ],
@@ -214,6 +235,21 @@ export const PIPELINE: Phase[] = [
         name: "resolveCollab",
         what: "comment/todo/change/status vocabulary: write defaults, warn on unknown values, check by/for against the team.",
         each: perFile(resolveCollab),
+      },
+      {
+        name: "linkProofs",
+        what: 'A <proof> without `of` proves the result right before it (or around it): data-of="<id>". A proof/solution nested in or right after its target joins its box: data-attached, folded unless proofs="open".',
+        each: perFile(linkProofs),
+      },
+      {
+        name: "structureProofs",
+        what: "<step>s numbered 1, 1.2, … (ids for those without; a result's 2nd proof gets <id>-proof2-step-…), their proofs folded; <hyp>s numbered H1, H2, … per result; placement checked.",
+        each: perFile((doc, ctx, s) => structureProofs(doc, ctx, s.autoIds)),
+      },
+      {
+        name: "checkUnderstanding",
+        what: "<intuition>/<strategy>/<obstacle> on a result or a step: placement errors, no ids, folded by default.",
+        each: perFile(checkUnderstanding),
       },
       {
         name: "summarizeFinal",
@@ -265,12 +301,36 @@ export const PIPELINE: Phase[] = [
         what: "id → node (pop-over snapshots) and id → home output (cross-file links), project-wide. No later step may replace an element node.",
         all: (files, s) => buildIdMaps(parsed(files), s.globalById, s.idToFile),
       },
+      {
+        name: "buildGraph",
+        what: "Results + definitions → the proof graph (edges from refs in statements and proofs), trust propagated, stale verifications marked, each <hyp> told where it is used. Read by the CLI.",
+        all: (files, s) => {
+          s.graph = buildGraph(parsed(files), s.registry);
+          markStale(s.graph);
+          annotateHypotheses(s.graph);
+        },
+      },
+      {
+        name: "linkRemoteProofs",
+        what: 'A result whose proof is not joined to its box: data-proof-at="<proof id>" (+ the heading it sits under), or data-proof="pending" for status="open" with no proof.',
+        all: (files, s) => linkRemoteProofs(parsed(files), s.graph!, s.idToFile, s.final),
+      },
     ],
   },
   {
     name: "render",
     what: "Resolve everything that needs the registry, and inline every asset.",
     steps: [
+      {
+        name: "stripReviewMarks",
+        what: "--final only: drop status/by/verified-by/against, now that the proof graph has read the trust.",
+        each: perFile(stripReviewMarks),
+      },
+      {
+        name: "layoutProofMaps",
+        what: "<proof-map> → an SVG of edges + positioned boxes, laid out from the graph. First, so the boxes' refs and title math go through the next steps.",
+        each: perFile((doc, ctx, s) => layoutProofMaps(doc, ctx, s.graph)),
+      },
       {
         name: "renderMath",
         what: "$…$ and math tags → KaTeX HTML (RawNode); \\ref{} inside math resolves against the registry. Sets mathUsed.",
@@ -283,7 +343,7 @@ export const PIPELINE: Phase[] = [
       },
       {
         name: "buildProjectToc",
-        what: "Heading tree → ctx.toc (auto-slug ids for headings without one); book-wide when a <toc scope=\"project\"> exists.",
+        what: 'Heading tree → ctx.toc (auto-slug ids for headings without one); book-wide when a <toc scope="project"> exists.',
         all: (files) => buildProjectToc(parsed(files)),
       },
       {
@@ -300,7 +360,7 @@ export const PIPELINE: Phase[] = [
       },
       {
         name: "annotateCrossFileRefs",
-        what: "A resolved ref whose target lives in another output gets data-target-href=\"file#id\".",
+        what: 'A resolved ref whose target lives in another output gets data-target-href="file#id".',
         each: perFile((doc, _ctx, s, f) => annotateCrossFileRefs(doc, f.outName, s.idToFile)),
       },
       {
@@ -354,10 +414,21 @@ export const PIPELINE: Phase[] = [
  * Runs the pipeline over `files`. Every file's context is pointed at the shared maps first;
  * then each phase's steps run in order (an `each` step over every file before the next step
  * starts). Returns false when a bailing phase ended with an error in any context — the
- * caller then produces no output.
+ * caller then produces no output. With `stopAfter` it returns true right after that step
+ * or phase; no file has HTML then.
  */
-export function runPipeline(files: FileUnit[], shared: Shared, options: CompileOptions = {}): boolean {
-  const trace = options.trace;
+export function runPipeline(
+  files: FileUnit[],
+  shared: Shared,
+  options: CompileOptions = {},
+): boolean {
+  const { trace, stopAfter } = options;
+  if (
+    stopAfter !== undefined &&
+    !PIPELINE.some((p) => p.name === stopAfter || p.steps.some((s) => s.name === stopAfter))
+  ) {
+    throw new Error(`stopAfter: no pipeline step or phase named "${stopAfter}"`);
+  }
   for (const f of files) {
     f.ctx.registry = shared.registry;
     f.ctx.papers = shared.papers;
@@ -377,8 +448,11 @@ export function runPipeline(files: FileUnit[], shared: Shared, options: CompileO
         step.all?.(files, shared);
       }
       trace?.({ phase: phase.name, step: step.name, files, shared });
+      if (step.name === stopAfter) return true;
     }
-    if (phase.bail && (hasErrors(shared.project) || files.some((f) => hasErrors(f.ctx)))) return false;
+    if (phase.bail && (hasErrors(shared.project) || files.some((f) => hasErrors(f.ctx))))
+      return false;
+    if (phase.name === stopAfter) return true;
   }
   return true;
 }
@@ -391,6 +465,7 @@ export function createShared(init: Partial<Shared> & { project: CompileContext }
     citedPapers: [],
     team: new Map(),
     numbering: freshNumbering(),
+    autoIds: new Map(),
     globalById: new Map(),
     idToFile: new Map(),
     finalStats: [],

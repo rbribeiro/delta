@@ -1,5 +1,5 @@
-import type { ElementNode } from "./ast";
-import type { CompileContext } from "./context";
+import type { ElementNode } from "./ast.ts";
+import type { CompileContext } from "./context.ts";
 
 /**
  * Settles the `<document>` attributes every later pass keys off. Two things happen here,

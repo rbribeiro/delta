@@ -118,7 +118,7 @@ usable on its own. Checked items are implemented and tested.
        headings into one ordered list tagged with each section's home output, and the runtime navigates
        cross-file (a plain `<toc/>` still lists only its own file — both can coexist in one file)
 - [x] 22. `project.toml` (`config.ts`): `inputs` (ordered, required) + `out` (output dir, default `.`),
-       resolved relative to the toml; parsed with `smol-toml`. The CLI takes a `.toml` (or `--project`),
+       resolved relative to the toml; parsed by `src/compiler/toml.ts`. The CLI takes a `.toml` (or `--project`),
        several `.dlt` inputs (a project with `-o` as the out dir), or one `.dlt` (single-file, unchanged).
        Outputs are flat `<basename>.html`; colliding basenames are an error
 - [x] 47. Project-wide document defaults in `project.toml` (`config.ts`): a `[document]` table
@@ -217,7 +217,7 @@ usable on its own. Checked items are implemented and tested.
        runtime `t()`; environment labels localized. 
 - [ ] 29. Diagnostics polish: warnings for unresolved refs/cites, unclosed math regions
 - [x] 30. Author documentation (docs/get-started) and richer examples
-- [x] 31. Code component with highlight syntax
+- [x] 65. Code component with highlight syntax
 
 ## M7 — Presentations (core deck)
 

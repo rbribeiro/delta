@@ -1,6 +1,6 @@
 /* reference.css — <delta-ref>: a cross-reference that previews its target in a
    hovercard (.xref-pop) built on the shared .delta-pop shell (base.css), instead
-   of jumping. STAGED — reference.js builds the inner <a> and the card. The trigger
+   of jumping. runtime/elements/ref.ts builds the trigger and the card. The trigger
    reuses the dashed .ref look. Tokens via var(--delta-*). */
 
 @layer delta.components {
@@ -68,6 +68,22 @@ delta-ref { display: inline; }
   text-transform: uppercase;
   color: var(--delta-mute);
 }
+/* A preview that names itself (a theorem's card, a heading, a numbered title or
+   caption; ref.ts) needs no label over it. The jump button alone stays: at the far end
+   of the preview's own first line, which leaves it room; over a figure, on its own row. */
+.xref-pop.names-itself .xref-pop-label { display: none; }
+.xref-pop.names-itself:not(.label-below) > .xref-pop-head {
+  position: absolute;
+  top: 10px;
+  right: 13px;
+  margin: 0;
+}
+.xref-pop.label-below > .xref-pop-head { justify-content: flex-end; }
+.names-itself:not(.label-below) .xref-pop-body > :first-child :is(.box-head, .proof-bar, .table-head),
+.names-itself:not(.label-below) .xref-pop-body > :first-child > :is(h1, h2, h3, h4, h5, h6),
+.names-itself:not(.label-below) .xref-pop-body > :is(delta-proof, delta-solution):first-child {
+  padding-right: 34px;
+}
 .xref-go {
   flex: none;
   display: inline-flex;
@@ -96,13 +112,19 @@ delta-ref { display: inline; }
 .xref-pop-body img { max-height: 30vh; width: auto; }
 
 /* Flatten a cloned theorem .box so it reads as plain preview content
-   (no floating pill, border, or shadow inside the small card). */
+   (no paper, edge or shadow inside the small card). */
 .xref-pop-body .box {
-  margin: 0; padding: 0; border: 0; box-shadow: none; background: none;
+  --box-bg: transparent;
+  --box-edge: 0 solid transparent;
+  --edge-dash: transparent;
+  --box-pad-x: 0px;
+  margin: 0;
+  filter: none;
 }
-.xref-pop-body .box-tag {
-  position: static; margin: 0 0 4px; transform: none;
-}
+.xref-pop-body .box-head { padding: 0; min-height: 0; margin-bottom: 4px; }
+.xref-pop-body .box-body { padding: 0; }
+.xref-pop-body .box-sheet { background-image: none; }
+.xref-pop-body .box.has-folds::after { display: none; }
 .xref-pop-body :is(h2, h3, h4) { margin: 0; }
 
 /* Brief accent flash on the target when the reader jumps to it. */

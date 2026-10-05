@@ -16,9 +16,10 @@
  * print never shows them (collab.css).
  */
 
-import { t } from "../i18n";
-import { popover } from "../utils";
-import { memberChip, memberColor } from "./collab";
+import { t } from "../i18n.ts";
+import { popover } from "../utils.ts";
+import { memberChip, memberColor } from "./collab.ts";
+import { button } from "./shared.ts";
 
 class DeltaComment extends HTMLElement {
   connectedCallback(): void {
@@ -50,15 +51,12 @@ class DeltaComment extends HTMLElement {
     }
 
     const label = `${t("comment", "Comment")}${num ? ` ${num}` : ""}`;
-    const marker = document.createElement("button");
-    marker.type = "button";
-    marker.className = "note-marker";
-    marker.textContent = num ?? "•";
+    const marker = button("note-marker", num ?? "•");
     marker.title = label;
     marker.setAttribute("aria-label", label);
     if (color) marker.setAttribute("data-accent", color);
     if (status === "resolved") marker.classList.add("is-resolved");
-    // The marker may sit inside a collapsible label (a .box-tag / heading): keep its
+    // The marker may sit inside a collapsible label (a box header / heading): keep its
     // click and keys from reaching the fold toggle.
     marker.addEventListener("click", (e) => e.stopPropagation());
     marker.addEventListener("keydown", (e) => e.stopPropagation());
@@ -67,15 +65,18 @@ class DeltaComment extends HTMLElement {
 
     // on="id": move the whole element next to its target (the host keeps the id, so
     // flashTarget / the review jump / data-review="off" all still find it). Into the
-    // label when the target has one (box tag, heading, proof lead), else right after it.
+    // label when the target has one (box header, heading, proof lead or bar), else right after it.
     const on = this.getAttribute("on");
     if (on) {
       const target = document.getElementById(on);
       if (target && !target.contains(this)) {
         const slot = target.querySelector(
-          ":scope > .box-tag, :scope > h1, :scope > h2, :scope > h3, :scope > h4, :scope > .proof-lead",
+          ":scope > .box-sheet > .box-head, :scope > h1, :scope > h2, :scope > h3, :scope > h4, :scope > .proof-lead, :scope > .proof-bar",
         );
-        if (slot) slot.append(" ", this);
+        // Before the status mark, which keeps the far end of the label.
+        const mark = slot?.querySelector(":scope > .status-mark");
+        if (mark) mark.before(this, " ");
+        else if (slot) slot.append(" ", this);
         else target.after(this);
       }
     }
@@ -141,5 +142,5 @@ function buildThread(
 }
 
 export function defineComment(): void {
-  customElements.define("delta-comment", class extends DeltaComment {});
+  customElements.define("delta-comment", DeltaComment);
 }

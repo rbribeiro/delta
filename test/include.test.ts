@@ -1,11 +1,15 @@
-import { describe, expect, it } from "vitest";
-import { elements, type ElementNode } from "../src/compiler/ast";
-import { createContext, type CompileContext } from "../src/compiler/context";
-import { resolveIncludes } from "../src/compiler/include";
-import { compileSource } from "../src/compiler/index";
-import { numberDocument } from "../src/compiler/numbering";
-import { parse } from "../src/compiler/parse";
-import { preprocess } from "../src/compiler/preprocess";
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { compileProject } from "../src/compiler/project.ts";
+import { describe, expect, it } from "./harness.ts";
+import { elements, type ElementNode } from "../src/compiler/ast.ts";
+import { createContext, type CompileContext } from "../src/compiler/context.ts";
+import { resolveIncludes } from "../src/compiler/include.ts";
+import { compileSource } from "../src/compiler/index.ts";
+import { numberDocument } from "../src/compiler/numbering.ts";
+import { parse } from "../src/compiler/parse.ts";
+import { preprocess } from "../src/compiler/preprocess.ts";
 
 // The master file lives in test/fixtures/include/, so `<include src>` resolves there.
 const MASTER = "test/fixtures/include/main.dlt";
@@ -65,17 +69,17 @@ describe("compileSource with includes", () => {
   it("fails the build on an include cycle", () => {
     const { html, ctx } = compileErr(`<document><include src="cycle-a.dlt"/></document>`);
     expect(html).toBeUndefined();
-    expect(
-      ctx.diagnostics.some((d) => d.severity === "error" && /cycle/.test(d.message)),
-    ).toBe(true);
+    expect(ctx.diagnostics.some((d) => d.severity === "error" && /cycle/.test(d.message))).toBe(
+      true,
+    );
   });
 
   it("fails the build on a missing include", () => {
     const { html, ctx } = compileErr(`<document><include src="does-not-exist.dlt"/></document>`);
     expect(html).toBeUndefined();
-    expect(
-      ctx.diagnostics.some((d) => d.severity === "error" && /not found/.test(d.message)),
-    ).toBe(true);
+    expect(ctx.diagnostics.some((d) => d.severity === "error" && /not found/.test(d.message))).toBe(
+      true,
+    );
   });
 
   it("fails the build on a non-local include src", () => {
@@ -106,5 +110,27 @@ describe("compileSource with includes", () => {
         (d) => d.severity === "error" && /Can't resolve include target-id/.test(d.message),
       ),
     ).toBe(true);
+  });
+});
+
+describe("paths inside an included file", () => {
+  it("resolve from that file's folder for a <bibliography src>", () => {
+    const dir = mkdtempSync(join(tmpdir(), "delta-inc-bib-"));
+    mkdirSync(join(dir, "sub"));
+    writeFileSync(
+      join(dir, "sub", "refs.ref"),
+      `<papers><paper id="p"><title>P</title><author>A</author><year>2000</year></paper></papers>`,
+    );
+    writeFileSync(
+      join(dir, "sub", "part.dlt"),
+      `<document><bibliography src="refs.ref"/></document>`,
+    );
+    writeFileSync(
+      join(dir, "main.dlt"),
+      `<document><section id="s"><title>S</title><cite paper="p"/></section><include src="sub/part.dlt"/></document>`,
+    );
+    const r = compileProject({ inputs: [join(dir, "main.dlt")], outDir: dir });
+    expect(r.diagnostics).toEqual([]);
+    expect(r.outputs[0].html).toContain('data-cite-nums="1"');
   });
 });

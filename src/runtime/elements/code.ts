@@ -1,12 +1,12 @@
 /**
  * <code lang="…"> — the highlighted display block. The compiler ships the
- * highlight.js spans (src/compiler/code.ts); this element builds the chrome: a
+ * token spans (src/compiler/highlight.ts); this element builds the chrome: a
  * header (language label + copy button), an optional line-number gutter, and
  * collapsible folding. Inline <c> is styled by CSS alone and needs no element.
  */
 
-import { t } from "../i18n";
-import { applyCollapsible } from "./shared";
+import { t } from "../i18n.ts";
+import { applyCollapsible, copyButton, numberedName } from "./shared.ts";
 
 class DeltaCode extends HTMLElement {
   connectedCallback(): void {
@@ -41,39 +41,23 @@ class DeltaCode extends HTMLElement {
     const label = document.createElement("span");
     label.className = "code-lang";
     label.textContent = (lang || t("code", "Code")).toUpperCase();
-    const copy = document.createElement("button");
-    copy.type = "button";
-    copy.className = "code-copy";
-    copy.textContent = t("copy", "Copy");
-    copy.addEventListener("click", () => {
-      void navigator.clipboard?.writeText(source).then(() => {
-        copy.textContent = t("copied", "Copied");
-        copy.classList.add("is-copied");
-        setTimeout(() => {
-          copy.textContent = t("copy", "Copy");
-          copy.classList.remove("is-copied");
-        }, 1400);
-      });
-    });
-    head.append(label, copy);
-
-    
+    head.append(
+      label,
+      copyButton("code-copy", t("copy", "Copy"), () => source),
+    );
     this.append(head, body);
-    // Footer with code number
-    if(this.getAttribute("num")) {
-      const num = this.getAttribute("num")
-      const footer = document.createElement("div")
-      footer.classList.add("code-cap")
+
+    // A numbered block gets a "Code 1.2" caption underneath.
+    const num = this.getAttribute("num");
+    if (num) {
+      const footer = document.createElement("div");
+      footer.className = "code-cap";
       const lbl = document.createElement("span");
       lbl.className = "lbl";
-      const word = t("code", "code".charAt(0).toUpperCase() + "code".slice(1));
-      lbl.textContent = word + (num ? ` ${num}` : "");
-      footer.prepend(lbl, " ");
-      
-      this.append(footer)
-      
+      lbl.textContent = numberedName("code", num);
+      footer.append(lbl, " ");
+      this.append(footer);
     }
-    
 
     applyCollapsible(this, head);
   }

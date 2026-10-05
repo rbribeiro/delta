@@ -1,29 +1,22 @@
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
-import type { ElementNode } from "../src/compiler/ast";
-import { createContext, type CompileContext } from "../src/compiler/context";
-import { compileSource } from "../src/compiler/index";
-import { resolveImports } from "../src/compiler/imports";
-import { parse } from "../src/compiler/parse";
-import { preprocess } from "../src/compiler/preprocess";
-import { THEMES } from "../src/generated/assets";
+import { describe, expect, it } from "./harness.ts";
+import type { ElementNode } from "../src/compiler/ast.ts";
+import { createContext, type CompileContext } from "../src/compiler/context.ts";
+import { resolveImports } from "../src/compiler/imports.ts";
+import { parse } from "../src/compiler/parse.ts";
+import { preprocess } from "../src/compiler/preprocess.ts";
+import { THEMES } from "../src/generated/assets.ts";
+import { compileHtml, parsed } from "./helpers.ts";
+
+const compile = (src: string): string => compileHtml(src, { file: "test/doc.dlt" });
 
 // ctx.file lives in test/, so an `import` src resolves relative to test/.
 function resolved(src: string): { doc: ElementNode; ctx: CompileContext } {
-  const ctx = createContext("test/doc.dlt");
-  const doc = parse(preprocess(src), ctx);
-  if (!doc) throw new Error("parse failed: " + JSON.stringify(ctx.diagnostics));
+  const { doc, ctx } = parsed(src, "test/doc.dlt");
   resolveImports(doc, ctx);
   return { doc, ctx };
-}
-
-function compile(src: string): string {
-  const ctx = createContext("test/doc.dlt");
-  const html = compileSource(src, ctx);
-  if (html === undefined) throw new Error("compile failed: " + JSON.stringify(ctx.diagnostics));
-  return html;
 }
 
 const hasImportNode = (doc: ElementNode) =>
@@ -107,7 +100,10 @@ describe("resolveImports", () => {
       join(pkg, "package.json"),
       JSON.stringify({ name: "delta-temp-pack", delta: { js: "index.js" } }),
     );
-    writeFileSync(join(pkg, "index.js"), `customElements.define("delta-temp", class extends HTMLElement {});`);
+    writeFileSync(
+      join(pkg, "index.js"),
+      `customElements.define("delta-temp", class extends HTMLElement {});`,
+    );
 
     const ctx = createContext(join(root, "doc.dlt"));
     const doc = parse(preprocess(`<document><import src="delta-temp-pack" /></document>`), ctx);
@@ -122,18 +118,17 @@ describe("resolveImports", () => {
   it("errors a bare specifier that is not installed", () => {
     const { ctx } = resolved(`<document><import src="delta-not-installed" /></document>`);
     expect(ctx.imports).toHaveLength(0);
-    expect(
-      ctx.diagnostics.some((d) => d.severity === "error" && /not found/.test(d.message)),
-    ).toBe(true);
+    expect(ctx.diagnostics.some((d) => d.severity === "error" && /not found/.test(d.message))).toBe(
+      true,
+    );
   });
 
   it("warns about external references inside a pack but still inlines it", () => {
     const { ctx } = resolved(`<document><import src="fixtures/pack-remote" /></document>`);
     expect(ctx.imports).toHaveLength(1);
     expect(
-      ctx.diagnostics.filter(
-        (d) => d.severity === "warning" && /external resource/.test(d.message),
-      ).length,
+      ctx.diagnostics.filter((d) => d.severity === "warning" && /external resource/.test(d.message))
+        .length,
     ).toBeGreaterThanOrEqual(1);
   });
 });

@@ -7,39 +7,50 @@ every new feature takes, each with a worked example.
 
 ## Dev setup
 
+Node 22.18 or newer (24 LTS is the one to pick): the sources run as TypeScript directly, with
+no transpiler in between, which is what lets `node src/cli.ts` work. The published `delta`
+command is compiled JavaScript and runs on Node 20.
+
 ```bash
 npm install
-npm test               # vitest (regenerates generated assets first)
+npm test               # node --test (regenerates generated assets first)
 npm run typecheck      # tsc --noEmit
 npm run example        # compile examples/hello.dlt → out.html, open in a browser
 npm run dev -- build path/to/doc.dlt -o out.html   # run the CLI from source
 npm run build          # bundle runtime + CLI → dist/cli.js
 
-npx vitest run test/numbering.test.ts   # one test file
-npx vitest run -t "resets across"       # one test by name
+node --test test/numbering.test.ts                      # one test file
+node --test --test-name-pattern "resets across" test/   # one test by name
 ```
 
 ### The one gotcha: generated assets
 
 The emitter imports `RUNTIME_JS`, `CORE_CSS` and `THEMES` from
 `src/generated/assets.ts`, which is **generated and git-ignored**. It is produced
-by `npm run assets` (`tsx scripts/build.ts assets`), which bundles the browser
+by `npm run assets` (`node scripts/build.ts assets`), which bundles the browser
 runtime and concatenates the stylesheets under `src/styles/`.
 
-Every npm script that needs it (`test`, `typecheck`, `example`, `dev`) has a
-pre-hook that regenerates it, so you rarely think about it. But if you edit
-`src/runtime/` or anything under `src/styles/` and then run `vitest` or `tsc`
-**directly** (not through npm), run `npm run assets` first or you'll see stale
-behavior or a missing-module error.
+Every npm script that needs it (`test`, `typecheck`, `example`, `dev`) has a pre-hook that
+regenerates it, so you rarely think about it. But if you edit `src/runtime/` or anything
+under `src/styles/` and then run `node --test`, `tsc` or `node src/cli.ts` **directly** (not
+through npm), run `npm run assets` first or you'll see stale behavior or a missing-module
+error.
 
 The full build — the generated assets, the CLI bundle, and every npm script — is
 documented in [BUILDING.md](BUILDING.md).
 
 ## Conventions
 
+- **Style follows the file you are in**: 100-column lines, double quotes, semicolons, trailing
+  commas, two-space indent. There is no formatter to run; keep a diff about what it changes.
 - **ESM throughout**, `verbatimModuleSyntax` on — use `import type` for type-only
   imports.
-- Relative imports are **extension-less** (tsx / esbuild / vitest resolve them).
+- Relative imports always carry the **`.ts` extension** (`from "./ast.ts"`): Node runs the
+  sources as they are and needs the real file name. `tsc` checks them
+  (`allowImportingTsExtensions`); esbuild accepts them.
+- Only TypeScript syntax that can be *erased* (`tsc` enforces `erasableSyntaxOnly`): type
+  annotations, interfaces, `import type`. No `enum`, no `namespace`, no
+  `constructor(private x)`; Node would refuse to run them.
 - CSS is namespaced `--delta-*` and lives under [src/styles/](../src/styles/) in
   three cascade layers (declared once at the top of
   [base.css](../src/styles/base.css)): `delta.base` (tokens, page grid, shared
@@ -66,8 +77,8 @@ the browser can't compute on its own, or just behavior?**
 
 | Your feature needs… | Where it lives | Examples |
 |---|---|---|
-| Pure numbering | A row in [environments.ts](../src/compiler/environments.ts) | a new theorem-like environment |
-| Data about *other* elements, resolved at compile time | A new pass + a `ctx` field, wired into [index.ts](../src/compiler/index.ts) | `<ref>`, table of contents, `<cite>`, bibliography, `<include>` |
+| Pure numbering | A row in [environments.ts](../src/language/environments.ts) + its family in [tags.ts](../src/language/tags.ts) | a new theorem-like environment |
+| Data about *other* elements, resolved at compile time | A new pass + a `ctx` field, a step in [pipeline.ts](../src/compiler/pipeline.ts) | `<ref>`, table of contents, `<cite>`, bibliography, `<include>` |
 | Only local browser behavior | A class in its own file under [src/runtime/elements/](../src/runtime/elements/) | collapsible sections, pop-over interaction |
 
 The rule of thumb: **anything requiring knowledge of another element** (its number,
@@ -81,26 +92,26 @@ writes `ctx.registry`** — because the browser can't `fetch` other files from
 
 Say you want `<remark>`, numbered alongside theorems.
 
-1. **Add a row** to [environments.ts](../src/compiler/environments.ts):
+1. **Add a row** to [environments.ts](../src/language/environments.ts):
    ```ts
    remark: { counter: "theorem", prefixWith: "section" },
    ```
    (Sharing the `theorem` counter makes remarks count *with* theorems. Give it its
-   own counter name to count separately, and add that counter to the relevant
-   `COUNTER_RESETS` entry if it should reset per section.)
-2. **Add it to `ENVIRONMENT_TAGS`** in [environment.ts](../src/runtime/elements/environment.ts), and to
-   `BOX_ENVIRONMENTS` (a bordered `.box` with a floating label tag) or `PROOF_ENVIRONMENTS`
-   (an inline italic lead). `DeltaEnvironment` then renders the right chrome automatically.
+   own counter name to count separately; `COUNTER_RESETS` is derived from `prefixWith`,
+   so a section-prefixed counter restarts at each section with no further edit.)
+2. **Name its family** in [tags.ts](../src/language/tags.ts): `RESULT_TAGS` if it is a
+   statement that takes proofs and aids, otherwise `BOX_TAGS` (a bordered box with a
+   floating label) or `PROOF_TAGS` (an inline italic lead). The runtime defines one element
+   per tag from these sets, so `DeltaEnvironment` renders the right chrome automatically.
 3. **Add the localized name** as a `remark` key in every block of
-   [strings.ts](../src/compiler/strings.ts) (`en`, `pt`, …). Without it the runtime
-   falls back to the capitalized tag (`"Remark"`), so this is what makes the label
-   translate; the seeded `en` value is also the fallback.
-4. **Styling is usually automatic** — box environments share `.box`/`.box-tag` in
-   [components/theorems.css](../src/styles/components/theorems.css). Add rules there only for a
-   bespoke look.
+   [strings.ts](../src/language/strings.ts) (`en`, `pt`, …).
+4. **Add `delta-remark`** to the two lists at the top of
+   [components/theorems.css](../src/styles/components/theorems.css) (block display and the
+   family tone). Box environments share the `.box` card, so nothing else is needed.
 5. **Add a numbering test case** in [test/numbering.test.ts](../test/numbering.test.ts).
 
-No pass code changes. That's the point of the data-driven table.
+No pass code changes. [test/language.test.ts](../test/language.test.ts) fails if step 2, 3 or
+4 is forgotten.
 
 ---
 
@@ -117,9 +128,8 @@ The flow is always: **extend `ctx` → write the pass → wire it into the orche
    state the pass needs to hand to the emitter:
    ```ts
    referencedIds: Set<string>;          // which targets are referenced
-   templates: Map<string, string>;      // id → snapshot HTML for the pop-over
    ```
-   Initialize them in `createContext`.
+   Initialize it in `createContext`.
 
 2. **Write the pass** — `src/compiler/references.ts`, exporting
    `resolveReferences(doc, ctx)`. Walk the AST with `elements(doc)`; for each
@@ -138,9 +148,9 @@ The flow is always: **extend `ctx` → write the pass → wire it into the orche
    `test/pipeline.test.ts` lists the steps literally, so update that list too — the order is
    a decision, and that list is where it is recorded.
 
-4. **Teach the emitter** ([emit.ts](../src/compiler/emit.ts)) — when `serialize()`
-   reaches an element whose `id` is in `ctx.referencedIds`, also store its serialized
-   HTML in `ctx.templates`. After the body, emit each entry as
+4. **Teach the emitter** ([emit.ts](../src/compiler/emit.ts)) — after the body,
+   `renderTemplates` emits every id in `ctx.referencedIds` (looked up in the project-wide
+   `globalById`, so a target in another file works too) as
    `<template data-delta-pop="X">…</template>`. (Templates are inert in the DOM, so
    they cost nothing until cloned.)
 
@@ -184,6 +194,29 @@ with their heading / box tag / proof lead. The styles live in
 [components/collapse.css](../src/styles/components/collapse.css) (`@layer delta.components`),
 and the new element/behavior is registered in `defineComponents`.
 
+Before writing chrome by hand, check [shared.ts](../src/runtime/elements/shared.ts): it
+already has the pieces most elements need, and using them keeps every element behaving
+the same way.
+
+| Helper | What it does |
+|---|---|
+| `kindOf(el)` | `delta-theorem` → `theorem` |
+| `button(cls, …content)` | a `<button type="button">` |
+| `takeTitle(host)` | removes the `<delta-title>`, returns its nodes (math intact) and its spoken text |
+| `numberedName(kind, num)` | "Figure 1.2", "Teorema 3" (localized) |
+| `renderMeta(host)` | the `<meta>` key/value row |
+| `jumpTo(id)`, `linkJump(a, id, file)` | go to a target the Delta way: deck page, unfold, scroll, flash; cross-file navigates |
+| `templateFor(id)` | the pop-over snapshot the compiler shipped for `id` |
+| `copyButton(cls, label, text)` | a Copy button with the "Copied" feedback |
+| `applyCollapsible` | folding (the status word/stamp is `applyStatus` in `status.ts`) |
+
+Localized text goes through `t(key, fallback)` or `nameOf(tag)` from
+[i18n.ts](../src/runtime/i18n.ts), never a literal; JSON islands are read with
+`readIsland` ([island.ts](../src/runtime/island.ts)). Register a single-tag element with its
+class directly (`customElements.define("delta-quote", DeltaQuote)`); only a class shared by
+several tags needs `class extends …{}` per tag. The order elements are registered in matters
+in three places, listed at the top of [elements/index.ts](../src/runtime/elements/index.ts).
+
 Reach for this shape whenever the behavior is local to one element and needs no
 knowledge the browser doesn't already have.
 
@@ -201,10 +234,23 @@ Tests live in [test/](../test/) and mirror the passes. Patterns to follow:
   including the invariant that it references no external resources. See
   [test/emit.test.ts](../test/emit.test.ts).
 - **Architecture tests** live in [test/pipeline.test.ts](../test/pipeline.test.ts): the step
-  order, "a single file equals a project of one file", and the trace hook.
+  order, "a single file equals a project of one file", the trace hook and `stopAfter`.
+  [test/language.test.ts](../test/language.test.ts) checks that the vocabulary agrees with
+  itself, the strings and the CSS.
+- **Runtime tests** live in [test/runtime/](../test/runtime/) and run in the machine's
+  Chromium (through [test/browser.ts](../test/browser.ts); they skip when none can start):
+  `inspect(dlt, script)` from [test/runtime/helpers.ts](../test/runtime/helpers.ts) compiles
+  the document, loads it headless, runs `script` inside the page and returns what it
+  returns. The script reads and does what the reader would: `text(".box-tag")`,
+  `click(".collapse-toggle")`, `key("Escape")`, `openPopover()`. A launch costs about a
+  second, so a suite runs one script per document and its `it`s assert on fields of the
+  result (`lazy()`). See [test/runtime/references.test.ts](../test/runtime/references.test.ts).
+  [test/hittest.test.ts](../test/hittest.test.ts) and `overflow.test.ts` use the same browser
+  for what only a layout engine can tell (what is under the mouse, what overflows on a phone).
 
 When you add a pass, add a matching test file. When you add a numbered environment,
-add a numbering case.
+add a numbering case. When you add or change a runtime element, add a case to the
+matching file in `test/runtime/`.
 
 ## The roadmap
 

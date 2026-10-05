@@ -1,14 +1,6 @@
-import { describe, expect, it } from "vitest";
-import { createContext } from "../src/compiler/context";
-import { compileSource } from "../src/compiler/index";
-import { THEMES } from "../src/generated/assets";
-
-function compile(src: string) {
-  const ctx = createContext("test.dlt");
-  const html = compileSource(src, ctx);
-  if (html === undefined) throw new Error("compile failed: " + JSON.stringify(ctx.diagnostics));
-  return { html, ctx };
-}
+import { describe, expect, it } from "./harness.ts";
+import { THEMES } from "../src/generated/assets.ts";
+import { compile } from "./helpers.ts";
 
 const DOC = `<document lang="en">
   <title>T</title>
@@ -103,7 +95,7 @@ describe("emit", () => {
     );
     // Generic rename: the slide is a delta-slide the runtime upgrades + pages.
     expect(html).toContain("<delta-slide>");
-    expect(html).toContain("customElements.define(\"delta-slide\"");
+    expect(html).toContain('customElements.define("delta-slide"');
     // The document title comes from the doc-level <title>, not a slide's <title>.
     expect(html).toContain("<title>Deck</title>");
     expect(html).not.toContain("<title>First</title>");
@@ -172,7 +164,9 @@ describe("emit", () => {
   });
 
   it("leaves <cover> untouched outside a presentation", () => {
-    const { html } = compile(`<document><title>D</title><cover><title>X</title></cover></document>`);
+    const { html } = compile(
+      `<document><title>D</title><cover><title>X</title></cover></document>`,
+    );
     expect(html).toContain("<delta-cover>");
     // It wasn't renamed to a cover slide. (`cover="true"` still appears in the inlined
     // deck CSS, so assert on the element, not the bare substring.)
@@ -247,5 +241,29 @@ describe("emit", () => {
     for (const m of html.matchAll(/url\(\s*([^)]*)\)/g)) {
       expect(m[1]).toMatch(/^["']?data:/);
     }
+  });
+});
+
+describe("ids inside <old>", () => {
+  const SRC = `<document><section id="s"><title>S</title>
+    <change by="a"><old><theorem id="t">OLD</theorem></old><new><theorem id="t">NEW</theorem></new></change>
+    <ref to="t"/></section></document>`;
+
+  it("previews the new version and leaves one element with the id", () => {
+    const { html } = compile(SRC);
+    const tpl = html.match(/<template data-delta-pop="t">([^]*?)<\/template>/)?.[1] ?? "";
+    expect(tpl).toContain("NEW");
+    expect(tpl).not.toContain("OLD");
+    const page = html.slice(html.indexOf("<delta-document"), html.indexOf("</delta-document>"));
+    expect(page.match(/ id="t"/g)).toHaveLength(1);
+  });
+});
+
+describe("the page <title>", () => {
+  it("keeps math as its source", () => {
+    const { html } = compile(
+      `<document><title>On $x^2$ &amp; more</title><section id="s"><title>S</title>x</section></document>`,
+    );
+    expect(html).toContain("<title>On $x^2$ &amp; more</title>");
   });
 });

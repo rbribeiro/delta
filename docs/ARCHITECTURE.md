@@ -25,7 +25,8 @@ and in Portuguese, with an interactive step-by-step explorer, is the site page
 
 Three node types, nothing else: `ElementNode` (any tag, keyed by the `tag` string, with an
 `attrs` bag and `children`), `TextNode`, and `RawNode` (pre-rendered HTML the emitter copies
-verbatim; only KaTeX and the code highlighter produce one). There are no per-feature
+verbatim; produced by KaTeX, the code highlighter, the proof-map layout and the line-break
+pass). There are no per-feature
 subclasses. Passes branch on `tag` and **write results back into `attrs`** (numbering writes
 `num`; references write `data-target-num`). `elements()`, `textContent()`, `hasTag()` and
 `titleOf()` are the helpers passes use to walk and read the tree.
@@ -34,23 +35,41 @@ subclasses. Passes branch on `tag` and **write results back into `attrs`** (numb
 
 One mutable `CompileContext` per file, threaded through every pass. Passes never call each
 other and share no globals: they communicate **only** through this object and through node
-attrs. It carries `diagnostics`, `registry` (id → `{tag, num}`), `referencedIds`, `toc`,
-`mathUsed`, `lang`, the theme fields, `imports`, `papers`, `citedPapers`, `team`, `review`,
-`final` and `deps`. The who-writes / who-reads matrix is in the site page; the rule it proves
+attrs (what they share as code is the vocabulary in `src/language/` and the readings in
+`paper.ts`). It carries `file`, `sources` (each file read → its text), `outName`,
+`diagnostics`, `registry` (id → `{tag, num}`), `referencedIds`, `toc`, `mathUsed`, `lang`,
+the theme fields (`userCss`, `builtinCss`, `themeAccent`, `themeMode`), `imports`, `papers`,
+`citedPapers`, `team`, `review`, `final` and `deps`. The who-writes / who-reads matrix is in the site page; the rule it proves
 is that every read comes *after* its write in pipeline order. In a project, four of those
 maps (`registry`, `papers`, `citedPapers`, `team`) are the **same instance** in every file's
-context; the rest of the project-wide state (`numbering`, `globalById`, `idToFile`, `bibOut`,
-the project's own context) lives in `Shared` (see below).
+context; the rest of the project-wide state (`numbering`, `autoIds`, `globalById`, `idToFile`,
+`bibOut`, `graph`, the project's own context) lives in `Shared` (see below).
 
-### The data-driven environments table ([environments.ts](../src/compiler/environments.ts))
+### The language layer ([src/language/](../src/language/))
+
+Delta's vocabulary is data both halves read: which tags are headings, results, box or proof
+environments, aids, math, literal code, collaboration marks
+([tags.ts](../src/language/tags.ts)); the numbering table
+([environments.ts](../src/language/environments.ts)); the UI strings
+([strings.ts](../src/language/strings.ts)); the trust order
+([trust.ts](../src/language/trust.ts)); the accent palette names
+([palette.ts](../src/language/palette.ts)). These files import nothing, so the runtime bundle
+can use them too. A pass that needs "the headings" imports the set from here, never from
+another pass, and the runtime derives its element lists from the same sets.
+[test/language.test.ts](../test/language.test.ts) checks that the lists agree with each other,
+with every language block and with `theorems.css`.
+
+### The data-driven environments table ([environments.ts](../src/language/environments.ts))
 
 All LaTeX-style numbering is data. Each numbered tag maps to a `counter` and an optional
 `prefixWith` counter (`theorem` → `"1.2"`: section 1, theorem 2; the prefix is skipped while
 the parent counter is still 0). Each theorem-like environment has its own counter;
-`equation`/`equations` share one, as do `video`/`youtube`. `COUNTER_RESETS` says which
-counters restart when a parent increments; its keys and values are counter names. The
-numbering pass is a generic engine over this table, so adding an environment is one row
-(plus its label in `strings.ts` and its tag in the runtime).
+`equation`/`equations` share one, as do `video`/`youtube`. `COUNTER_RESETS`, derived from
+`prefixWith`, says which counters restart when a parent increments (transitively: a chapter
+restarts sections and, through them, theorems; an unnumbered element restarts nothing); its
+keys and values are counter names. The numbering pass is a generic engine over this table, so
+adding an environment is one row here, its tag in `RESULT_TAGS` or `BOX_TAGS`
+([tags.ts](../src/language/tags.ts)), and its label in every block of `strings.ts`.
 
 ## The pipeline ([pipeline.ts](../src/compiler/pipeline.ts))
 
@@ -67,10 +86,10 @@ rely on everything earlier steps did in *every* file. The step name is the funct
 | Phase | Steps (in order) | Notes |
 |---|---|---|
 | `load` | `resolvePackages`ᵃ, `readSource`, `parse`, `resolveIncludes`, `applyDocumentDefaults`, `finalizeReview`, `collectTeam`, `expandAnimated`, `expandCover` | **bails** after this phase if any context has an error |
-| `collab` | `resolveCollab`, `summarizeFinal`ᵃ | runs once every file's team is known |
+| `collab` | `resolveCollab`, `linkProofs`, `structureProofs`, `checkUnderstanding`, `summarizeFinal`ᵃ | runs once every file's team is known |
 | `bibliography` | `loadBibliography`, `numberCitations`, `fillProjectBibliography`ᵃ | before numbering, so spliced `<paper>` nodes flow through later passes |
-| `numbering` | `numberDocument`, `buildIdMaps`ᵃ | one `NumberingState` runs through the files in order |
-| `render` | `renderMath`, `highlightCode`, `buildProjectToc`ᵃ, `buildProjectReview`ᵃ, `resolveReferences`, `annotateCrossFileRefs`, `annotateCrossFileCites`, `inlineFigures`, `resolveTheme`, `resolveImports`, `resolveLineBreaks` | everything that needs the registry, then everything inlined |
+| `numbering` | `numberDocument`, `buildIdMaps`ᵃ, `buildGraph`ᵃ | one `NumberingState` runs through the files in order |
+| `render` | `stripReviewMarks`, `layoutProofMaps`, `renderMath`, `highlightCode`, `buildProjectToc`ᵃ, `buildProjectReview`ᵃ, `resolveReferences`, `annotateCrossFileRefs`, `annotateCrossFileCites`, `inlineFigures`, `resolveTheme`, `resolveImports`, `resolveLineBreaks` | everything that needs the registry, then everything inlined |
 | `emit` | `emit` | one standalone HTML per file |
 
 ᵃ project-wide (`all`); the rest are per file (`each`). `test/pipeline.test.ts` pins this list
@@ -85,6 +104,12 @@ adapter; a step that needs project state receives `shared` as a third argument.
 when absent. `scripts/trace.ts` uses it to compile a two-file sample and snapshot the tree,
 the context and the shared state after every step; that data drives the site's pipeline
 explorer, so the docs never drift from the code.
+
+**Stopping early.** `CompileOptions.stopAfter` names a step or a phase; `runPipeline` returns
+right after it, and no file gets HTML. The CLI's read-only commands use it: the graph
+commands stop after `buildGraph`, `delta review` after `buildProjectReview`, `delta lint`
+after the `render` phase. An unknown name throws, so a renamed step cannot silently turn
+into a full compile.
 
 ### Diagnostics, not exceptions
 
@@ -119,30 +144,49 @@ another output). The same inlining seam is how Delta is **extended**: `<import>`
 
 ```
 src/
-  cli.ts                       executable entry point (argv → compile → write; review/create/install subcommands)
+  cli.ts                       the executable: runs `main(process.argv)` from commands.ts
+  commands.ts                  every `delta` command: parseArgs, resolveInputs, compileInputs (stopAfter), print/write
+  verify.ts                    `delta verify`: checks, then signs a proof in place (setAttributes)
   review-report.ts             `delta review` text/JSON formatting (pure)
+  graph-report.ts              outline/show/uses/graph/lint as text or JSON, plus frontier/overclaimed (pure)
+  agent-guide.ts               the text `delta agent-guide` prints
   scaffold.ts, install.ts      `delta create`, `delta install`
+  language/                    the vocabulary, pure data, imported by compiler AND runtime
+    tags.ts                    tag families (HEADING_LEVEL, RESULT_TAGS, BOX_TAGS, RAW_TAGS, OPAQUE, …)
+    environments.ts            the numbering data table (ENVIRONMENTS, COUNTER_RESETS)
+    strings.ts                 i18n table (en, pt, …) + lang resolvers
+    trust.ts                   the trust order (TRUST, TRUST_OF, trustRank, weaker)
+    palette.ts                 the accent palette names (box colors, team members)
   compiler/
     pipeline.ts                THE pipeline: phases/steps table, runPipeline, Shared, the trace hook — start here
     index.ts, project.ts       the entry points (compileSource/compileFile; compileProject), both thin
     ast.ts                     ElementNode / TextNode / RawNode + elements, textContent, hasTag, titleOf
     context.ts                 CompileContext: diagnostics, registry, flags; createContext, error, warn
-    environments.ts            the numbering data table (ENVIRONMENTS, COUNTER_RESETS)
     preprocess.ts              escape < > & inside math/raw regions (pre-parse); escapeHtml
-    parse.ts                   strict XML → generic AST (saxes)
+    xml.ts                     the strict XML parser (Delta's own): tree + source spans, every error reported
+    parse.ts                   preprocess + xml.ts → the AST, spans and diagnostics in the author's coordinates
     files.ts                   isRemote, readUserFile (+addDep), withFile (diagnostics attributed to another file)
     include.ts                 splice <include> files into one tree (cycle detection)
     document.ts                project.toml [document] defaults onto <document>; ctx.lang
-    config.ts                  project.toml parsing (smol-toml)
+    config.ts                  project.toml → ProjectConfig (keys, paths, diagnostics)
+    toml.ts                    the TOML subset project.toml uses (Delta's own parser)
+    paper.ts                   the tree as the paper reads it: flow, changeParts, proofTarget, plainText
     final.ts                   --final: strip marks, accept changes (the clean publication)
     team.ts                    <team>/<member> → ctx.team (node removed)
     collab.ts                  comment/todo/change/status vocabulary: defaults + warnings
+    structure.ts               linkProofs (a proof without `of`; proofs joined to their box), numbered steps and hypotheses
+    understanding.ts           reader aids (<intuition>, <strategy>, <obstacle>): placement + fold default
     animated.ts, cover.ts      presentation sugar (animated → reveal; <cover> → <slide>)
     bibliography.ts            load .ref papers; number <cite>; fill the (first) <bibliography>
     numbering.ts               assigns num attrs, fills the registry; NumberingState
     crossfile.ts               buildIdMaps (globalById/idToFile); cross-file href annotations
+    graph.ts                   the proof graph: nodes, edges, trust propagation, cycles; annotateHypotheses, markStale
+    graph-hash.ts              the hash a verification is pinned to (what counts as changing a proof)
+    proof-links.ts             linkRemoteProofs: where a result's proof is ("Proof in Section 2.3"), or that it is pending
+    proofmap.ts                <proof-map> → a laid-out SVG of the graph (layered layout, at compile time)
     math.ts                    compile-time KaTeX (+ \ref{} inside math)
-    code.ts                    compile-time highlight.js for <code lang>
+    code.ts                    <code lang> blocks: dedent + highlight
+    highlight.ts               the syntax highlighter (Delta's own): one small grammar per language
     toc.ts                     heading tree + auto-slug ids (single + project)
     review.ts                  collects comments/tasks/changes/status blocks → ctx.review
     references.ts              <ref to> → data-target-num/tag; marks targets for snapshotting
@@ -150,19 +194,20 @@ src/
     theme.ts                   <document theme / theme-accent / theme-mode> → ctx
     imports.ts                 <import> packs and project packages → ctx.imports
     linebreaks.ts              blank lines in prose → <br><br>
-    strings.ts                 i18n table (en, pt, …) + lang resolvers
     emit.ts                    AST → standalone HTML (+ templates and the JSON islands)
     katex-css.ts               KaTeX CSS with data: fonts (offline math)
   runtime/
     index.ts                   registers the custom elements; window.Delta
     deck.ts                    the presentation controller
-    utils.ts, i18n.ts          the shared popover controller; t(key) from the #delta-i18n island
+    utils.ts, i18n.ts          the shared popover controller; t(key) and nameOf(tag) from the #delta-i18n island
+    island.ts                  readIsland: the JSON islands (#delta-i18n, #delta-toc, #delta-review), parsed once
     elements/                  one <delta-*> custom element per file (browser chrome)
   styles/
     base.css                   @layer delta.base — tokens + page grid + primitives
     components/*.css           @layer delta.components — one file per component
     themes/<type>.css          @layer delta.theme — per-document-type overrides
     builtin/<name>.css         @layer delta.builtin — named themes (theme="impatech")
+    staged/                    chrome no element builds yet; not part of the build (see its README)
   generated/assets.ts          GENERATED, git-ignored (RUNTIME_JS + CORE_CSS + THEMES + BUILTIN_THEMES)
 scripts/build.ts               bundles runtime → assets.ts, and CLI → dist/cli.js
 scripts/trace.ts               compiles the explorer's sample with the trace hook → site/packs/pipeline/dist/index.js
@@ -173,7 +218,11 @@ site/packs/inicio/             the landing page's pack: <go> (a same-tab link) a
 site/exemplos/                 the live examples linked from the landing page (article, presentation, book project);
                                built by `npm run docs:exemplos` into docs/exemplos/, outside the site project
 examples/                      hello.dlt (single file), project/ (multi-file), collab.dlt, slides.dlt
-test/                          one suite per pass; helpers.ts (compile/parsed/numbered); pipeline.test.ts
+test/                          compiler suites (most passes have one); helpers.ts (compile/parsed/numbered/compileFiles);
+                               pipeline.test.ts pins the step list; language.test.ts the vocabulary
+test/harness.ts                describe / it / expect on node:test, with the matchers the tests use
+test/runtime/                  runtime suites in Chromium: helpers.ts `inspect(dlt, script)`, one file per element family
+test/browser.ts                real Chromium, for hit-testing and overflow only (hittest/overflow tests)
 ```
 
 The single most important file to internalize is

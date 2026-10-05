@@ -13,8 +13,8 @@
  * and in print (collab.css).
  */
 
-import { t } from "../i18n";
-import { memberChip, memberColor } from "./collab";
+import { t } from "../i18n.ts";
+import { memberChip, memberColor } from "./collab.ts";
 
 const GLYPH: Record<string, string> = { open: "☐", doing: "◐", done: "☑" }; // ☐ ◐ ☑
 
@@ -50,7 +50,10 @@ class DeltaTodo extends HTMLElement {
       text.append(label, " ");
     }
     text.append(...this.childNodes); // move, so refs/math survive
-    this.setAttribute("aria-label", `${t("todo", "Task")}${num ? ` ${num}` : ""}: ${t(status, status)}`);
+    this.setAttribute(
+      "aria-label",
+      `${t("todo", "Task")}${num ? ` ${num}` : ""}: ${t(status, status)}`,
+    );
 
     const meta = document.createElement("div");
     meta.className = "todo-meta";
@@ -98,5 +101,5 @@ class DeltaTodo extends HTMLElement {
 }
 
 export function defineTodo(): void {
-  customElements.define("delta-todo", class extends DeltaTodo {});
+  customElements.define("delta-todo", DeltaTodo);
 }

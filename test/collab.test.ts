@@ -1,17 +1,6 @@
-import { describe, expect, it } from "vitest";
-import { elements, type ElementNode } from "../src/compiler/ast";
-import { createContext, type CompileContext } from "../src/compiler/context";
-import { compileSource } from "../src/compiler/index";
-
-function compile(src: string): { html: string; ctx: CompileContext } {
-  const ctx = createContext("test.dlt");
-  const html = compileSource(src, ctx);
-  if (html === undefined) throw new Error("compile failed: " + JSON.stringify(ctx.diagnostics));
-  return { html, ctx };
-}
-
-const warnings = (ctx: CompileContext): string[] =>
-  ctx.diagnostics.filter((d) => d.severity === "warning").map((d) => d.message);
+import { describe, expect, it } from "./harness.ts";
+import { elements, type ElementNode } from "../src/compiler/ast.ts";
+import { compile, warnings } from "./helpers.ts";
 
 const wrap = (body: string): string =>
   `<document><section id="s"><title>S</title>${body}</section></document>`;
@@ -56,16 +45,22 @@ describe("<comment>", () => {
   });
 
   it("keeps <reply> children and their attributes for the runtime thread", () => {
-    const { html } = compile(wrap(
-      `x<comment by="x" date="2026-09-12">q<reply by="y" date="2026-09-13">a</reply></comment>`,
-    ));
-    expect(html).toMatch(/<delta-comment by="x" date="2026-09-12" status="open" num="1" id="comment-1">q<delta-reply by="y" date="2026-09-13">a<\/delta-reply><\/delta-comment>/);
+    const { html } = compile(
+      wrap(
+        `x<comment by="x" date="2026-09-12">q<reply by="y" date="2026-09-13">a</reply></comment>`,
+      ),
+    );
+    expect(html).toMatch(
+      /<delta-comment by="x" date="2026-09-12" status="open" num="1" id="comment-1">q<delta-reply by="y" date="2026-09-13">a<\/delta-reply><\/delta-comment>/,
+    );
   });
 
   it("does not number or register anything quoted inside a comment (stable numbering vs. --final)", () => {
-    const { html, ctx } = compile(wrap(`
+    const { html, ctx } = compile(
+      wrap(`
       <comment by="x">see <equation id="quoted">x</equation></comment>
-      <equation id="real">y</equation>`));
+      <equation id="real">y</equation>`),
+    );
     expect(html).toMatch(/<delta-equation id="quoted">/); // no num
     expect(html).toContain('<delta-equation id="real" num="1.1">');
     expect(ctx.registry.has("quoted")).toBe(false);
@@ -87,9 +82,7 @@ describe("<comment>", () => {
 
 describe("collab elements in the AST", () => {
   it("writes defaults onto the nodes themselves (compile-time data, runtime chrome)", () => {
-    const ctx = createContext("test.dlt");
-    const html = compileSource(wrap(`x<comment by="x">n</comment>`), ctx);
-    expect(html).toBeDefined();
+    const { html } = compile(wrap(`x<comment by="x">n</comment>`));
     // (the AST isn't returned; the attribute on the emitted tag proves the write)
     expect(html).toContain('status="open"');
   });
@@ -104,8 +97,7 @@ describe("collab elements in the AST", () => {
 // Keeps `elements` import used for future AST-level cases; asserts the generic walk sees comments.
 describe("tree shape", () => {
   it("keeps <comment> as an ordinary ElementNode", () => {
-    const ctx = createContext("test.dlt");
-    const html = compileSource(wrap(`x<comment by="x">n</comment>`), ctx);
+    const { html } = compile(wrap(`x<comment by="x">n</comment>`));
     expect(html).toContain("</delta-comment>");
     const probe: ElementNode = { type: "element", tag: "comment", attrs: {}, children: [] };
     expect([...elements(probe)].length).toBe(1);
@@ -119,13 +111,16 @@ describe("<todo>", () => {
       <section id="b"><title>B</title><todo id="t2" by="y" status="done" priority="high" due="2026-09-20">did</todo></section>
     </document>`);
     expect(html).toMatch(/<delta-todo id="t1" for="x" status="open" priority="normal" num="1">/);
-    expect(html).toMatch(/<delta-todo id="t2" by="y" status="done" priority="high" due="2026-09-20" num="2">/);
+    expect(html).toMatch(
+      /<delta-todo id="t2" by="y" status="done" priority="high" due="2026-09-20" num="2">/,
+    );
     expect(ctx.registry.get("t2")).toEqual({ tag: "todo", num: "2" });
     expect(warnings(ctx)).toEqual([]);
   });
 
   it("warns on an unknown status or priority and on an assignee outside the team", () => {
-    const { ctx } = compile(`<document><team><member id="a" name="A"/></team><section id="s"><title>S</title>
+    const { ctx } =
+      compile(`<document><team><member id="a" name="A"/></team><section id="s"><title>S</title>
       <todo for="zed" status="later" priority="urgent">x</todo>
     </section></document>`);
     const w = warnings(ctx);
@@ -143,29 +138,38 @@ describe("<todo>", () => {
 
 describe("status / by / verified-by on blocks, and <draft>", () => {
   it("passes the marks through untouched and registers nothing new", () => {
-    const { html, ctx } = compile(wrap(`
+    const { html, ctx } = compile(
+      wrap(`
       <lemma id="l" status="verified" by="ai" verified-by="rb">x</lemma>
       <proof of="l" status="sketch" by="ai">y</proof>
-      <subsection id="ss" status="draft"><title>T</title>z</subsection>`));
-    expect(html).toContain('<delta-lemma id="l" status="verified" by="ai" verified-by="rb" num="1.1">');
+      <subsection id="ss" status="draft"><title>T</title>z</subsection>`),
+    );
+    expect(html).toContain(
+      '<delta-lemma id="l" status="verified" by="ai" verified-by="rb" num="1.1">',
+    );
     expect(html).toMatch(/<delta-proof of="l" status="sketch" by="ai"[^>]*>/);
     expect(html).toContain('<delta-subsection id="ss" status="draft" num="1.1">');
     expect(ctx.registry.get("l")).toEqual({ tag: "lemma", num: "1.1" });
     expect(warnings(ctx)).toEqual([]);
   });
 
-  it("gives <draft> status=\"draft\" by default and validates the block vocabulary", () => {
-    const { html, ctx } = compile(wrap(`
+  it('gives <draft> status="draft" by default and validates the block vocabulary', () => {
+    const { html, ctx } = compile(
+      wrap(`
       <draft by="ai" note="loose">prose</draft>
-      <theorem status="final">t</theorem>`));
+      <theorem status="final">t</theorem>`),
+    );
     expect(html).toContain('<delta-draft by="ai" note="loose" status="draft" id="draft-1">');
-    expect(warnings(ctx).some((m) => m.includes('<theorem> has unknown status "final"'))).toBe(true);
+    expect(warnings(ctx).some((m) => m.includes('<theorem> has unknown status "final"'))).toBe(
+      true,
+    );
     expect(html).toContain('customElements.define("delta-draft"');
     expect(html).toContain(".status-pill");
   });
 
   it("checks by / verified-by against the team", () => {
-    const { ctx } = compile(`<document><team><member id="a" name="A"/></team><section id="s"><title>S</title>
+    const { ctx } =
+      compile(`<document><team><member id="a" name="A"/></team><section id="s"><title>S</title>
       <lemma by="ghost" verified-by="phantom">x</lemma></section></document>`);
     const w = warnings(ctx);
     expect(w.some((m) => m.includes('by="ghost"'))).toBe(true);
@@ -175,11 +179,13 @@ describe("status / by / verified-by on blocks, and <draft>", () => {
 
 describe("<change> / <old> / <new>", () => {
   it("infers kind from the parts, numbers changes, and marks block changes", () => {
-    const { html, ctx } = compile(wrap(`
+    const { html, ctx } = compile(
+      wrap(`
       a <change id="r" by="x"><old>old</old><new>new</new></change>
       b <change id="d" by="x"><old>gone</old></change>
       c <change id="i" by="x">added</change>
-      <change id="b" by="x"><new><lemma id="l">L</lemma></new></change>`));
+      <change id="b" by="x"><new><lemma id="l">L</lemma></new></change>`),
+    );
     expect(html).toMatch(/<delta-change id="r" by="x" kind="replace" num="1">/);
     expect(html).toMatch(/<delta-change id="d" by="x" kind="delete" num="2">/);
     expect(html).toMatch(/<delta-change id="i" by="x" kind="insert" num="3">/);
@@ -190,12 +196,14 @@ describe("<change> / <old> / <new>", () => {
   });
 
   it("warns on stray <old>/<new>, duplicates, mixed content, an empty change and a contradicting kind", () => {
-    const { ctx } = compile(wrap(`
+    const { ctx } = compile(
+      wrap(`
       <old>stray</old>
       <change by="x"><new>a</new><new>b</new></change>
       <change by="x">loose<new>c</new></change>
       <change by="x"></change>
-      <change by="x" kind="delete"><new>d</new></change>`));
+      <change by="x" kind="delete"><new>d</new></change>`),
+    );
     const w = warnings(ctx);
     expect(w.some((m) => m.includes("<old> must be inside a <change>"))).toBe(true);
     expect(w.some((m) => m.includes("more than one <new>"))).toBe(true);
@@ -205,11 +213,15 @@ describe("<change> / <old> / <new>", () => {
   });
 
   it("renders math inside <old>/<new> and keeps numbering stable for anything inside <old>", () => {
-    const { html, ctx } = compile(wrap(`
+    const { html, ctx } = compile(
+      wrap(`
       <change by="x"><old>$x < 0$ <equation id="gone">a</equation></old><new>$x > 0$</new></change>
-      <equation id="kept">b</equation>`));
+      <equation id="kept">b</equation>`),
+    );
     expect((html.match(/class="katex"/g) ?? []).length).toBeGreaterThanOrEqual(2);
-    expect(html).toMatch(/<delta-equation id="gone">/);
+    // Kept in the page (the "original" view shows it), but without its id: one element per id.
+    expect(html).toMatch(/<delta-old><span class="katex">[^]*<delta-equation><span class="katex/);
+    expect(html).not.toContain('id="gone"');
     expect(html).toContain('<delta-equation id="kept" num="1.1">');
     expect(ctx.registry.has("gone")).toBe(false);
     expect(warnings(ctx)).toEqual([]);

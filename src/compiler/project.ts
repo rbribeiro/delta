@@ -1,9 +1,16 @@
+import type { ProofGraph } from "./graph.ts";
 import { join } from "node:path";
-import type { ProjectConfig } from "./config";
-import { createContext, hasErrors, type Diagnostic, type ReviewData } from "./context";
-import { createShared, outNameFor, runPipeline, type CompileOptions, type FileUnit } from "./pipeline";
+import type { ProjectConfig } from "./config.ts";
+import { createContext, hasErrors, type Diagnostic, type ReviewData } from "./context.ts";
+import {
+  createShared,
+  outNameFor,
+  runPipeline,
+  type CompileOptions,
+  type FileUnit,
+} from "./pipeline.ts";
 
-export { outNameFor } from "./pipeline";
+export { outNameFor } from "./pipeline.ts";
 
 export interface ProjectResult {
   /** One per input, in declaration order; written verbatim by the CLI. */
@@ -13,6 +20,8 @@ export interface ProjectResult {
   deps: string[];
   /** The project's collaboration state, every item tagged with its home output (for `delta review`). */
   review?: ReviewData;
+  /** The proof graph (absent when an input failed to load), for the CLI's graph commands. */
+  graph?: ProofGraph;
 }
 
 /**
@@ -52,11 +61,14 @@ export function compileProject(config: ProjectConfig, options: CompileOptions = 
   const ctxs = [project, ...files.map((f) => f.ctx)];
   const diagnostics = ctxs.flatMap((c) => c.diagnostics);
   const deps = [...new Set(ctxs.flatMap((c) => [...c.deps]))];
-  if (!ok) return { outputs: [], diagnostics, deps };
+  if (!ok) return { outputs: [], diagnostics, deps, graph: shared.graph };
   return {
-    outputs: files.map((f) => ({ path: join(config.outDir, f.outName), html: f.html! })),
+    outputs: files.flatMap((f) =>
+      f.html === undefined ? [] : [{ path: join(config.outDir, f.outName), html: f.html }],
+    ),
     diagnostics,
     deps,
     review: { team: [...shared.team.values()], items: shared.reviewItems },
+    graph: shared.graph,
   };
 }

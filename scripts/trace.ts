@@ -1,10 +1,10 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, resolve } from "node:path";
-import type { Node } from "../src/compiler/ast";
-import { loadProjectConfig } from "../src/compiler/config";
-import type { CompileContext } from "../src/compiler/context";
-import { PIPELINE, type Shared } from "../src/compiler/pipeline";
-import { compileProject } from "../src/compiler/project";
+import type { Node } from "../src/compiler/ast.ts";
+import { loadProjectConfig } from "../src/compiler/config.ts";
+import type { CompileContext } from "../src/compiler/context.ts";
+import { PIPELINE, type Shared } from "../src/compiler/pipeline.ts";
+import { compileProject } from "../src/compiler/project.ts";
 
 /**
  * Generates the data behind the docs' pipeline explorer (`site/compilador.dlt`).
@@ -55,7 +55,12 @@ function projectCtx(ctx: CompileContext): Record<string, unknown> {
     lang: ctx.lang,
     mathUsed: ctx.mathUsed,
     referencedIds: [...ctx.referencedIds],
-    toc: ctx.toc.map((e) => ({ level: e.level, id: e.id, num: e.num, ...(e.file ? { file: e.file } : {}) })),
+    toc: ctx.toc.map((e) => ({
+      level: e.level,
+      id: e.id,
+      num: e.num,
+      ...(e.file ? { file: e.file } : {}),
+    })),
     review: ctx.review.map((i) => `${i.kind} ${i.id}`),
     imports: ctx.imports.map((i) => i.name ?? basename(i.source)),
     userCss: ctx.userCss !== undefined,
@@ -68,7 +73,12 @@ function projectCtx(ctx: CompileContext): Record<string, unknown> {
 }
 
 /** What `emit` produced for one file: the pieces a reader cannot see in the tree. */
-function summarizeHtml(html: string, idToFile: Map<string, string>, outName: string, mathUsed: boolean): Record<string, unknown> {
+function summarizeHtml(
+  html: string,
+  idToFile: Map<string, string>,
+  outName: string,
+  mathUsed: boolean,
+): Record<string, unknown> {
   const templates: { id: string; from: string; html: string }[] = [];
   const re = /<template data-delta-pop="([^"]+)">([\s\S]*?)<\/template>/g;
   let m: RegExpExecArray | null;
@@ -81,7 +91,9 @@ function summarizeHtml(html: string, idToFile: Map<string, string>, outName: str
       html: body.length > 160 ? body.slice(0, 159) + "…" : body,
     });
   }
-  const islands = ["delta-toc", "delta-review", "delta-i18n"].filter((id) => html.includes(`id="${id}"`));
+  const islands = ["delta-toc", "delta-review", "delta-i18n"].filter((id) =>
+    html.includes(`id="${id}"`),
+  );
   const packs = [...html.matchAll(/\/\* pack: ([^*]+?) \*\//g)].map((p) => p[1]);
   return {
     bytes: html.length,
@@ -96,7 +108,9 @@ function projectShared(s: Shared): Record<string, unknown> {
   return {
     counters: { ...s.numbering.counters },
     display: { ...s.numbering.display },
-    registry: Object.fromEntries([...s.registry].map(([id, e]) => [id, { tag: e.tag, num: e.num }])),
+    registry: Object.fromEntries(
+      [...s.registry].map(([id, e]) => [id, { tag: e.tag, num: e.num }]),
+    ),
     // The node itself cannot be serialized (it is the live tree); its tag is what a reader needs to see.
     globalById: Object.fromEntries([...s.globalById].map(([id, el]) => [id, el.tag])),
     idToFile: Object.fromEntries(s.idToFile),
@@ -119,13 +133,17 @@ function main(): void {
     steps: Record<string, string>;
   };
   for (const phase of PIPELINE) {
-    if (!descriptions.phases[phase.name]) console.warn(`descriptions.json: no description for phase "${phase.name}"`);
+    if (!descriptions.phases[phase.name])
+      console.warn(`descriptions.json: no description for phase "${phase.name}"`);
     for (const step of phase.steps) {
-      if (!descriptions.steps[step.name]) console.warn(`descriptions.json: no description for step "${step.name}"`);
+      if (!descriptions.steps[step.name])
+        console.warn(`descriptions.json: no description for step "${step.name}"`);
     }
   }
 
-  const allSteps = new Set(PIPELINE.flatMap((p) => p.steps.filter((s) => s.all).map((s) => s.name)));
+  const allSteps = new Set(
+    PIPELINE.flatMap((p) => p.steps.filter((s) => s.all).map((s) => s.name)),
+  );
   const events: unknown[] = [];
   const prevAst: (string | undefined)[] = [];
   const result = compileProject(config, {
@@ -138,7 +156,10 @@ function main(): void {
         const json = JSON.stringify(f.doc ? projectAst(f.doc) : null);
         const ast = json === prevAst[i] ? "unchanged" : JSON.parse(json);
         prevAst[i] = json;
-        const html = f.html === undefined ? null : summarizeHtml(f.html, e.shared.idToFile, f.outName, f.ctx.mathUsed);
+        const html =
+          f.html === undefined
+            ? null
+            : summarizeHtml(f.html, e.shared.idToFile, f.outName, f.ctx.mathUsed);
         return { ast, ctx: projectCtx(f.ctx), html };
       });
       events.push({
@@ -173,7 +194,9 @@ function main(): void {
     element;
   mkdirSync(resolve(PACK, "dist"), { recursive: true });
   writeFileSync(resolve(PACK, "dist/index.js"), js);
-  console.error(`site/packs/pipeline/dist/index.js: ${events.length} events, ${(js.length / 1024).toFixed(0)} KB`);
+  console.error(
+    `site/packs/pipeline/dist/index.js: ${events.length} events, ${(js.length / 1024).toFixed(0)} KB`,
+  );
 }
 
 main();

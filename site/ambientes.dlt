@@ -87,9 +87,50 @@
     <subsection id="tag-proof">
       <title>&lt;proof&gt; e &lt;solution&gt;</title>
 
-      A demonstração não ganha caixa nem número: abre com a palavra "Demonstração"
-      em itálico e fecha com o quadrado no fim. O atributo <c>of</c> aponta para o
-      resultado que ela demonstra, e o rótulo passa a citá-lo.
+      A demonstração não ganha número. O atributo <c>of</c> aponta para o resultado que
+      ela demonstra. Sem <c>of</c>, como no LaTeX, ela demonstra o resultado que vem logo
+      antes dela, ou aquele dentro do qual foi escrita. Para o grafo de provas, o
+      <c>delta verify</c> e os ids dos passos, todas essas formas valem igual. Um
+      resultado pode ter mais de uma demonstração; os passos da segunda ganham ids
+      <c>…-proof2-step-1</c>, e a confiança do resultado vem da primeira.
+
+      Uma demonstração escrita <em>dentro</em> do resultado, ou <em>logo depois</em> dele
+      (uma segunda demonstração logo depois da primeira também), junta-se à caixa do
+      resultado: as duas viram uma só ficha, e a demonstração é o rodapé dela, uma barra
+      "Demonstração", com uma seta, que abre o texto. Ela começa fechada. Um comentário entre os dois
+      não os separa; um parágrafo ou uma figura, sim. O mesmo vale para
+      <c><solution></c> depois de (ou dentro de) um <c><exercise></c> ou
+      <c><problem></c>: a barra diz "Ver solução".
+
+      <code lang="xml" numbered="false">
+<lemma id="lem:soma">
+  Se $a \le b$ então $a + c \le b + c$.
+</lemma>
+<proof>Some $c$ aos dois lados.</proof>
+
+<exercise>
+  Mostre que $\sqrt{2}$ é irracional.
+  <solution>Suponha $\sqrt{2} = p/q$ em termos mínimos.</solution>
+</exercise>
+      </code>
+
+      <lemma id="demo-soma">
+        Se $a \le b$ então $a + c \le b + c$.
+      </lemma>
+      <proof>Some $c$ aos dois lados.</proof>
+
+      <exercise>
+        Mostre que $\sqrt{2}$ é irracional.
+        <solution>Suponha $\sqrt{2} = p/q$ em termos mínimos. Então $p^2 = 2q^2$, logo
+        $p$ é par, e daí $q$ também é: contradição.</solution>
+      </exercise>
+
+      Uma demonstração longe do seu resultado fica onde está, com o rótulo
+      "Demonstração" em itálico e o quadrado no fim; o rótulo cita o resultado quando há
+      <c>of</c>. A caixa do resultado ganha então um rodapé que leva até ela:
+      "Demonstração na Seção 2.3", ou "Ver demonstração" quando ela está na mesma seção.
+      Um resultado com <c>status="open"</c> e nenhuma demonstração mostra
+      "Demonstração pendente" (veja <ref to="colab-status">Colaboração</ref>).
 
       <table numbered="false">
         <header>
@@ -100,9 +141,19 @@
         <row>
           <column mono="true">of</column>
           <column mono="true">id</column>
-          <column>Diz qual resultado esta demonstração prova</column>
+          <column>Diz qual resultado esta demonstração prova. Opcional logo depois do resultado ou dentro dele</column>
+        </row>
+        <row>
+          <column mono="true">collapsed</column>
+          <column mono="true">false</column>
+          <column>Numa demonstração juntada à caixa: começa aberta</column>
         </row>
       </table>
+
+      Para abrir todas de uma vez, use <c><document proofs="open"></c> (ou
+      <c>proofs = "open"</c> na tabela <c>[document]</c> do <c>project.toml</c>). Numa
+      apresentação elas já começam abertas. O <c>collapsed</c> de cada demonstração
+      sempre vence. Na impressão, todas saem abertas.
 
       <code lang="xml" numbered="false">
 <proof of="thm:bolzano">
@@ -115,6 +166,277 @@
         Divida o intervalo ao meio; ao menos uma das metades contém
         infinitos termos da sequência. Repita.
       </proof>
+    </subsection>
+
+    <subsection id="sobre-entendimento">
+      <title>Entendendo um resultado</title>
+
+      Um enunciado diz <em>o que</em> vale. Quem lê quer saber também <em>por que</em>
+      vale, como a prova anda e onde ela aperta. Três tags dizem isso sem encher a
+      página. Elas vão <em>dentro</em> do resultado (ou do passo de uma prova) a que
+      pertencem, e é o aninhamento que diz de quem são. Nenhuma delas é numerada nem pode receber <c>id</c>.
+
+      <table numbered="false">
+        <header>
+          <column>Tag</column>
+          <column>Para quê</column>
+          <column>Onde pode ir</column>
+        </header>
+        <row>
+          <column mono="true">intuition</column>
+          <column>Por que o resultado é verdadeiro, num parágrafo curto</column>
+          <column>Dentro de um resultado ou de um passo</column>
+        </row>
+        <row>
+          <column mono="true">strategy</column>
+          <column>Como a prova anda e como os lemas se encaixam (costuma ter <c><ref></c>)</column>
+          <column>Dentro de um resultado ou de um passo</column>
+        </row>
+        <row>
+          <column mono="true">obstacle</column>
+          <column>Onde está a dificuldade de verdade, e por que o caminho ingênuo falha</column>
+          <column>Dentro de um resultado ou de um passo</column>
+        </row>
+      </table>
+
+      "Resultado" aqui quer dizer <c>theorem</c>, <c>proposition</c>, <c>lemma</c>,
+      <c>corollary</c>, <c>conjecture</c>, <c>claim</c> ou <c>definition</c>; "passo" é um
+      <c><step></c> de uma prova estruturada (veja abaixo). Uma tag fora do lugar é erro de
+      compilação, com arquivo e linha. Um argumento não rigoroso não é uma tag: é uma
+      demonstração com <c>status="heuristic"</c>.
+
+      <code lang="xml" numbered="false">
+<theorem id="thm:bolzano-weierstrass">
+  <title>Bolzano–Weierstrass</title>
+  Toda sequência limitada em $\mathbb{R}$ tem uma subsequência convergente.
+  <intuition>
+    Infinitos pontos num intervalo finito se acumulam em algum lugar.
+  </intuition>
+  <strategy>Bisseção: sempre há uma metade com infinitos termos.</strategy>
+  <obstacle>
+    Escolher a metade não basta; os índices precisam ser crescentes.
+  </obstacle>
+</theorem>
+      </code>
+
+      Elas não enchem a caixa. Cada uma é uma dobra do papel, logo abaixo do enunciado:
+      fechada, uma tira fina vincada, cujo nome aparece ao passar o mouse; um clique
+      desdobra o conteúdo ali mesmo, e um clique no nome dobra de volta. A ordem é sempre
+      intuição, estratégia, obstáculo, e cada uma abre por si. Todas começam fechadas, em
+      qualquer tipo de documento: a página mostra os enunciados, e o leitor abre o resto
+      quando quiser. Para deixar uma aberta desde o início, use <c>collapsed="false"</c>
+      nela. Na impressão, tudo sai aberto.
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">collapsed</column>
+          <column mono="true">false</column>
+          <column>Começa desdobrada; na prévia de uma <c><ref></c> todas começam fechadas</column>
+        </row>
+      </table>
+
+      Esse é o único atributo. <c>id</c> é erro de compilação: uma ajuda não é alvo de
+      <c><ref></c> (ponha o <c>id</c> no resultado). Duas ajudas do mesmo tipo no mesmo
+      resultado, ou no mesmo passo, geram um aviso: junte-as numa só. As
+      <c><ref></c> dentro delas funcionam normalmente para quem lê, mas não entram no
+      grafo da prova (veja <ref to="sobre-mapa-prova"/>). A cor do nome e o leve tom de
+      cada dobra vêm dos tokens <c>--delta-aid-intuition</c>, <c>--delta-aid-strategy</c> e
+      <c>--delta-aid-obstacle</c> (veja <ref to="temas">Temas</ref>).
+
+      <theorem id="demo-entendimento">
+        <title>Bolzano–Weierstrass</title>
+        Toda sequência limitada em $\mathbb{R}$ tem uma subsequência convergente.
+        <intuition>Infinitos pontos num intervalo finito precisam se acumular em algum
+        lugar.</intuition>
+        <strategy>Bisseção, como em <ref to="demo-bolzano"/>: sempre há uma metade com
+        infinitos termos.</strategy>
+        <obstacle>Escolher a metade não basta. É preciso escolher índices
+        <em>crescentes</em>, um em cada intervalo.</obstacle>
+      </theorem>
+
+      Ao passar o mouse numa <c><ref></c> para um resultado, a prévia mostra o
+      enunciado com as mesmas dobras, todas fechadas: dá para abrir qualquer uma ali mesmo.
+      Um resultado que ainda não tem prova pode levar <c>status="open"</c>, que o marca
+      como planejado (veja <ref to="colab-status">Colaboração</ref>). O livro
+      <link to="exemplos/gigante/cap1.html">A componente gigante</link> usa tudo isto.
+    </subsection>
+
+    <subsection id="sobre-provas-estruturadas">
+      <title>Provas em passos e hipóteses</title>
+
+      Uma prova longa lê melhor em duas camadas: primeiro as afirmações principais, depois
+      a prova de cada uma. Cada <c><step></c> tem uma <c><claim></c> (o que o passo
+      estabelece) e, de preferência, uma <c><proof></c>. Os passos são numerados pelo
+      lugar que ocupam: 1, 2, e dentro do passo 2, 2.1, 2.2. Um passo pode ser citado com
+      <c><ref></c> ("Passo 2.1"), e quem não tem <c>id</c> ganha um. Uma
+      <c><solution></c> também pode ter passos.
+
+      Cada passo de primeiro nível é uma prega da folha da demonstração: fechado, mostra
+      só o número e a afirmação, impressos na dobra; um clique o abre e mostra a sua prova.
+      A barra da demonstração ganha "Só passos · Completo", que fecha ou abre todos de uma
+      vez. Os passos dentro de um passo não dobram de novo: aparecem abertos, como uma
+      lista dentro do passo. Uma demonstração com passos longe do seu resultado ganha uma
+      folha própria, com a mesma barra, que diz o que ela demonstra.
+
+      <code lang="xml" numbered="false">
+<theorem id="thm:t">
+  Suponha <hyp id="hyp:pos">$x > 0$</hyp> e <hyp id="hyp:int">$x$ inteiro</hyp>.
+  Então $x \ge 1$.
+</theorem>
+<proof of="thm:t">
+  <step id="st:nz">
+    <claim>$x \ne 0$.</claim>
+    <proof>Por <ref to="hyp:pos"/>.</proof>
+  </step>
+  <step>
+    <claim>$x \ge 1$.</claim>
+    <proof>Por <ref to="st:nz"/> e <ref to="hyp:int"/>.</proof>
+  </step>
+</proof>
+<counterexample breaks="hyp:int">$x = 1/2$ é positivo e menor que $1$.</counterexample>
+      </code>
+
+      Dentro de um passo, <c><claim></c> é a afirmação do passo; fora dele continua sendo
+      o ambiente numerado "Afirmação" de sempre. Um passo também pode levar
+      <c><intuition></c>, <c><strategy></c> e <c><obstacle></c>, logo depois da
+      afirmação. Num passo de primeiro nível, elas são pregas da mesma folha, com o nome
+      impresso na dobra, e continuam à mão com o passo fechado; num passo dentro de outro,
+      são dobras estreitas na coluna do texto.
+
+      Cada <c><hyp></c> no enunciado ganha um rótulo, (H1), (H2), …, e uma
+      <c><ref></c> para ela diz "(H1)". A prévia de uma hipótese mostra em que passos a
+      demonstração a usa, ou avisa que ela não é usada, e lista os
+      <c><counterexample breaks="…"></c> que mostram por que ela é necessária.
+      O <c>delta lint</c> aponta hipóteses que a prova nunca usa: ou falta um passo, ou o
+      teorema vale sem ela. Aponta também passos sem demonstração.
+
+      <table numbered="false">
+        <header>
+          <column>Tag</column>
+          <column>Atributos</column>
+          <column>Onde pode ir</column>
+        </header>
+        <row>
+          <column mono="true">step</column>
+          <column><c>id</c> (opcional; sem ele, vira <c>resultado-step-2.1</c>)</column>
+          <column>Diretamente dentro de uma <c><proof></c> ou <c><solution></c>, inclusive a prova de outro passo</column>
+        </row>
+        <row>
+          <column mono="true">hyp</column>
+          <column><c>id</c> (para citá-la com <c><ref></c>)</column>
+          <column>No enunciado de um resultado; nunca numa prova ou numa ajuda</column>
+        </row>
+        <row>
+          <column mono="true">counterexample</column>
+          <column><c>breaks</c> (obrigatório: o <c>id</c> da hipótese), <c>id</c></column>
+          <column>Em qualquer lugar; aparece na prévia da hipótese</column>
+        </row>
+      </table>
+
+      <theorem id="demo-passos-thm">
+        Suponha <hyp id="demo-hyp-pos">$x > 0$</hyp> e <hyp id="demo-hyp-int">$x$
+        inteiro</hyp>. Então $x \ge 1$.
+      </theorem>
+      <proof of="demo-passos-thm">
+        <step id="demo-passo-nz">
+          <claim>$x \ne 0$.</claim>
+          <proof>Por <ref to="demo-hyp-pos"/>.</proof>
+        </step>
+        <step>
+          <claim>$x \ge 1$.</claim>
+          <intuition>Os inteiros positivos começam em $1$: não há inteiro entre $0$ e
+          $1$.</intuition>
+          <proof>
+            <step>
+              <claim>$|x| \ge 1$.</claim>
+              <proof>Um inteiro diferente de zero, por <ref to="demo-passo-nz"/> e <ref to="demo-hyp-int"/>.</proof>
+            </step>
+            <step>
+              <claim>Logo $x = |x| \ge 1$.</claim>
+              <proof>Pois $x > 0$.</proof>
+            </step>
+          </proof>
+        </step>
+      </proof>
+      <counterexample breaks="demo-hyp-int">
+        $x = 1/2$ é positivo e menor que $1$: sem a hipótese <ref to="demo-hyp-int"/>, o
+        teorema é falso.
+      </counterexample>
+    </subsection>
+
+    <subsection id="sobre-mapa-prova">
+      <title>O mapa da prova</title>
+
+      <c><proof-map of="id"/></c> desenha o que um resultado usa, e o que isso usa, até
+      o fim: cada resultado fica logo acima de quem o usa, e o próprio resultado fica
+      embaixo. A cor de cada caixa é a confiança efetiva da prova: em aberto
+      (tracejada), heurística, esboço, verificada, formalizada. Um ponto no canto indica
+      que a prova está boa, mas algo que ela usa ainda não está. Clicar numa caixa abre
+      a mesma prévia de uma <c><ref></c>, com o botão para ir até o resultado, inclusive
+      em outro capítulo. Sem <c>of</c>, o mapa mostra o grafo inteiro do projeto.
+
+      <code lang="xml" numbered="false">
+<proof-map of="thm:principal"/>
+      </code>
+
+      Ninguém desenha o mapa à mão: ele vem das referências no enunciado e na
+      demonstração de cada resultado (as de intuição, estratégia, obstáculo e heurística
+      não contam), e o compilador calcula a disposição. Por isso ele muda sozinho quando
+      a prova muda. É o jeito de mostrar o plano antes dos detalhes: com os lemas ainda
+      em aberto, o mapa já diz como eles se juntam.
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">of</column>
+          <column mono="true">id</column>
+          <column>O resultado embaixo do mapa; acima dele, tudo o que ele usa, direta ou indiretamente. Sem <c>of</c>, o grafo inteiro do projeto</column>
+        </row>
+      </table>
+
+      A tag é vazia e pode ir em qualquer lugar do texto. Um <c>of</c> que não é o
+      <c>id</c> de um resultado é erro de compilação; um documento sem nenhum resultado
+      com <c>id</c> gera só um aviso, e o mapa fica vazio. Contam como resultado as
+      mesmas tags que levam ajudas (veja <ref to="sobre-entendimento"/>). As caixas têm tamanho fixo
+      (quatro cabem na largura do texto): um título longo quebra em duas linhas e
+      depois é cortado. A legenda embaixo lista só as confianças presentes no mapa. Se
+      a prova for circular, as arestas que fecham o ciclo são desenhadas à parte, à
+      direita. Para ver o mesmo grafo no terminal, use <c>delta graph</c> ou
+      <c>delta uses</c> (veja <ref to="cli">CLI</ref>).
+
+      <lemma id="demo-mapa-lema" status="open">
+        <title>Subsequência monótona</title>
+        Toda sequência real tem uma subsequência monótona.
+      </lemma>
+
+      <lemma id="demo-mapa-mono">
+        <title>Convergência monótona</title>
+        Toda sequência monótona e limitada converge.
+      </lemma>
+      <proof of="demo-mapa-mono" status="verified" collapsible="true" collapsed="true" verified-by="rodrigo" against="d45d7fdc4ce1">
+        Se a sequência cresce, ela converge para o supremo dos seus termos; se decresce,
+        para o ínfimo.
+      </proof>
+
+      <theorem id="demo-mapa-thm">
+        <title>Bolzano–Weierstrass</title>
+        Toda sequência limitada em $\mathbb{R}$ tem uma subsequência convergente.
+      </theorem>
+      <proof of="demo-mapa-thm" status="sketch" collapsible="true" collapsed="true">
+        Por <ref to="demo-mapa-lema"/>, há uma subsequência monótona. Ela é limitada,
+        logo converge por <ref to="demo-mapa-mono"/>.
+      </proof>
+
+      <proof-map of="demo-mapa-thm"/>
     </subsection>
 
     <subsection id="sobre-ambiente-atributos">

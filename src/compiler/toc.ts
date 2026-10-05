@@ -1,5 +1,6 @@
-import { elements, hasTag, textContent, titleOf, type ElementNode } from "./ast";
-import type { CompileContext, TocEntry } from "./context";
+import { elements, hasTag, textContent, titleOf, type ElementNode } from "./ast.ts";
+import type { CompileContext, TocEntry } from "./context.ts";
+import { HEADING_LEVEL, OPAQUE } from "../language/tags.ts";
 
 /**
  * Builds the table-of-contents heading tree consumed by `<delta-toc>`. Walks the
@@ -16,13 +17,6 @@ import type { CompileContext, TocEntry } from "./context";
  * book-wide list (each entry tagged with its home output), so a project ToC can list
  * the whole work and link cross-file.
  */
-export const HEADING_LEVEL: Record<string, number> = {
-  chapter: 1,
-  section: 2,
-  subsection: 3,
-  subsubsection: 4,
-};
-const LEVEL = HEADING_LEVEL;
 
 /** Mutable slug counter, threaded so auto-ids stay unique across a project's files. */
 export interface SlugState {
@@ -38,7 +32,10 @@ export function ensureHeadingId(el: ElementNode, used: Set<string>, state: SlugS
   let id = el.attrs.id;
   if (!id) {
     const titleEl = titleOf(el);
-    id = uniqueSlug(slugify(titleEl ? textContent(titleEl) : "") || `section-${++state.auto}`, used);
+    id = uniqueSlug(
+      slugify(titleEl ? textContent(titleEl) : "") || `section-${++state.auto}`,
+      used,
+    );
     el.attrs.id = id;
   }
   used.add(id);
@@ -96,8 +93,9 @@ function collectHeadings(
   file?: string,
 ): TocEntry[] {
   const out: TocEntry[] = [];
-  for (const el of elements(doc)) {
-    const level = LEVEL[el.tag];
+  // A deleted (<old>) or commented-out heading is not part of the paper.
+  for (const el of elements(doc, OPAQUE)) {
+    const level = HEADING_LEVEL[el.tag];
     if (level === undefined) continue;
 
     const titleEl = titleOf(el);

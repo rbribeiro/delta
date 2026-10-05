@@ -1,10 +1,10 @@
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { describe, expect, it } from "vitest";
-import { compileFile, type CompileOptions, type TraceEvent } from "../src/compiler/index";
-import { PIPELINE } from "../src/compiler/pipeline";
-import { compileProject } from "../src/compiler/project";
+import { join, resolve } from "node:path";
+import { describe, expect, it } from "./harness.ts";
+import { compileFile, type CompileOptions, type TraceEvent } from "../src/compiler/index.ts";
+import { PIPELINE } from "../src/compiler/pipeline.ts";
+import { compileProject } from "../src/compiler/project.ts";
 
 /** Writes each source into a fresh temp dir and returns its absolute paths. */
 function scratch(files: Record<string, string>): { dir: string; paths: string[] } {
@@ -67,12 +67,19 @@ describe("the declared pipeline", () => {
       "load/expandAnimated",
       "load/expandCover",
       "collab/resolveCollab",
+      "collab/linkProofs",
+      "collab/structureProofs",
+      "collab/checkUnderstanding",
       "collab/summarizeFinal",
       "bibliography/loadBibliography",
       "bibliography/numberCitations",
       "bibliography/fillProjectBibliography",
       "numbering/numberDocument",
       "numbering/buildIdMaps",
+      "numbering/buildGraph",
+      "numbering/linkRemoteProofs",
+      "render/stripReviewMarks",
+      "render/layoutProofMaps",
       "render/renderMath",
       "render/highlightCode",
       "render/buildProjectToc",
@@ -133,13 +140,16 @@ describe("the trace hook", () => {
         trace: (e: TraceEvent) => {
           log.push([e.phase, e.step, e.file]);
           const bDoc = () => JSON.stringify(e.files[1].doc);
-          if (e.step === "numberDocument" && e.file === "a.html") seen.registryAfterA = [...e.shared.registry.keys()];
+          if (e.step === "numberDocument" && e.file === "a.html")
+            seen.registryAfterA = [...e.shared.registry.keys()];
           if (e.step === "numberDocument" && e.file === undefined) {
             seen.registryAfterNumbering = [...e.shared.registry.keys()];
             seen.htmlAfterNumbering = e.files.map((f) => f.html);
           }
-          if (e.step === "resolveReferences" && e.file === "b.html") seen.hrefBefore = bDoc().includes("data-target-href");
-          if (e.step === "annotateCrossFileRefs" && e.file === "b.html") seen.hrefAfter = bDoc().includes('"data-target-href":"a.html#thm"');
+          if (e.step === "resolveReferences" && e.file === "b.html")
+            seen.hrefBefore = bDoc().includes("data-target-href");
+          if (e.step === "annotateCrossFileRefs" && e.file === "b.html")
+            seen.hrefAfter = bDoc().includes('"data-target-href":"a.html#thm"');
         },
       },
     );
@@ -174,5 +184,31 @@ describe("the trace hook", () => {
     expect(result.outputs).toHaveLength(0);
     expect(result.diagnostics.some((d) => d.severity === "error")).toBe(true);
     expect([...phases]).toEqual(["load"]);
+  });
+});
+
+describe("stopAfter", () => {
+  it("stops right after the named step: the graph exists, the HTML does not", () => {
+    const r = compileFile(resolve("examples/project/ch1-geometry.dlt"), {
+      stopAfter: "buildGraph",
+    });
+    expect(r.graph?.nodes.size).toBeGreaterThan(0);
+    expect(r.html).toBeUndefined();
+  });
+
+  it("accepts a phase name", () => {
+    const steps: string[] = [];
+    compileFile(resolve("examples/project/ch1-geometry.dlt"), {
+      stopAfter: "numbering",
+      trace: (e) => void steps.push(e.step),
+    });
+    expect(steps.at(-1)).toBe("linkRemoteProofs");
+    expect(steps).not.toContain("renderMath");
+  });
+
+  it("throws on a name that is neither a step nor a phase", () => {
+    expect(() =>
+      compileFile(resolve("examples/project/ch1-geometry.dlt"), { stopAfter: "nope" }),
+    ).toThrow(/no pipeline step/);
   });
 });

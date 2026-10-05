@@ -1,5 +1,5 @@
-import { elements, type ElementNode } from "./ast";
-import { REF_TAGS } from "./references";
+import { elements, type ElementNode } from "./ast.ts";
+import { OPAQUE, REF_TAGS } from "../language/tags.ts";
 
 /**
  * The project-wide id maps and the two annotators that make links work *across* output files.
@@ -24,7 +24,8 @@ export function buildIdMaps(
   idToFile: Map<string, string>,
 ): void {
   for (const f of files) {
-    for (const el of elements(f.doc)) {
+    // Like numbering: an id inside <old>/<comment>/<todo> is not the target (the <new> copy is).
+    for (const el of elements(f.doc, OPAQUE)) {
       const id = el.attrs.id;
       if (id && !globalById.has(id)) {
         globalById.set(id, el);

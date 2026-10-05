@@ -129,7 +129,8 @@
         <row>
           <column mono="true">collapsible</column>
           <column mono="true">true</column>
-          <column>O título vira um botão que recolhe o corpo da seção</column>
+          <column>O título vira um botão que recolhe o corpo da seção. Recolhida, ela deixa
+          uma linha tracejada sob o título, no lugar do corpo; clicar nela também a abre</column>
         </row>
         <row>
           <column mono="true">collapsed</column>

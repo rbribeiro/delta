@@ -1,13 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { createContext, type CompileContext } from "../src/compiler/context";
-import { compileSource } from "../src/compiler/index";
-
-function compile(src: string): { html: string; ctx: CompileContext } {
-  const ctx = createContext("test.dlt");
-  const html = compileSource(src, ctx);
-  if (html === undefined) throw new Error("compile failed: " + JSON.stringify(ctx.diagnostics));
-  return { html, ctx };
-}
+import { describe, expect, it } from "./harness.ts";
+import { compile } from "./helpers.ts";
 
 const DOC = `<document>
   <section id="s"><title>S</title>
@@ -63,5 +55,17 @@ describe("\\ref inside math", () => {
     const { html } = compile(DOC);
     expect(html).not.toMatch(/(src|href)\s*=\s*["']https?:/i);
     expect(html).not.toMatch(/<link/i);
+  });
+});
+
+describe("ids KaTeX would choke on", () => {
+  it("links any id from inside math", () => {
+    for (const id of ["eq:a%b", "eq:a,b", "eq:a_b", "eq:a~b", "eq:a=b", "eq:a&b"]) {
+      const { html, ctx } = compile(`<document><section id="s"><title>S</title>
+        <equation id="${id.replace("&", "&amp;")}">x</equation> See $\\eqref{${id}}$.</section></document>`);
+      expect(ctx.diagnostics).toEqual([]);
+      expect(html).toContain(`data-delta-ref-to="${id.replace("&", "&amp;")}"`);
+      expect(html).toContain('data-delta-ref-num="1.1"');
+    }
   });
 });

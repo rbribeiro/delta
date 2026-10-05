@@ -1,5 +1,5 @@
 /* collab.css — shared chrome for the collaboration components (<comment>, <todo>,
-   <change>, status pills, <review>; runtime/elements/collab.ts). Here: the author chip
+   <change>, status marks, <review>; runtime/elements/collab.ts). Here: the author chip
    `.who` that memberChip() builds for every `by`/`for`, the document-wide
    `html[data-review="off"]` switch (the <review> panel's "annotations" toggle) that hides
    every annotation for a clean read, and the print rule — paper never prints its review
@@ -54,17 +54,27 @@
 /* -- Clean reading view: the panel's "annotations" switch ------------- */
 html[data-review="off"] delta-comment,
 html[data-review="off"] delta-todo,
-html[data-review="off"] .status-pill,
+html[data-review="off"] .status-mark,
 html[data-review="off"] .status-bar,
+html[data-review="off"] .proof-pending,
 html[data-review="off"] .chg-marker { display: none; }
+/* …and the paper goes back to plain: no grid, no ruling, no dashes, the shadow back. */
+html[data-review="off"] .box[data-status] {
+  --box-edge: 0 solid transparent;
+  --box-bg: var(--delta-env-bg);
+  --box-well: var(--delta-env-well);
+  filter: drop-shadow(0 0 0.6px var(--box-edge-color)) drop-shadow(0 2px 4px var(--delta-env-shadow));
+}
+html[data-review="off"] .box[data-status] > .box-sheet { background-image: none; }
 
 /* -- Print: the paper, never its review marks -------------------------- */
 @media print {
   delta-comment,
   delta-todo,
   delta-review,
-  .status-pill,
+  .status-mark,
   .status-bar,
+  .proof-pending,
   .chg-marker { display: none !important; }
 }
 

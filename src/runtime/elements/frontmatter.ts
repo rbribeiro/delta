@@ -18,7 +18,8 @@
  * the CSS keys off the `.fm-line`/`.fm-block` classes added here (never the bare tag).
  */
 
-import { t } from "../i18n";
+import { t } from "../i18n.ts";
+import { kindOf } from "./shared.ts";
 
 // tag (sans `delta-`) → English fallback label. The i18n island supplies the
 // localized text via t(); the fallback only matters if a key is missing.
@@ -60,7 +61,7 @@ class DeltaFrontMatter extends HTMLElement {
     // A cover slide also carries a <date>; the deck styles it (slide.css). Leave it.
     if (this.closest("delta-slide")) return;
 
-    const key = this.tagName.slice("DELTA-".length).toLowerCase();
+    const key = kindOf(this);
     const block = FM_BLOCK.has(key);
     this.classList.add(block ? "fm-block" : "fm-line");
     const label = document.createElement("span");
@@ -71,7 +72,7 @@ class DeltaFrontMatter extends HTMLElement {
 }
 
 export function defineFrontMatter(): void {
-  customElements.define("delta-abstract", class extends DeltaAbstract {});
+  customElements.define("delta-abstract", DeltaAbstract);
   // define() needs a unique constructor per tag, hence the anonymous subclasses.
   for (const tag of Object.keys(FM_LABELS)) {
     customElements.define(`delta-${tag}`, class extends DeltaFrontMatter {});

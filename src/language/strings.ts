@@ -12,7 +12,7 @@ const DEFAULT_LANG = "en";
 
 export const STRINGS: Record<string, Record<string, string>> = {
   en: {
-    // environment labels (one per ENVIRONMENT_TAGS entry)
+    // environment labels (one per ENVIRONMENTS entry in environments.ts)
     theorem: "Theorem",
     proposition: "Proposition",
     lemma: "Lemma",
@@ -27,6 +27,7 @@ export const STRINGS: Record<string, Record<string, string>> = {
     proof: "Proof",
     solution: "Solution",
     remark: "Remark",
+    chapter: "Chapter",
     section: "Section",
     subsection: "Subsection",
     subsubsection: "Subsubsection",
@@ -36,6 +37,7 @@ export const STRINGS: Record<string, Record<string, string>> = {
     interactive: "Interactive",
     table: "Table",
     video: "Video",
+    youtube: "Video", // a ref to a <youtube> reads like its caption
     audio: "Audio",
     contents: "Contents",
     hint: "Hint",
@@ -46,6 +48,11 @@ export const STRINGS: Record<string, Record<string, string>> = {
     copied: "Copied",
     prevSlide: "Previous slide",
     nextSlide: "Next slide",
+    // media placeholders
+    watchOnYoutube: "Watch on YouTube",
+    noVideo: "No video source.",
+    noAudio: "No audio source.",
+    noImage: "Image not found.",
     // front matter (abstract + labeled metadata)
     abstract: "Abstract",
     keywords: "Keywords",
@@ -68,9 +75,12 @@ export const STRINGS: Record<string, Record<string, string>> = {
     doing: "In progress",
     done: "Done",
     draft: "Draft",
+    heuristic: "Heuristic",
     sketch: "Sketch",
     review: "In review",
     verified: "Verified",
+    formalized: "Formalized",
+    stale: "Stale",
     human: "human",
     agent: "agent",
     insert: "Inserted",
@@ -87,7 +97,7 @@ export const STRINGS: Record<string, Record<string, string>> = {
     openComments: "open comments",
     openTasks: "open tasks",
     pendingChanges: "pending changes",
-    blocks: "blocks",
+    blocks: "Blocks",
     all: "All",
     nothingToReview: "Nothing to review",
     high: "High",
@@ -99,6 +109,43 @@ export const STRINGS: Record<string, Record<string, string>> = {
     verifiedBy: "verified by",
     note: "Note",
     jumpTo: "Go to",
+    // reader aids on a result or a step (<intuition>, <strategy>, <obstacle>)
+    intuition: "Intuition",
+    strategy: "Strategy",
+    obstacle: "Obstacle",
+    // structured proofs and hypotheses (<step>, <hyp>, <counterexample>)
+    step: "Step",
+    hyp: "Hypothesis",
+    counterexample: "Counterexample",
+    usedIn: "Used in",
+    notUsed: "Not used in the proof",
+    theProof: "the proof",
+    brokenBy: "Needed, see",
+    onlySteps: "Steps only",
+    fullProof: "Full proof",
+    // a box's foot (a joined proof or solution, or where the proof is) and its status history
+    showSolution: "Show solution",
+    hideSolution: "Hide solution",
+    proofIn: "Proof in",
+    proofInChapter: "Proof in",
+    seeProof: "See the proof",
+    proofPending: "Proof pending",
+    writtenBy: "Written by",
+    proposedBy: "Proposed by",
+    checkedBy: "Checked by",
+    staleNote: "It changed after it was checked.",
+    // a folded section's strip: what it hides ("singular|plural"), or nothing countable
+    countSection: "section|sections",
+    countSubsection: "subsection|subsections",
+    countSubsubsection: "subsubsection|subsubsections",
+    countResult: "result|results",
+    countDefinition: "definition|definitions",
+    countExample: "example|examples",
+    countExercise: "exercise|exercises",
+    countFigure: "figure|figures",
+    countTable: "table|tables",
+    foldedContent: "Folded content",
+    unfold: "Show",
   },
   pt: {
     theorem: "Teorema",
@@ -115,6 +162,7 @@ export const STRINGS: Record<string, Record<string, string>> = {
     proof: "Demonstração",
     solution: "Solução",
     remark: "Comentário",
+    chapter: "Capítulo",
     section: "Seção",
     subsection: "Subseção",
     subsubsection: "Subsubseção",
@@ -124,6 +172,7 @@ export const STRINGS: Record<string, Record<string, string>> = {
     interactive: "Interativo",
     table: "Tabela",
     video: "Vídeo",
+    youtube: "Vídeo",
     audio: "Áudio",
     contents: "Sumário",
     hint: "Dica",
@@ -134,6 +183,11 @@ export const STRINGS: Record<string, Record<string, string>> = {
     copied: "Copiado",
     prevSlide: "Slide anterior",
     nextSlide: "Próximo slide",
+    // media placeholders
+    watchOnYoutube: "Assistir no YouTube",
+    noVideo: "Sem fonte de vídeo.",
+    noAudio: "Sem fonte de áudio.",
+    noImage: "Imagem não encontrada.",
     // front matter (abstract + labeled metadata)
     abstract: "Resumo",
     keywords: "Palavras-chave",
@@ -153,14 +207,17 @@ export const STRINGS: Record<string, Record<string, string>> = {
     tasks: "Tarefas",
     change: "Alteração",
     reply: "Resposta",
-    open: "Aberta",
+    open: "Em aberto", // neutro: rotula anotações e resultados planejados (status="open")
     resolved: "Resolvida",
     doing: "Em andamento",
     done: "Concluída",
     draft: "Rascunho",
+    heuristic: "Heurística",
     sketch: "Esboço",
     review: "Em revisão",
     verified: "Verificado",
+    formalized: "Formalizado",
+    stale: "Desatualizado",
     human: "humano",
     agent: "agente",
     insert: "Inserido",
@@ -177,7 +234,7 @@ export const STRINGS: Record<string, Record<string, string>> = {
     openComments: "anotações abertas",
     openTasks: "tarefas abertas",
     pendingChanges: "alterações pendentes",
-    blocks: "blocos",
+    blocks: "Blocos",
     all: "Todos",
     nothingToReview: "Nada a revisar",
     high: "Alta",
@@ -189,6 +246,39 @@ export const STRINGS: Record<string, Record<string, string>> = {
     verifiedBy: "verificado por",
     note: "Nota",
     jumpTo: "Ir para",
+    intuition: "Intuição",
+    strategy: "Estratégia",
+    obstacle: "Obstáculo",
+    step: "Passo",
+    hyp: "Hipótese",
+    counterexample: "Contraexemplo",
+    usedIn: "Usada em",
+    notUsed: "Não usada na demonstração",
+    theProof: "a demonstração",
+    brokenBy: "Necessária, veja",
+    onlySteps: "Só passos",
+    fullProof: "Completo",
+    showSolution: "Ver solução",
+    hideSolution: "Esconder solução",
+    proofIn: "Demonstração na", // na Seção 2.3, na Subseção…
+    proofInChapter: "Demonstração no", // no Capítulo 3
+    seeProof: "Ver demonstração",
+    proofPending: "Demonstração pendente",
+    writtenBy: "Escrito por",
+    proposedBy: "Proposto por",
+    checkedBy: "Conferido por",
+    staleNote: "Mudou depois da conferência.",
+    countSection: "seção|seções",
+    countSubsection: "subseção|subseções",
+    countSubsubsection: "subsubseção|subsubseções",
+    countResult: "resultado|resultados",
+    countDefinition: "definição|definições",
+    countExample: "exemplo|exemplos",
+    countExercise: "exercício|exercícios",
+    countFigure: "figura|figuras",
+    countTable: "tabela|tabelas",
+    foldedContent: "Conteúdo recolhido",
+    unfold: "Mostrar",
   },
 };
 
@@ -202,8 +292,8 @@ export function resolveLang(lang?: string): string {
   return DEFAULT_LANG;
 }
 
-/** Merged string set for a resolved language with `en` base overlaid by the language,
- *  so any key a language omits falls back to English. Pass a `resolveLang` result. */
-export function stringsFor(lang: string): Record<string, string> {
-  return { ...STRINGS[DEFAULT_LANG], ...(STRINGS[lang] ?? {}) };
+/** The strings for a document's `lang` (any form `resolveLang` accepts): the `en` base
+ *  overlaid by the language, so any key a language omits falls back to English. */
+export function stringsFor(lang?: string): Record<string, string> {
+  return { ...STRINGS[DEFAULT_LANG], ...STRINGS[resolveLang(lang)] };
 }

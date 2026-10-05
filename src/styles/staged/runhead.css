@@ -1,0 +1,63 @@
+/* runhead.css — a sticky running header (title, section nav, reading progress).
+   STAGED: no element builds `.runhead` yet. Was in structure.css. */
+
+@layer delta.components {
+
+/* -- Running head ----------------------------------------------------- */
+.runhead {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: color-mix(in oklab, var(--delta-paper) 92%, transparent);
+  backdrop-filter: blur(8px) saturate(140%);
+  -webkit-backdrop-filter: blur(8px) saturate(140%);
+  border-bottom: var(--delta-hairline) solid var(--delta-rule-soft);
+}
+.runhead-inner {
+  max-width: var(--delta-page-max);
+  margin: 0 auto;
+  padding: 14px var(--delta-page-pad-x);
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  font-family: var(--delta-sans);
+  font-size: 12px;
+  color: var(--delta-mute);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.runhead-title {
+  color: var(--delta-ink);
+  font-family: var(--delta-serif);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 15px;
+  font-weight: 500;
+}
+.runhead-spacer { flex: 1; }
+.runhead-nav {
+  display: flex;
+  gap: 22px;
+}
+.runhead-nav a {
+  color: var(--delta-mute);
+  text-decoration: none;
+  transition: color var(--delta-dur-fast) var(--delta-ease);
+}
+.runhead-nav a:hover,
+.runhead-nav a.is-current { color: var(--delta-ink); }
+.runhead-prog {
+  height: 2px;
+  width: 60px;
+  background: var(--delta-rule);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+.runhead-prog > i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--delta-accent-ink);
+}
+
+}

@@ -1,9 +1,8 @@
 import { readFileSync } from "node:fs";
 import { dirname, extname, resolve } from "node:path";
-import { elements, type ElementNode } from "./ast";
-import { addDep, warn, type CompileContext } from "./context";
-import { isRemote } from "./files";
-
+import { elements, type ElementNode } from "./ast.ts";
+import { addDep, warn, type CompileContext } from "./context.ts";
+import { isRemote } from "./files.ts";
 
 const MIME: Record<string, string> = {
   ".png": "image/png",
@@ -47,8 +46,8 @@ export function inlineFigures(doc: ElementNode, ctx: CompileContext): void {
     }
     try {
       const imgPath = resolve(base, src);
+      addDep(ctx, imgPath); // even when missing: `--watch` rebuilds once it appears
       const data = readFileSync(imgPath);
-      addDep(ctx, imgPath);
       el.attrs.src = `data:${mime};base64,${data.toString("base64")}`;
     } catch {
       warn(ctx, `figure image not found: ${src}`, el.pos);

@@ -54,8 +54,8 @@
        so it re-derives correctly under theme-mode="dark". */
     --delta-accent:       var(--delta-lime);
     --delta-accent-ink:   oklch(0.46 0.135 130);
-    /* `.box.example` mixes this 35% into the page, so the wash is pitched so that
-       an example box lands on the SAME off-white as every other environment
+    /* A counterexample box mixes this 35% into the page, so the wash is pitched so that
+       it lands on the SAME off-white as every other environment
        (L≈0.984) with only a faint lime cast — the interiors must stay uniform, the
        pills do the distinguishing. Re-derive if --delta-surface-1 moves:
        soft_L = (target - 0.65) / 0.35, then solve the mix below for the grey. */
@@ -68,8 +68,7 @@
        gets its own colour, so a theorem, a definition and an example are told
        apart at a glance while scanning — the brand's differently-coloured cards,
        applied where a long document actually benefits from them. The pill carries
-       black text (every tone is light) and drops its border, since a filled shape
-       needs no outline. */
+       black text (every tone is light). */
     --delta-env-bg:          var(--delta-surface-1);
     --delta-env-border:      var(--delta-rule);
     --delta-tone-theorem:    var(--delta-lime);
@@ -78,7 +77,7 @@
     --delta-tone-remark:     var(--delta-pink);
     --delta-tone-exercise:   var(--delta-dune);
     --delta-env-tag-ink:     var(--delta-black);
-    --delta-env-tag-border:  transparent;
+    --delta-env-tag-fill:    1;
     /* Tint the box border toward its family tone, so the whole environment — pill
        and edge — is colour-coded, while the interior stays neutral grey. */
     --delta-env-tint:        0.6;

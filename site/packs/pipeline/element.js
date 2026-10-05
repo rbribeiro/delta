@@ -62,7 +62,7 @@
       if (!a) {
         m.node = "added";
         out.added++;
-      } else if (a.tag !== b.tag || ("text" in a) !== ("text" in b) || ("raw" in a) !== ("raw" in b)) {
+      } else if (a.tag !== b.tag || "text" in a !== "text" in b || "raw" in a !== "raw" in b) {
         m.node = "changed";
         out.changed++;
       } else if ("text" in b && a.text !== b.text) {
@@ -77,8 +77,13 @@
       if (b.attrs && !m.node) {
         const oldAttrs = (a && a.attrs) || {};
         for (const k of Object.keys(b.attrs)) {
-          if (!(k in oldAttrs)) { m.attrs[k] = "added"; out.attrsAdded++; }
-          else if (oldAttrs[k] !== b.attrs[k]) { m.attrs[k] = "changed"; out.attrsChanged++; }
+          if (!(k in oldAttrs)) {
+            m.attrs[k] = "added";
+            out.attrsAdded++;
+          } else if (oldAttrs[k] !== b.attrs[k]) {
+            m.attrs[k] = "changed";
+            out.attrsChanged++;
+          }
         }
         for (const k of Object.keys(oldAttrs)) if (!(k in b.attrs)) m.removedAttrs.push(k);
       }
@@ -108,7 +113,15 @@
       if (this.dataset.deltaReady) return;
       this.dataset.deltaReady = "1";
       if (!DATA) {
-        this.append(el("p", "px-missing", "Dados do explorador não gerados: rode ", el("code", null, "npm run trace"), "."));
+        this.append(
+          el(
+            "p",
+            "px-missing",
+            "Dados do explorador não gerados: rode ",
+            el("code", null, "npm run trace"),
+            ".",
+          ),
+        );
         return;
       }
       this.events = resolveEvents(DATA.events);
@@ -123,10 +136,22 @@
       root.tabIndex = 0;
       root.setAttribute("aria-label", "Explorador do pipeline do compilador");
       root.addEventListener("keydown", (ev) => {
-        if (ev.key === "ArrowRight") { this.go(this.state.index + 1); ev.preventDefault(); }
-        if (ev.key === "ArrowLeft") { this.go(this.state.index - 1); ev.preventDefault(); }
-        if (ev.key === "Home") { this.go(0); ev.preventDefault(); }
-        if (ev.key === "End") { this.go(this.events.length - 1); ev.preventDefault(); }
+        if (ev.key === "ArrowRight") {
+          this.go(this.state.index + 1);
+          ev.preventDefault();
+        }
+        if (ev.key === "ArrowLeft") {
+          this.go(this.state.index - 1);
+          ev.preventDefault();
+        }
+        if (ev.key === "Home") {
+          this.go(0);
+          ev.preventDefault();
+        }
+        if (ev.key === "End") {
+          this.go(this.events.length - 1);
+          ev.preventDefault();
+        }
       });
 
       // A linha do tempo: uma linha da esquerda para a direita, dividida em fases; um ponto por
@@ -155,28 +180,59 @@
       this.stepTitle = el("div", "px-step-title");
       this.what = el("p", "px-what");
       this.changes = el("p", "px-changes");
-      const head = el("div", "px-head",
-        el("div", "px-nav", this.prevBtn, this.pos, this.nextBtn, el("span", "px-nav-gap"), this.jump),
-        this.stepTitle, this.what, this.changes);
+      const head = el(
+        "div",
+        "px-head",
+        el(
+          "div",
+          "px-nav",
+          this.prevBtn,
+          this.pos,
+          this.nextBtn,
+          el("span", "px-nav-gap"),
+          this.jump,
+        ),
+        this.stepTitle,
+        this.what,
+        this.changes,
+      );
 
       // Abas de arquivo e de painel.
       this.fileTabs = el("div", "px-tabs px-files");
       this.fileButtons = DATA.files.map((name, i) => {
-        const b = btn(name, "ghost px-tab", () => { this.state.file = i; this.render(); });
+        const b = btn(name, "ghost px-tab", () => {
+          this.state.file = i;
+          this.render();
+        });
         this.fileTabs.append(b);
         return b;
       });
       this.panelTabs = el("div", "px-tabs px-panels");
       this.panelButtons = {};
-      for (const [key, label] of [["tree", "Árvore"], ["ctx", "Contexto"], ["shared", "Compartilhado"], ["html", "Saída"], ["source", "Fonte"]]) {
-        const b = btn(label, "ghost px-tab", () => { this.state.panel = key; this.render(); });
+      for (const [key, label] of [
+        ["tree", "Árvore"],
+        ["ctx", "Contexto"],
+        ["shared", "Compartilhado"],
+        ["html", "Saída"],
+        ["source", "Fonte"],
+      ]) {
+        const b = btn(label, "ghost px-tab", () => {
+          this.state.panel = key;
+          this.render();
+        });
         this.panelButtons[key] = b;
         this.panelTabs.append(b);
       }
       this.panel = el("div", "px-panel");
 
-      root.append(this.track, head, el("div", "px-tabbar", this.fileTabs, this.panelTabs), this.panel);
-      if (typeof ResizeObserver !== "undefined") new ResizeObserver(() => this.layoutTrack()).observe(this.track);
+      root.append(
+        this.track,
+        head,
+        el("div", "px-tabbar", this.fileTabs, this.panelTabs),
+        this.panel,
+      );
+      if (typeof ResizeObserver !== "undefined")
+        new ResizeObserver(() => this.layoutTrack()).observe(this.track);
       this.append(root);
     }
 
@@ -202,7 +258,8 @@
           for (const i of byStep.get(step.name) || []) {
             const ev = this.events[i];
             const dot = btn("", "px-dot" + (ev.file === null ? " is-all" : ""), () => this.go(i));
-            dot.title = step.name + (ev.file === null ? " · projeto inteiro" : " · " + DATA.files[ev.file]);
+            dot.title =
+              step.name + (ev.file === null ? " · projeto inteiro" : " · " + DATA.files[ev.file]);
             dot.setAttribute("aria-label", dot.title);
             this.dots[i] = dot;
             group.append(dot);
@@ -218,7 +275,8 @@
         this.labels.push({ el: label, anchor: node, center: false });
         if (phase.bail && pi < DATA.phases.length - 1) {
           const gate = el("div", "px-gate", el("span", "px-gate-bar"));
-          gate.title = "Ao fim desta fase, qualquer erro em qualquer arquivo interrompe a compilação.";
+          gate.title =
+            "Ao fim desta fase, qualquer erro em qualquer arquivo interrompe a compilação.";
           phases.append(gate);
           const glabel = el("div", "px-phase-label px-gate-label", "pára se houver erro");
           glabel.title = gate.title;
@@ -227,7 +285,12 @@
       });
       this.line = el("div", "px-line");
       this.fill = el("div", "px-fill");
-      this.marker = el("div", "px-marker", el("span", "px-marker-caret"), el("span", "px-marker-label"));
+      this.marker = el(
+        "div",
+        "px-marker",
+        el("span", "px-marker-caret"),
+        el("span", "px-marker-label"),
+      );
       this.labelRow = el("div", "px-labels", ...this.labels.map((l) => l.el));
       inner.append(this.labelRow, this.line, this.fill, phases, this.marker);
       this.phases = phases;
@@ -241,7 +304,12 @@
       const inner = this.track.firstElementChild;
       if (!inner.offsetParent) return;
       const innerRect = inner.getBoundingClientRect();
-      const rel = (r) => ({ left: r.left - innerRect.left, top: r.top - innerRect.top, right: r.right - innerRect.left, bottom: r.bottom - innerRect.top });
+      const rel = (r) => ({
+        left: r.left - innerRect.left,
+        top: r.top - innerRect.top,
+        right: r.right - innerRect.left,
+        bottom: r.bottom - innerRect.top,
+      });
 
       // 1. Rótulos das fases (e do portão) em linhas: o primeiro que couber sem sobrepor.
       const rowH = 15;
@@ -290,7 +358,8 @@
       const view = this.track;
       if (view.scrollWidth > view.clientWidth) {
         if (x - view.scrollLeft < 60) view.scrollLeft = Math.max(0, x - 60);
-        else if (x - view.scrollLeft > view.clientWidth - 60) view.scrollLeft = x - view.clientWidth + 60;
+        else if (x - view.scrollLeft > view.clientWidth - 60)
+          view.scrollLeft = x - view.clientWidth + 60;
         clampTo(view.scrollLeft + half + 4, view.scrollLeft + view.clientWidth - half - 4);
       }
     }
@@ -320,7 +389,8 @@
         d.classList.toggle("is-done", i < index);
         d.classList.toggle("is-current", i === index);
       });
-      this.marker.lastElementChild.textContent = ev.step + (ev.file === null ? "" : " · " + DATA.files[ev.file]);
+      this.marker.lastElementChild.textContent =
+        ev.step + (ev.file === null ? "" : " · " + DATA.files[ev.file]);
       this.jump.value = ev.step;
       this.layoutTrack();
       // cabeçalho
@@ -328,7 +398,11 @@
       this.prevBtn.disabled = index === 0;
       this.nextBtn.disabled = index === this.events.length - 1;
       this.stepTitle.replaceChildren(
-        el("span", "px-kind", ev.file === null ? "projeto inteiro" : "por arquivo · " + DATA.files[ev.file]),
+        el(
+          "span",
+          "px-kind",
+          ev.file === null ? "projeto inteiro" : "por arquivo · " + DATA.files[ev.file],
+        ),
         el("code", "px-step-name", ev.step),
         el("span", "px-phase-tag", ev.phase),
       );
@@ -339,26 +413,38 @@
       const ctxChanged = diffObj(prev ? prev.files[file].ctx : null, ev.files[file].ctx);
       const sharedChanged = diffObj(prev ? prev.shared : null, ev.shared);
       const htmlChanged = !same(prev ? prev.files[file].html : null, ev.files[file].html);
-      this.changes.replaceChildren(...this.describeChanges(astDiff, ctxChanged, sharedChanged, htmlChanged, prev, ev));
+      this.changes.replaceChildren(
+        ...this.describeChanges(astDiff, ctxChanged, sharedChanged, htmlChanged, prev, ev),
+      );
 
       // abas
       this.fileButtons.forEach((b, i) => b.classList.toggle("is-current", i === file));
       for (const [key, b] of Object.entries(this.panelButtons)) {
         b.classList.toggle("is-current", key === panel);
-        const dirty = key === "tree" ? astDiff.marks.size > 0 || astDiff.removed > 0
-          : key === "ctx" ? ctxChanged.size > 0
-          : key === "shared" ? sharedChanged.size > 0
-          : key === "html" ? htmlChanged : false;
+        const dirty =
+          key === "tree"
+            ? astDiff.marks.size > 0 || astDiff.removed > 0
+            : key === "ctx"
+              ? ctxChanged.size > 0
+              : key === "shared"
+                ? sharedChanged.size > 0
+                : key === "html"
+                  ? htmlChanged
+                  : false;
         b.classList.toggle("is-dirty", dirty);
       }
 
       // painel
       this.panel.replaceChildren(
-        panel === "tree" ? this.renderTree(ev.files[file].ast, astDiff)
-        : panel === "ctx" ? this.renderObject(ev.files[file].ctx, ctxChanged, "ctx")
-        : panel === "shared" ? this.renderShared(ev.shared, sharedChanged, prev ? prev.shared : null)
-        : panel === "html" ? this.renderHtml(ev.files[file].html, DATA.files[file])
-        : this.renderSource(DATA.files[file]),
+        panel === "tree"
+          ? this.renderTree(ev.files[file].ast, astDiff)
+          : panel === "ctx"
+            ? this.renderObject(ev.files[file].ctx, ctxChanged, "ctx")
+            : panel === "shared"
+              ? this.renderShared(ev.shared, sharedChanged, prev ? prev.shared : null)
+              : panel === "html"
+                ? this.renderHtml(ev.files[file].html, DATA.files[file])
+                : this.renderSource(DATA.files[file]),
       );
     }
 
@@ -366,13 +452,22 @@
       if (!prev) return [el("span", "px-muted", "Estado inicial: antes de qualquer passo.")];
       const parts = [];
       const tree = [];
-      if (astDiff.attrsAdded) tree.push(`+${astDiff.attrsAdded} atributo${astDiff.attrsAdded > 1 ? "s" : ""}`);
-      if (astDiff.attrsChanged) tree.push(`${astDiff.attrsChanged} atributo${astDiff.attrsChanged > 1 ? "s" : ""} alterado${astDiff.attrsChanged > 1 ? "s" : ""}`);
+      if (astDiff.attrsAdded)
+        tree.push(`+${astDiff.attrsAdded} atributo${astDiff.attrsAdded > 1 ? "s" : ""}`);
+      if (astDiff.attrsChanged)
+        tree.push(
+          `${astDiff.attrsChanged} atributo${astDiff.attrsChanged > 1 ? "s" : ""} alterado${astDiff.attrsChanged > 1 ? "s" : ""}`,
+        );
       if (astDiff.added) tree.push(`+${astDiff.added} nó${astDiff.added > 1 ? "s" : ""}`);
-      if (astDiff.changed) tree.push(`${astDiff.changed} nó${astDiff.changed > 1 ? "s" : ""} reescrito${astDiff.changed > 1 ? "s" : ""}`);
+      if (astDiff.changed)
+        tree.push(
+          `${astDiff.changed} nó${astDiff.changed > 1 ? "s" : ""} reescrito${astDiff.changed > 1 ? "s" : ""}`,
+        );
       if (astDiff.removed) tree.push(`−${astDiff.removed} nó${astDiff.removed > 1 ? "s" : ""}`);
-      if (tree.length) parts.push(el("span", "px-chip", el("b", null, "Árvore: "), tree.join(", ")));
-      if (ctxChanged.size) parts.push(el("span", "px-chip", el("b", null, "Contexto: "), [...ctxChanged].join(", ")));
+      if (tree.length)
+        parts.push(el("span", "px-chip", el("b", null, "Árvore: "), tree.join(", ")));
+      if (ctxChanged.size)
+        parts.push(el("span", "px-chip", el("b", null, "Contexto: "), [...ctxChanged].join(", ")));
       if (sharedChanged.size) {
         const items = [...sharedChanged].map((k) => {
           if (k === "registry") {
@@ -389,20 +484,29 @@
         const bits = [];
         if (h) {
           bits.push(`${h.templates.length} template${h.templates.length === 1 ? "" : "s"}`);
-          if (h.islands.length) bits.push("ilhas: " + h.islands.map((i) => i.replace("delta-", "")).join(", "));
+          if (h.islands.length)
+            bits.push("ilhas: " + h.islands.map((i) => i.replace("delta-", "")).join(", "));
           if (h.katexCss) bits.push("CSS do KaTeX");
         }
-        parts.push(el("span", "px-chip", el("b", null, "Saída: "), bits.join(", ") || "HTML gerado"));
+        parts.push(
+          el("span", "px-chip", el("b", null, "Saída: "), bits.join(", ") || "HTML gerado"),
+        );
       }
       if (!parts.length) {
-        const which = ev.file === null ? "neste passo" : `neste passo, para ${DATA.files[this.state.file]}`;
+        const which =
+          ev.file === null ? "neste passo" : `neste passo, para ${DATA.files[this.state.file]}`;
         return [el("span", "px-muted", `Nada mudou ${which}.`)];
       }
       return [el("b", null, "Mudou · "), ...parts];
     }
 
     renderTree(ast, diff) {
-      if (!ast) return el("p", "px-muted", "Ainda não há árvore: o arquivo só é lido e analisado nos passos readSource e parse.");
+      if (!ast)
+        return el(
+          "p",
+          "px-muted",
+          "Ainda não há árvore: o arquivo só é lido e analisado nos passos readSource e parse.",
+        );
       const box = el("div", "px-tree");
       const line = (node, path, depth) => {
         const m = diff.marks.get(path);
@@ -416,7 +520,16 @@
           row.append(el("span", "px-tag", "<" + node.tag));
           for (const [k, v] of Object.entries(node.attrs)) {
             const status = m && m.attrs[k];
-            row.append(" ", el("span", "px-attr" + (status ? " is-" + status : ""), el("span", "px-attr-k", k), "=", el("span", "px-attr-v", "\"" + v + "\"")));
+            row.append(
+              " ",
+              el(
+                "span",
+                "px-attr" + (status ? " is-" + status : ""),
+                el("span", "px-attr-k", k),
+                "=",
+                el("span", "px-attr-v", '"' + v + '"'),
+              ),
+            );
           }
           if (m && m.removedAttrs.length) {
             for (const k of m.removedAttrs) row.append(" ", el("span", "px-attr is-removed", k));
@@ -427,22 +540,37 @@
         if (node.children) node.children.forEach((c, i) => line(c, path + "." + i, depth + 1));
       };
       line(ast, "r", 0);
-      if (diff.removed) box.append(el("div", "px-muted px-note", `${diff.removed} nó(s) que existiam antes deste passo não existem mais.`));
+      if (diff.removed)
+        box.append(
+          el(
+            "div",
+            "px-muted px-note",
+            `${diff.removed} nó(s) que existiam antes deste passo não existem mais.`,
+          ),
+        );
       return box;
     }
 
     renderObject(obj, changed, kind) {
       const table = el("table", "px-kv");
       for (const [k, v] of Object.entries(obj)) {
-        const empty = v === null || v === false || (Array.isArray(v) && v.length === 0) || (typeof v === "object" && v !== null && !Array.isArray(v) && Object.keys(v).length === 0);
-        const row = el("tr", (changed.has(k) ? "is-changed" : "") + (empty ? " is-empty" : ""),
+        const empty =
+          v === null ||
+          v === false ||
+          (Array.isArray(v) && v.length === 0) ||
+          (typeof v === "object" && v !== null && !Array.isArray(v) && Object.keys(v).length === 0);
+        const row = el(
+          "tr",
+          (changed.has(k) ? "is-changed" : "") + (empty ? " is-empty" : ""),
           el("th", null, el("code", null, k)),
-          el("td", null, this.renderValue(v)));
+          el("td", null, this.renderValue(v)),
+        );
         table.append(row);
       }
-      const note = kind === "ctx"
-        ? "O CompileContext deste arquivo. registry, papers, citedPapers e team são compartilhados, e globalById/idToFile são do projeto: veja a aba Compartilhado."
-        : "";
+      const note =
+        kind === "ctx"
+          ? "O CompileContext deste arquivo. registry, papers, citedPapers e team são compartilhados, e globalById/idToFile são do projeto: veja a aba Compartilhado."
+          : "";
       return el("div", "px-object", note ? el("p", "px-muted px-note", note) : null, table);
     }
 
@@ -461,52 +589,127 @@
 
     renderShared(shared, changed, prevShared) {
       const wrap = el("div", "px-object");
-      wrap.append(el("p", "px-muted px-note", "O estado que todos os arquivos compartilham: os contadores atravessam os arquivos, e cada ctx aponta para os mesmos mapas."));
+      wrap.append(
+        el(
+          "p",
+          "px-muted px-note",
+          "O estado que todos os arquivos compartilham: os contadores atravessam os arquivos, e cada ctx aponta para os mesmos mapas.",
+        ),
+      );
 
       // Contadores: os dois mapas lado a lado.
       const counters = el("table", "px-kv px-counters");
-      counters.append(el("tr", null, el("th", null, "contador"), el("th", null, "valor"), el("th", null, "exibido")));
+      counters.append(
+        el(
+          "tr",
+          null,
+          el("th", null, "contador"),
+          el("th", null, "valor"),
+          el("th", null, "exibido"),
+        ),
+      );
       const names = new Set([...Object.keys(shared.counters), ...Object.keys(shared.display)]);
       for (const name of names) {
         const before = prevShared ? prevShared.counters[name] : undefined;
-        const row = el("tr", before !== shared.counters[name] ? "is-changed" : "",
+        const row = el(
+          "tr",
+          before !== shared.counters[name] ? "is-changed" : "",
           el("th", null, el("code", null, name)),
           el("td", null, el("code", null, String(shared.counters[name] ?? 0))),
-          el("td", null, el("code", null, shared.display[name] ?? "")));
+          el("td", null, el("code", null, shared.display[name] ?? "")),
+        );
         counters.append(row);
       }
-      wrap.append(el("h4", "px-h", "numbering", changed.has("counters") || changed.has("display") ? el("span", "px-dot") : null),
-        names.size ? counters : el("p", "px-muted", "Nenhum contador ainda."));
+      wrap.append(
+        el(
+          "h4",
+          "px-h",
+          "numbering",
+          changed.has("counters") || changed.has("display") ? el("span", "px-dot") : null,
+        ),
+        names.size ? counters : el("p", "px-muted", "Nenhum contador ainda."),
+      );
 
       // Registro: id → tag, num. Só o que uma referência precisa para montar o rótulo.
       const reg = el("table", "px-kv px-registry");
-      reg.append(el("tr", null, el("th", null, "id"), el("th", null, "tag"), el("th", null, "num")));
+      reg.append(
+        el("tr", null, el("th", null, "id"), el("th", null, "tag"), el("th", null, "num")),
+      );
       for (const [id, e] of Object.entries(shared.registry)) {
         const isNew = !prevShared || !(id in prevShared.registry);
-        reg.append(el("tr", isNew && prevShared ? "is-changed" : "",
-          el("th", null, el("code", null, id)), el("td", null, el("code", null, e.tag)),
-          el("td", null, el("code", null, e.num || "—"))));
+        reg.append(
+          el(
+            "tr",
+            isNew && prevShared ? "is-changed" : "",
+            el("th", null, el("code", null, id)),
+            el("td", null, el("code", null, e.tag)),
+            el("td", null, el("code", null, e.num || "—")),
+          ),
+        );
       }
-      wrap.append(el("h4", "px-h", "registry", changed.has("registry") ? el("span", "px-dot") : null),
-        el("p", "px-muted px-note", "id → { tag, num }: escrito por numberDocument, lido por resolveReferences (o rótulo da referência) e por renderMath (\\ref{})."),
-        Object.keys(shared.registry).length ? reg : el("p", "px-muted", "Vazio até numberDocument."));
+      wrap.append(
+        el("h4", "px-h", "registry", changed.has("registry") ? el("span", "px-dot") : null),
+        el(
+          "p",
+          "px-muted px-note",
+          "id → { tag, num }: escrito por numberDocument, lido por resolveReferences (o rótulo da referência) e por renderMath (\\ref{}).",
+        ),
+        Object.keys(shared.registry).length
+          ? reg
+          : el("p", "px-muted", "Vazio até numberDocument."),
+      );
 
       // globalById + idToFile: id → o nó inteiro (aqui, sua tag) e o arquivo de saída onde ele mora.
       const gb = el("table", "px-kv px-global");
-      gb.append(el("tr", null, el("th", null, "id"), el("th", null, "nó (tag)"), el("th", null, "arquivo de saída")));
+      gb.append(
+        el(
+          "tr",
+          null,
+          el("th", null, "id"),
+          el("th", null, "nó (tag)"),
+          el("th", null, "arquivo de saída"),
+        ),
+      );
       for (const [id, tag] of Object.entries(shared.globalById || {})) {
-        const isNew = !prevShared || !((prevShared.globalById || {})[id]);
-        gb.append(el("tr", isNew && prevShared ? "is-changed" : "",
-          el("th", null, el("code", null, id)), el("td", null, el("code", null, tag)),
-          el("td", null, el("code", null, shared.idToFile[id] || "—"))));
+        const isNew = !prevShared || !(prevShared.globalById || {})[id];
+        gb.append(
+          el(
+            "tr",
+            isNew && prevShared ? "is-changed" : "",
+            el("th", null, el("code", null, id)),
+            el("td", null, el("code", null, tag)),
+            el("td", null, el("code", null, shared.idToFile[id] || "—")),
+          ),
+        );
       }
-      wrap.append(el("h4", "px-h", "globalById + idToFile", changed.has("globalById") || changed.has("idToFile") ? el("span", "px-dot") : null),
-        el("p", "px-muted px-note", "Construídos por buildIdMaps sobre todos os arquivos. globalById guarda o próprio nó (não uma cópia): emit o serializa num <template> em cada saída que o referencia. idToFile dá o arquivo do salto (data-target-href)."),
-        Object.keys(shared.globalById || {}).length ? gb : el("p", "px-muted", "Vazios até buildIdMaps."));
+      wrap.append(
+        el(
+          "h4",
+          "px-h",
+          "globalById + idToFile",
+          changed.has("globalById") || changed.has("idToFile") ? el("span", "px-dot") : null,
+        ),
+        el(
+          "p",
+          "px-muted px-note",
+          "Construídos por buildIdMaps sobre todos os arquivos. globalById guarda o próprio nó (não uma cópia): emit o serializa num <template> em cada saída que o referencia. idToFile dá o arquivo do salto (data-target-href).",
+        ),
+        Object.keys(shared.globalById || {}).length
+          ? gb
+          : el("p", "px-muted", "Vazios até buildIdMaps."),
+      );
 
       // O resto, como pares chave/valor.
       const rest = {};
-      for (const k of ["papers", "citedPapers", "team", "bibOut", "projectImports", "projectDiagnostics"]) rest[k] = shared[k];
+      for (const k of [
+        "papers",
+        "citedPapers",
+        "team",
+        "bibOut",
+        "projectImports",
+        "projectDiagnostics",
+      ])
+        rest[k] = shared[k];
       wrap.append(el("h4", "px-h", "o resto"), this.renderObject(rest, changed, "shared"));
       return wrap;
     }
@@ -514,28 +717,72 @@
     renderHtml(h, name) {
       const wrap = el("div", "px-object");
       if (!h) {
-        wrap.append(el("p", "px-muted", `${name} ainda não foi emitido: o HTML só existe depois do passo emit.`));
+        wrap.append(
+          el(
+            "p",
+            "px-muted",
+            `${name} ainda não foi emitido: o HTML só existe depois do passo emit.`,
+          ),
+        );
         return wrap;
       }
-      wrap.append(el("p", "px-muted px-note", `O que emit escreveu em ${name.replace(/\.dlt$/, ".html")} além da árvore serializada: ${(h.bytes / 1024).toFixed(0)} KB no total.`));
+      wrap.append(
+        el(
+          "p",
+          "px-muted px-note",
+          `O que emit escreveu em ${name.replace(/\.dlt$/, ".html")} além da árvore serializada: ${(h.bytes / 1024).toFixed(0)} KB no total.`,
+        ),
+      );
       const t = el("table", "px-kv px-templates");
-      t.append(el("tr", null, el("th", null, "template (id)"), el("th", null, "nó vindo de"), el("th", null, "conteúdo serializado")));
+      t.append(
+        el(
+          "tr",
+          null,
+          el("th", null, "template (id)"),
+          el("th", null, "nó vindo de"),
+          el("th", null, "conteúdo serializado"),
+        ),
+      );
       for (const tp of h.templates) {
-        t.append(el("tr", null, el("th", null, el("code", null, tp.id)), el("td", null, el("code", null, tp.from)), el("td", null, el("code", "px-json", tp.html))));
+        t.append(
+          el(
+            "tr",
+            null,
+            el("th", null, el("code", null, tp.id)),
+            el("td", null, el("code", null, tp.from)),
+            el("td", null, el("code", "px-json", tp.html)),
+          ),
+        );
       }
-      wrap.append(el("h4", "px-h", "templates para as prévias"),
-        el("p", "px-muted px-note", "Um por id em referencedIds; o nó vem de globalById, mesmo quando mora em outro arquivo. O runtime clona o template no popover, sem fetch."),
-        h.templates.length ? t : el("p", "px-muted", "Nenhum: este arquivo não referencia nada."));
+      wrap.append(
+        el("h4", "px-h", "templates para as prévias"),
+        el(
+          "p",
+          "px-muted px-note",
+          "Um por id em referencedIds; o nó vem de globalById, mesmo quando mora em outro arquivo. O runtime clona o template no popover, sem fetch.",
+        ),
+        h.templates.length ? t : el("p", "px-muted", "Nenhum: este arquivo não referencia nada."),
+      );
       const rest = { islands: h.islands, katexCss: h.katexCss, packs: h.packs };
-      wrap.append(el("h4", "px-h", "ilhas, CSS e pacotes"), this.renderObject(rest, new Set(), "html"));
+      wrap.append(
+        el("h4", "px-h", "ilhas, CSS e pacotes"),
+        this.renderObject(rest, new Set(), "html"),
+      );
       return wrap;
     }
 
     renderSource(name) {
       const src = DATA.sources[name] || "";
-      return el("div", "px-object",
-        el("p", "px-muted px-note", `${name}, como o autor escreveu. Compare com a árvore após o passo parse.`),
-        el("pre", "px-src", src));
+      return el(
+        "div",
+        "px-object",
+        el(
+          "p",
+          "px-muted px-note",
+          `${name}, como o autor escreveu. Compare com a árvore após o passo parse.`,
+        ),
+        el("pre", "px-src", src),
+      );
     }
   }
 

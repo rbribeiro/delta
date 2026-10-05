@@ -3,13 +3,28 @@
  * Passes branch on `tag` and write computed results back into `attrs` (for instance, the
  * numbering pass writes `num`); there are no per-feature node subclasses, so adding
  * an environment is configuration, not a new node type. RawNode carries pre-rendered
- * HTML (KaTeX output) that the emitter must not escape.
+ * HTML the emitter must not escape: KaTeX output, highlighted code, a proof map's SVG,
+ * and the `<br>`s of a blank line inside `<linebreaks>`.
  */
 
 /** A position represents the location of a node in the source document. It is used for warning and error reporting. */
 export interface Position {
   line: number;
   column: number;
+  /** The file the node was parsed from — an `<include>`d file keeps its own (diagnostics use it). */
+  file?: string;
+}
+
+/** Where an element sits in its source file: `source.slice(start, end)` is its exact text. */
+export interface SourceSpan {
+  file: string;
+  /** Offset of the opening `<`. */
+  start: number;
+  /** Offset just past the closing `>` (or the `/>` of a self-closing tag). */
+  end: number;
+  /** The content between the tags: `source.slice(inner, innerEnd)` (empty when self-closing). */
+  inner: number;
+  innerEnd: number;
 }
 
 export interface TextNode {
@@ -30,13 +45,24 @@ export interface ElementNode {
   attrs: Record<string, string>;
   children: Node[];
   pos?: Position;
+  /** Set by `parseSource`; absent on nodes a pass synthesizes. */
+  src?: SourceSpan;
 }
 
 export type Node = ElementNode | TextNode | RawNode;
 
+/** A new element node, for passes that synthesize markup (`element("ref", { to: id })`). */
+export function element(
+  tag: string,
+  attrs: Record<string, string> = {},
+  children: Node[] = [],
+): ElementNode {
+  return { type: "element", tag, attrs, children };
+}
+
 /**
  * Extracts the text content from a node, removing all HTML tags. For text nodes, it returns the text itself. For raw nodes, it returns an empty string. For element nodes, it recursively concatenates the text content of all child nodes.
- * 
+ *
  * @param node - A node of any type
  * @returns string - flattened text content of the node and its children
  */
@@ -53,17 +79,51 @@ export function textContent(node: Node): string {
 }
 
 /**
- * 
+ *
  * Generator function that yields all ElementNode instances in a tree structure, starting from the provided root ElementNode. It traverses the tree depth-first, yielding each ElementNode it encounters.
- * 
+ *
  * @param root - An ElementNode from which to start the traversal
+ * @param skip - tags whose descendants are not visited (the element itself is still yielded):
+ *   `elements(doc, OPAQUE)` (language/tags.ts) walks the document the way numbering does
  * @returns Generator<ElementNode> - A generator that yields ElementNode instances
  */
-export function* elements(root: ElementNode): Generator<ElementNode> {
+export function* elements(root: ElementNode, skip?: ReadonlySet<string>): Generator<ElementNode> {
   yield root;
+  if (skip?.has(root.tag)) return;
   for (const child of root.children) {
-    if (child.type === "element") yield* elements(child);
+    if (child.type === "element") yield* elements(child, skip);
   }
+}
+
+/**
+ * Depth-first, parents before children, handing `visit` each element with its ancestors
+ * (outermost first, `root` included, the element itself not). `visit` returns `false` to
+ * skip the element's children. The ancestors array is reused: read it during the call,
+ * do not keep it.
+ *
+ *   walk(doc, (el, ancestors) => { if (RAW_TAGS.has(el.tag)) return false; … });
+ */
+export function walk(
+  root: ElementNode,
+  visit: (el: ElementNode, ancestors: readonly ElementNode[]) => boolean | void,
+): void {
+  const ancestors: ElementNode[] = [];
+  const go = (el: ElementNode): void => {
+    if (visit(el, ancestors) === false) return;
+    ancestors.push(el);
+    for (const c of el.children) if (c.type === "element") go(c);
+    ancestors.pop();
+  };
+  go(root);
+}
+
+/** The nearest of `ancestors` (as `walk` hands them) that passes `test`. */
+export function nearest(
+  ancestors: readonly ElementNode[],
+  test: (el: ElementNode) => boolean,
+): ElementNode | undefined {
+  for (let i = ancestors.length - 1; i >= 0; i--) if (test(ancestors[i])) return ancestors[i];
+  return undefined;
 }
 
 /**
@@ -85,17 +145,17 @@ export function titleOf(el: ElementNode): ElementNode | undefined {
 
 /**
  * Look for an element with a given id in the tree rooted at `root`. Returns the element if found, null if not found, or undefined if multiple elements with the same id are found.
- * 
+ *
  * @param root - the root element to look for children with given id
  * @param id  - the id
  * @returns - the element with the given id, or null if not found, or undefined if multiple elements are found
  */
-export function findElementById(root: ElementNode,id: string): ElementNode | null | undefined {
-  let elementList: ElementNode[] = []
+export function findElementById(root: ElementNode, id: string): ElementNode | null | undefined {
+  let found: ElementNode | null = null;
   for (const el of elements(root)) {
-    if(el.attrs?.id === id) elementList.push(el);
+    if (el.attrs.id !== id) continue;
+    if (found) return undefined;
+    found = el;
   }
-  if(elementList.length === 0) return null;
-  if(elementList.length > 1) return undefined;
-  return elementList[0];
+  return found;
 }

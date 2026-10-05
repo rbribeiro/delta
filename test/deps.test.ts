@@ -1,8 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "./harness.ts";
 import { resolve } from "node:path";
-import { compileFile } from "../src/compiler/index";
-import { loadProjectConfig } from "../src/compiler/config";
-import { compileProject } from "../src/compiler/project";
+import { compileFile } from "../src/compiler/index.ts";
+import { loadProjectConfig } from "../src/compiler/config.ts";
+import { compileProject } from "../src/compiler/project.ts";
 
 // hello.dlt exercises every dependency kind: <include>, <document theme>, <import>
 // pack, <bibliography src>, and <figure src> — so its dep set covers them all.
@@ -35,6 +35,13 @@ describe("dependency tracking (for --watch)", () => {
     // phantom dep would make --watch wait on a path that does not exist.
     const withBuiltin = compileFile(resolve("test/fixtures/theme-builtin.dlt"));
     expect(withBuiltin.deps).toEqual([resolve("test/fixtures/theme-builtin.dlt")]);
+  });
+
+  it("records a missing include or figure, so --watch rebuilds once it appears", () => {
+    const include = compileFile(resolve("test/fixtures/missing-include.dlt"));
+    expect(include.deps).toContain(resolve("test/fixtures/not-written-yet.dlt"));
+    const figure = compileFile(resolve("test/fixtures/missing-figure.dlt"));
+    expect(figure.deps).toContain(resolve("test/fixtures/not-drawn-yet.png"));
   });
 
   it("unions deps across every input on the project path", () => {

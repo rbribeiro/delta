@@ -300,9 +300,21 @@ Daí <change by="claude" date="2026-09-12" note="sinal trocado"><old>$x < 0$</ol
 
       Em que pé está cada pedaço. Qualquer ambiente, demonstração ou seção aceita três
       atributos: <c>status</c> diz a maturidade, <c>by</c> quem escreveu o bloco e
-      <c>verified-by</c> quem conferiu. O cabeçalho ganha uma etiqueta discreta; blocos
-      em rascunho ou esboço ficam com a borda tracejada. Para prosa solta, sem cabeçalho
-      onde pendurar a etiqueta, existe o envoltório <c><draft></c>.
+      <c>verified-by</c> quem conferiu. Enquanto o bloco está em trabalho, o estado é só
+      uma palavra em versalete cinza no fim do cabeçalho, e o papel da caixa conta o
+      resto: rascunho e heurístico em papel quadriculado, esboço em papel pautado, os dois
+      com a borda tracejada; um resultado em aberto é só o contorno tracejado; em revisão,
+      papel liso. Conferido ou formalizado, a palavra dá lugar a um carimbo com a tinta de
+      quem conferiu, o nome e o dia. Se o que foi conferido mudar, o carimbo desbota e
+      leva um risco. Passar o mouse na palavra ou no carimbo (ou tocar nele) mostra quem
+      escreveu e quem conferiu, como na prévia de uma referência; um clique deixa a
+      prévia aberta.
+
+      Quando a demonstração está juntada à caixa do resultado (veja
+      <ref to="tag-proof">&lt;proof&gt;</ref>) e o resultado não tem <c>status</c>
+      próprio, o cabeçalho mostra o da primeira demonstração, que é a confiança do
+      resultado. Para prosa solta, sem cabeçalho onde pôr a palavra, existe o envoltório
+      <c><draft></c>.
 
       <table numbered="false">
         <header>
@@ -312,8 +324,13 @@ Daí <change by="claude" date="2026-09-12" note="sinal trocado"><old>$x < 0$</ol
         </header>
         <row>
           <column mono="true">status</column>
-          <column mono="true">draft, sketch, review, verified</column>
-          <column>Rascunho, esboço (argumento delineado, detalhes faltando), em revisão, verificado</column>
+          <column mono="true">draft, heuristic, sketch, review, verified, formalized</column>
+          <column>Rascunho, heurístico (argumento não rigoroso), esboço (argumento delineado, detalhes faltando), em revisão, verificado, formalizado (checado por um assistente de provas). Numa demonstração, é a confiança que o grafo da prova propaga (veja <ref to="cmd-grafo">o grafo da prova</ref>); ali <c>draft</c> conta como <c>heuristic</c> e <c>review</c> como <c>sketch</c>. Use <ref to="cmd-verify">delta verify</ref> para marcar <c>verified</c>: a marca fica presa ao que foi conferido e vira "Desatualizado" se ele mudar</column>
+        </row>
+        <row>
+          <column mono="true">status</column>
+          <column mono="true">open</column>
+          <column>Só em resultados (teorema, lema, …): enunciado planejado, ainda sem demonstração. A caixa fica vazada e tracejada, com o rodapé "Demonstração pendente"</column>
         </row>
         <row>
           <column mono="true">by</column>
@@ -326,6 +343,11 @@ Daí <change by="claude" date="2026-09-12" note="sinal trocado"><old>$x < 0$</ol
           <column>Quem conferiu o bloco</column>
         </row>
         <row>
+          <column mono="true">verified-on</column>
+          <column mono="true">AAAA-MM-DD</column>
+          <column>O dia da conferência, impresso no carimbo. O <c>delta verify</c> escreve sozinho</column>
+        </row>
+        <row>
           <column mono="true">note</column>
           <column mono="true">texto</column>
           <column>Só em <c><draft></c>: o que ainda falta</column>
@@ -333,9 +355,10 @@ Daí <change by="claude" date="2026-09-12" note="sinal trocado"><old>$x < 0$</ol
       </table>
 
       <code lang="xml" numbered="false">
-<lemma id="lem-compacto" status="verified" by="claude" verified-by="rodrigo">...</lemma>
+<lemma id="lem-compacto" status="verified" by="claude" verified-by="rodrigo" verified-on="2026-09-13">...</lemma>
 <proof of="lem-compacto" status="sketch" by="claude">...</proof>
 <section id="sec-aplicacoes" status="draft">...</section>
+<lemma id="lem-cota" status="open">Enunciado de um lema que ainda falta provar.</lemma>
 
 <draft by="claude" note="o argumento ainda está frouxo">
   Prosa em construção, sem cabeçalho próprio.
@@ -343,11 +366,17 @@ Daí <change by="claude" date="2026-09-12" note="sinal trocado"><old>$x < 0$</ol
       </code>
 
       O teorema e a demonstração da seção anterior já usam isto (<em>em revisão</em> e
-      <em>esboço</em>, ambos de Claude). Um lema verificado e um rascunho:
+      <em>esboço</em>, ambos de Claude). Um lema verificado, um lema planejado e um
+      rascunho:
 
-      <lemma id="demo-colab-lem-ver" status="verified" by="claude" verified-by="rodrigo">
+      <lemma id="demo-colab-lem-ver" status="verified" by="claude" verified-by="rodrigo" verified-on="2026-09-13">
         <title>Compacto é limitado</title>
         Todo subconjunto compacto de $\mathbb{R}$ é limitado.
+      </lemma>
+
+      <lemma id="demo-colab-lem-open" status="open">
+        <title>Um lema planejado</title>
+        Toda função contínua num compacto é limitada.
       </lemma>
 
       <draft by="claude" note="falta o caso em que K é vazio">
@@ -425,21 +454,45 @@ delta review artigo.dlt --json
     <subsection id="colab-agentes" numbered="false">
       <title>Trabalhando com um agente</title>
 
-      Um fluxo que funciona bem: o agente escreve direto no <c>.dlt</c>, e toda
-      contribuição dele fica visível como tal.
+      Uma prova é um grafo de resultados (veja <ref to="cmd-grafo">o grafo da prova</ref>),
+      e é por esse grafo que um agente trabalha: ele não precisa ler o documento inteiro
+      para contribuir com uma peça, e sabe o que está disponível e o que já é confiável.
+      O fluxo tem cinco passos.
+
+      <list marker="number">
+        <item><strong>Primeiro a arquitetura.</strong> Vocês combinam o teorema principal,
+        com uma <c><strategy></c>, e os lemas que faltam, como enunciados com
+        <c>status="open"</c> e sem demonstração. Um <c><proof-map of="..."/></c> ao lado do
+        teorema mostra o plano antes de existir qualquer detalhe.</item>
+        <item><strong>O agente escolhe o trabalho</strong> com
+        <c>delta graph --frontier --json</c>: os resultados sem prova, ou só com esboço,
+        cujas bases já são pelo menos esboços.</item>
+        <item><strong>O agente lê só o necessário</strong> com
+        <c>delta show id --context</c> e escreve a demonstração com
+        <c>status="sketch"</c> e <c>by</c>. Ele só pode usar os enunciados que recebeu. Se
+        precisar de mais, é sinal de que falta um lema: ele o propõe como um novo
+        enunciado <c>status="open"</c>, em vez de provar tudo de uma vez.</item>
+        <item><strong>Uma pessoa confere</strong> e roda <c>delta verify id --by nome</c>.
+        O agente nunca marca nada como verificado.</item>
+        <item><strong>Repete</strong> até o <c>delta outline</c> mostrar o teorema
+        principal como <c>verified</c>. O <c>delta lint</c> tem de passar a cada rodada.</item>
+      </list>
+
+      No dia a dia da escrita, as regras de sempre continuam valendo:
 
       <list>
         <item>Declare o agente em <c><team kind="agent"></c> e peça que ele assine tudo com <c>by</c>.</item>
         <item>Mudanças em texto existente vão dentro de <c><change></c>, nunca por substituição silenciosa. Você decide no painel, em modo <em>final</em>, se o texto novo convence.</item>
-        <item>Demonstrações novas nascem com <c>status="sketch"</c>; quem confere troca para <c>verified</c> e assina em <c>verified-by</c>.</item>
+        <item>Hipóteses vão em <c><hyp></c> e provas longas em <c><step></c>, para que o <c>lint</c> perceba hipóteses sem uso e passos sem prova.</item>
         <item>Dúvidas viram <c><comment></c>; pedidos de trabalho viram <c><todo for="..."></c>.</item>
-        <item>Antes de publicar, <c>delta review --status open</c> e <c>delta build --final</c>.</item>
+        <item>Antes de publicar, <c>delta lint</c>, <c>delta review --status open</c> e <c>delta build --final</c>.</item>
       </list>
 
       <box type="tip">
         <title>Para o agente ler</title>
-        A especificação completa do vocabulário, em inglês e com uma seção dirigida a
-        agentes, está em <c>docs/COLLABORATION.md</c> no repositório.
+        <c>delta agent-guide</c> imprime estas convenções em inglês, numa tela, para
+        qualquer agente seguir. A especificação completa do vocabulário está em
+        <c>docs/COLLABORATION.md</c> no repositório.
       </box>
     </subsection>
   </section>

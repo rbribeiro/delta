@@ -1,10 +1,6 @@
-import { execFileSync } from "node:child_process";
-import { mkdtempSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { describe, expect, it } from "vitest";
-import { createContext } from "../src/compiler/context";
-import { compileSource } from "../src/compiler/index";
+import { describe, expect, it } from "./harness.ts";
+import { BROWSER, evaluate } from "./browser.ts";
+import { compileHtml } from "./helpers.ts";
 
 /**
  * Hit-testing regression guard — the ONE thing a DOM shim cannot check.
@@ -20,49 +16,6 @@ import { compileSource } from "../src/compiler/index";
  * machine with no Chromium rather than pretend this was verified.
  */
 
-function findBrowser(): string | undefined {
-  if (process.env.CHROME_PATH) return process.env.CHROME_PATH;
-  for (const cmd of ["chromium", "chromium-browser", "google-chrome-stable", "google-chrome"]) {
-    try {
-      // `which` rather than a shell, so no argument concatenation is involved.
-      const p = execFileSync("which", [cmd], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
-      if (p.trim()) return p.trim();
-    } catch {
-      /* not installed — try the next one */
-    }
-  }
-  return undefined;
-}
-
-const BROWSER = findBrowser();
-
-/** Renders `html` with `probe` appended, and returns whatever the probe puts in document.title. */
-function evaluate(html: string, probe: string): string {
-  const dir = mkdtempSync(join(tmpdir(), "delta-hittest-"));
-  const file = join(dir, "page.html");
-  writeFileSync(
-    file,
-    html.replace(
-      "</body>",
-      `<script>window.addEventListener("load",()=>{setTimeout(()=>{${probe}},350);});</script></body>`,
-    ),
-  );
-  const dom = execFileSync(
-    BROWSER!,
-    [
-      "--headless=new",
-      "--no-sandbox",
-      "--disable-gpu",
-      "--virtual-time-budget=2500",
-      "--window-size=1200,900",
-      "--dump-dom",
-      `file://${file}`,
-    ],
-    { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], maxBuffer: 64 * 1024 * 1024 },
-  );
-  return dom.match(/RESULT::([^<]*)/)?.[1] ?? "";
-}
-
 // `&` is written bare: <equations> is a RAW_TAG, so preprocess entity-escapes it.
 const DOC = `<document lang="en">
   <title>T</title>
@@ -77,12 +30,7 @@ const DOC = `<document lang="en">
   </section>
 </document>`;
 
-function compile(): string {
-  const ctx = createContext("test/doc.dlt");
-  const html = compileSource(DOC, ctx);
-  if (!html) throw new Error("compile failed: " + JSON.stringify(ctx.diagnostics));
-  return html;
-}
+const compile = (): string => compileHtml(DOC, { file: "test/doc.dlt" });
 
 describe.skipIf(!BROWSER)("in-math \\ref markers are actually clickable", () => {
   it("owns the pixels across its own box, in display and inline math", () => {
@@ -160,12 +108,7 @@ const COLLAB_DOC = `<document lang="en">
   </section>
 </document>`;
 
-function compileSrc(src: string): string {
-  const ctx = createContext("test/doc.dlt");
-  const html = compileSource(src, ctx);
-  if (!html) throw new Error("compile failed: " + JSON.stringify(ctx.diagnostics));
-  return html;
-}
+const compileSrc = (src: string): string => compileHtml(src, { file: "test/doc.dlt" });
 
 describe.skipIf(!BROWSER)("collaboration runtime", () => {
   it("opens a comment thread from its marker, with the author chip in the member's color", () => {
@@ -187,14 +130,15 @@ describe.skipIf(!BROWSER)("collaboration runtime", () => {
     const out = evaluate(
       compileSrc(COLLAB_DOC),
       `const c=document.getElementById("c-on");
-       const inTag=c.parentElement.classList.contains("box-tag");
+       const inTag=c.parentElement.classList.contains("box-head");
        const resolved=c.querySelector(".note-marker").classList.contains("is-resolved");
-       const pill=document.querySelector("#thm .box-tag .status-pill");
-       const proofPill=document.querySelector('delta-proof[status="sketch"] .proof-lead .status-pill');
+       const mark=document.querySelector("#thm .box-head .status-mark");
+       const proofMark=document.querySelector('#thm delta-proof[status="sketch"] .proof-bar .status-mark');
        document.title="RESULT::inTag="+inTag+",resolved="+resolved
-         +",thmPill="+(pill&&pill.dataset.status)+",proofPill="+(proofPill&&proofPill.dataset.status);`,
+         +",thmMark="+(mark&&mark.dataset.status)+",proofMark="+(proofMark&&proofMark.dataset.status);`,
     );
-    expect(out).toBe("inTag=true,resolved=true,thmPill=review,proofPill=sketch");
+    // The theorem shows its own status; its joined proof (past the comment) shows its own.
+    expect(out).toBe("inTag=true,resolved=true,thmMark=review,proofMark=sketch");
   });
 
   it("hides every annotation under the review switch and restores it", () => {
@@ -202,7 +146,7 @@ describe.skipIf(!BROWSER)("collaboration runtime", () => {
       compileSrc(COLLAB_DOC),
       `const vis=el=>getComputedStyle(el).display!=="none";
        const c=document.getElementById("c-inline"), t=document.getElementById("t1");
-       const pill=document.querySelector("#thm .status-pill"), bar=document.querySelector("delta-draft .status-bar");
+       const pill=document.querySelector("#thm .status-mark"), bar=document.querySelector("delta-draft .status-bar");
        const before=[c,t,pill,bar].every(vis);
        window.Delta.review.setAnnotations(false);
        const off=document.documentElement.dataset.review==="off" && ![c,t,pill,bar].some(vis);
@@ -263,7 +207,7 @@ describe.skipIf(!BROWSER)("review panel runtime", () => {
        document.title="RESULT::stats="+stats.join("|")+";groups="+groups.join("|")+";items="+items+";href="+jump.getAttribute("href");`,
     );
     expect(out).toBe(
-      "stats=1 open comments|1 open tasks|2 pending changes|1 In review|1 Sketch|1 Draft;groups=Annotations|Tasks|Changes|blocks;items=8;href=#c-inline",
+      "stats=1 open comments|1 open tasks|2 pending changes|1 In review|1 Sketch|1 Draft;groups=Annotations|Tasks|Changes|Blocks;items=8;href=#c-inline",
     );
   });
 

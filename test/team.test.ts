@@ -1,28 +1,15 @@
-import { describe, expect, it } from "vitest";
-import { createContext, type CompileContext } from "../src/compiler/context";
-import { compileSource } from "../src/compiler/index";
-import { parse } from "../src/compiler/parse";
-import { preprocess } from "../src/compiler/preprocess";
-import { collectTeam, PALETTE } from "../src/compiler/team";
-import type { ElementNode } from "../src/compiler/ast";
+import { describe, expect, it } from "./harness.ts";
+import { type CompileContext } from "../src/compiler/context.ts";
+import { collectTeam } from "../src/compiler/team.ts";
+import { PALETTE } from "../src/language/palette.ts";
+import type { ElementNode } from "../src/compiler/ast.ts";
+import { compile, parsed, warnings } from "./helpers.ts";
 
 function team(src: string): { doc: ElementNode; ctx: CompileContext } {
-  const ctx = createContext("test.dlt");
-  const doc = parse(preprocess(src), ctx);
-  if (!doc) throw new Error("parse failed: " + JSON.stringify(ctx.diagnostics));
+  const { doc, ctx } = parsed(src);
   collectTeam(doc, ctx);
   return { doc, ctx };
 }
-
-function compile(src: string): { html: string; ctx: CompileContext } {
-  const ctx = createContext("test.dlt");
-  const html = compileSource(src, ctx);
-  if (html === undefined) throw new Error("compile failed: " + JSON.stringify(ctx.diagnostics));
-  return { html, ctx };
-}
-
-const warnings = (ctx: CompileContext): string[] =>
-  ctx.diagnostics.filter((d) => d.severity === "warning").map((d) => d.message);
 
 describe("collectTeam", () => {
   it("builds the member map with explicit and auto-assigned colors", () => {
@@ -68,15 +55,21 @@ describe("collectTeam", () => {
   });
 
   it("removes the <team> node from the tree (the data ships in the island, not as markup)", () => {
-    const { doc } = team(`<document><team><member id="a" name="A"/></team><section id="s"><title>S</title>x</section></document>`);
+    const { doc } = team(
+      `<document><team><member id="a" name="A"/></team><section id="s"><title>S</title>x</section></document>`,
+    );
     expect(doc.children.some((c) => c.type === "element" && c.tag === "team")).toBe(false);
-    const { html } = compile(`<document><team><member id="a" name="A"/></team><section id="s"><title>S</title>x</section></document>`);
+    const { html } = compile(
+      `<document><team><member id="a" name="A"/></team><section id="s"><title>S</title>x</section></document>`,
+    );
     expect(html).not.toContain("<delta-team");
     expect(html).not.toContain("<delta-member");
   });
 
   it("warns about a <team> that is not a direct child of <document>", () => {
-    const { ctx } = team(`<document><section id="s"><title>S</title><team><member id="a" name="A"/></team></section></document>`);
+    const { ctx } = team(
+      `<document><section id="s"><title>S</title><team><member id="a" name="A"/></team></section></document>`,
+    );
     expect(warnings(ctx).some((m) => m.includes("direct child"))).toBe(true);
     expect(ctx.team.size).toBe(0);
   });
@@ -85,7 +78,9 @@ describe("collectTeam", () => {
     const withTeam = compile(`<document><team><member id="a" name="A"/></team>
       <section id="s"><title>S</title>x<comment by="zed">hm</comment></section></document>`);
     expect(warnings(withTeam.ctx).some((m) => m.includes('by="zed"'))).toBe(true);
-    const noTeam = compile(`<document><section id="s"><title>S</title>x<comment by="zed">hm</comment></section></document>`);
+    const noTeam = compile(
+      `<document><section id="s"><title>S</title>x<comment by="zed">hm</comment></section></document>`,
+    );
     expect(warnings(noTeam.ctx)).toEqual([]);
   });
 });

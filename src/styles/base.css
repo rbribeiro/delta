@@ -111,17 +111,30 @@
   --delta-code-fg:      oklch(0.94 0.005 75);
   --delta-code-line:    oklch(0.32 0.008 75);
   --delta-code-mute:    oklch(0.62 0.012 75);
+  /* Syntax colours inside a code block (components/code.css): keywords and tags, strings,
+     numbers, comments, and names (what is defined, called or built in). */
+  --delta-code-keyword: oklch(0.86 0.085 92);
+  --delta-code-string:  oklch(0.85 0.062 150);
+  --delta-code-number:  oklch(0.84 0.06 22);
+  --delta-code-comment: oklch(0.58 0.012 75);
+  --delta-code-name:    oklch(0.84 0.05 270);
 
   /* -- chrome: the environment box (components/theorems.css). Separate from the
      generic surfaces so a theme can restyle theorem/definition/example boxes
      without touching every other card in the document. */
   --delta-env-bg:       var(--delta-surface-1);
   --delta-env-border:   var(--delta-rule);
+  /* The soft shadow under a box (a CSS filter follows the folds' silhouette, so this is a
+     colour, not a box-shadow list); scaled by --delta-elevation like every shadow. */
+  --delta-env-shadow:   rgb(60 50 30 / calc(.10 * var(--delta-elevation)));
+  /* The foot of a box — the bar of a joined proof or solution, "Proof in Section 2.3" —
+     a shade between the card and the page, like a well cut into the card. */
+  --delta-env-well:     color-mix(in oklab, var(--delta-paper) 65%, var(--delta-env-bg));
 
-  /* Environment TONES — one per environment family, used to fill the label pill.
-     They all default to the page colour, i.e. the quiet outlined pill this design
-     has always had; a theme remaps them to brand colours to get a set of
-     differently-coloured environments. `theorems.css` assigns the right tone to
+  /* Environment TONES — one per environment family: the fill of the label when a
+     theme turns it into a pill (--delta-env-tag-fill), and the tint of the card's edge
+     (--delta-env-tint). They default to the page colour, which shows nothing; a theme
+     remaps them to brand colours to get a set of differently-coloured environments. `theorems.css` assigns the right tone to
      each family *on the element*, because a var() inside a custom property is
      substituted where it is DECLARED — putting the lookup at :root would freeze
      every environment to one tone. */
@@ -131,7 +144,53 @@
   --delta-tone-remark:     var(--delta-paper);
   --delta-tone-exercise:   var(--delta-paper);
   --delta-env-tag-ink:     var(--delta-accent-ink);
-  --delta-env-tag-border:  var(--delta-rule);
+  /* 0 = the label is bare small caps; 1 = a pill filled with the family tone. */
+  --delta-env-tag-fill:    0;
+
+  /* Proof TRUST — one colour per level of the order open < heuristic < sketch <
+     verified < formalized. The proof map's boxes and legend and the status pills of
+     those levels all read these, so a theme recolours trust everywhere at once. They
+     default to the semantic palette (warn → ok), so dark mode follows on its own. */
+  --delta-trust-open:       var(--delta-mute);
+  --delta-trust-heuristic:  var(--delta-warn);
+  --delta-trust-sketch:     color-mix(in oklab, var(--delta-warn) 55%, var(--delta-ok));
+  --delta-trust-verified:   var(--delta-ok);
+  --delta-trust-formalized: var(--delta-ok);
+  /* Something in a proof needs attention: a stale verification, a cycle, a result
+     resting on something weaker than itself, an unused hypothesis. */
+  --delta-proof-alert:      var(--delta-warn);
+
+  /* Reader AIDS on a result or a step — the name and the faint tint of each kind's fold
+     (components/understanding.css). */
+  --delta-aid-intuition:    var(--delta-accent-ink);
+  --delta-aid-strategy:     var(--delta-ink-soft);
+  --delta-aid-obstacle:     var(--delta-warn);
+  /* The light and the shadows that make a closed fold read as creased paper: the lit top
+     of the valley, the shadow at its bottom, the softer one under the mountain. Shadows
+     stay dark in dark mode, so the [data-mode] blocks restate them. */
+  --delta-fold-lit:         rgb(255 255 255 / .7);
+  --delta-fold-shade:       rgb(60 45 25 / .16);
+  --delta-fold-shade-2:     rgb(60 45 25 / .08);
+
+  /* STATUS as material (components/status.css): the dashed edge of unfinished work, the
+     faint grid or ruling of its paper, and the rubber stamp of a checked result — in the
+     checker's colour when the team gives one, else this ink; a stale stamp fades to the
+     second. The blend lets the stamp's ink sit *in* the paper (multiply on light). */
+  --delta-status-dash:      var(--delta-mute);
+  --delta-status-grid:      color-mix(in oklab, var(--delta-ink) 7%, transparent);
+  --delta-stamp-ink:        var(--delta-trust-verified);
+  --delta-stamp-stale:      var(--delta-mute);
+  --delta-stamp-blend:      multiply;
+  /* How far a checker's stamp moves from their palette's deep ink toward its bright tone:
+     none on light paper, all the way in dark mode (the [data-mode] blocks). */
+  --delta-stamp-bright:     0%;
+
+  /* The play button drawn over a video's poster image (components/figure.css). It sits
+     on a photo, not on the page, so it ignores dark mode: a dark disc with a white
+     triangle that turns red on hover, the convention readers recognise. */
+  --delta-video-play:       rgb(18 18 18 / 0.78);
+  --delta-video-play-hover: rgb(255 0 0);
+  --delta-video-play-icon:  rgb(255 255 255);
 
   /* The quiet figures: heading numbers and equation numbers. One token, because
      they are the same typographic gesture — a number set back from its content. */
@@ -242,7 +301,7 @@
    these flips the whole system, deck chrome included.
 
    The declaration list is intentionally repeated for the `[data-mode="auto"]` + media case
-   (no build-time preprocessing) — keep the two blocks in sync. */
+   (no build-time preprocessing); test/styles.test.ts fails if the two blocks drift apart. */
 [data-mode="dark"] {
   color-scheme: dark;
 
@@ -273,6 +332,13 @@
                         0 14px 36px rgb(0 0 0 / calc(.55 * var(--delta-elevation)));
   --delta-shadow-code:  0 1px 1px rgb(0 0 0 / calc(.40 * var(--delta-elevation))),
                         0 10px 28px rgb(0 0 0 / calc(.55 * var(--delta-elevation)));
+
+  --delta-env-shadow:   rgb(0 0 0 / calc(.40 * var(--delta-elevation)));
+  --delta-fold-lit:     rgb(255 255 255 / .05);
+  --delta-fold-shade:   rgb(0 0 0 / .42);
+  --delta-fold-shade-2: rgb(0 0 0 / .22);
+  --delta-stamp-blend:  screen;
+  --delta-stamp-bright: 100%;
 }
 @media (prefers-color-scheme: dark) {
   [data-mode="auto"] {
@@ -303,6 +369,13 @@
                           0 14px 36px rgb(0 0 0 / calc(.55 * var(--delta-elevation)));
     --delta-shadow-code:  0 1px 1px rgb(0 0 0 / calc(.40 * var(--delta-elevation))),
                           0 10px 28px rgb(0 0 0 / calc(.55 * var(--delta-elevation)));
+
+    --delta-env-shadow:   rgb(0 0 0 / calc(.40 * var(--delta-elevation)));
+  --delta-fold-lit:     rgb(255 255 255 / .05);
+    --delta-fold-shade:   rgb(0 0 0 / .42);
+    --delta-fold-shade-2: rgb(0 0 0 / .22);
+    --delta-stamp-blend:  screen;
+    --delta-stamp-bright: 100%;
   }
 }
 
@@ -669,11 +742,11 @@ table.t .mono { font-family: var(--delta-mono); font-size: 13px; }
   margin-right: 9px;
   vertical-align: 1px;
 }
-.code .k { color: oklch(0.86 0.085 92); }
-.code .s { color: oklch(0.85 0.062 150); }
-.code .n { color: oklch(0.84 0.06 22); }
-.code .c { color: oklch(0.58 0.012 75); font-style: italic; }
-.code .f { color: oklch(0.84 0.05 270); }
+.code .k { color: var(--delta-code-keyword); }
+.code .s { color: var(--delta-code-string); }
+.code .n { color: var(--delta-code-number); }
+.code .c { color: var(--delta-code-comment); font-style: italic; }
+.code .f { color: var(--delta-code-name); }
 .code .op{ color: oklch(0.86 0.01 75); }
 .code .l {
   color: var(--delta-code-mute);

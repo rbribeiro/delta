@@ -82,7 +82,7 @@ interface RawNode     { type: "raw"; html: string; kind?: "math" }   // HTML já
       que ainda não foi preenchido. Os campos, quem escreve cada um e quem lê, estão na tabela
       em <ref to="sobre-contexto">O contexto, campo a campo</ref>.
 
-      <b>A tabela de ambientes</b> (<c>src/compiler/environments.ts</c>). Toda a numeração é
+      <b>A tabela de ambientes</b> (<c>src/language/environments.ts</c>). Toda a numeração é
       dado, não código. Cada tag numerada tem um contador e, opcionalmente, um contador que a
       prefixa:
 
@@ -92,12 +92,20 @@ equation: { counter: "equation", prefixWith: "section" },
 equations:{ counter: "equation", prefixWith: "section" },   // compartilha o contador de equation
 code:     { counter: "code",     prefixWith: "section" },
 
+// derivado de prefixWith:
 COUNTER_RESETS = { chapter: ["section"], section: ["subsection", "theorem", "equation", …], subsection: ["subsubsection"] }
       </code>
 
       O passo de numeração é um motor genérico sobre essa tabela: não tem um <c>if</c> por
-      ambiente. Um ambiente novo é uma linha aqui, mais o nome traduzido em
-      <c>strings.ts</c> e a tag no runtime.
+      ambiente. Um ambiente novo é uma linha aqui, a família dele em <c>tags.ts</c> e o nome
+      traduzido em <c>strings.ts</c>.
+
+      <b>A camada de linguagem</b> (<c>src/language/</c>). A tabela de ambientes mora numa
+      pasta que o compilador e o runtime importam: as famílias de tags (<c>tags.ts</c>: títulos,
+      resultados, caixas, demonstrações, auxílios, matemática, marcas de colaboração), a
+      numeração, os textos traduzidos, a ordem de confiança e os nomes da paleta. Esses
+      arquivos não importam nada, e cada lista é escrita uma vez. Um passo que precisa saber
+      "quais tags são títulos" importa daqui, nunca de outro passo.
     </subsection>
 
     <subsection id="sobre-pipeline">
@@ -251,7 +259,7 @@ COUNTER_RESETS = { chapter: ["section"], section: ["subsection", "theorem", "equ
         <row><column mono="true">citedPapers</column><column><c>numberCitations</c> (compartilhado)</column><column><c>fillProjectBibliography</c></column></row>
         <row><column mono="true">team</column><column><c>collectTeam</c> (compartilhado)</column><column><c>resolveCollab</c>; <c>emit</c>: a ilha <c>#delta-review</c></column></row>
         <row><column mono="true">review</column><column><c>buildProjectReview</c></column><column><c>emit</c>: a ilha <c>#delta-review</c>; a CLI (<c>delta review</c>)</column></row>
-        <row><column mono="true">final</column><column>as funções de entrada (a flag <c>--final</c>)</column><column><c>finalizeReview</c>, <c>summarizeFinal</c></column></row>
+        <row><column mono="true">final</column><column>as funções de entrada (a flag <c>--final</c>)</column><column><c>finalizeReview</c>, <c>summarizeFinal</c>, <c>stripReviewMarks</c></column></row>
         <row><column mono="true">deps</column><column><c>addDep</c>, em todo passo que lê um arquivo do autor</column><column>a CLI: é o conjunto que o <c>--watch</c> vigia</column></row>
       </table>
 
@@ -263,7 +271,8 @@ COUNTER_RESETS = { chapter: ["section"], section: ["subsection", "theorem", "equ
       embute o que ela mesma referencia.
 
       O que é do projeto e não de um arquivo mora no <c>Shared</c> (<c>pipeline.ts</c>): além
-      dos quatro mapas acima, o estado dos contadores (<c>numbering</c>), os mapas
+      dos quatro mapas acima, o estado dos contadores (<c>numbering</c>), os contadores de
+      ids automáticos (<c>autoIds</c>: a 2ª prova de um resultado, os contraexemplos), os mapas
       <c>globalById</c> e <c>idToFile</c>, o arquivo que renderiza a bibliografia
       (<c>bibOut</c>), e um contexto do próprio projeto (<c>project</c>), onde ficam os pacotes
       do <c>project.toml</c> e os diagnósticos que não são de arquivo nenhum.
@@ -293,9 +302,11 @@ COUNTER_RESETS = { chapter: ["section"], section: ["subsection", "theorem", "equ
           texto já montado.
         </item>
         <item>
-          Os contadores em <c>COUNTER_RESETS[contador]</c> voltam a zero. Isto acontece
-          <b>mesmo</b> quando a seção é <c>numbered="false"</c> ou tem <c>num</c> explícito:
-          uma seção nova é uma seção nova.
+          Os contadores em <c>COUNTER_RESETS[contador]</c> voltam a zero, e também os que
+          <b>eles</b> zeram: um capítulo novo zera a seção e, por ela, teoremas e equações.
+          Isto acontece quando o elemento ganhou número (ou tem <c>num</c> explícito). Uma
+          seção <c>numbered="false"</c> não consome número e não zera nada, como o
+          <c>\section*</c> do LaTeX: os teoremas dela seguem a contagem da seção anterior.
         </item>
       </list>
 
@@ -373,7 +384,6 @@ COUNTER_RESETS = { chapter: ["section"], section: ["subsection", "theorem", "equ
         <row><column mono="true">pipeline.ts</column><column>a tabela de fases e passos, o motor <c>runPipeline</c>, o estado <c>Shared</c>, o gancho <c>trace</c></column></row>
         <row><column mono="true">index.ts, project.ts</column><column>as funções de entrada: um arquivo, um projeto (ambas finas)</column></row>
         <row><column mono="true">ast.ts, context.ts</column><column>a árvore e o contexto; os ajudantes <c>elements</c>, <c>textContent</c>, <c>hasTag</c>, <c>titleOf</c></column></row>
-        <row><column mono="true">environments.ts</column><column>a tabela de numeração</column></row>
         <row><column mono="true">preprocess.ts, parse.ts</column><column>o texto vira XML válido, o XML vira árvore</column></row>
         <row><column mono="true">include.ts, files.ts</column><column><c>include</c> (recursivo, com ciclo); ler arquivos do autor com <c>addDep</c> e <c>withFile</c></column></row>
         <row><column mono="true">document.ts, config.ts</column><column>os padrões do <c>[document]</c> e o <c>lang</c>; a leitura do <c>project.toml</c></column></row>
@@ -384,8 +394,21 @@ COUNTER_RESETS = { chapter: ["section"], section: ["subsection", "theorem", "equ
         <row><column mono="true">math.ts, code.ts</column><column>KaTeX e destaque de código, em tempo de compilação</column></row>
         <row><column mono="true">references.ts, toc.ts</column><column>referências cruzadas; o sumário e os slugs</column></row>
         <row><column mono="true">figures.ts, theme.ts, imports.ts</column><column>o que é embutido: imagens, tema, pacotes</column></row>
-        <row><column mono="true">linebreaks.ts, strings.ts</column><column>quebras de linha na prosa; a tabela de i18n</column></row>
+        <row><column mono="true">linebreaks.ts, paper.ts</column><column>quebras de linha na prosa; a árvore como o artigo a lê (<c>flow</c>, <c>changeParts</c>, <c>plainText</c>)</column></row>
         <row><column mono="true">emit.ts, katex-css.ts</column><column>o HTML final; o CSS do KaTeX com fontes embutidas</column></row>
+      </table>
+
+      E em <c>src/language/</c>, fora do compilador:
+
+      <table numbered="false">
+        <header>
+          <column>Arquivo</column>
+          <column>Papel</column>
+        </header>
+        <row><column mono="true">tags.ts</column><column>as famílias de tags, uma lista por família</column></row>
+        <row><column mono="true">environments.ts</column><column>a tabela de numeração</column></row>
+        <row><column mono="true">strings.ts</column><column>a tabela de i18n</column></row>
+        <row><column mono="true">trust.ts, palette.ts</column><column>a ordem de confiança das provas; os nomes da paleta</column></row>
       </table>
 
       A mesma história, em inglês e mais curta, está em <c>docs/ARCHITECTURE.md</c> no

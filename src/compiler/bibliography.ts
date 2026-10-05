@@ -1,13 +1,13 @@
 import { dirname, resolve } from "node:path";
-import { elements, hasTag, titleOf, type ElementNode } from "./ast";
-import { warn, type CompileContext } from "./context";
-import { isRemote, readUserFile, withFile } from "./files";
-import { parse } from "./parse";
-import { preprocess } from "./preprocess";
+import { elements, hasTag, titleOf, type ElementNode } from "./ast.ts";
+import { warn, type CompileContext } from "./context.ts";
+import { isRemote, readUserFile, withFile } from "./files.ts";
+import { OPAQUE } from "../language/tags.ts";
+import { parseSource } from "./parse.ts";
 
 /**
  * Loads the bibliography from the given document (or children `<paper>` elements) and registers the papers in the compiler context.
- * 
+ *
  * @param doc the root ElementNode from where we start looking for bibliography tags
  * @param ctx the compiler context to which we add the papers
  */
@@ -32,12 +32,13 @@ export function resolveCitations(doc: ElementNode, ctx: CompileContext): void {
 
 /**
  * Numbers every `<cite>` in `doc` against `ctx.papers`, building `ctx.citedPapers` in first-cite order. Each `<cite>` gets `data-cite-nums` and `data-cite-ids` attributes. Warnings are issued for unknown papers.
- * 
+ *
  * @param doc root ElementNode from which we start looking for citations given by the `<cite>` tags
  * @param ctx the compiler context to which we add the referenced paper's id so we can clone the cited paper
  */
 export function numberCitations(doc: ElementNode, ctx: CompileContext): void {
-  for (const el of elements(doc)) {
+  // A cite inside <old>/<comment>/<todo> takes no number, so review and --final agree.
+  for (const el of elements(doc, OPAQUE)) {
     if (el.tag !== "cite") continue;
 
     const ids = parseIds(el.attrs.papers, el.attrs.paper); // merge paper/papers into a deduped id list
@@ -67,11 +68,11 @@ export function numberCitations(doc: ElementNode, ctx: CompileContext): void {
 
 /**
  * Find the bibliography element in the document and fill it with the cited papers in order of first citation. Warnings are issued if there are citations but no bibliography element.
- * 
+ *
  * @param doc the root ElementNode from which we start looking for the `<bibliography>` tag
  * @param ctx the compiler context
  */
-export function fillBibliography(doc: ElementNode, ctx: CompileContext): void {
+function fillBibliography(doc: ElementNode, ctx: CompileContext): void {
   if (ctx.citedPapers.length === 0) return;
 
   const bib = [...elements(doc)].find((e) => e.tag === "bibliography");
@@ -79,13 +80,14 @@ export function fillBibliography(doc: ElementNode, ctx: CompileContext): void {
     warn(ctx, "citations present but no <bibliography> element to render them");
     return;
   }
-    bib.children.push(...ctx.citedPapers.map((id, i) => {
+  bib.children.push(
+    ...ctx.citedPapers.map((id, i) => {
       const paper = ctx.papers.get(id)!;
       paper.attrs.id = id;
       paper.attrs["data-cite-num"] = String(i + 1);
       return paper;
-      })
-    );
+    }),
+  );
 }
 
 /**
@@ -102,7 +104,10 @@ export function fillProjectBibliography(
   if (bibFile) {
     fillBibliography(bibFile.doc, bibFile.ctx);
     for (const extra of bibFiles.slice(1)) {
-      warn(extra.ctx, "multiple <bibliography> elements in the project; only the first renders the references list");
+      warn(
+        extra.ctx,
+        "multiple <bibliography> elements in the project; only the first renders the references list",
+      );
     }
     return bibFile.outName;
   }
@@ -143,7 +148,7 @@ function loadRefFile(src: string, ctx: CompileContext, bib: ElementNode): void {
   }
   // Diagnostics from the .ref point at the .ref.
   withFile(ctx, abs, () => {
-    const root = parse(preprocess(text), ctx);
+    const root = parseSource(text, ctx);
     if (!root) return;
     for (const el of elements(root)) {
       if (el.tag === "paper") addPaper(el, ctx);
@@ -155,7 +160,10 @@ function loadRefFile(src: string, ctx: CompileContext, bib: ElementNode): void {
 function parseIds(papers?: string, paper?: string): string[] {
   const seen = new Set<string>();
   const out: string[] = [];
-  for (const id of [papers, paper].filter(Boolean).join(",").split(/[\s,]+/)) {
+  for (const id of [papers, paper]
+    .filter(Boolean)
+    .join(",")
+    .split(/[\s,]+/)) {
     if (id && !seen.has(id)) {
       seen.add(id);
       out.push(id);

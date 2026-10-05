@@ -232,7 +232,7 @@ Regras do `define`:
 - **O nome precisa ter um hífen.** `quote` seria inválido; `delta-quote` é válido. (A convenção
   do Delta resolve isso sozinha, já que toda tag ganha o prefixo `delta-`.)
 - **Uma classe por tag.** Não dá para registrar a mesma classe em dois nomes. Quando o Delta
-  precisa disso — os catorze ambientes de teorema compartilham um comportamento — ele cria uma
+  precisa disso — todos os ambientes de teorema compartilham um comportamento — ele cria uma
   subclasse anônima por tag: ``customElements.define(`delta-${kind}`, class extends DeltaEnvironment {})``.
 - **O registro é síncrono.** No instante em que `define` é chamado, o navegador percorre a
   página e "promove" todas as instâncias já existentes daquela tag, rodando o
@@ -278,7 +278,7 @@ componentes do Delta movem nós o tempo todo (o `<box>` embrulha o corpo, o deck
 slides, o `<floating>` recolhe o sumário), um elemento pode ser inicializado duas ou três vezes
 — duplicando tudo que você inseriu.
 
-A solução idiomática, presente em vinte arquivos do runtime, é uma marca no próprio elemento:
+A solução idiomática, presente em todos os elementos do runtime, é uma marca no próprio elemento:
 
 ```js
 connectedCallback() {
@@ -641,6 +641,40 @@ delta create package delta-quote   # package.json, src/, test/, build com esbuil
 cd delta-quote && npm install
 npm run build && npm test
 ```
+
+**Quando o componente vira parte do Delta.** Um elemento nasce como pacote, que você testa à
+vontade sem tocar no Delta, e entra no core depois de estável. A mudança é pequena:
+
+1. O código vai para `src/runtime/elements/quote.ts`, em TypeScript, com uma função
+   `defineQuote()` chamada em [`elements/index.ts`](../src/runtime/elements/index.ts) (o topo
+   desse arquivo diz onde a ordem de registro importa). O CSS vai para
+   `src/styles/components/quote.css`, dentro de `@layer delta.components`.
+2. Antes de escrever DOM à mão, veja [`shared.ts`](../src/runtime/elements/shared.ts): ele já
+   tem `button`, `takeTitle` (o `<title>` com a matemática intacta), `numberedName`
+   ("Figura 1.2" traduzido), `renderMeta`, `jumpTo` e o resto. Texto visível passa por `t()` ou
+   `nameOf()`, e cada chave nova entra em todos os blocos de
+   [`src/language/strings.ts`](../src/language/strings.ts).
+3. Escreva um teste em `test/runtime/`. `inspect()` compila o documento, abre a página no
+   Chromium da máquina (sem janela) e roda um trecho de JavaScript dentro dela; o teste
+   confere o que esse trecho devolve.
+
+```ts
+import { describe, expect, it } from "../harness.ts";
+import { BROWSER, inspect } from "./helpers.ts";
+
+describe.skipIf(!BROWSER)("<quote>", () => {
+  it("mostra o autor da citação", () => {
+    const r = inspect(
+      `<document><quote><author>Euler</author>Texto.</quote></document>`,
+      `return { author: text(".quote-author"), body: text(".quote-body") };`,
+    );
+    expect(r).toEqual({ author: "Euler", body: "Texto." });
+  });
+});
+```
+
+`npm test` roda esses testes junto com os do compilador, então um erro no runtime aparece no
+mesmo lugar que um erro de compilação. Numa máquina sem Chromium eles são pulados, não falham.
 
 **O que um pacote não pode fazer:** pacotes são exclusivamente de runtime. Não rodam nenhum
 código no compilador, então não conseguem numerar ambientes, registrar um tipo de `<ref>`, ler

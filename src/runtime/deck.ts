@@ -12,7 +12,8 @@
  * not the compiler: slides carry no number.
  */
 
-import { t } from "./i18n";
+import { t } from "./i18n.ts";
+import { button } from "./elements/shared.ts";
 
 /** Public handle exposed as `window.Delta.deck` (null when not a deck). Lets
  *  add-ons (e.g. the upcoming progress bar) read position and drive navigation. */
@@ -59,7 +60,10 @@ export function setupDeck(): Deck | null {
   // reveal-order just repositions an element relative to its peers.
   const fragmentsOf = (slide: HTMLElement): HTMLElement[] =>
     [...slide.querySelectorAll<HTMLElement>('[reveal="true"]')]
-      .map((el, i) => ({ el, order: el.hasAttribute("reveal-order") ? Number(el.getAttribute("reveal-order")) : i }))
+      .map((el, i) => ({
+        el,
+        order: el.hasAttribute("reveal-order") ? Number(el.getAttribute("reveal-order")) : i,
+      }))
       .sort((a, b) => a.order - b.order)
       .map((x) => x.el);
   const frags = slides.map(fragmentsOf);
@@ -139,10 +143,7 @@ export function setupDeck(): Deck | null {
   // prev / next cluster (CSS: bottom-center, brighter on hover/touch) plus
   // swipe. Buttons reuse the fragment-aware next/prev, so taps behave like the keys.
   const navBtn = (cls: string, glyph: string, label: string, fn: () => void): HTMLButtonElement => {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = `deck-nav ${cls}`;
-    b.textContent = glyph;
+    const b = button(`deck-nav ${cls}`, glyph);
     b.setAttribute("aria-label", label);
     b.addEventListener("click", fn);
     return b;
@@ -205,7 +206,10 @@ export function setupDeck(): Deck | null {
     });
     document.body.append(topbar);
     listeners.push((i) =>
-      topbar.classList.toggle("topbar-hidden", slides[i].matches('[cover="true"], [divider="true"]')),
+      topbar.classList.toggle(
+        "topbar-hidden",
+        slides[i].matches('[cover="true"], [divider="true"]'),
+      ),
     );
   }
 

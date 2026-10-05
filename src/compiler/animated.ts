@@ -1,5 +1,5 @@
-import { elements, type ElementNode } from "./ast";
-import type { CompileContext } from "./context";
+import { elements, type ElementNode } from "./ast.ts";
+import type { CompileContext } from "./context.ts";
 
 /**
  * `animated="true"` is authoring sugar for the reveal fragment system: it marks

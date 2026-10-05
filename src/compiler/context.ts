@@ -1,10 +1,10 @@
 /******************************************************************************
- * The mutable context threaded through every pass and into the emitter. 
- * Passes communicate through it (and through node attrs). Nothing else is shared. 
-**** ***********************/
+ * The mutable context threaded through every pass and into the emitter.
+ * Passes communicate through it (and through node attrs). Nothing else is shared.
+ **** ***********************/
 
 import { resolve } from "node:path";
-import type { ElementNode, Node, Position } from "./ast";
+import type { ElementNode, Node, Position } from "./ast.ts";
 
 export interface Diagnostic {
   severity: "error" | "warning";
@@ -119,12 +119,14 @@ export interface ReviewData {
 
 export interface CompileContext {
   file: string;
+  /** file → its original text, for every file `parseSource` read (the master and its includes). */
+  sources: Map<string, string>;
   /** Output basename for this file (e.g. "chapter1.html"), set by the pipeline runner for every build. */
   outName?: string;
   diagnostics: Diagnostic[];
-  /** id → numbering info; written by numbering, read by the reference pass. 
+  /** id → numbering info; written by numbering, read by the reference pass.
    * Uses Map that is more efficient than Record<string, LabelEntry> for large documents with many labels.
-  */
+   */
   registry: Map<string, LabelEntry>;
   /** Target ids something in this file points at: a `<ref>`/`<solution of>`/`<proof of>` (references.ts),
    *  a `<cite>` (bibliography.ts) or a `\ref{}` inside math (math.ts). Emit snapshots each into a
@@ -186,6 +188,7 @@ export function createContext(file: string): CompileContext {
     review: [],
     final: false,
     deps: new Set(),
+    sources: new Map(),
   };
 }
 
@@ -194,12 +197,14 @@ export function addDep(ctx: CompileContext, p: string): void {
   ctx.deps.add(resolve(p));
 }
 
+// A position carries the file it was parsed from, so a node spliced in by <include> is
+// reported against its own file rather than the master document.
 export function error(ctx: CompileContext, message: string, pos?: Position): void {
-  ctx.diagnostics.push({ severity: "error", message, file: ctx.file, pos });
+  ctx.diagnostics.push({ severity: "error", message, file: pos?.file ?? ctx.file, pos });
 }
 
 export function warn(ctx: CompileContext, message: string, pos?: Position): void {
-  ctx.diagnostics.push({ severity: "warning", message, file: ctx.file, pos });
+  ctx.diagnostics.push({ severity: "warning", message, file: pos?.file ?? ctx.file, pos });
 }
 
 export function hasErrors(ctx: CompileContext): boolean {

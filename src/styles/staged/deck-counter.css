@@ -1,0 +1,19 @@
+/* deck-counter.css — a "3 / 12" slide counter pill. STAGED: deck.ts does not build
+   one yet. Was inside slide.css's presentation block. */
+
+@layer delta.components {
+
+.deck-counter {
+  font-family: var(--delta-sans);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--delta-ink-soft);
+  background: var(--delta-surface-1);
+  border: var(--delta-hairline) solid var(--delta-rule);
+  border-radius: var(--delta-radius-pill);
+  padding: 5px 11px;
+  box-shadow: var(--delta-shadow-sm);
+  user-select: none;
+}
+
+}

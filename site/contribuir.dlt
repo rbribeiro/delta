@@ -21,12 +21,13 @@
     <subsection id="passo-ambiente">
       <title>O ambiente</title>
 
-      Node 20 ou mais novo. Depois:
+      Node 22.18 ou mais novo (24 é a escolha certa): o código roda como TypeScript direto
+      no Node, sem transpilador. Depois:
 
       <code lang="bash" numbered="false">
 git clone https://github.com/rbribeiro/delta && cd delta
 npm install
-npm test               # a suíte inteira (vitest); regenera os assets antes
+npm test               # a suíte inteira (node --test); regenera os assets antes
 npm run typecheck      # tsc --noEmit
 npm run dev -- build examples/hello.dlt -o out.html    # a CLI, direto do fonte
 npm run example:project                                 # o projeto de exemplo
@@ -36,8 +37,8 @@ npm run docs           # este site (site/ → docs/), inclusive o explorador
       Para rodar um arquivo de teste só, ou um teste pelo nome:
 
       <code lang="bash" numbered="false">
-npx vitest run test/numbering.test.ts
-npx vitest run -t "resets across"
+node --test test/numbering.test.ts
+node --test --test-name-pattern "resets across" test/
       </code>
 
       <box type="warning">
@@ -45,7 +46,7 @@ npx vitest run -t "resets across"
         O emissor importa <c>RUNTIME_JS</c>, <c>CORE_CSS</c> e os temas de
         <c>src/generated/assets.ts</c>, que é gerado (pelo <c>npm run assets</c>) e não é
         versionado. Todo script do <c>npm</c> que precisa dele o regenera antes. Mas se você
-        chamar <c>vitest</c> ou <c>tsc</c> diretamente numa cópia recém-clonada, ou depois de
+        chamar <c>node --test</c> ou <c>tsc</c> diretamente numa cópia recém-clonada, ou depois de
         mexer em <c>src/runtime/</c> ou <c>src/styles/</c>, rode <c>npm run assets</c> uma
         vez, ou verá um módulo faltando ou um runtime velho. O mesmo vale para os dados do
         explorador (<c>npm run trace</c>).
@@ -66,7 +67,7 @@ npx vitest run -t "resets across"
         </header>
         <row>
           <column>só um número</column>
-          <column>uma linha em <c>environments.ts</c></column>
+          <column>uma linha em <c>environments.ts</c> e a família em <c>tags.ts</c></column>
           <column>um ambiente novo, como <c>remark</c></column>
         </row>
         <row>
@@ -228,8 +229,8 @@ export function countWords(doc: ElementNode, _ctx: CompileContext): void {
         <item>
           <b>Teste</b> em <c>test/words.test.ts</c>, com o ajudante compartilhado:
           <code lang="typescript" numbered="false">
-import { describe, expect, it } from "vitest";
-import { compile } from "./helpers";
+import { describe, expect, it } from "./harness.ts";
+import { compile } from "./helpers.ts";
 
 describe("countWords", () => {
   it("writes the word count on each section", () => {
@@ -263,26 +264,30 @@ describe("countWords", () => {
 
       <list marker="number">
         <item>
-          Uma linha em <c>src/compiler/environments.ts</c>:
-          <c>porism: { counter: "porism", prefixWith: "section" }</c>. Se ele deve
-          reiniciar a cada seção (quase sempre), acrescente <c>"porism"</c> à lista de
-          <c>section</c> em <c>COUNTER_RESETS</c>. Para contar <b>junto</b> com os teoremas,
-          use <c>counter: "theorem"</c> em vez de um contador próprio.
+          Uma linha em <c>src/language/environments.ts</c>:
+          <c>porism: { counter: "porism", prefixWith: "section" }</c>. Ele reinicia a cada
+          seção sozinho, porque <c>COUNTER_RESETS</c> é derivado de <c>prefixWith</c>. Para contar
+          <b>junto</b> com os teoremas, use <c>counter: "theorem"</c> em vez de um contador próprio.
         </item>
         <item>
-          A tag em <c>ENVIRONMENT_TAGS</c> e em <c>BOX_ENVIRONMENTS</c> (caixa com etiqueta) ou
-          <c>PROOF_ENVIRONMENTS</c> (abertura em itálico), em
-          <c>src/runtime/elements/environment.ts</c>.
+          A família em <c>src/language/tags.ts</c>: <c>RESULT_TAGS</c> se for um enunciado que
+          recebe demonstração e auxílios, senão <c>BOX_TAGS</c> (caixa com etiqueta) ou
+          <c>PROOF_TAGS</c> (abertura em itálico). O runtime define um elemento por tag a partir
+          desses conjuntos.
         </item>
         <item>
-          O nome em cada bloco de idioma de <c>src/compiler/strings.ts</c>
-          (<c>porism: "Porism"</c>, <c>porism: "Porisma"</c>). Sem ele o runtime mostra a tag
-          capitalizada.
+          O nome em cada bloco de idioma de <c>src/language/strings.ts</c>
+          (<c>porism: "Porism"</c>, <c>porism: "Porisma"</c>).
+        </item>
+        <item>
+          <c>delta-porism</c> nas duas listas do topo de
+          <c>src/styles/components/theorems.css</c> (exibição em bloco e o tom da família).
         </item>
         <item>Um caso em <c>test/numbering.test.ts</c>.</item>
       </list>
 
-      Nenhum passo muda. É a razão de a numeração ser uma tabela.
+      Nenhum passo muda. É a razão de a numeração ser uma tabela. Se você esquecer o passo 2,
+      3 ou 4, <c>test/language.test.ts</c> falha e diz qual.
     </subsection>
 
     <subsection id="passo-testes">
@@ -308,7 +313,18 @@ describe("countWords", () => {
       <c>test/pipeline.test.ts</c> confere a ordem dos passos, e que compilar um arquivo
       sozinho e compilá-lo como um projeto de um arquivo dão o mesmo HTML; e o teste do
       <c>trace</c> confere que o gancho dispara a cada passo, que é do que o explorador
-      depende.
+      depende. <c>test/language.test.ts</c> confere que o vocabulário de
+      <c>src/language/</c> concorda com os textos traduzidos e com o CSS.
+
+      O runtime tem os seus testes em <c>test/runtime/</c>, no Chromium da máquina (sem
+      janela; numa máquina sem Chromium eles são pulados): <c>inspect(src, script)</c>
+      compila o documento, abre a página e roda o <c>script</c> dentro dela. O script olha o
+      que o leitor veria e faz o que ele faria: <c>text(".box-tag")</c>,
+      <c>click(".collapse-toggle")</c>, <c>key("Escape")</c>, e devolve o que o teste confere.
+      Cada abertura do navegador custa um segundo, então cada conjunto de testes abre um
+      documento uma vez e os <c>it</c>s leem campos do mesmo resultado. O que depende de
+      layout de verdade (o que está sob o mouse, o que transborda num celular) fica em
+      <c>test/hittest.test.ts</c>, com o mesmo navegador.
     </subsection>
 
     <subsection id="passo-checklist">

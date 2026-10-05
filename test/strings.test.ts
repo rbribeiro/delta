@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { resolveLang, STRINGS, stringsFor } from "../src/compiler/strings";
+import { describe, expect, it } from "./harness.ts";
+import { resolveLang, STRINGS, stringsFor } from "../src/language/strings.ts";
 
 describe("resolveLang", () => {
   it("matches an exact language, case-insensitively", () => {
@@ -41,5 +41,14 @@ describe("STRINGS parity", () => {
       if (lang === "en") continue;
       expect(Object.keys(block).sort(), `language "${lang}"`).toEqual(en);
     }
+  });
+});
+
+describe("ref labels", () => {
+  it("names chapters, and calls a YouTube embed a video", () => {
+    expect(stringsFor("pt").chapter).toBe("Capítulo");
+    expect(stringsFor("en").chapter).toBe("Chapter");
+    expect(stringsFor("en").youtube).toBe("Video");
+    expect(stringsFor("pt").youtube).toBe("Vídeo");
   });
 });

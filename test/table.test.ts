@@ -1,14 +1,6 @@
-import { describe, expect, it } from "vitest";
-import { createContext } from "../src/compiler/context";
-import { compileSource } from "../src/compiler/index";
-import { RUNTIME_JS } from "../src/generated/assets";
-
-function compile(src: string) {
-  const ctx = createContext("test.dlt");
-  const html = compileSource(src, ctx);
-  if (html === undefined) throw new Error("compile failed: " + JSON.stringify(ctx.diagnostics));
-  return { html, ctx };
-}
+import { describe, expect, it } from "./harness.ts";
+import { RUNTIME_JS } from "../src/generated/assets.ts";
+import { compile } from "./helpers.ts";
 
 const doc = (body: string) =>
   `<document lang="en"><title>T</title><section id="s"><title>S</title>${body}</section></document>`;

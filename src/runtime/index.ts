@@ -1,10 +1,10 @@
-import { defineComponents } from "./elements";
-import { wireMathRefs } from "./elements/ref";
-import { flashTarget } from "./elements/shared";
-import { setupDeck, type Deck } from "./deck";
-import { popover } from "./utils";
-import { t } from "./i18n";
-import { reviewState } from "./elements/collab";
+import { defineComponents } from "./elements/index.ts";
+import { wireMathRefs } from "./elements/ref.ts";
+import { flashTarget } from "./elements/shared.ts";
+import { setupDeck, type Deck } from "./deck.ts";
+import { popover } from "./utils.ts";
+import { t } from "./i18n.ts";
+import { reviewState } from "./elements/collab.ts";
 
 declare global {
   interface Window {
