@@ -1,0 +1,282 @@
+<document>
+  <import src="packages/plot-new" />
+  <section>
+    <title>Aritmética</title>
+    Soma, subtração, multiplicação, divisão e o <c>+</c> unário (ignorado). As retas devem se cruzar em pontos inteiros fáceis de conferir.
+
+    <code lang="xml" numbered="false">
+<plot x="-6,6" y="-4,4">
+  <title>x + 1, 2 * x - 3, x / 2 e +x</title>
+  <function color="#3b82f6" name="soma">x + 1</function>
+  <function color="#10b981" name="mult-sub">2 * x - 3</function>
+  <function color="#ef4444" name="div">x / 2</function>
+  <function color="#a855f7" name="mais-unario">+x</function>
+</plot>
+    </code>
+    <plot x="-6,6" y="-4,4">
+      <title>x + 1, 2 * x - 3, x / 2 e +x</title>
+      <function color="#3b82f6" name="soma">x + 1</function>
+      <function color="#10b981" name="mult-sub">2 * x - 3</function>
+      <function color="#ef4444" name="div">x / 2</function>
+      <function color="#a855f7" name="mais-unario">+x</function>
+    </plot>
+  </section>
+
+  <section>
+    <title>Potências e Precedência</title>
+    <c>^</c> e <c>**</c> são equivalentes. <c>-x^2</c> deve abrir para baixo e <c>(-x)^2</c> para cima. <c>2^-x</c> decai, e <c>x^2^0.5</c> é $x^{\sqrt{2}}$.
+
+    <code lang="xml" numbered="false">
+<plot x="-4,4" y="-4,4">
+  <title>Potência, negação e associatividade</title>
+  <function color="#3b82f6" name="circunflexo">x^2</function>
+  <function color="#10b981" name="dupla-estrela" from="-1.5,1.5">x**3</function>
+  <function color="#ef4444" name="menos-quadrado">-x^2</function>
+  <function color="#f59e0b" name="quadrado-negativo" from="-1,1">(-x)^2 + 1</function>
+  <function color="#a855f7" name="expoente-negativo">2^-x</function>
+  <function color="#0ea5e9" name="direita" from="0,4">x^2^0.5</function>
+</plot>
+    </code>
+    <plot x="-4,4" y="-4,4">
+      <title>Potência, negação e associatividade</title>
+      <function color="#3b82f6" name="circunflexo">x^2</function>
+      <function color="#10b981" name="dupla-estrela" from="-1.5,1.5">x**3</function>
+      <function color="#ef4444" name="menos-quadrado">-x^2</function>
+      <function color="#f59e0b" name="quadrado-negativo" from="-1,1">(-x)^2 + 1</function>
+      <function color="#a855f7" name="expoente-negativo">2^-x</function>
+      <function color="#0ea5e9" name="direita" from="0,4">x^2^0.5</function>
+    </plot>
+  </section>
+
+  <section>
+    <title>Raízes e Módulo</title>
+    <c>sqrt</c> só existe para $x \geq 0$; <c>cbrt</c> existe em toda a reta; <c>abs</c> forma um V.
+
+    <code lang="xml" numbered="false">
+<plot x="-8,8" y="-3,5">
+  <title>sqrt, cbrt e abs</title>
+  <function color="#3b82f6">sqrt(x)</function>
+  <function color="#10b981">cbrt(x)</function>
+  <function color="#ef4444">abs(x) / 2</function>
+</plot>
+    </code>
+    <plot x="-8,8" y="-3,5">
+      <title>sqrt, cbrt e abs</title>
+      <function color="#3b82f6">sqrt(x)</function>
+      <function color="#10b981">cbrt(x)</function>
+      <function color="#ef4444">abs(x) / 2</function>
+    </plot>
+  </section>
+
+  <section>
+    <title>Trigonométricas e pi</title>
+    O seno e o cosseno devem cruzar o eixo em múltiplos de <c>pi</c>. A tangente usa <c>to</c> para cortar as assíntotas.
+
+    <code lang="xml" numbered="false">
+<plot x="-7,7" y="-3,3">
+  <title>sin, cos e tan</title>
+  <function color="#3b82f6">sin(x)</function>
+  <function color="#10b981">cos(x - pi)</function>
+  <function color="#ef4444" to="-3,3">tan(x)</function>
+</plot>
+    </code>
+    <plot x="-7,7" y="-3,3">
+      <title>sin, cos e tan</title>
+      <function color="#3b82f6">sin(x)</function>
+      <function color="#10b981">cos(x - pi)</function>
+      <function color="#ef4444" to="-3,3">tan(x)</function>
+    </plot>
+  </section>
+
+  <section>
+    <title>Trigonométricas Inversas</title>
+    <c>asin</c> e <c>acos</c> só existem em $[-1, 1]$; <c>atan</c> tende a $\pm \pi / 2$.
+
+    <code lang="xml" numbered="false">
+<plot x="-5,5" y="-2,4">
+  <title>asin, acos e atan</title>
+  <function color="#3b82f6">asin(x)</function>
+  <function color="#10b981">acos(x)</function>
+  <function color="#ef4444">atan(x)</function>
+</plot>
+    </code>
+    <plot x="-5,5" y="-2,4">
+      <title>asin, acos e atan</title>
+      <function color="#3b82f6">asin(x)</function>
+      <function color="#10b981">acos(x)</function>
+      <function color="#ef4444">atan(x)</function>
+    </plot>
+  </section>
+
+  <section>
+    <title>Hiperbólicas</title>
+    <code lang="xml" numbered="false">
+<plot x="-4,4" y="-3,5">
+  <title>sinh, cosh e tanh</title>
+  <function color="#3b82f6">sinh(x)</function>
+  <function color="#10b981">cosh(x)</function>
+  <function color="#ef4444">tanh(x)</function>
+</plot>
+    </code>
+    <plot x="-4,4" y="-3,5">
+      <title>sinh, cosh e tanh</title>
+      <function color="#3b82f6">sinh(x)</function>
+      <function color="#10b981">cosh(x)</function>
+      <function color="#ef4444">tanh(x)</function>
+    </plot>
+  </section>
+
+  <section>
+    <title>Hiperbólicas Inversas</title>
+    <c>acosh</c> só existe para $x \geq 1$ e <c>atanh</c> só em $(-1, 1)$.
+
+    <code lang="xml" numbered="false">
+<plot x="-4,4" y="-3,3">
+  <title>asinh, acosh e atanh</title>
+  <function color="#3b82f6">asinh(x)</function>
+  <function color="#10b981">acosh(x)</function>
+  <function color="#ef4444">atanh(x)</function>
+</plot>
+    </code>
+    <plot x="-4,4" y="-3,3">
+      <title>asinh, acosh e atanh</title>
+      <function color="#3b82f6">asinh(x)</function>
+      <function color="#10b981">acosh(x)</function>
+      <function color="#ef4444">atanh(x)</function>
+    </plot>
+  </section>
+
+  <section>
+    <title>Logaritmos e e</title>
+    <c>log</c> é o logaritmo natural, inverso de <c>e^x</c>: as duas curvas são simétricas em relação a $y = x$. <c>log2</c> vale 3 em $x = 8$ e <c>log10</c> vale 1 em $x = 10$.
+
+    <code lang="xml" numbered="false">
+      <plot x="-3,11" y="-3,4">
+        <title>log, log2, log10 e e^x</title>
+        <function color="#3b82f6">log(x)</function>
+        <function color="#10b981">log2(x)</function>
+        <function color="#ef4444">log10(x)</function>
+        <function color="#f59e0b" to="-3,4">e^x</function>
+        <function color="#94a3b8">x</function>
+      </plot>
+    </code>
+    <plot x="-3,11" y="-3,4">
+      <title>log, log2, log10 e e^x</title>
+      <function color="#3b82f6">log(x)</function>
+      <function color="#10b981">log2(x)</function>
+      <function color="#ef4444">log10(x)</function>
+      <function color="#f59e0b" to="-3,4">e^x</function>
+      <function color="#94a3b8">x</function>
+    </plot>
+  </section>
+
+  <section>
+    <title>Arredondamento e Sinal</title>
+    Escadas: <c>floor</c> arredonda para baixo, <c>ceil</c> para cima e <c>round</c> para o inteiro mais próximo. <c>sign</c> vale $-1$, $0$ ou $1$.
+
+    <code lang="xml" numbered="false">
+<plot x="-4,4" y="-4,4">
+  <title>floor, ceil, round e sign</title>
+  <function color="#3b82f6">floor(x)</function>
+  <function color="#10b981">ceil(x) + 0.1</function>
+  <function color="#ef4444">round(x) - 0.1</function>
+  <function color="#f59e0b">sign(x) * 3</function>
+</plot>
+    </code>
+    <plot x="-4,4" y="-4,4">
+      <title>floor, ceil, round e sign</title>
+      <function color="#3b82f6">floor(x)</function>
+      <function color="#10b981">ceil(x) + 0.1</function>
+      <function color="#ef4444">round(x) - 0.1</function>
+      <function color="#f59e0b">sign(x) * 3</function>
+    </plot>
+  </section>
+
+  <section>
+    <title>max e min com Vários Argumentos</title>
+    A vírgula separa argumentos e tem a menor precedência: <c>max(1 + 2, x)</c> compara $3$ com $x$.
+
+    <code lang="xml" numbered="false">
+<plot x="-6,6" y="-3,4">
+  <title>max e min</title>
+  <function color="#3b82f6">max(sin(x), cos(x))</function>
+  <function color="#ef4444">min(x, 1, -x + 2)</function>
+  <function color="#10b981">max(1 + 2, x)</function>
+</plot>
+    </code>
+    <plot x="-6,6" y="-3,4">
+      <title>max e min</title>
+      <function color="#3b82f6">max(sin(x), cos(x))</function>
+      <function color="#ef4444">min(x, 1, -x + 2)</function>
+      <function color="#10b981">max(1 + 2, x)</function>
+    </plot>
+  </section>
+
+  <section>
+    <title>Composição e Funções sem Parênteses</title>
+    $\sin^2 x + \cos^2 x$ deve ser a reta $y = 1$ e <c>log(e^x)</c> a reta $y = x$. <c>sin x^2</c> é lido como <c>(sin x)^2</c>, então coincide com <c>sin(x)^2</c>.
+
+    <code lang="xml" numbered="false">
+<plot x="-6,6" y="-3,3">
+  <title>Funções compostas</title>
+  <function color="#3b82f6">sin(x)^2 + cos(x)^2</function>
+  <function color="#10b981">log(e^x)</function>
+  <function color="#ef4444">sqrt(abs(x)) * sign(x)</function>
+  <function color="#f59e0b">sin x^2 - 2</function>
+</plot>
+    </code>
+    <plot x="-6,6" y="-3,3">
+      <title>Funções compostas</title>
+      <function color="#3b82f6">sin(x)^2 + cos(x)^2</function>
+      <function color="#10b981">log(e^x)</function>
+      <function color="#ef4444">sqrt(abs(x)) * sign(x)</function>
+      <function color="#f59e0b">sin x^2 - 2</function>
+    </plot>
+  </section>
+
+  <section>
+    <title>Constantes e Números Decimais</title>
+    <c>PI</c> e <c>E</c> funcionam em maiúsculas ou minúsculas e decimais aceitam <c>.5</c> e <c>2.</c>.
+
+    <code lang="xml" numbered="false">
+<plot x="-4,4" y="-4,4">
+  <title>PI, E e decimais</title>
+  <function color="#3b82f6">sin(x) * PI / 2</function>
+  <function color="#10b981">.5 * x + 2.</function>
+  <function color="#ef4444">E - 4</function>
+</plot>
+    </code>
+    <plot x="-4,4" y="-4,4">
+      <title>PI, E e decimais</title>
+      <function color="#3b82f6">sin(x) * PI / 2</function>
+      <function color="#10b981">.5 * x + 2.</function>
+      <function color="#ef4444">E - 4</function>
+    </plot>
+  </section>
+
+  <section>
+    <title>Expressões Inválidas</title>
+    Nenhuma destas curvas deve aparecer; cada uma gera um aviso no console: multiplicação implícita, parêntese aberto, nome desconhecido, vírgula fora de função, código JavaScript e prefixo <c>Math.</c> (use apenas a função matemática).
+
+    <code lang="xml" numbered="false">
+<plot x="-4,4" y="-4,4">
+  <title>Gráfico vazio esperado</title>
+  <function>2x</function>
+  <function>sin(x</function>
+  <function>foo(x)</function>
+  <function>1, 2</function>
+  <function>alert(1)</function>
+  <function>Math.sin(x)</function>
+</plot>
+    </code>
+    <plot x="-4,4" y="-4,4">
+      <title>Gráfico vazio esperado</title>
+      <function>2x</function>
+      <function>sin(x</function>
+      <function>foo(x)</function>
+      <function>1, 2</function>
+      <function>alert(1)</function>
+      <function>Math.sin(x)</function>
+    </plot>
+  </section>
+</document>
