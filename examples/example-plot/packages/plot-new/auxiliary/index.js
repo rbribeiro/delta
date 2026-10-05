@@ -56,26 +56,31 @@ function parseOption(value, options) {
 function getPlotCenter(plot, w, h) {
     const width = (w !== undefined) ? w : (plot.canvas ? plot.canvas.clientWidth : 0);
     const height = (h !== undefined) ? h : (plot.canvas ? plot.canvas.clientHeight : 0);
+    const baseScale = BASE_SIZE_SCALE * plot.zoom;
+    const sx = plot.stretchX || 1;
+    const sy = plot.stretchY || 1;
     return {
         centerX: width / 2 + plot.offsetX,
         centerY: height / 2 + plot.offsetY,
-        scale: BASE_SIZE_SCALE * plot.zoom
+        scale: baseScale,
+        scaleX: baseScale * sx,
+        scaleY: baseScale * sy
     };
 }
 
 function worldToScreen(x, y, plot, w, h) {
-    const { centerX, centerY, scale } = getPlotCenter(plot, w, h);
+    const { centerX, centerY, scaleX, scaleY } = getPlotCenter(plot, w, h);
     return {
-        sx: centerX + x * scale,
-        sy: centerY - y * scale
+        sx: centerX + x * scaleX,
+        sy: centerY - y * scaleY
     };
 }
 
 function screenToWorld(sx, sy, plot, w, h) {
-    const { centerX, centerY, scale } = getPlotCenter(plot, w, h);
+    const { centerX, centerY, scaleX, scaleY } = getPlotCenter(plot, w, h);
     return {
-        x: parseFloat(((sx - centerX) / scale).toFixed(6)),
-        y: parseFloat(((centerY - sy) / scale).toFixed(6))
+        x: parseFloat(((sx - centerX) / scaleX).toFixed(6)),
+        y: parseFloat(((centerY - sy) / scaleY).toFixed(6))
     };
 }
 

@@ -23,10 +23,37 @@ function initPlotAttributes(plot) {
     plot.zoomEnabled = (zoomRange[0] !== 1 || zoomRange[1] !== 1);
     plot.zoom = 1;
 
-    // Initial axis ranges
-    const fallbackX = [-16,16], fallbackY = [-9,9];
-    plot.xRange = parseTuple(plot.getAttribute("x"), 2, true) || fallbackX;
-    plot.yRange = parseTuple(plot.getAttribute("y"), 2, true) || fallbackY;
+    // Initial axis ranges and aspect ratio
+    const fallbackAspect = 16 / 9;
+    const rawX = parseTuple(plot.getAttribute("x"), 2, true);
+    const rawY = parseTuple(plot.getAttribute("y"), 2, true);
+
+    if (rawX && rawY) {
+        plot.xRange = rawX;
+        plot.yRange = rawY;
+        const dx = Math.abs(rawX[1] - rawX[0]);
+        const dy = Math.abs(rawY[1] - rawY[0]);
+        plot.desiredAspectRatio = (dx > 0 && dy > 0) ? (dx / dy) : fallbackAspect;
+    } else if (rawX) {
+        plot.xRange = rawX;
+        plot.desiredAspectRatio = fallbackAspect;
+        const dx = Math.abs(rawX[1] - rawX[0]);
+        const dy = dx / fallbackAspect;
+        plot.yRange = [-dy / 2, dy / 2];
+    } else if (rawY) {
+        plot.yRange = rawY;
+        plot.desiredAspectRatio = fallbackAspect;
+        const dy = Math.abs(rawY[1] - rawY[0]);
+        const dx = dy * fallbackAspect;
+        plot.xRange = [-dx / 2, dx / 2];
+    } else {
+        plot.xRange = [-16, 16];
+        plot.yRange = [-9, 9];
+        plot.desiredAspectRatio = fallbackAspect;
+    }
+
+    plot.stretchX = fallbackAspect / plot.desiredAspectRatio;
+    plot.stretchY = 1;
 
     // Authoritative data container
     plot.data = createPlotData(plot, { points: [], functions: [] });
@@ -124,14 +151,18 @@ function fitInitialBounds(plot, w, h) {
     const dy = Math.abs(plot.yRange[1] - plot.yRange[0]);
     if (dx <= 0 || dy <= 0) return;
 
-    plot.zoom = Math.min(w / (dx * BASE_SIZE_SCALE), h / (dy * BASE_SIZE_SCALE));
+    const sx = plot.stretchX || 1;
+    const sy = plot.stretchY || 1;
+
+    plot.zoom = Math.min(w / (dx * BASE_SIZE_SCALE * sx), h / (dy * BASE_SIZE_SCALE * sy));
     plot.zoom = Math.max(plot.minZoom, Math.min(plot.maxZoom, plot.zoom));
 
-    const scale = BASE_SIZE_SCALE * plot.zoom;
+    const scaleX = BASE_SIZE_SCALE * plot.zoom * sx;
+    const scaleY = BASE_SIZE_SCALE * plot.zoom * sy;
     const xMid = (plot.xRange[0] + plot.xRange[1]) / 2;
     const yMid = (plot.yRange[0] + plot.yRange[1]) / 2;
-    plot.offsetX = -xMid * scale;
-    plot.offsetY = yMid * scale;
+    plot.offsetX = -xMid * scaleX;
+    plot.offsetY = yMid * scaleY;
 }
 
 function applyZoom(plot, newZoom, cx, cy) {

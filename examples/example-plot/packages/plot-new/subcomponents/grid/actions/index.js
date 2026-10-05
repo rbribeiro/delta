@@ -9,19 +9,21 @@ function parseGridOptions(gridEl) {
 }
 
 function drawGridMesh(ctx, w, h, plot, color, thickness) {
-    const { centerX, centerY, scale } = getPlotCenter(plot, w, h);
+    const { centerX, centerY, scaleX, scaleY } = getPlotCenter(plot, w, h);
     const roundCenterX = Math.round(centerX);
     const roundCenterY = Math.round(centerY);
 
     ctx.strokeStyle = color || getPlotStyles(plot).gridColor;
     ctx.lineWidth = thickness;
 
-    const stepUnit = getNiceStep(TARGET_GRID_SPACING / scale);
-    const stepPx = stepUnit * scale;
+    const stepUnitX = getNiceStep(TARGET_GRID_SPACING / scaleX);
+    const stepPxX = stepUnitX * scaleX;
+    const stepUnitY = getNiceStep(TARGET_GRID_SPACING / scaleY);
+    const stepPxY = stepUnitY * scaleY;
 
     // Vertical grid lines
-    const startX = ((roundCenterX % stepPx) + stepPx) % stepPx;
-    for (let x = startX; x <= w + 0.5; x += stepPx) {
+    const startX = ((roundCenterX % stepPxX) + stepPxX) % stepPxX;
+    for (let x = startX; x <= w + 0.5; x += stepPxX) {
         const rx = Math.round(x);
         ctx.beginPath();
         ctx.moveTo(rx + 0.5, 0);
@@ -30,8 +32,8 @@ function drawGridMesh(ctx, w, h, plot, color, thickness) {
     }
 
     // Horizontal grid lines
-    const startY = ((roundCenterY % stepPx) + stepPx) % stepPx;
-    for (let y = startY; y <= h + 0.5; y += stepPx) {
+    const startY = ((roundCenterY % stepPxY) + stepPxY) % stepPxY;
+    for (let y = startY; y <= h + 0.5; y += stepPxY) {
         const ry = Math.round(y);
         ctx.beginPath();
         ctx.moveTo(0, ry + 0.5);

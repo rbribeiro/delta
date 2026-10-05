@@ -16,13 +16,13 @@ function drawFunctionCurves(ctx, w, h, plot, precision = 1000) {
     const funcs = plot.data?.functions || [];
     if (!funcs.length) return;
 
-    const { centerX, centerY, scale } = getPlotCenter(plot, w, h);
-    if (scale <= 0) return;
+    const { centerX, centerY, scaleX, scaleY } = getPlotCenter(plot, w, h);
+    if (scaleX <= 0 || scaleY <= 0) return;
 
     
     const defaultAccent = getPlotStyles(plot).accent;
-    const xMin = -centerX / scale;
-    const xMax = (w - centerX) / scale;
+    const xMin = -centerX / scaleX;
+    const xMax = (w - centerX) / scaleX;
 
     for (const fnObj of funcs) {
         if (!fnObj || typeof fnObj.f !== "function") continue;
@@ -37,7 +37,7 @@ function drawFunctionCurves(ctx, w, h, plot, precision = 1000) {
         if (startX >= endX) continue;
 
         // Dynamic sampling density: at least 2 samples per screen pixel to eliminate jagged segments
-        const screenSpan = Math.max(1, (endX - startX) * scale);
+        const screenSpan = Math.max(1, (endX - startX) * scaleX);
         const sampleCount = Math.max(precision, Math.ceil(screenSpan * 2));
         const step = (endX - startX) / (sampleCount - 1);
 
@@ -71,8 +71,8 @@ function drawFunctionCurves(ctx, w, h, plot, precision = 1000) {
 
             if (isValid) {
                 // Exact floating-point coordinates enable native subpixel anti-aliasing
-                const sx = centerX + xi * scale;
-                const sy = centerY - yi * scale;
+                const sx = centerX + xi * scaleX;
+                const sy = centerY - yi * scaleY;
 
                 // Detect extreme asymptote jumps (e.g. 1/x crossing x=0)
                 const isAsymptoteJump = (prevSy !== null && Math.abs(sy - prevSy) > h * 3);

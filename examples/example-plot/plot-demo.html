@@ -3636,26 +3636,31 @@ function parseOption(value, options) {
 function getPlotCenter(plot, w, h) {
     const width = (w !== undefined) ? w : (plot.canvas ? plot.canvas.clientWidth : 0);
     const height = (h !== undefined) ? h : (plot.canvas ? plot.canvas.clientHeight : 0);
+    const baseScale = BASE_SIZE_SCALE * plot.zoom;
+    const sx = plot.stretchX || 1;
+    const sy = plot.stretchY || 1;
     return {
         centerX: width / 2 + plot.offsetX,
         centerY: height / 2 + plot.offsetY,
-        scale: BASE_SIZE_SCALE * plot.zoom
+        scale: baseScale,
+        scaleX: baseScale * sx,
+        scaleY: baseScale * sy
     };
 }
 
 function worldToScreen(x, y, plot, w, h) {
-    const { centerX, centerY, scale } = getPlotCenter(plot, w, h);
+    const { centerX, centerY, scaleX, scaleY } = getPlotCenter(plot, w, h);
     return {
-        sx: centerX + x * scale,
-        sy: centerY - y * scale
+        sx: centerX + x * scaleX,
+        sy: centerY - y * scaleY
     };
 }
 
 function screenToWorld(sx, sy, plot, w, h) {
-    const { centerX, centerY, scale } = getPlotCenter(plot, w, h);
+    const { centerX, centerY, scaleX, scaleY } = getPlotCenter(plot, w, h);
     return {
-        x: parseFloat(((sx - centerX) / scale).toFixed(6)),
-        y: parseFloat(((centerY - sy) / scale).toFixed(6))
+        x: parseFloat(((sx - centerX) / scaleX).toFixed(6)),
+        y: parseFloat(((centerY - sy) / scaleY).toFixed(6))
     };
 }
 
@@ -3677,18 +3682,106 @@ function formatNumber(val, precision = 6) {
 <script>
 /* pack: factory */
 // Function Factory Logic
+// Parses a math expression with a shunting-yard pass and compiles it to a JS function.
+// Only whitelisted tokens become code, so arbitrary JS in <function> never runs.
+
+const FN_NAMES = [
+    "abs", "sqrt", "cbrt", "sin", "cos", "tan", "asin", "acos", "atan",
+    "sinh", "cosh", "tanh", "asinh", "acosh", "atanh", "sign", "round",
+    "floor", "ceil", "max", "min", "log2", "log10", "log"
+];
+
+const FN_CONSTANTS = { pi: "Math.PI", e: "Math.E"};
+
+const FN_OPERATORS = {
+    ",":   { prec: 0, assoc: "left",  arity: 2, emit: (a, b) => [...[a].flat(), b] },
+    "+":   { prec: 1, assoc: "left",  arity: 2, emit: (a, b) => `(${a}+${b})` },
+    "-":   { prec: 1, assoc: "left",  arity: 2, emit: (a, b) => `(${a}-${b})` },
+    "*":   { prec: 2, assoc: "left",  arity: 2, emit: (a, b) => `(${a}*${b})` },
+    "/":   { prec: 2, assoc: "left",  arity: 2, emit: (a, b) => `(${a}/${b})` },
+    "neg": { prec: 3, assoc: "right", arity: 1, emit: (a) => `(-${a})` },
+    "^":   { prec: 4, assoc: "right", arity: 2, emit: (a, b) => `(${a}**${b})` }
+};
+FN_OPERATORS["**"] = FN_OPERATORS["^"];
+
+// Functions are prefix unary operators; "," builds their argument list
+for (const name of FN_NAMES) {
+    FN_OPERATORS[name] = { prec: 5, assoc: "right", arity: 1, fn: true, emit: (a) => `Math.${name}(${[a].flat().join(",")})` };
+}
+
+// Converts an infix expression into a JS expression string, throwing on any invalid input
+function compileFunctionExpression(expr, vars) {
+    const out = [];
+    const ops = [];
+    let expectOperand = true;
+
+    const apply = (name) => {
+        const op = FN_OPERATORS[name];
+        if (out.length < op.arity) throw new Error(`faltam argumentos para "${name === "neg" ? "-" : name}"`);
+        const args = out.splice(-op.arity);
+        if (!op.fn && name !== "," && args.some(Array.isArray)) throw new Error(`"," só separa argumentos de funções`);
+        out.push(op.emit(...args));
+    };
+
+    const source = String(expr);
+    const re = /\s*(?:(\d+\.?\d*|\.\d+)|([A-Za-z_]\w*)|(\*\*|[-+*/^(),]))\s*/y;
+
+    while (re.lastIndex < source.length) {
+        const at = re.lastIndex;
+        const m = re.exec(source);
+        if (!m) throw new Error(`símbolo inválido na posição ${at + 1}`);
+        const [token, num, word, sym] = m;
+
+        if ((num !== undefined || word !== undefined || sym === "(") && !expectOperand) {
+            throw new Error(`falta um operador antes de "${token.trim()}"`);
+        }
+
+        if (num !== undefined) {
+            out.push(String(parseFloat(num)));
+            expectOperand = false;
+        } else if (word !== undefined) {
+            if (FN_OPERATORS[word]?.fn) { ops.push(word); continue; }
+            if (vars.includes(word)) out.push(word);
+            else if (word in FN_CONSTANTS) out.push(FN_CONSTANTS[word]);
+            else throw new Error(`nome desconhecido "${word}"`);
+            expectOperand = false;
+        } else if (sym === "(") {
+            ops.push("(");
+        } else if (sym === ")") {
+            while (ops.length && ops.at(-1) !== "(") apply(ops.pop());
+            if (!ops.length) throw new Error(`")" sem "(" correspondente`);
+            ops.pop();
+            expectOperand = false;
+        } else if (expectOperand) {
+            if (sym === "-") ops.push("neg");
+            else if (sym !== "+") throw new Error(`"${sym}" sem operando à esquerda`);
+        } else {
+            const op = FN_OPERATORS[sym];
+            while (ops.length && ops.at(-1) !== "(") {
+                const top = FN_OPERATORS[ops.at(-1)];
+                if (top.prec > op.prec || (top.prec === op.prec && op.assoc === "left")) apply(ops.pop());
+                else break;
+            }
+            ops.push(sym);
+            expectOperand = true;
+        }
+    }
+
+    while (ops.length) {
+        const name = ops.pop();
+        if (name === "(") throw new Error(`"(" sem ")" correspondente`);
+        apply(name);
+    }
+    if (out.length !== 1 || Array.isArray(out[0])) throw new Error("expressão vazia ou incompleta");
+    return out[0];
+}
+
+// Builds f(...vars) from an expression; returns null (and warns) when it is invalid
 function make_function(expr, vars) {
     try {
-        const body = `
-            try {
-                const res = ${expr};
-                return Number.isNaN(res) ? null : res;
-            } catch (e) {
-                return null;
-            }
-        `;
-        return new Function(...vars, body);
+        return new Function(...vars, `return ${compileFunctionExpression(expr, vars)};`);
     } catch (e) {
+        console.warn(`[plot] função inválida "${expr}": ${e.message}`);
         return null;
     }
 }
@@ -3822,10 +3915,37 @@ function initPlotAttributes(plot) {
     plot.zoomEnabled = (zoomRange[0] !== 1 || zoomRange[1] !== 1);
     plot.zoom = 1;
 
-    // Initial axis ranges
-    const fallbackX = [-16,16], fallbackY = [-9,9];
-    plot.xRange = parseTuple(plot.getAttribute("x"), 2, true) || fallbackX;
-    plot.yRange = parseTuple(plot.getAttribute("y"), 2, true) || fallbackY;
+    // Initial axis ranges and aspect ratio
+    const fallbackAspect = 16 / 9;
+    const rawX = parseTuple(plot.getAttribute("x"), 2, true);
+    const rawY = parseTuple(plot.getAttribute("y"), 2, true);
+
+    if (rawX && rawY) {
+        plot.xRange = rawX;
+        plot.yRange = rawY;
+        const dx = Math.abs(rawX[1] - rawX[0]);
+        const dy = Math.abs(rawY[1] - rawY[0]);
+        plot.desiredAspectRatio = (dx > 0 && dy > 0) ? (dx / dy) : fallbackAspect;
+    } else if (rawX) {
+        plot.xRange = rawX;
+        plot.desiredAspectRatio = fallbackAspect;
+        const dx = Math.abs(rawX[1] - rawX[0]);
+        const dy = dx / fallbackAspect;
+        plot.yRange = [-dy / 2, dy / 2];
+    } else if (rawY) {
+        plot.yRange = rawY;
+        plot.desiredAspectRatio = fallbackAspect;
+        const dy = Math.abs(rawY[1] - rawY[0]);
+        const dx = dy * fallbackAspect;
+        plot.xRange = [-dx / 2, dx / 2];
+    } else {
+        plot.xRange = [-16, 16];
+        plot.yRange = [-9, 9];
+        plot.desiredAspectRatio = fallbackAspect;
+    }
+
+    plot.stretchX = fallbackAspect / plot.desiredAspectRatio;
+    plot.stretchY = 1;
 
     // Authoritative data container
     plot.data = createPlotData(plot, { points: [], functions: [] });
@@ -3923,14 +4043,18 @@ function fitInitialBounds(plot, w, h) {
     const dy = Math.abs(plot.yRange[1] - plot.yRange[0]);
     if (dx <= 0 || dy <= 0) return;
 
-    plot.zoom = Math.min(w / (dx * BASE_SIZE_SCALE), h / (dy * BASE_SIZE_SCALE));
+    const sx = plot.stretchX || 1;
+    const sy = plot.stretchY || 1;
+
+    plot.zoom = Math.min(w / (dx * BASE_SIZE_SCALE * sx), h / (dy * BASE_SIZE_SCALE * sy));
     plot.zoom = Math.max(plot.minZoom, Math.min(plot.maxZoom, plot.zoom));
 
-    const scale = BASE_SIZE_SCALE * plot.zoom;
+    const scaleX = BASE_SIZE_SCALE * plot.zoom * sx;
+    const scaleY = BASE_SIZE_SCALE * plot.zoom * sy;
     const xMid = (plot.xRange[0] + plot.xRange[1]) / 2;
     const yMid = (plot.yRange[0] + plot.yRange[1]) / 2;
-    plot.offsetX = -xMid * scale;
-    plot.offsetY = yMid * scale;
+    plot.offsetX = -xMid * scaleX;
+    plot.offsetY = yMid * scaleY;
 }
 
 function applyZoom(plot, newZoom, cx, cy) {
@@ -4118,19 +4242,21 @@ function parseGridOptions(gridEl) {
 }
 
 function drawGridMesh(ctx, w, h, plot, color, thickness) {
-    const { centerX, centerY, scale } = getPlotCenter(plot, w, h);
+    const { centerX, centerY, scaleX, scaleY } = getPlotCenter(plot, w, h);
     const roundCenterX = Math.round(centerX);
     const roundCenterY = Math.round(centerY);
 
     ctx.strokeStyle = color || getPlotStyles(plot).gridColor;
     ctx.lineWidth = thickness;
 
-    const stepUnit = getNiceStep(TARGET_GRID_SPACING / scale);
-    const stepPx = stepUnit * scale;
+    const stepUnitX = getNiceStep(TARGET_GRID_SPACING / scaleX);
+    const stepPxX = stepUnitX * scaleX;
+    const stepUnitY = getNiceStep(TARGET_GRID_SPACING / scaleY);
+    const stepPxY = stepUnitY * scaleY;
 
     // Vertical grid lines
-    const startX = ((roundCenterX % stepPx) + stepPx) % stepPx;
-    for (let x = startX; x <= w + 0.5; x += stepPx) {
+    const startX = ((roundCenterX % stepPxX) + stepPxX) % stepPxX;
+    for (let x = startX; x <= w + 0.5; x += stepPxX) {
         const rx = Math.round(x);
         ctx.beginPath();
         ctx.moveTo(rx + 0.5, 0);
@@ -4139,8 +4265,8 @@ function drawGridMesh(ctx, w, h, plot, color, thickness) {
     }
 
     // Horizontal grid lines
-    const startY = ((roundCenterY % stepPx) + stepPx) % stepPx;
-    for (let y = startY; y <= h + 0.5; y += stepPx) {
+    const startY = ((roundCenterY % stepPxY) + stepPxY) % stepPxY;
+    for (let y = startY; y <= h + 0.5; y += stepPxY) {
         const ry = Math.round(y);
         ctx.beginPath();
         ctx.moveTo(0, ry + 0.5);
@@ -4216,22 +4342,22 @@ function parseAxisOptions(axisEl) {
 }
 
 function drawXAxisNumbers(ctx, w, h, plot, color) {
-    const { centerX, scale } = getPlotCenter(plot, w, h);
+    const { centerX, scaleX } = getPlotCenter(plot, w, h);
     const roundCenterX = Math.round(centerX);
     const styles = getPlotStyles(plot);
 
     ctx.font = styles.axisFont;
     ctx.fillStyle = color || styles.axisColor;
 
-    const stepUnitX = getNiceStep(TARGET_GRID_SPACING / scale);
-    const stepPxX = stepUnitX * scale;
+    const stepUnitX = getNiceStep(TARGET_GRID_SPACING / scaleX);
+    const stepPxX = stepUnitX * scaleX;
     const textY = h - 6;
 
     const minUnit = Math.floor((-roundCenterX) / stepPxX) * stepUnitX;
     const maxUnit = Math.ceil((w - roundCenterX) / stepPxX) * stepUnitX;
 
     for (let u = minUnit; u <= maxUnit + stepUnitX * 0.5; u += stepUnitX) {
-        const sx = Math.round(roundCenterX + u * scale);
+        const sx = Math.round(roundCenterX + u * scaleX);
         if (sx >= 0 && sx <= w) {
             ctx.textBaseline = "bottom";
             if (sx < 25) {
@@ -4249,22 +4375,22 @@ function drawXAxisNumbers(ctx, w, h, plot, color) {
 }
 
 function drawYAxisNumbers(ctx, w, h, plot, color) {
-    const { centerY, scale } = getPlotCenter(plot, w, h);
+    const { centerY, scaleY } = getPlotCenter(plot, w, h);
     const roundCenterY = Math.round(centerY);
     const styles = getPlotStyles(plot);
 
     ctx.font = styles.axisFont;
     ctx.fillStyle = color || styles.axisColor;
 
-    const stepUnitY = getNiceStep(TARGET_GRID_SPACING / scale);
-    const stepPxY = stepUnitY * scale;
+    const stepUnitY = getNiceStep(TARGET_GRID_SPACING / scaleY);
+    const stepPxY = stepUnitY * scaleY;
     const textX = 8;
 
     const minUnit = Math.floor((roundCenterY - h) / stepPxY) * stepUnitY;
     const maxUnit = Math.ceil(roundCenterY / stepPxY) * stepUnitY;
 
     for (let u = minUnit; u <= maxUnit + stepUnitY * 0.5; u += stepUnitY) {
-        const sy = Math.round(roundCenterY - u * scale);
+        const sy = Math.round(roundCenterY - u * scaleY);
         if (sy >= 0 && sy <= h) {
             ctx.textAlign = "left";
             if (sy < 16) {
@@ -4732,12 +4858,13 @@ function drawFunctionCurves(ctx, w, h, plot, precision = 1000) {
     const funcs = plot.data?.functions || [];
     if (!funcs.length) return;
 
-    const { centerX, centerY, scale } = getPlotCenter(plot, w, h);
-    if (scale <= 0) return;
+    const { centerX, centerY, scaleX, scaleY } = getPlotCenter(plot, w, h);
+    if (scaleX <= 0 || scaleY <= 0) return;
 
+    
     const defaultAccent = getPlotStyles(plot).accent;
-    const xMin = -centerX / scale;
-    const xMax = (w - centerX) / scale;
+    const xMin = -centerX / scaleX;
+    const xMax = (w - centerX) / scaleX;
 
     for (const fnObj of funcs) {
         if (!fnObj || typeof fnObj.f !== "function") continue;
@@ -4752,7 +4879,7 @@ function drawFunctionCurves(ctx, w, h, plot, precision = 1000) {
         if (startX >= endX) continue;
 
         // Dynamic sampling density: at least 2 samples per screen pixel to eliminate jagged segments
-        const screenSpan = Math.max(1, (endX - startX) * scale);
+        const screenSpan = Math.max(1, (endX - startX) * scaleX);
         const sampleCount = Math.max(precision, Math.ceil(screenSpan * 2));
         const step = (endX - startX) / (sampleCount - 1);
 
@@ -4786,8 +4913,8 @@ function drawFunctionCurves(ctx, w, h, plot, precision = 1000) {
 
             if (isValid) {
                 // Exact floating-point coordinates enable native subpixel anti-aliasing
-                const sx = centerX + xi * scale;
-                const sy = centerY - yi * scale;
+                const sx = centerX + xi * scaleX;
+                const sy = centerY - yi * scaleY;
 
                 // Detect extreme asymptote jumps (e.g. 1/x crossing x=0)
                 const isAsymptoteJump = (prevSy !== null && Math.abs(sy - prevSy) > h * 3);

@@ -8,22 +8,22 @@ function parseAxisOptions(axisEl) {
 }
 
 function drawXAxisNumbers(ctx, w, h, plot, color) {
-    const { centerX, scale } = getPlotCenter(plot, w, h);
+    const { centerX, scaleX } = getPlotCenter(plot, w, h);
     const roundCenterX = Math.round(centerX);
     const styles = getPlotStyles(plot);
 
     ctx.font = styles.axisFont;
     ctx.fillStyle = color || styles.axisColor;
 
-    const stepUnitX = getNiceStep(TARGET_GRID_SPACING / scale);
-    const stepPxX = stepUnitX * scale;
+    const stepUnitX = getNiceStep(TARGET_GRID_SPACING / scaleX);
+    const stepPxX = stepUnitX * scaleX;
     const textY = h - 6;
 
     const minUnit = Math.floor((-roundCenterX) / stepPxX) * stepUnitX;
     const maxUnit = Math.ceil((w - roundCenterX) / stepPxX) * stepUnitX;
 
     for (let u = minUnit; u <= maxUnit + stepUnitX * 0.5; u += stepUnitX) {
-        const sx = Math.round(roundCenterX + u * scale);
+        const sx = Math.round(roundCenterX + u * scaleX);
         if (sx >= 0 && sx <= w) {
             ctx.textBaseline = "bottom";
             if (sx < 25) {
@@ -41,22 +41,22 @@ function drawXAxisNumbers(ctx, w, h, plot, color) {
 }
 
 function drawYAxisNumbers(ctx, w, h, plot, color) {
-    const { centerY, scale } = getPlotCenter(plot, w, h);
+    const { centerY, scaleY } = getPlotCenter(plot, w, h);
     const roundCenterY = Math.round(centerY);
     const styles = getPlotStyles(plot);
 
     ctx.font = styles.axisFont;
     ctx.fillStyle = color || styles.axisColor;
 
-    const stepUnitY = getNiceStep(TARGET_GRID_SPACING / scale);
-    const stepPxY = stepUnitY * scale;
+    const stepUnitY = getNiceStep(TARGET_GRID_SPACING / scaleY);
+    const stepPxY = stepUnitY * scaleY;
     const textX = 8;
 
     const minUnit = Math.floor((roundCenterY - h) / stepPxY) * stepUnitY;
     const maxUnit = Math.ceil(roundCenterY / stepPxY) * stepUnitY;
 
     for (let u = minUnit; u <= maxUnit + stepUnitY * 0.5; u += stepUnitY) {
-        const sy = Math.round(roundCenterY - u * scale);
+        const sy = Math.round(roundCenterY - u * scaleY);
         if (sy >= 0 && sy <= h) {
             ctx.textAlign = "left";
             if (sy < 16) {
