@@ -236,27 +236,27 @@
 
   <section>
     <title>Constantes e Números Decimais</title>
-    <c>PI</c> e <c>E</c> funcionam em maiúsculas ou minúsculas e decimais aceitam <c>.5</c> e <c>2.</c>.
+    <c>pi</c> e <c>e</c> funcionam apenas em minúsculas e decimais aceitam <c>.5</c> e <c>2.</c>.
 
     <code lang="xml" numbered="false">
 <plot x="-4,4" y="-4,4">
-  <title>PI, E e decimais</title>
-  <function color="#3b82f6">sin(x) * PI / 2</function>
+  <title>pi, e e decimais</title>
+  <function color="#3b82f6">sin(x) * pi / 2</function>
   <function color="#10b981">.5 * x + 2.</function>
-  <function color="#ef4444">E - 4</function>
+  <function color="#ef4444">e - 4</function>
 </plot>
     </code>
     <plot x="-4,4" y="-4,4">
-      <title>PI, E e decimais</title>
-      <function color="#3b82f6">sin(x) * PI / 2</function>
+      <title>pi, e e decimais</title>
+      <function color="#3b82f6">sin(x) * pi / 2</function>
       <function color="#10b981">.5 * x + 2.</function>
-      <function color="#ef4444">E - 4</function>
+      <function color="#ef4444">e - 4</function>
     </plot>
   </section>
 
   <section>
     <title>Expressões Inválidas</title>
-    Nenhuma destas curvas deve aparecer; cada uma gera um aviso no console: multiplicação implícita, parêntese aberto, nome desconhecido, vírgula fora de função, código JavaScript e prefixo <c>Math.</c> (use apenas a função matemática).
+    Nenhuma destas curvas deve aparecer; cada uma gera um aviso no console: multiplicação implícita, parêntese aberto, nome desconhecido (como constantes em maiúsculas), vírgula fora de função, código JavaScript e prefixo <c>Math.</c> (use apenas a função matemática).
 
     <code lang="xml" numbered="false">
 <plot x="-4,4" y="-4,4">
@@ -264,6 +264,7 @@
   <function>2x</function>
   <function>sin(x</function>
   <function>foo(x)</function>
+  <function>PI</function>
   <function>1, 2</function>
   <function>alert(1)</function>
   <function>Math.sin(x)</function>
@@ -274,6 +275,7 @@
       <function>2x</function>
       <function>sin(x</function>
       <function>foo(x)</function>
+      <function>PI</function>
       <function>1, 2</function>
       <function>alert(1)</function>
       <function>Math.sin(x)</function>

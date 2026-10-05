@@ -14,7 +14,7 @@ A expressão passa por uma variação do algoritmo **shunting-yard**: cada peda�
 | Números inteiros e decimais | `3`, `2.5`, `.5`, `2.` | Sem notação científica (`1e3`) |
 | Variável `x` | `x^2` | Varia ao longo do eixo horizontal |
 | Variável `y` | `y` | Reservada; hoje sempre vale `0` |
-| Constantes | `pi`, `e` | Também aceitas como `PI`, `E` |
+| Constantes | `pi`, `e` | Somente minúsculas |
 | Parênteses | `(x + 1) * 2` | Precisam estar balanceados |
 | Funções com vários argumentos | `max(x, 1, -x)` | `,` só é aceita dentro de funções |
 | Funções sem parênteses | `sin x` | Pega só o próximo termo: `sin x^2` = `(sin x)^2` |

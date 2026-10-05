@@ -4157,25 +4157,26 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">�
     </delta-plot>
   </delta-section><delta-section num="12">
     <delta-title>Constantes e Números Decimais</delta-title>
-    <delta-c>PI</delta-c> e <delta-c>E</delta-c> funcionam em maiúsculas ou minúsculas e decimais aceitam <delta-c>.5</delta-c> e <delta-c>2.</delta-c>.<delta-code lang="xml" numbered="false"><span class="hljs-tag">&lt;<span class="hljs-name">plot</span> <span class="hljs-attr">x</span>=<span class="hljs-string">&quot;-4,4&quot;</span> <span class="hljs-attr">y</span>=<span class="hljs-string">&quot;-4,4&quot;</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>PI, E e decimais<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">function</span> <span class="hljs-attr">color</span>=<span class="hljs-string">&quot;#3b82f6&quot;</span>&gt;</span>sin(x) * PI / 2<span class="hljs-tag">&lt;/<span class="hljs-name">function</span>&gt;</span>
+    <delta-c>pi</delta-c> e <delta-c>e</delta-c> funcionam apenas em minúsculas e decimais aceitam <delta-c>.5</delta-c> e <delta-c>2.</delta-c>.<delta-code lang="xml" numbered="false"><span class="hljs-tag">&lt;<span class="hljs-name">plot</span> <span class="hljs-attr">x</span>=<span class="hljs-string">&quot;-4,4&quot;</span> <span class="hljs-attr">y</span>=<span class="hljs-string">&quot;-4,4&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>pi, e e decimais<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">function</span> <span class="hljs-attr">color</span>=<span class="hljs-string">&quot;#3b82f6&quot;</span>&gt;</span>sin(x) * pi / 2<span class="hljs-tag">&lt;/<span class="hljs-name">function</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">function</span> <span class="hljs-attr">color</span>=<span class="hljs-string">&quot;#10b981&quot;</span>&gt;</span>.5 * x + 2.<span class="hljs-tag">&lt;/<span class="hljs-name">function</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">function</span> <span class="hljs-attr">color</span>=<span class="hljs-string">&quot;#ef4444&quot;</span>&gt;</span>E - 4<span class="hljs-tag">&lt;/<span class="hljs-name">function</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">function</span> <span class="hljs-attr">color</span>=<span class="hljs-string">&quot;#ef4444&quot;</span>&gt;</span>e - 4<span class="hljs-tag">&lt;/<span class="hljs-name">function</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">plot</span>&gt;</span></delta-code>
     <delta-plot x="-4,4" y="-4,4">
-      <delta-title>PI, E e decimais</delta-title>
-      <delta-function color="#3b82f6">sin(x) * PI / 2</delta-function>
+      <delta-title>pi, e e decimais</delta-title>
+      <delta-function color="#3b82f6">sin(x) * pi / 2</delta-function>
       <delta-function color="#10b981">.5 * x + 2.</delta-function>
-      <delta-function color="#ef4444">E - 4</delta-function>
+      <delta-function color="#ef4444">e - 4</delta-function>
     </delta-plot>
   </delta-section><delta-section num="13">
     <delta-title>Expressões Inválidas</delta-title>
-    Nenhuma destas curvas deve aparecer; cada uma gera um aviso no console: multiplicação implícita, parêntese aberto, nome desconhecido, vírgula fora de função, código JavaScript e prefixo <delta-c>Math.</delta-c> (use apenas a função matemática).<delta-code lang="xml" numbered="false"><span class="hljs-tag">&lt;<span class="hljs-name">plot</span> <span class="hljs-attr">x</span>=<span class="hljs-string">&quot;-4,4&quot;</span> <span class="hljs-attr">y</span>=<span class="hljs-string">&quot;-4,4&quot;</span>&gt;</span>
+    Nenhuma destas curvas deve aparecer; cada uma gera um aviso no console: multiplicação implícita, parêntese aberto, nome desconhecido (como constantes em maiúsculas), vírgula fora de função, código JavaScript e prefixo <delta-c>Math.</delta-c> (use apenas a função matemática).<delta-code lang="xml" numbered="false"><span class="hljs-tag">&lt;<span class="hljs-name">plot</span> <span class="hljs-attr">x</span>=<span class="hljs-string">&quot;-4,4&quot;</span> <span class="hljs-attr">y</span>=<span class="hljs-string">&quot;-4,4&quot;</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>Gráfico vazio esperado<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">function</span>&gt;</span>2x<span class="hljs-tag">&lt;/<span class="hljs-name">function</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">function</span>&gt;</span>sin(x<span class="hljs-tag">&lt;/<span class="hljs-name">function</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">function</span>&gt;</span>foo(x)<span class="hljs-tag">&lt;/<span class="hljs-name">function</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">function</span>&gt;</span>PI<span class="hljs-tag">&lt;/<span class="hljs-name">function</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">function</span>&gt;</span>1, 2<span class="hljs-tag">&lt;/<span class="hljs-name">function</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">function</span>&gt;</span>alert(1)<span class="hljs-tag">&lt;/<span class="hljs-name">function</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">function</span>&gt;</span>Math.sin(x)<span class="hljs-tag">&lt;/<span class="hljs-name">function</span>&gt;</span>
@@ -4185,6 +4186,7 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">�
       <delta-function>2x</delta-function>
       <delta-function>sin(x</delta-function>
       <delta-function>foo(x)</delta-function>
+      <delta-function>PI</delta-function>
       <delta-function>1, 2</delta-function>
       <delta-function>alert(1)</delta-function>
       <delta-function>Math.sin(x)</delta-function>
@@ -5585,7 +5587,7 @@ customElements.define("delta-function", DeltaFunction);
 
 </script>
 <script>
-/* pack: plot-new */
+/* pack: plot */
 // Plot Core Component
 class DeltaPlot extends HTMLElement {
     connectedCallback() {
