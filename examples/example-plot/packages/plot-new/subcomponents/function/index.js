@@ -2,7 +2,7 @@
 class DeltaFunction extends HTMLElement {
     build(plot) {
         const fnData = parseFunctionOptions(this);
-        registerFunctionInPlot(plot, fnData);
+        addFunction(plot, fnData);
     }
 
     bind(plot) {}

@@ -10,13 +10,8 @@ function parsePointAttributes(pointEl) {
     }
 
     const color = pointEl.getAttribute("color") || null;
-    const rawSize = parseFloat(pointEl.getAttribute("size"));
-    const size = isNaN(rawSize) ? null : rawSize;
+    const size = parseFloat(pointEl.getAttribute("size")) || null;
     const name = pointEl.getAttribute("name") || "";
 
     return { x, y, color, size, name };
-}
-
-function registerPointInPlot(plot, pointData) {
-    return addPoint(plot, pointData);
 }

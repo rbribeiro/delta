@@ -7,14 +7,20 @@ function initPlotAttributes(plot) {
     plot.type = parseOption(plot.getAttribute("type"), ["cartesian", "points"]);
 
     // Zoom
-    const zoomAttr = plot.getAttribute("zoom") || "true";
-    const fallbackZoom = [0.25,4];
-    let zoomRange = parseOption(plot.getAttribute("zoom"),{"true": parseTuple(zoomAttr,2,true) || fallbackZoom, "false": [1,1]});
+    const zoomAttr = plot.getAttribute("zoom");
+    let zoomRange = parseTuple(zoomAttr, 2, true);
+    if (zoomAttr === "false") {
+        zoomRange = [1, 1];
+    } else if (!zoomRange || zoomRange[0] > zoomRange[1] || zoomRange[1] < 1 || zoomRange[0] > 1) {
+        zoomRange = [0.25, 4];
+    }
 
-    plot.offsetX = 0; plot.offsetY = 0;
+    plot.offsetX = 0;
+    plot.offsetY = 0;
     plot.userInteracted = false;
-    plot.minZoom = Math.min(zoomRange[0],1); plot.maxZoom = Math.max(zoomRange[1],1);
-    plot.zoomEnabled = (plot.minZoom !== 1 || plot.maxZoom !== 1);
+    plot.minZoom = zoomRange[0];
+    plot.maxZoom = zoomRange[1];
+    plot.zoomEnabled = (zoomRange[0] !== 1 || zoomRange[1] !== 1);
     plot.zoom = 1;
 
     // Initial axis ranges

@@ -2,7 +2,7 @@
 class DeltaPoint extends HTMLElement {
     build(plot) {
         const pointData = parsePointAttributes(this);
-        registerPointInPlot(plot, pointData);
+        addPoint(plot, pointData);
     }
 
     bind(plot) {}

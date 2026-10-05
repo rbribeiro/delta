@@ -12,10 +12,6 @@ function parseFunctionOptions(fnEl) {
     return { rawExpr, vars, f, color, from, to, name };
 }
 
-function registerFunctionInPlot(plot, fnData) {
-    return addFunction(plot, fnData);
-}
-
 function drawFunctionCurves(ctx, w, h, plot, precision = 1000) {
     const funcs = plot.data?.functions || [];
     if (!funcs.length) return;
@@ -23,7 +19,8 @@ function drawFunctionCurves(ctx, w, h, plot, precision = 1000) {
     const { centerX, centerY, scale } = getPlotCenter(plot, w, h);
     if (scale <= 0) return;
 
-    const defaultAccent = getComputedStyle(plot).getPropertyValue("--delta-accent").trim() || "rgb(80, 80, 80)";
+    
+    const defaultAccent = getPlotStyles(plot).accent;
     const xMin = -centerX / scale;
     const xMax = (w - centerX) / scale;
 

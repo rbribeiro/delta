@@ -2,8 +2,8 @@
 function parseGridOptions(gridEl) {
     const rawShow = gridEl.getAttribute("show") || "true";
     const show = parseOption(rawShow, ["true", "false", "origin", "basic"]);
-    const color = gridEl.getAttribute("color") || DEFAULT_GRID_COLOR;
-    const thickness = parseNumber(gridEl.getAttribute("thickness") || gridEl.getAttribute("width"), DEFAULT_GRID_WIDTH);
+    const color = gridEl.getAttribute("color") || null;
+    const thickness = parseFloat(gridEl.getAttribute("thickness") || gridEl.getAttribute("width")) || 1;
 
     return { show, color, thickness };
 }
@@ -13,7 +13,7 @@ function drawGridMesh(ctx, w, h, plot, color, thickness) {
     const roundCenterX = Math.round(centerX);
     const roundCenterY = Math.round(centerY);
 
-    ctx.strokeStyle = color;
+    ctx.strokeStyle = color || getPlotStyles(plot).gridColor;
     ctx.lineWidth = thickness;
 
     const stepUnit = getNiceStep(TARGET_GRID_SPACING / scale);
@@ -45,8 +45,8 @@ function drawOriginCross(ctx, w, h, plot, color, thickness) {
     const roundCenterX = Math.round(centerX);
     const roundCenterY = Math.round(centerY);
 
-    // If color was custom-defined, use it; otherwise use the darker origin default
-    const originColor = (color !== DEFAULT_GRID_COLOR) ? color : DEFAULT_ORIGIN_COLOR;
+    // If color was custom-defined on tag, use it; otherwise use theme origin color
+    const originColor = color || getPlotStyles(plot).originColor;
     ctx.strokeStyle = originColor;
     ctx.lineWidth = Math.max(1, thickness);
 

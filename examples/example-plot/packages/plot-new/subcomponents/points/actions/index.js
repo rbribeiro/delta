@@ -36,6 +36,13 @@ function hitTestPoint(plot, sx, sy, defaultSize) {
     return null;
 }
 
+function deleteSelectedPoint(controller, plot) {
+    if (controller.state.selectedId === null) return;
+    removePoint(plot, controller.state.selectedId);
+    controller.state.selectedId = null;
+    if (controller.state.mode) plot.focus();
+}
+
 // UI Elements Construction
 function createPointsFooter(controller, plot) {
     const footer = document.createElement("div");
@@ -68,13 +75,7 @@ function createPointsFooter(controller, plot) {
         // Delete Selected Button
         controller.deleteSelectedBtn = createButton("plot-footer-btn", "Deletar ponto selecionado",
             `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M18 6L6 18M6 6l12 12"/></svg>`,
-            () => {
-                if (controller.state.selectedId !== null) {
-                    removePoint(plot, controller.state.selectedId);
-                    controller.state.selectedId = null;
-                    if (controller.state.mode) plot.focus();
-                }
-            }
+            () => deleteSelectedPoint(controller, plot)
         );
         controller.deleteSelectedBtn.disabled = true;
         actions.append(controller.deleteSelectedBtn);
@@ -112,11 +113,7 @@ function createFloatingBadge(controller, plot) {
     controller.badgeDelete.addEventListener("pointerdown", e => e.stopPropagation());
     controller.badgeDelete.addEventListener("click", (e) => {
         e.stopPropagation();
-        if (controller.state.selectedId !== null) {
-            removePoint(plot, controller.state.selectedId);
-            controller.state.selectedId = null;
-            if (controller.state.mode) plot.focus();
-        }
+        deleteSelectedPoint(controller, plot);
     });
 
     badge.append(controller.badgeDelete);
@@ -198,7 +195,7 @@ function drawPointsLayer(ctx, w, h, plot, controller) {
     const points = plot.data?.points || [];
     if (!points.length) return;
 
-    const defaultAccent = getComputedStyle(plot).getPropertyValue("--delta-accent").trim() || "rgb(80, 80, 80)";
+    const defaultAccent = getPlotStyles(plot).accent;
 
     for (const p of points) {
         if (!p || typeof p.x !== "number" || typeof p.y !== "number") continue;
@@ -315,10 +312,9 @@ function bindPointsInteractions(controller, plot) {
             e.preventDefault();
             controller.state.selectedId = null;
             plot.render();
-        } else if ((e.key === "Delete" || e.key === "Backspace") && controller.options.interaction === "true" && controller.state.mode && controller.state.selectedId !== null) {
+        } else if ((e.key === "Delete" || e.key === "Backspace") && controller.options.interaction === "true" && controller.state.mode) {
             e.preventDefault();
-            removePoint(plot, controller.state.selectedId);
-            controller.state.selectedId = null;
+            deleteSelectedPoint(controller, plot);
         }
     });
 

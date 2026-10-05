@@ -1,15 +1,26 @@
 // Visual and Layout Constants
 const BASE_SIZE_SCALE = 40;
-const BASE_SCALE = BASE_SIZE_SCALE;
 const TARGET_GRID_SPACING = 50;
 
-const DEFAULT_GRID_COLOR = "rgba(128, 128, 128, 0.12)";
-const DEFAULT_GRID_WIDTH = 1;
-const DEFAULT_ORIGIN_COLOR = "rgba(128, 128, 128, 0.24)";
-const DEFAULT_ORIGIN_WIDTH = 1;
-
-const DEFAULT_AXIS_LABEL_FONT = "10px sans-serif";
-const DEFAULT_AXIS_LABEL_COLOR = "rgba(40, 40, 40, 0.85)";
+function getPlotStyles(plot) {
+    if (!plot) {
+        return {
+            gridColor: "rgba(128, 128, 128, 0.12)",
+            originColor: "rgba(128, 128, 128, 0.24)",
+            axisColor: "rgba(40, 40, 40, 0.85)",
+            axisFont: "10px sans-serif",
+            accent: "#4f46e5"
+        };
+    }
+    const s = getComputedStyle(plot);
+    return {
+        gridColor: s.getPropertyValue("--plot-grid-color").trim() || "rgba(128, 128, 128, 0.12)",
+        originColor: s.getPropertyValue("--plot-origin-color").trim() || "rgba(128, 128, 128, 0.24)",
+        axisColor: s.getPropertyValue("--plot-axis-color").trim() || "rgba(40, 40, 40, 0.85)",
+        axisFont: s.getPropertyValue("--plot-axis-font").trim() || "10px sans-serif",
+        accent: s.getPropertyValue("--plot-accent").trim() || s.getPropertyValue("--delta-accent").trim() || "#4f46e5"
+    };
+}
 
 // String and Tuple Parsing
 function parseTuple(tupleStr, k = 0, numbers = true) {
@@ -39,12 +50,6 @@ function parseOption(value, options) {
         }
     }
     return defaultValue;
-}
-
-function parseNumber(value, fallback = 0) {
-    if (value == null) return fallback;
-    const num = parseFloat(value);
-    return isNaN(num) ? fallback : num;
 }
 
 // Coordinate and Formatting Helpers

@@ -1,5 +1,11 @@
 /* Plot Base */
 delta-plot {
+  --plot-grid-color: var(--delta-rule, rgba(128, 128, 128, 0.12));
+  --plot-origin-color: color-mix(in srgb, var(--delta-ink, #000000) 25%, transparent);
+  --plot-axis-color: var(--delta-mute, var(--delta-ink-soft, rgba(40, 40, 40, 0.85)));
+  --plot-axis-font: 10px var(--delta-sans, sans-serif);
+  --plot-accent: var(--delta-accent, #4f46e5);
+
   display: block;
   margin: 1.5rem 0;
   outline: none;
