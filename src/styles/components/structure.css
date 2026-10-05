@@ -271,8 +271,41 @@ delta-mark {
   :is(delta-page, delta-chapter) > delta-meta > delta-meta-item { min-width: 100%; }
 }
 
+/* -- A folded section: a dashed line standing in for its body --------------
+   section.ts adds a .section-fold to every collapsible heading; it shows only while
+   the section is folded: a dashed rule across the column right under the heading,
+   then a full block gap. The heading keeps something of its own under it, so the
+   text that follows reads as what comes next, not as its body. The line (a taller
+   hit area than it looks) unfolds the section; its title says what it hides. */
+.section-fold {
+  appearance: none;
+  display: none;
+  width: 100%;
+  height: 14px;
+  margin: -4px 0 calc(var(--delta-block-gap) - 4px);
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  color: var(--delta-rule);
+  transition: color var(--delta-dur-fast) var(--delta-ease);
+}
+.section-fold::before {
+  content: "";
+  display: block;
+  border-top: 1.5px dashed currentColor;
+}
+.is-collapsed > .section-fold { display: block; }
+.section-fold:hover { color: var(--delta-accent-ink); }
+.section-fold:focus-visible {
+  outline: 2px solid var(--delta-accent-ink);
+  outline-offset: 2px;
+  border-radius: var(--delta-radius-sm);
+}
+
 @media print {
   .runhead { display: none; }
+  .section-fold { display: none !important; }
 }
 
 }

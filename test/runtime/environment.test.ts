@@ -378,3 +378,32 @@ describe.skipIf(!BROWSER)("the disclosure wedge", () => {
     expect(facts().statementHidden).toBe(true);
   });
 });
+
+describe.skipIf(!BROWSER)("a folded section", () => {
+  it("leaves a dashed line under its heading, naming what it hides; the line unfolds it", () => {
+    const r = inspect(
+      `<document lang="pt"><section id="s" collapsed="true"><title>S</title>
+         <subsection><title>A</title><theorem>T.</theorem><lemma>L.</lemma></subsection>
+         <subsection><title>B</title><definition>D.</definition></subsection>
+       </section>After.
+       <section id="e" collapsed="true"><title>E</title>Only text.</section>
+       <section id="o" collapsible="true"><title>O</title>Open.</section></document>`,
+      `const shows = (el) => !!el && el.getClientRects().length > 0;
+       const strip = $("#s > .section-fold");
+       const folded = { shows: shows(strip), label: strip.title, dashed: getComputedStyle(strip, "::before").borderTopStyle, afterHeading: strip.previousElementSibling.tagName,
+                        empty: $("#e > .section-fold").title, openShows: shows($("#o > .section-fold")) };
+       strip.click();
+       return { ...folded, unfolded: !$("#s").classList.contains("is-collapsed"), goneWhenOpen: !shows(strip) };`,
+    );
+    expect(r).toEqual({
+      shows: true,
+      label: "2 subseções · 2 resultados · 1 definição",
+      dashed: "dashed",
+      afterHeading: "H2",
+      empty: "Conteúdo recolhido",
+      openShows: false,
+      unfolded: true,
+      goneWhenOpen: true,
+    });
+  });
+});

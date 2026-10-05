@@ -1,9 +1,13 @@
 /**
  * <chapter>/<section>/<subsection>/<subsubsection> — turns the <delta-title>
- * child into a real heading, prefixed by the compile-time number.
+ * child into a real heading, prefixed by the compile-time number. A collapsible one
+ * also gets a `.section-fold`: shown only while it is folded, a dashed line under the
+ * heading standing for what it hides, so the text after a folded section does not
+ * read as its body. Clicking it unfolds; its accessible name says what it holds
+ * ("2 subsections · 3 results").
  */
 
-import { nameOf } from "../i18n.ts";
+import { nameOf, t } from "../i18n.ts";
 import { applyCollapsible, kindOf, renderMeta } from "./shared.ts";
 import { applyStatus } from "./status.ts";
 import { HEADING_LEVEL } from "../../language/tags.ts";
@@ -71,7 +75,62 @@ class DeltaSection extends HTMLElement {
     renderMeta(this);
 
     applyCollapsible(this, heading);
+    if (heading.classList.contains("collapse-toggle")) heading.after(foldStrip(this, tag, heading));
   }
+}
+
+/** The heading one level down: what a section's own parts are called. */
+const CHILD: Record<string, string> = {
+  chapter: "section",
+  section: "subsection",
+  subsection: "subsubsection",
+};
+
+/** What a folded section hides, counted by kind; the tags of each kind. */
+const KINDS: [key: string, fallback: string, selector: string][] = [
+  [
+    "countResult",
+    "result|results",
+    "delta-theorem, delta-proposition, delta-lemma, delta-corollary, delta-conjecture, delta-claim",
+  ],
+  ["countDefinition", "definition|definitions", "delta-definition"],
+  ["countExample", "example|examples", "delta-example, delta-counterexample"],
+  ["countExercise", "exercise|exercises", "delta-exercise, delta-problem"],
+  ["countFigure", "figure|figures", "delta-figure"],
+  ["countTable", "table|tables", "delta-table"],
+];
+
+/** "3 results" from a "result|results" string. */
+function counted(n: number, key: string, fallback: string): string {
+  const [one, many = one] = t(key, fallback).split("|");
+  return `${n} ${n === 1 ? one : many}`;
+}
+
+/** The dashed line a folded section leaves under its heading, standing in for its body. */
+function foldStrip(host: HTMLElement, tag: string, heading: HTMLElement): HTMLElement {
+  const parts: string[] = [];
+  const child = CHILD[tag];
+  if (child) {
+    const n = host.querySelectorAll(`delta-${child}`).length;
+    const key = `count${child[0].toUpperCase()}${child.slice(1)}`;
+    if (n) parts.push(counted(n, key, `${child}|${child}s`));
+  }
+  for (const [key, fallback, selector] of KINDS) {
+    const n = host.querySelectorAll(selector).length;
+    if (n) parts.push(counted(n, key, fallback));
+  }
+  const label = parts.join(" · ") || t("foldedContent", "Folded content");
+
+  const line = document.createElement("button");
+  line.type = "button";
+  line.className = "section-fold";
+  line.title = label;
+  line.setAttribute(
+    "aria-label",
+    `${t("unfold", "Show")}: ${heading.textContent?.trim()} (${label})`,
+  );
+  line.addEventListener("click", () => heading.click());
+  return line;
 }
 
 export function defineSections(): void {
