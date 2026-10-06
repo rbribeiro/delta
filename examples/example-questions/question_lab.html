@@ -3222,8 +3222,8 @@ delta-question[answered="true"] delta-option {
   cursor: default;
 }
 
-/* theme do question-group: */
-delta-question-group {
+/* theme do questionnaire: */
+delta-questionnaire {
   display: block;
   border: 1px solid var(--delta-rule-soft);
   border-radius: 12px;
@@ -3232,7 +3232,7 @@ delta-question-group {
   background-color: var(--delta-surface);
 }
 
-.delta-question-group-header {
+.delta-questionnaire-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -3241,7 +3241,7 @@ delta-question-group {
   margin-bottom: 2rem;
 }
 
-.delta-question-group-title {
+.delta-questionnaire-title {
   margin: 0;
   font-family: var(--delta-serif);
   color: var(--delta-ink);
@@ -3370,7 +3370,7 @@ delta-question[multiple="true"] delta-option.wrong::before {
     </delta-question>
   </delta-section><delta-section num="3" id="componente-de-question-rio">
   <delta-title> Componente de Questionário </delta-title><delta-p>A definição do questionário ocorre da seguinte forma:</delta-p>
-    <delta-code lang="Delta" num="3.3">&lt;question-group&gt;
+    <delta-code lang="Delta" num="3.3">&lt;questionnaire&gt;
 &lt;title&gt; Título do questionário &lt;/title&gt;
 
   &lt;question&gt;
@@ -3380,7 +3380,7 @@ delta-question[multiple="true"] delta-option.wrong::before {
   &lt;question&gt;
     &lt;!-- questão 2 --!&gt;
   &lt;/question&gt;
-&lt;/question-group&gt;</delta-code>O padrão do componente <delta-c>question-group</delta-c> é que <delta-c>timed='true'</delta-c>, então o cronômetro é acionado sempre, a menos que seja desativado com <delta-c>timed='false'</delta-c>.<br><br>O cronômetro global pode ser ativado independentemente se os cronômetros das questões individuais estejam desativados ou parcialmente desativados.<delta-question-group timed="true">
+&lt;/questionnaire&gt;</delta-code>O padrão do componente <delta-c>questionnaire</delta-c> é que <delta-c>timed='true'</delta-c>, então o cronômetro é acionado sempre, a menos que seja desativado com <delta-c>timed='false'</delta-c>.<br><br>O cronômetro global pode ser ativado independentemente se os cronômetros das questões individuais estejam desativados ou parcialmente desativados.<delta-questionnaire timed="true">
       <delta-title>Avaliação de Cálculo I</delta-title><delta-question timed="true" number="1" start-text="Resolver">
         <delta-title>Derivadas Básicas</delta-title>Qual é a derivada de <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>x</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">x^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span>?<delta-option><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi></mrow><annotation encoding="application/x-tex">x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">x</span></span></span></span></delta-option>
         <delta-option correct="true"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mi>x</mi></mrow><annotation encoding="application/x-tex">2x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">2</span><span class="mord mathnormal">x</span></span></span></span></delta-option>
@@ -3390,7 +3390,7 @@ delta-question[multiple="true"] delta-option.wrong::before {
         <delta-option correct="true"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>x</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">x^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span></delta-option>
         <delta-option>Nenhuma das respostas</delta-option>
       </delta-question>
-    </delta-question-group>
+    </delta-questionnaire>
   </delta-section><delta-section num="4" id="quest-o-com-m-ltiplas-alternativas">
   <delta-title>Questão com múltiplas alternativas</delta-title><delta-p> A escrita de uma questão com múltiplas respostas correstas é definida da seguinte forma: </delta-p><delta-code lang="Delta" num="4.4">&lt;question multiple="true"&gt; 
 &lt;option correct="true"&gt; resposta 1 &lt;/option&gt;
@@ -3632,7 +3632,7 @@ customElements.define(
 );
 
 customElements.define(
-    'delta-question-group',
+    'delta-questionnaire',
     class extends HTMLElement {
         connectedCallback() {
             if (this.dataset.deltaReady) return;
@@ -3644,10 +3644,10 @@ customElements.define(
             const isTimed = this.getAttribute('timed') !== 'false'; // por padrão o timer é sempre ativado
             
             const header = document.createElement('div');
-            header.className = 'delta-question-group-header';
+            header.className = 'delta-questionnaire-header';
 
             const titleElement = document.createElement('h2');
-            titleElement.className = 'delta-question-group-title';
+            titleElement.className = 'delta-questionnaire-title';
 
             if (titleNode) {
                 titleElement.append(...titleNode.childNodes);
@@ -3667,7 +3667,7 @@ customElements.define(
             }
             
             const contentContainer = document.createElement('div');
-            contentContainer.className = 'delta-question-group-content';
+            contentContainer.className = 'delta-questionnaire-content';
             while (this.firstChild) {
                 contentContainer.appendChild(this.firstChild);
             }

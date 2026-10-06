@@ -216,7 +216,7 @@ customElements.define(
 );
 
 customElements.define(
-    'delta-question-group',
+    'delta-questionnaire',
     class extends HTMLElement {
         connectedCallback() {
             if (this.dataset.deltaReady) return;
@@ -228,10 +228,10 @@ customElements.define(
             const isTimed = this.getAttribute('timed') !== 'false'; // por padrão o timer é sempre ativado
             
             const header = document.createElement('div');
-            header.className = 'delta-question-group-header';
+            header.className = 'delta-questionnaire-header';
 
             const titleElement = document.createElement('h2');
-            titleElement.className = 'delta-question-group-title';
+            titleElement.className = 'delta-questionnaire-title';
 
             if (titleNode) {
                 titleElement.append(...titleNode.childNodes);
@@ -251,7 +251,7 @@ customElements.define(
             }
             
             const contentContainer = document.createElement('div');
-            contentContainer.className = 'delta-question-group-content';
+            contentContainer.className = 'delta-questionnaire-content';
             while (this.firstChild) {
                 contentContainer.appendChild(this.firstChild);
             }

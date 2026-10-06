@@ -66,7 +66,7 @@
 
     <p>A definição do questionário ocorre da seguinte forma:</p>
     <code lang="Delta">
-      <question-group>
+      <questionnaire>
       <title> Título do questionário </title>
 
         <question>
@@ -76,14 +76,14 @@
         <question>
           <!-- questão 2 --!>
         </question>
-      </question-group>
+      </questionnaire>
     </code>
 
-    O padrão do componente <c>question-group</c> é que <c>timed='true'</c>, então o cronômetro é acionado sempre, a menos que seja desativado com <c>timed='false'</c>.
+    O padrão do componente <c>questionnaire</c> é que <c>timed='true'</c>, então o cronômetro é acionado sempre, a menos que seja desativado com <c>timed='false'</c>.
 
     O cronômetro global pode ser ativado independentemente se os cronômetros das questões individuais estejam desativados ou parcialmente desativados.
 
-    <question-group timed='true'>
+    <questionnaire timed='true'>
       <title>Avaliação de Cálculo I</title>
       
       <question timed="true" number="1" start-text='Resolver'>
@@ -105,7 +105,7 @@
         <option correct="true">$x^2$</option>
         <option>Nenhuma das respostas</option>
       </question>
-    </question-group>
+    </questionnaire>
   </section>
 
   <section>

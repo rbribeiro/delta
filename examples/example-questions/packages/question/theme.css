@@ -153,8 +153,8 @@ delta-question[answered="true"] delta-option {
   cursor: default;
 }
 
-/* theme do question-group: */
-delta-question-group {
+/* theme do questionnaire: */
+delta-questionnaire {
   display: block;
   border: 1px solid var(--delta-rule-soft);
   border-radius: 12px;
@@ -163,7 +163,7 @@ delta-question-group {
   background-color: var(--delta-surface);
 }
 
-.delta-question-group-header {
+.delta-questionnaire-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -172,7 +172,7 @@ delta-question-group {
   margin-bottom: 2rem;
 }
 
-.delta-question-group-title {
+.delta-questionnaire-title {
   margin: 0;
   font-family: var(--delta-serif);
   color: var(--delta-ink);
