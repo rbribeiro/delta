@@ -196,3 +196,72 @@ delta-question-group {
   font-weight: bold;
   transform: scale(1.05);
 }
+
+/* Estlo das questões de múltipla escolha */
+/* Estilo para opções selecionadas (antes de confirmar) */
+delta-question:not([answered]) delta-option.selected {
+  background-color: color-mix(in oklab, var(--delta-accent) 15%, transparent);
+  border-color: var(--delta-accent);
+}
+
+delta-question[multiple="true"] delta-option {
+  position: relative;
+  padding-left: 42px; 
+}
+
+/* Desenha a caixa do checkbox vazia */
+delta-question[multiple="true"] delta-option::before {
+  content: '';
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  border: 2px solid color-mix(in oklab, var(--delta-rule) 60%, var(--delta-ink));
+  border-radius: 4px;
+  background-color: var(--delta-surface);
+  transition: all 0.2s ease;
+}
+
+/* Preenche a caixa e adiciona um "check" dinâmico quando selecionado ou quando a resposta certa é revelada */
+delta-question[multiple="true"] delta-option.selected::before,
+delta-question[multiple="true"] delta-option.correct::before {
+  background-color: var(--delta-accent);
+  border-color: color-mix(in oklab, var(--delta-ink) 40%, var(--delta-accent));
+  /* Desenho de Checkmark (V) embutido no CSS*/
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
+  background-size: 12px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Sobrescreve a caixa quando o usuário selecionou uma opção errada (cria o X) */
+delta-question[multiple="true"] delta-option.wrong::before {
+  background-color: gray; 
+  border-color: color-mix(in oklab, var(--delta-ink) 40%, var(--delta-surface));
+  /* Desenho de um "X" (Cross) embutido no CSS (SVG branco) */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'%3E%3C/line%3E%3Cline x1='6' y1='6' x2='18' y2='18'%3E%3C/line%3E%3C/svg%3E");
+  background-size: 12px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Botão de Confirmar Resposta */
+.delta-confirm-btn {
+  background-color: var(--delta-adapted-bg);
+  color: var(--delta-ink);
+  border: var(--delta-hairline) solid color-mix(in oklab, var(--delta-accent) 50%, var(--delta-env-bg));
+  padding: 8px 18px;
+  border-radius: var(--delta-radius-lg);
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: bold;
+  transition: opacity 0.2s ease;
+  display: block;
+  margin: 1.5rem 0 0.5rem auto;
+}
+
+.delta-confirm-btn:hover {
+  opacity: 0.85;
+}

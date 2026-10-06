@@ -15,31 +15,40 @@ customElements.define(
     'delta-option',
     class extends HTMLElement {
         connectedCallback() {
-            this.addEventListener('click', () => { // adicionar a iteratividade de clique para escolha de alternativa
-            // Verifica se o atributo 'correct' existe e é 'true'
-            const isCorrect = this.getAttribute('correct') === 'true';
-            
-            // Se o usuário já respondeu o formulário uma vez, não poderá clicar em uma nova alternativa
-            const parentBlock = this.closest('delta-question');
-            if (parentBlock && parentBlock.hasAttribute('answered')) return;
+            if (this.dataset.deltaReady) return;
+            this.dataset.deltaReady = "1";
 
-            if (isCorrect) {
-                this.classList.add('correct');
-            } else {
-                this.classList.add('wrong');
-                // Se errou, mostra qual era a correta automaticamente
-                const correctOption = parentBlock?.querySelector('delta-option[correct="true"]');
-                if (correctOption) correctOption.classList.add('correct');
-            }
-            // Marca a questão como respondida para bloquear novos cliques
-            if (parentBlock) {
-                parentBlock.setAttribute('answered', 'true');
+            this.addEventListener('click', () => {
+                const parentBlock = this.closest('delta-question');
+                if (parentBlock && parentBlock.hasAttribute('answered')) return;
 
+                const isMultiple = parentBlock && parentBlock.getAttribute('multiple') === 'true';
+
+                if (isMultiple) {
+                    // Se for múltipla escolha, apenas alterna a classe 'selected'
+                    this.classList.toggle('selected');
+                } else {
+                    // Lógica para questão de escolha única (avaliação instantânea da resposta)
+                    // Verifica se o atributo 'correct' existe e é 'true'
+                    const isCorrect = this.getAttribute('correct') === 'true';
+                        if (isCorrect) {
+                            this.classList.add('correct');
+                        } else {
+                            this.classList.add('wrong');
+                            // Se errou, mostra qual era a correta automaticamente
+                            const correctOption = parentBlock?.querySelector('delta-option[correct="true"]');
+                            if (correctOption) correctOption.classList.add('correct');
+                        }
+                }
+                // Marca a questão como respondida para bloquear novos cliques
+                if (parentBlock && !isMultiple) {
+                    parentBlock.setAttribute('answered', 'true');
                 // parar o cronômetro, caso a questão tenha um
                 if (typeof parentBlock.stopTimer === 'function'){
                     parentBlock.stopTimer();
+                    }
                 }
-            }});
+            });
         }
     }
 );
@@ -55,9 +64,10 @@ customElements.define(
             const qNumber = this.getAttribute('number'); // identificador da questão
 
             const isRandomized = this.getAttribute('randomize') === 'true'; // definir se as alternativas serão randomizadas
+            
+            const isMultiple = this.getAttribute('multiple') === 'true'; // definir se a questão é de múltipla escolha
 
             const customStartText = this.getAttribute('start-text') || 'Iniciar Questão';
-
             const titleNode = this.querySelector(':scope > delta-title');
 
             const boxElement = document.createElement('div');
@@ -103,47 +113,67 @@ customElements.define(
             const contentContainer = document.createElement('div');
             contentContainer.className = 'delta-question-content';
 
+            const targetContainer = isTimed ? document.createElement('div') : contentContainer;
+            if (isTimed) targetContainer.style.display = 'none';
+
+            while (this.firstChild) {
+                targetContainer.appendChild(this.firstChild);
+            }
+
+            if (isRandomized) {
+                this.shuffleOptions(targetContainer);
+            }
+
+            // Se a questão for de múltipla escolha, adiciona o botão de confirmação
+            if (isMultiple) {
+                this.confirmButton = document.createElement('button');
+                this.confirmButton.textContent = 'Confirmar Resposta';
+                this.confirmButton.className = 'delta-confirm-btn';
+
+                this.confirmButton.addEventListener('click', () => {
+                    if (this.hasAttribute('answered')) return;
+
+                    // Avalia todas as opções
+                    const options = this.querySelectorAll('delta-option');
+                    options.forEach(opt => {
+                        const isSelected = opt.classList.contains('selected');
+                        const isCorrectAttr = opt.getAttribute('correct') === 'true';
+
+                        if (isCorrectAttr) {
+                            opt.classList.add('correct'); // Destaca as corretas obrigatoriamente
+                        }
+                        if (isSelected && !isCorrectAttr) {
+                            opt.classList.add('wrong'); // Destaca as erradas que o usuário selecionou
+                        }
+                    });
+
+                    this.setAttribute('answered', 'true');
+                    this.confirmButton.style.display = 'none'; // Esconde o botão ao finalizar
+                    this.stopTimer();
+                });
+
+                // Adiciona o botão no final das opções
+                targetContainer.appendChild(this.confirmButton);
+            }
+
             if (isTimed) {
-                const innerContent = document.createElement('div');
-                innerContent.style.display = 'none';
-
-                while (this.firstChild) {
-                    innerContent.appendChild(this.firstChild);
-                }
-
-                if (isRandomized) {
-                    this.shuffleOptions(innerContent);
-                }
-
                 this.startButton = document.createElement('button');
-                this.startButton.textContent = customStartText; // Usa o texto customizado
-                this.startButton.className = 'delta-start-btn'; // botão para iniciar a questão
+                this.startButton.textContent = customStartText;
+                this.startButton.className = 'delta-start-btn';
                 
                 contentContainer.appendChild(this.startButton);
-                contentContainer.appendChild(innerContent);
+                contentContainer.appendChild(targetContainer);
 
                 this.startButton.addEventListener('click', () => {
                     this.startButton.style.display = 'none';
-                    if (this.timeDisplay) {
-                        this.timeDisplay.style.display = 'block';
-                    }
-                    innerContent.style.display = 'block';
+                    if (this.timeDisplay) this.timeDisplay.style.display = 'block';
+                    targetContainer.style.display = 'block';
 
-                    // cronometrando o tempo:
                     this.startTime = Date.now();
-                    this.timerInterval = setInterval(() => {
-                        this.updateTimerDisplay();
-                    }, 1000);
+                    this.timerInterval = setInterval(() => this.updateTimerDisplay(), 1000);
                 });
-            } else {
-                while (this.firstChild) {
-                    contentContainer.appendChild(this.firstChild);
-                }
-
-                if (isRandomized) {
-                    this.shuffleOptions(contentContainer);
-                }
             }
+
             boxElement.appendChild(contentContainer);
             this.appendChild(boxElement);
         }

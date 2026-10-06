@@ -1,4 +1,4 @@
-<document lang="en" type="paper" theme-accent="green" theme-mode="light">
+<document lang="en" type="paper" theme-accent="purple" theme-mode="dark">
   <import src="./packages/question" />
 
   <title>Laboratório de testes do questionário</title>
@@ -106,5 +106,31 @@
         <option>Nenhuma das respostas</option>
       </question>
     </question-group>
+  </section>
+
+  <section>
+  <title>Questão com múltiplas alternativas</title>
+
+  <p> A escrita de uma questão com múltiplas respostas correstas é definida da seguinte forma: </p>
+
+  <code lang="Delta">
+      <question multiple="true"> 
+      <option correct="true"> resposta 1 </option>
+      <option correct="true"> resposta 2 </option>
+      <option> resposta 3 </option>
+      </question>
+  </code>
+
+  <p> É possível adicionar mais de uma questão como verdadeira usando <c>multiple="true"</c>. </p>
+
+  <question number="3" multiple="true" randomize="true">
+  <title>Derivadas Avançadas</title>
+  Quais destas funções possuem a derivada igual a $e^x$?
+    <option correct="true">$e^x$</option>
+    <option correct="true">$e^x + 5$</option>
+    <option>$\ln(x)$</option>
+    <option>$x^e$</option>
+  </question>
+
   </section>
 </document>
