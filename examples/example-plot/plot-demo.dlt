@@ -243,11 +243,11 @@
         </row>
       </table>
 
-      O conteúdo interno da tag é avaliado como uma expressão JavaScript padrão, permitindo o uso direto de funções do módulo <c>Math</c> (como <c>Math.sin</c>, <c>Math.cos</c>, <c>Math.exp</c>, <c>Math.sqrt</c>) e operadores aritméticos (como <c>**</c> para exponenciação).
+      O conteúdo interno da tag aceita expressões com uma sintaxe matemática simples e direta, com suporte a funções (como <c>sin</c>, <c>cos</c>, <c>sqrt</c>, <c>abs</c>), operadores aritméticos (<c>+</c>, <c>-</c>, <c>*</c>, <c>/</c>, <c>^</c> ou <c>**</c>) e constantes como <c>pi</c> e <c>e</c>.
 
       <code lang="xml" numbered="false">
 <plot>
-  <function color="#3b82f6" from="-4,4">Math.sin(x)</function>
+  <function color="#3b82f6" from="-4,4">sin(x)</function>
 </plot>
       </code>
     </subsection>
@@ -369,12 +369,12 @@
       <code lang="xml" numbered="false">
 <plot x="-8,8" y="-4,4">
   <title>Curva Analítica</title>
-  <function color="#3b82f6">Math.sin(x)</function>
+  <function color="#3b82f6">sin(x)</function>
 </plot>
       </code>
       <plot x="-8,8" y="-4,4">
         <title>Curva Analítica</title>
-        <function color="#3b82f6">Math.sin(x)</function>
+        <function color="#3b82f6">sin(x)</function>
       </plot>
     </subsection>
 
@@ -384,14 +384,14 @@
       <code lang="xml" numbered="false">
 <plot x="-6,6" y="-3,3">
   <title>Família de Curvas</title>
-  <function color="#3b82f6" from="-5,5" name="seno">Math.sin(x)</function>
+  <function color="#3b82f6" from="-5,5" name="seno">sin(x)</function>
   <function color="#10b981" from="-2,2" to="-0.5,2.5" name="parábola">x**2 - 1</function>
   <function color="#ef4444" from="0.2,5" to="0,3" name="inversa">1 / x</function>
 </plot>
       </code>
       <plot x="-6,6" y="-3,3">
         <title>Família de Curvas</title>
-        <function color="#3b82f6" from="-5,5" name="seno">Math.sin(x)</function>
+        <function color="#3b82f6" from="-5,5" name="seno">sin(x)</function>
         <function color="#10b981" from="-2,2" to="-0.5,2.5" name="parábola">x**2 - 1</function>
         <function color="#ef4444" from="0.2,5" to="0,3" name="inversa">1 / x</function>
       </plot>
