@@ -97,6 +97,7 @@ function collectHeadings(
   for (const el of elements(doc, OPAQUE)) {
     const level = HEADING_LEVEL[el.tag];
     if (level === undefined) continue;
+    if (el.attrs.numbered == "false") continue;
 
     const titleEl = titleOf(el);
     const id = ensureHeadingId(el, used, state);
