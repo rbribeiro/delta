@@ -1,4 +1,4 @@
-<document lang="en" type="paper" theme-accent="purple" theme-mode="dark">
+<document lang="en" type="paper" theme-accent="purple" theme-mode="light">
   <import src="./packages/question" />
 
   <title>Laboratório de testes do questionário</title>
@@ -115,9 +115,9 @@
 
   <code lang="Delta">
       <question multiple="true"> 
-      <option correct="true"> resposta 1 </option>
-      <option correct="true"> resposta 2 </option>
-      <option> resposta 3 </option>
+        <option correct="true"> resposta 1 </option>
+        <option correct="true"> resposta 2 </option>
+        <option> resposta 3 </option>
       </question>
   </code>
 

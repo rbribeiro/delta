@@ -33,8 +33,12 @@ customElements.define(
                     const isCorrect = this.getAttribute('correct') === 'true';
                         if (isCorrect) {
                             this.classList.add('correct');
+                            // Salva que a questão foi respondida corretamente
+                            if (parentBlock) parentBlock.dataset.correct = 'true';
                         } else {
                             this.classList.add('wrong');
+                            // Salva que a questão foi respondida incorretamente
+                            if (parentBlock) parentBlock.dataset.correct = 'false';
                             // Se errou, mostra qual era a correta automaticamente
                             const correctOption = parentBlock?.querySelector('delta-option[correct="true"]');
                             if (correctOption) correctOption.classList.add('correct');
@@ -133,6 +137,8 @@ customElements.define(
                 this.confirmButton.addEventListener('click', () => {
                     if (this.hasAttribute('answered')) return;
 
+                    let isPerfect = true; // Flag para verificar se todas as respostas estão corretas
+
                     // Avalia todas as opções
                     const options = this.querySelectorAll('delta-option');
                     options.forEach(opt => {
@@ -141,11 +147,16 @@ customElements.define(
 
                         if (isCorrectAttr) {
                             opt.classList.add('correct'); // Destaca as corretas obrigatoriamente
+                            if (!isSelected) isPerfect = false; // Se uma correta não foi selecionada
                         }
                         if (isSelected && !isCorrectAttr) {
                             opt.classList.add('wrong'); // Destaca as erradas que o usuário selecionou
+                            isPerfect = false; // Se selecionou uma errada
                         }
                     });
+
+                    //Define o status final da questão de múltipla escolha
+                    this.dataset.correct = isPerfect ? 'true' : 'false';
 
                     this.setAttribute('answered', 'true');
                     this.confirmButton.style.display = 'none'; // Esconde o botão ao finalizar
@@ -224,7 +235,6 @@ customElements.define(
 
             const titleNode = this.querySelector(':scope > delta-title');
             const titleAttr = this.getAttribute('title');
-
             const isTimed = this.getAttribute('timed') !== 'false'; // por padrão o timer é sempre ativado
             
             const header = document.createElement('div');
@@ -250,14 +260,14 @@ customElements.define(
                 header.appendChild(this.globalTimeDisplay);
             }
             
-            const contentContainer = document.createElement('div');
-            contentContainer.className = 'delta-questionnaire-content';
+            this.contentContainer = document.createElement('div');
+            this.contentContainer.className = 'delta-questionnaire-content';
             while (this.firstChild) {
-                contentContainer.appendChild(this.firstChild);
+                this.contentContainer.appendChild(this.firstChild);
             }
 
             this.appendChild(header);
-            this.appendChild(contentContainer);
+            this.appendChild(this.contentContainer);
 
             this.startTime = null;
             this.timerInterval = null;
@@ -268,7 +278,6 @@ customElements.define(
                     this.startTime = Date.now();
                     this.timerInterval = setInterval(() => this.updateGlobalTimer(), 1000);
                 }
-
                 setTimeout(() => {
                     this.checkCompletion(isTimed);
                 }, 50);
@@ -296,9 +305,29 @@ customElements.define(
                 // finaliza o cronômetro:
                 if (isTimed) {
                     if (this.timerInterval) clearInterval(this.timerInterval);
-                    this.globalTimeDisplay.classList.add('completed');
                     this.updateGlobalTimer(); 
                 }
+
+                // Calcula a pontuação final:
+                const correctAnswers = this.querySelectorAll('delta-question[data-correct="true"]').length;
+
+                // Container de encerramento
+                const resultsContainer = document.createElement('div');
+                resultsContainer.className = 'delta-questionnaire-results';
+
+                const scoreDisplay = document.createElement('div');
+                scoreDisplay.className = 'delta-score-badge';
+                scoreDisplay.innerHTML = `Pontuação: <strong>${correctAnswers}/${totalQuestions}</strong>`;
+                resultsContainer.appendChild(scoreDisplay);
+
+                // Move o cronômetro para o rodapé ao lado da pontuação
+                if (isTimed && this.globalTimeDisplay) {
+                    this.globalTimeDisplay.classList.add('completed');
+                    resultsContainer.appendChild(this.globalTimeDisplay);
+                }
+
+                // Insere no fim do conteúdo (após a última questão)
+                this.contentContainer.appendChild(resultsContainer);
             }
         }
     }

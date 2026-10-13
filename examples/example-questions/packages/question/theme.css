@@ -265,3 +265,58 @@ delta-question[multiple="true"] delta-option.wrong::before {
 .delta-confirm-btn:hover {
   opacity: 0.85;
 }
+
+/* Container de resultados ao final do questionário */
+.delta-questionnaire-results {
+  display: flex;
+  justify-content: center;
+  align-items: stretch; /* Garante que ambos os blocos tenham a mesma altura vertical */
+  gap: 14px;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed color-mix(in oklab, var(--delta-ink) 15%, transparent);
+  animation: popResults 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes popResults {
+  0% { transform: translateY(8px) scale(0.96); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* Padronização visual: pontuação e cronômetro com dimensões equivalentes */
+.delta-score-badge,
+.delta-questionnaire-results .global-timer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--delta-sans);
+  font-size: 13px;
+  line-height: 1;
+  padding: 10px 18px; /* Mesma área interna para ambos */
+  border-radius: var(--delta-radius-sm);
+  box-sizing: border-box;
+  margin: 0 !important; /* Reseta o margin-left: auto herdado do cabeçalho */
+}
+
+/* Estilo do badge de pontuação */
+.delta-score-badge {
+  border: var(--delta-hairline) solid var(--delta-accent);
+  background-color: color-mix(in oklab, var(--delta-accent) 15%, var(--delta-surface));
+  color: var(--delta-ink);
+}
+
+.delta-score-badge strong {
+  margin-left: 5px;
+  font-size: 14px;
+}
+
+/* Estilo do cronômetro reposicionado no rodapé */
+.delta-questionnaire-results .global-timer.completed {
+  background-color: var(--delta-adapted-bg);
+  border: var(--delta-hairline) solid color-mix(in oklab, var(--delta-accent) 80%, black);
+  color: var(--delta-ink);
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.04em;
+  transform: none; /* Evita que scale desalinhe a altura */
+}

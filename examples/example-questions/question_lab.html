@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-accent="purple" data-mode="dark" data-type="paper">
+<html lang="en" data-accent="purple" data-type="paper">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -3334,10 +3334,66 @@ delta-question[multiple="true"] delta-option.wrong::before {
 .delta-confirm-btn:hover {
   opacity: 0.85;
 }
+
+/* Container de resultados ao final do questionário */
+.delta-questionnaire-results {
+  display: flex;
+  justify-content: center;
+  align-items: stretch; /* Garante que ambos os blocos tenham a mesma altura vertical */
+  gap: 14px;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed color-mix(in oklab, var(--delta-ink) 15%, transparent);
+  animation: popResults 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes popResults {
+  0% { transform: translateY(8px) scale(0.96); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* Padronização visual: pontuação e cronômetro com dimensões equivalentes */
+.delta-score-badge,
+.delta-questionnaire-results .global-timer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--delta-sans);
+  font-size: 13px;
+  line-height: 1;
+  padding: 10px 18px; /* Mesma área interna para ambos */
+  border-radius: var(--delta-radius-sm);
+  box-sizing: border-box;
+  margin: 0 !important; /* Reseta o margin-left: auto herdado do cabeçalho */
+}
+
+/* Estilo do badge de pontuação */
+.delta-score-badge {
+  border: var(--delta-hairline) solid var(--delta-accent);
+  background-color: color-mix(in oklab, var(--delta-accent) 15%, var(--delta-surface));
+  color: var(--delta-ink);
+}
+
+.delta-score-badge strong {
+  margin-left: 5px;
+  font-size: 14px;
+}
+
+/* Estilo do cronômetro reposicionado no rodapé */
+.delta-questionnaire-results .global-timer.completed {
+  background-color: var(--delta-adapted-bg);
+  border: var(--delta-hairline) solid color-mix(in oklab, var(--delta-accent) 80%, black);
+  color: var(--delta-ink);
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.04em;
+  transform: none; /* Evita que scale desalinhe a altura */
+}
+
 </style>
 </head>
 <body>
-<delta-document lang="en" type="paper" theme-accent="purple" theme-mode="dark">
+<delta-document lang="en" type="paper" theme-accent="purple" theme-mode="light">
   <delta-title>Laboratório de testes do questionário</delta-title><delta-toc> Sumário </delta-toc><delta-section id="sec:nativos" num="1">
     <delta-title>Componentes Nativos</delta-title><delta-p>Estes blocos usam as variáveis nativas do Delta. Irei utilizá-los como referências para estilizar as questões do Delta.</delta-p><delta-theorem id="thm:referencia" num="1.1">
       <delta-title>Bloco de Teorema</delta-title>
@@ -3393,9 +3449,9 @@ delta-question[multiple="true"] delta-option.wrong::before {
     </delta-questionnaire>
   </delta-section><delta-section num="4" id="quest-o-com-m-ltiplas-alternativas">
   <delta-title>Questão com múltiplas alternativas</delta-title><delta-p> A escrita de uma questão com múltiplas respostas correstas é definida da seguinte forma: </delta-p><delta-code lang="Delta" num="4.4">&lt;question multiple="true"&gt; 
-&lt;option correct="true"&gt; resposta 1 &lt;/option&gt;
-&lt;option correct="true"&gt; resposta 2 &lt;/option&gt;
-&lt;option&gt; resposta 3 &lt;/option&gt;
+  &lt;option correct="true"&gt; resposta 1 &lt;/option&gt;
+  &lt;option correct="true"&gt; resposta 2 &lt;/option&gt;
+  &lt;option&gt; resposta 3 &lt;/option&gt;
 &lt;/question&gt;</delta-code><delta-p> É possível adicionar mais de uma questão como verdadeira usando <delta-c>multiple="true"</delta-c>. </delta-p><delta-question number="3" multiple="true" randomize="true">
   <delta-title>Derivadas Avançadas</delta-title>
   Quais destas funções possuem a derivada igual a <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>e</mi><mi>x</mi></msup></mrow><annotation encoding="application/x-tex">e^x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6644em;"></span><span class="mord"><span class="mord mathnormal">e</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6644em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">x</span></span></span></span></span></span></span></span></span></span></span>?
@@ -3449,8 +3505,12 @@ customElements.define(
                     const isCorrect = this.getAttribute('correct') === 'true';
                         if (isCorrect) {
                             this.classList.add('correct');
+                            // Salva que a questão foi respondida corretamente
+                            if (parentBlock) parentBlock.dataset.correct = 'true';
                         } else {
                             this.classList.add('wrong');
+                            // Salva que a questão foi respondida incorretamente
+                            if (parentBlock) parentBlock.dataset.correct = 'false';
                             // Se errou, mostra qual era a correta automaticamente
                             const correctOption = parentBlock?.querySelector('delta-option[correct="true"]');
                             if (correctOption) correctOption.classList.add('correct');
@@ -3549,6 +3609,8 @@ customElements.define(
                 this.confirmButton.addEventListener('click', () => {
                     if (this.hasAttribute('answered')) return;
 
+                    let isPerfect = true; // Flag para verificar se todas as respostas estão corretas
+
                     // Avalia todas as opções
                     const options = this.querySelectorAll('delta-option');
                     options.forEach(opt => {
@@ -3557,11 +3619,16 @@ customElements.define(
 
                         if (isCorrectAttr) {
                             opt.classList.add('correct'); // Destaca as corretas obrigatoriamente
+                            if (!isSelected) isPerfect = false; // Se uma correta não foi selecionada
                         }
                         if (isSelected && !isCorrectAttr) {
                             opt.classList.add('wrong'); // Destaca as erradas que o usuário selecionou
+                            isPerfect = false; // Se selecionou uma errada
                         }
                     });
+
+                    //Define o status final da questão de múltipla escolha
+                    this.dataset.correct = isPerfect ? 'true' : 'false';
 
                     this.setAttribute('answered', 'true');
                     this.confirmButton.style.display = 'none'; // Esconde o botão ao finalizar
@@ -3640,7 +3707,6 @@ customElements.define(
 
             const titleNode = this.querySelector(':scope > delta-title');
             const titleAttr = this.getAttribute('title');
-
             const isTimed = this.getAttribute('timed') !== 'false'; // por padrão o timer é sempre ativado
             
             const header = document.createElement('div');
@@ -3666,14 +3732,14 @@ customElements.define(
                 header.appendChild(this.globalTimeDisplay);
             }
             
-            const contentContainer = document.createElement('div');
-            contentContainer.className = 'delta-questionnaire-content';
+            this.contentContainer = document.createElement('div');
+            this.contentContainer.className = 'delta-questionnaire-content';
             while (this.firstChild) {
-                contentContainer.appendChild(this.firstChild);
+                this.contentContainer.appendChild(this.firstChild);
             }
 
             this.appendChild(header);
-            this.appendChild(contentContainer);
+            this.appendChild(this.contentContainer);
 
             this.startTime = null;
             this.timerInterval = null;
@@ -3684,7 +3750,6 @@ customElements.define(
                     this.startTime = Date.now();
                     this.timerInterval = setInterval(() => this.updateGlobalTimer(), 1000);
                 }
-
                 setTimeout(() => {
                     this.checkCompletion(isTimed);
                 }, 50);
@@ -3712,9 +3777,29 @@ customElements.define(
                 // finaliza o cronômetro:
                 if (isTimed) {
                     if (this.timerInterval) clearInterval(this.timerInterval);
-                    this.globalTimeDisplay.classList.add('completed');
                     this.updateGlobalTimer(); 
                 }
+
+                // Calcula a pontuação final:
+                const correctAnswers = this.querySelectorAll('delta-question[data-correct="true"]').length;
+
+                // Container de encerramento
+                const resultsContainer = document.createElement('div');
+                resultsContainer.className = 'delta-questionnaire-results';
+
+                const scoreDisplay = document.createElement('div');
+                scoreDisplay.className = 'delta-score-badge';
+                scoreDisplay.innerHTML = `Pontuação: <strong>${correctAnswers}/${totalQuestions}</strong>`;
+                resultsContainer.appendChild(scoreDisplay);
+
+                // Move o cronômetro para o rodapé ao lado da pontuação
+                if (isTimed && this.globalTimeDisplay) {
+                    this.globalTimeDisplay.classList.add('completed');
+                    resultsContainer.appendChild(this.globalTimeDisplay);
+                }
+
+                // Insere no fim do conteúdo (após a última questão)
+                this.contentContainer.appendChild(resultsContainer);
             }
         }
     }
