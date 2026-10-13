@@ -12,34 +12,35 @@ function parseFunctionOptions(fnEl) {
     return { rawExpr, vars, f, color, from, to, name };
 }
 
-function drawFunctionCurves(ctx, w, h, plot, precision = 1000) {
+function drawFunctionCurves(ctx, w, h, plot, samplesPerGrid = 100) {
     const funcs = plot.data?.functions || [];
     if (!funcs.length) return;
 
     const { centerX, centerY, scaleX, scaleY } = getPlotCenter(plot, w, h);
     if (scaleX <= 0 || scaleY <= 0) return;
 
-    
     const defaultAccent = getPlotStyles(plot).accent;
     const xMin = -centerX / scaleX;
     const xMax = (w - centerX) / scaleX;
 
+    const stepUnitX = getNiceStep(TARGET_GRID_SPACING / scaleX);
+    const dx = stepUnitX / Math.max(10, samplesPerGrid);
+    if (dx <= 0) return;
+
+    const EPS = 1e-9;
+
     for (const fnObj of funcs) {
         if (!fnObj || typeof fnObj.f !== "function") continue;
 
-        // Apply domain [a, b] restriction if specified
-        let startX = xMin;
-        let endX = xMax;
-        if (fnObj.from && fnObj.from.length === 2) {
-            startX = Math.max(xMin, fnObj.from[0]);
-            endX = Math.min(xMax, fnObj.from[1]);
+        // Viewport bounds with guard margin
+        let startX = xMin - dx;
+        let endX = xMax + dx;
+        const hasFrom = Boolean(fnObj.from && fnObj.from.length === 2);
+        if (hasFrom) {
+            startX = Math.max(startX, fnObj.from[0]);
+            endX = Math.min(endX, fnObj.from[1]);
         }
         if (startX >= endX) continue;
-
-        // Dynamic sampling density: at least 2 samples per screen pixel to eliminate jagged segments
-        const screenSpan = Math.max(1, (endX - startX) * scaleX);
-        const sampleCount = Math.max(precision, Math.ceil(screenSpan * 2));
-        const step = (endX - startX) / (sampleCount - 1);
 
         ctx.save();
         ctx.strokeStyle = fnObj.color || defaultAccent;
@@ -51,8 +52,7 @@ function drawFunctionCurves(ctx, w, h, plot, precision = 1000) {
         let penDown = false;
         let prevSy = null;
 
-        for (let i = 0; i < sampleCount; i++) {
-            const xi = startX + i * step;
+        const evalPoint = (xi) => {
             let yi;
             try {
                 yi = fnObj.f(xi, 0);
@@ -88,6 +88,23 @@ function drawFunctionCurves(ctx, w, h, plot, precision = 1000) {
                 penDown = false;
                 prevSy = null;
             }
+        };
+
+        // Grid-aligned sampling loop
+        if (hasFrom && fnObj.from[0] >= startX) {
+            evalPoint(fnObj.from[0]);
+        }
+
+        const iStart = Math.ceil(startX / dx);
+        const iEnd = Math.floor(endX / dx);
+        for (let i = iStart; i <= iEnd; i++) {
+            const xi = i * dx;
+            if (hasFrom && (xi <= fnObj.from[0] + EPS || xi >= fnObj.from[1] - EPS)) continue;
+            evalPoint(xi);
+        }
+
+        if (hasFrom && fnObj.from[1] <= endX) {
+            evalPoint(fnObj.from[1]);
         }
 
         ctx.stroke();
