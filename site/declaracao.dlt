@@ -1,0 +1,93 @@
+<document lang="pt-BR" type="article" theme-accent="blue" id="p-declaracao" theme="tema.css">
+  <import src="packs/declaracao" />
+  <title>Declaração do uso de IA · Delta</title>
+
+  <floating>
+    <title>Navegação</title>
+    <toc scope="project" depth="1"/>
+  </floating>
+
+  <section>
+    <eyebrow>Referência</eyebrow>
+    <title>Declaração do uso de IA</title>
+
+    <toc />
+
+    <intro>
+      Marca um documento (ou trecho dele) como produzido (ou revisado) com apoio de um modelo de IA e deixa o leitor ver quem, quando e, se você quiser, a conversa inteira (e/ou parte) que gerou o texto.
+    </intro>
+
+    <subsection>
+      <title>Design</title>
+
+      É um único elemento com dois designs, escolhidos pelo atributo <c>type</c>:
+      <subsubsection>
+        <title>Exemplo de <c>type="box"</c></title>
+
+        É uma caixa com cabeçalho, aparece na linha do texto, logo depois da passagem. O cabeçalho mostra o modelo e a data, e o corpo da caixa mostra a conversa (prompt e answer) se houver.
+        <code lang="dlt">
+          <ai-use>
+            <model>Claude Sonnet 4.6</model>
+            <date>2026-09-12</date>
+            <link to="https://claude.ai/share/abc123"/>
+            <prompt>o teorema de heine-borel é legal</prompt>
+            <answer>Sim, é um teorema importante na análise real.</answer>
+          </ai-use>
+        </code>
+
+        Resultado:
+        <ai-use>
+          <model>Claude Sonnet 4.6</model>
+          <date>2026-09-12</date>
+          <link to="https://claude.ai/share/abc123"/>
+          <prompt>o que é o teorema de heine-borel, em um paragrafo</prompt>
+          <answer>O Teorema de Heine-Borel é um resultado central na análise real e na topologia que estabelece que, no espaço euclidiano $\mathbb{R}^n$, um subconjunto é **compacto** se, e somente se, ele for simultaneamente **fechado** (contém todos os seus pontos de limite ou fronteiras) e **limitado** (não se estende infinitamente, cabendo inteiramente dentro de uma bola de raio finito). Na prática, esse teorema é uma ferramenta poderosa porque simplifica imensamente o trabalho matemático: ele permite substituir a definição abstrata e complexa de compacidade — a exigência estrutural de que toda cobertura aberta de um conjunto possua uma subcobertura finita — pela verificação direta de duas propriedades geométricas visuais e intuitivas, sendo a base para provar que funções contínuas sempre atingem valores de máximo e mínimo nesses espaços.</answer>
+        </ai-use>
+      </subsubsection>
+      <subsubsection>
+        <title>Exemplo de <c>type="icon"</c></title>
+
+        É uma linha vertical na margem, com popover. O cabeçalho mostra o modelo e a data, e o corpo do popover mostra a conversa (prompt e answer) se houver.
+        <code lang="dlt">
+          <ai-use type="icon">
+            <model>Claude Sonnet 4.6</model>
+            <date>2026-09-12</date>
+            <link to="https://claude.ai/share/abc123"/>
+            De acordo com o teorema de Heine–Borel, um subconjunto de $\mathbb{R}^n$ é compacto se, e somente se, for fechado e limitado. Isso significa que qualquer sequência dentro do conjunto terá uma subsequência convergente que também pertence ao conjunto. Em termos práticos, isso garante que funções contínuas definidas em conjuntos compactos atingem seus valores máximos e mínimos.
+
+            <prompt>o teorema de heine-borel é legal</prompt>
+            <answer>Sim, é um teorema importante na análise real.</answer>
+          </ai-use>
+        </code>
+
+        Resultado:
+        <ai-use type="icon">
+          <model>Claude Sonnet 4.6</model>
+          <date>2026-09-12</date>
+          <link to="https://claude.ai/share/abc123"/>
+          De acordo com o teorema de Heine–Borel, um subconjunto de $\mathbb{R}^n$ é compacto se, e somente se, for fechado e limitado. Isso significa que qualquer sequência dentro do conjunto terá uma subsequência convergente que também pertence ao conjunto. Em termos práticos, isso garante que funções contínuas definidas em conjuntos compactos atingem seus valores máximos e mínimos.
+          <prompt>o que é o teorema de heine-borel, em um paragrafo</prompt>
+          <answer>O Teorema de Heine-Borel é um resultado central na análise real e na topologia que estabelece que, no espaço euclidiano $\mathbb{R}^n$, um subconjunto é **compacto** se, e somente se, ele for simultaneamente **fechado** (contém todos os seus pontos de limite ou fronteiras) e **limitado** (não se estende infinitamente, cabendo inteiramente dentro de uma bola de raio finito). Na prática, esse teorema é uma ferramenta poderosa porque simplifica imensamente o trabalho matemático: ele permite substituir a definição abstrata e complexa de compacidade — a exigência estrutural de que toda cobertura aberta de um conjunto possua uma subcobertura finita — pela verificação direta de duas propriedades geométricas visuais e intuitivas, sendo a base para provar que funções contínuas sempre atingem valores de máximo e mínimo nesses espaços.</answer>
+      </ai-use>
+      </subsubsection>
+    </subsection>
+    <subsection>
+      <title>Elementos filhos</title>
+
+      Todos são opcionais e precisam ser filhos diretos de <c>ai-use</c>.
+      <table>
+        <header>
+          <column>Elemento</column>
+          <column>O que faz</column>
+        </header>
+        <row><column><c>model</c></column><column>Nome do modelo. Só texto. Na caixa, se faltar, aparece "IA".</column></row>
+        <row><column><c>date</c></column><column>Data da geração. Só texto, exibida como escrita (use um formato único no documento).</column></row>
+        <row><column><c>link to="..."</c></column><column>Endereço da conversa original. Aceita <c>to</c> ou <c>href</c>. Abre em nova aba. Sem endreço, nada é exibido.</column></row>
+        <row><column><c>prompt</c></column><column>Uma fala do usuário na conversa. Pode repetir.</column></row>
+        <row><column><c>answer</c></column><column>Uma fala do modelo. Pode repetir.</column></row>
+      </table>
+
+      O <c>prompt</c> e <c>answer</c> formam a <strong>conversa</strong> e são exibidos na ordem em que aparecem. O conteúdo é copiado como está, então sem formatação.
+    </subsection>
+  </section>
+</document>
