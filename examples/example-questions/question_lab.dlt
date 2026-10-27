@@ -1,4 +1,4 @@
-<document lang="en" type="paper" theme-accent="purple" theme-mode="light">
+<document lang="en" type="paper" theme-accent="green" theme-mode="light">
   <import src="./packages/question" />
 
   <title>Laboratório de testes do questionário</title>
@@ -131,6 +131,56 @@
     <option>$\ln(x)$</option>
     <option>$x^e$</option>
   </question>
-
   </section>
+
+<section>
+    <title>Indexação de Alternativas e Explicações</title>
+
+    Foi adicionada uma indexação automática das alternativas e uma caixa de explicação oculta (estilo toggle) que é revelada após o usuário responder. A indexação é aplicada depois do embaralhamento (<c>randomize="true"</c>).
+
+    Para controlar o tipo de numeração das alternativas, utilize o atributo <c>index-type</c> na tag da questão. As opções disponíveis são:
+
+    <itemize>
+      <item> <c>index-type="letters"</c> (Padrão): Indexa com letras minúsculas (a, b, c, d...). </item>
+      <item> <c>index-type="numbers"</c>: Indexa com numerais arábicos (1, 2, 3, 4...). </item>
+      <item> <c>index-type="roman"</c>: Indexa com algarismos romanos (I, II, III, IV...). </item>
+    </itemize>
+
+    Para adicionar o feedback, basta inserir a tag <c><explanation></c> no final da questão. O sistema identificará automaticamente qual índice (letra/número) corresponde à resposta correta e o exibirá no título do toggle.
+
+    <code lang="Delta">
+      <question timed="true" number="1" randomize="true" index-type="letters">
+        <title> Derivadas Básicas </title>
+        
+        Qual a derivada de $x^2$?
+        
+        <option>$x$</option>
+        <option correct="true">$2x$</option>
+        <option>$x^2$</option>
+        
+        <explanation>
+          A regra do tombo dita que a derivada de $x^n$ é $nx^{n-1}$. 
+          Portanto, o expoente 2 "tomba" multiplicando, resultando em $2x^1$, ou seja, $2x$.
+        </explanation>
+      </question>
+    </code>
+
+    Exemplo:
+
+    <question timed="true" number="1" randomize="true" index-type="letters">
+      <title> Derivadas Básicas </title>
+      
+      Qual a derivada de $x^2$?
+      
+      <option>$x$</option>
+      <option correct="true">$2x$</option>
+      <option>$x^2$</option>
+      
+      <explanation>
+        A regra do tombo dita que a derivada de $x^n$ é $nx^{n-1}$. 
+        Portanto, o expoente 2 "tomba" multiplicando, resultando em $2x^1$, ou seja, $2x$.
+      </explanation>
+    </question>
+  </section>
+
 </document>

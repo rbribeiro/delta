@@ -47,6 +47,12 @@ customElements.define(
                 // Marca a questão como respondida para bloquear novos cliques
                 if (parentBlock && !isMultiple) {
                     parentBlock.setAttribute('answered', 'true');
+
+                    // Chama a explicação assim que responder (escolha única)
+                    if (typeof parentBlock.revealExplanation === 'function') {
+                        parentBlock.revealExplanation();
+                    }
+
                 // parar o cronômetro, caso a questão tenha um
                 if (typeof parentBlock.stopTimer === 'function'){
                     parentBlock.stopTimer();
@@ -71,8 +77,14 @@ customElements.define(
             
             const isMultiple = this.getAttribute('multiple') === 'true'; // definir se a questão é de múltipla escolha
 
+            // Tipo de indexação (letters, numbers, roman). Padrão é letters (a, b, c).
+            const indexType = this.getAttribute('index-type') || 'letters';
+
             const customStartText = this.getAttribute('start-text') || 'Iniciar Questão';
             const titleNode = this.querySelector(':scope > delta-title');
+
+            // Captura a tag de explicação (se existir). O Delta converte <explanation> em <delta-explanation>
+            const explanationNode = this.querySelector(':scope > delta-explanation');
 
             const boxElement = document.createElement('div');
             boxElement.className = 'box delta-question-box';
@@ -128,6 +140,9 @@ customElements.define(
                 this.shuffleOptions(targetContainer);
             }
 
+            // Aplica os índices (A, B, C...) depois do shuffle
+            this.applyIndexes(targetContainer, indexType);
+
             // Se a questão for de múltipla escolha, adiciona o botão de confirmação
             if (isMultiple) {
                 this.confirmButton = document.createElement('button');
@@ -160,11 +175,33 @@ customElements.define(
 
                     this.setAttribute('answered', 'true');
                     this.confirmButton.style.display = 'none'; // Esconde o botão ao finalizar
+
+                    // Revela a explicação ao confirmar
+                    this.revealExplanation();
                     this.stopTimer();
                 });
 
                 // Adiciona o botão no final das opções
                 targetContainer.appendChild(this.confirmButton);
+            }
+
+            // Estrutura o toggle de explicação (escondido inicialmente)
+            if (explanationNode) {
+                this.explanationContainer = document.createElement('details');
+                this.explanationContainer.className = 'delta-explanation';
+                this.explanationContainer.style.display = 'none'; // Escondido até responder
+
+                this.summaryElement = document.createElement('summary');
+                this.summaryElement.textContent = 'Ver explicação'; // Texto temporário
+
+                const explanationContent = document.createElement('div');
+                explanationContent.className = 'delta-explanation-content';
+                explanationContent.append(...explanationNode.childNodes);
+                explanationNode.remove();
+
+                this.explanationContainer.appendChild(this.summaryElement);
+                this.explanationContainer.appendChild(explanationContent);
+                targetContainer.appendChild(this.explanationContainer);
             }
 
             if (isTimed) {
@@ -220,8 +257,49 @@ customElements.define(
                     [options[i], options[j]] = [options[j], options[i]];
                 }
             
-                options.forEach(option => container.appendChild(option)); 
+                options.forEach(option => container.appendChild(option));
             }
+        }
+
+        // Adiciona a) b) c), 1) 2) 3) ou I) II) III) nas alternativas
+        applyIndexes(container, indexType) {
+            const options = Array.from(container.querySelectorAll('delta-option'));
+            const romanNumerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+
+            options.forEach((opt, idx) => {
+                let label = '';
+                if (indexType === 'numbers') {
+                    label = (idx + 1).toString();
+                } else if (indexType === 'roman') {
+                    label = romanNumerals[idx] || (idx + 1).toString();
+                } else {
+                    label = String.fromCharCode(65 + idx); // Letras: A, B, C, D...
+                }
+
+                opt.dataset.indexLabel = label; // Salva para usar na explicação depois
+
+                const indexSpan = document.createElement('span');
+                indexSpan.className = 'delta-option-index';
+
+                // Formatação: se for romano deixa maiúsculo, senão minúsculo seguido de parêntese
+                const displayLabel = indexType === 'roman' ? `${label}) ` : `${label.toLowerCase()}) `;
+                indexSpan.textContent = displayLabel;
+
+                opt.prepend(indexSpan);
+            });
+        }
+
+        // Revela a caixa de explicação e mostra a resposta certa
+        revealExplanation() {
+            if (!this.explanationContainer) return;
+
+            // Pega as opções corretas e extrai as letras/números delas (Ex: "A" ou "A, C")
+            const correctOptions = Array.from(this.querySelectorAll('delta-option[correct="true"]'));
+            const correctLabels = correctOptions.map(opt => opt.dataset.indexLabel).join(', ');
+
+            // Atualiza o texto do botão toggle
+            this.summaryElement.innerHTML = `<strong>Resposta Correta: ${correctLabels}</strong> &mdash; Ver explicação`;
+            this.explanationContainer.style.display = 'block';
         }
     }
 );

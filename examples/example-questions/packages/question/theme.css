@@ -320,3 +320,78 @@ delta-question[multiple="true"] delta-option.wrong::before {
   letter-spacing: 0.04em;
   transform: none; /* Evita que scale desalinhe a altura */
 }
+
+
+/* Índices e explicações */
+
+/* Índices das alternativas (a, b, c) */
+.delta-option-index {
+  font-weight: 700;
+  margin-right: 6px;
+  color: var(--delta-ink);
+  opacity: 0.7;
+}
+
+/* Caixa de explicação expansível */
+.delta-explanation {
+  margin-top: 1.5rem;
+  border-radius: var(--delta-radius-md);
+  background-color: color-mix(in oklab, var(--delta-accent) 8%, var(--delta-surface));
+  border: 1px solid color-mix(in oklab, var(--delta-accent) 20%, var(--delta-rule-soft));
+  border-radius: 6px;
+  overflow: hidden;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* O "botão" (summary) clicável da explicação */
+.delta-explanation summary {
+  padding: 12px 16px;
+  cursor: pointer;
+  font-family: var(--delta-sans);
+  font-size: 14px;
+  color: var(--delta-ink);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background-color 0.3s;
+  background-color: var(--delta-surface);
+}
+
+.delta-explanation summary:hover {
+  background-color: color-mix(in oklab, var(--delta-ink) 5%, transparent);
+}
+
+.delta-explanation summary::-webkit-details-marker {
+  display: none; 
+}
+
+/* Seta customizada animada */
+.delta-explanation summary::before {
+  content: '▶';
+  font-size: 11px;
+  transition: transform 0.3s ease;
+  color: var(--delta-accent);
+}
+
+/* Quando expandido, gira a seta e adiciona uma linha divisória */
+.delta-explanation[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.delta-explanation[open] summary {
+  border-bottom: 1px solid color-mix(in oklab, var(--delta-accent) 20%, var(--delta-rule-soft));
+}
+
+/* Conteúdo interno da explicação (onde vai o texto do autor) */
+.delta-explanation-content {
+  padding: 16px;
+  font-size: 14px;
+  color: var(--delta-ink);
+  line-height: 1.6;
+}
