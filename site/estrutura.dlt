@@ -207,6 +207,9 @@
 
       Um <c><title></c> filho troca o rótulo "Sumário". O sumário desta página,
       logo abaixo da introdução, é um <c><toc/></c> sem atributo nenhum.
+
+      Clicar num item do sumário põe a âncora da seção no endereço
+      (<c>estrutura.html#tag-toc</c>): copie o link e quem abri-lo cai direto ali.
     </subsection>
 
     <subsection id="tag-floating">

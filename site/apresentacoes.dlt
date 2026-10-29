@@ -30,6 +30,11 @@
       A partir daí cada <c><slide></c> vira uma página da apresentação, e as setas
       do teclado navegam. Uma barra no rodapé traz os controles, para quem estiver
       no celular.
+
+      O endereço acompanha o slide: no quinto, ele termina em <c>#5</c>. Um link com
+      <c>apresentacao.html#5</c> abre direto nesse slide, e recarregar a página (ou
+      recompilar com a pré-visualização aberta) volta ao mesmo slide, com os mesmos
+      itens já revelados.
     </subsection>
 
     <subsection id="tag-cover">

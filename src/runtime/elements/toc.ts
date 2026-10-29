@@ -3,7 +3,8 @@
  * `#delta-toc` island and builds a nested nav of links. `depth` (default 2 —
  * down to subsections; chapters always shown) limits how deep it goes:
  * `level - 1 <= depth`, where section = 2 … subsubsection = 4. Clicking an entry
- * smooth-scrolls to the section and flashes it (shared `.is-xref-target`).
+ * smooth-scrolls to the section, flashes it (shared `.is-xref-target`) and puts its
+ * `#id` in the address bar, so the reader can share a link straight to it.
  *
  * In a multi-file project the island is the whole book's heading list, each entry
  * carrying a `file` unless it lives in *this* output. `scope` chooses what to show:
@@ -87,8 +88,9 @@ class DeltaToc extends HTMLElement {
       text.innerHTML = e.title; // our own serialized inline content (keeps math)
       a.append(text);
       // Cross-file: the browser navigates (the arrival flash handles it); in a deck, the
-      // target's slide is paged in; otherwise the heading scrolls to the top and flashes.
-      linkJump(a, e.id, e.file, { block: "start" });
+      // target's slide is paged in; otherwise the heading scrolls to the top and flashes,
+      // and `#id` goes in the address bar so the section can be linked to.
+      linkJump(a, e.id, e.file, { block: "start", address: true });
       li.append(a);
       top.ol.append(li);
     }

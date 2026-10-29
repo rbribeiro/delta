@@ -4,6 +4,7 @@
  */
 
 import { nameOf, t } from "../i18n.ts";
+import { rememberAddress } from "../address.ts";
 
 /** `delta-theorem` → `theorem`: the Delta tag an element came from. */
 export function kindOf(el: Element): string {
@@ -47,18 +48,25 @@ export function jumpTo(id: string, block: ScrollLogicalPosition = "center"): boo
 /**
  * Makes a link (its `href` already `file#id` or `#id`) jump like every Delta link: to
  * another output (`file` set) the browser navigates; in-page it is `jumpTo`. `before`
- * runs first on every click (closing the pop-over the link sits in).
+ * runs first on every click (closing the pop-over the link sits in); `address` puts
+ * `#id` in the address bar after an in-page jump, so the URL can be shared.
  */
 export function linkJump(
   a: HTMLAnchorElement,
   id: string,
   file?: string | null,
-  { block = "center", before }: { block?: ScrollLogicalPosition; before?: () => void } = {},
+  {
+    block = "center",
+    before,
+    address = false,
+  }: { block?: ScrollLogicalPosition; before?: () => void; address?: boolean } = {},
 ): void {
   a.addEventListener("click", (e) => {
     before?.();
     if (file) return;
-    if (jumpTo(id, block)) e.preventDefault();
+    if (!jumpTo(id, block)) return;
+    e.preventDefault();
+    if (address) rememberAddress(id);
   });
 }
 

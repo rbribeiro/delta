@@ -1,6 +1,6 @@
 /**
  * The presentation deck controller (`<document type="presentation">`). A singleton
- * set up once from runtime/index.ts (beside flashHash), it pages through the
+ * set up once from runtime/index.ts, it pages through the
  * `<delta-slide>` elements: one slide visible at a time (fading in), keyboard
  * navigation, and step-by-step reveal of fragments (elements marked reveal="true")
  * within a slide before advancing to the next.
@@ -20,16 +20,19 @@ import { button } from "./elements/shared.ts";
 export interface Deck {
   /** Zero-based index of the active slide. */
   readonly index: number;
+  /** Fragments revealed on the active slide. */
+  readonly step: number;
   /** Total number of slides. */
   readonly total: number;
-  /** Activate slide `i` (clamped to range). */
-  go(i: number): void;
+  /** Activate slide `i` (clamped to range) with `step` fragments shown (default none). */
+  go(i: number, step?: number): void;
   next(): void;
   prev(): void;
   /** Page to the slide that holds `#id` (or, for a section, its divider slide).
    *  Returns false if the id isn't found in any slide. */
   goToId(id: string): boolean;
-  /** Subscribe to slide changes; fires immediately with the current position. */
+  /** Subscribe to position changes (a new slide or a fragment step); fires immediately
+   *  with the current position. */
   onChange(cb: (index: number, total: number) => void): void;
 }
 
@@ -82,30 +85,39 @@ export function setupDeck(): Deck | null {
     prevProgress = frac;
   };
 
-  // Switch the active slide. `atEnd` enters it with every fragment already shown
-  // (stepping back into a prior slide) vs none (forward / a direct jump).
-  const enter = (i: number, atEnd: boolean): void => {
+  const notify = (): void => {
+    for (const cb of listeners) cb(index, slides.length);
+  };
+
+  // Show `count` fragments of the active slide (clamped to how many it has).
+  const setStep = (count: number): void => {
+    step = Math.max(0, Math.min(frags[index].length, count));
+    showFragments(index, step);
+    notify();
+  };
+
+  // Switch the active slide, entering it with `count` fragments shown: none going
+  // forward or jumping, all (Infinity) when stepping back into a prior slide.
+  const enter = (i: number, count: number): void => {
     slides[index]?.classList.remove("is-active");
     index = clamp(i);
-    step = atEnd ? frags[index].length : 0;
-    showFragments(index, step);
     setProgress();
     slides[index].classList.add("is-active");
-    for (const cb of listeners) cb(index, slides.length);
+    setStep(count);
   };
 
   // Reveal the next fragment; once a slide's fragments are all shown, advance.
   const next = (): void => {
-    if (step < frags[index].length) showFragments(index, ++step);
-    else if (index < slides.length - 1) enter(index + 1, false);
+    if (step < frags[index].length) setStep(step + 1);
+    else if (index < slides.length - 1) enter(index + 1, 0);
   };
   // Hide the last fragment; with none left, step back into the prior slide shown.
   const prev = (): void => {
-    if (step > 0) showFragments(index, --step);
-    else if (index > 0) enter(index - 1, true);
+    if (step > 0) setStep(step - 1);
+    else if (index > 0) enter(index - 1, Infinity);
   };
-  // Jump straight to a slide (Home/End, external) — fragments reset to hidden.
-  const go = (i: number): void => enter(i, false);
+  // Jump straight to a slide (Home/End, a link, the URL) — fragments hidden unless given.
+  const go = (i: number, count = 0): void => enter(i, count);
 
   // Keyboard navigation: ←/↑/PageUp back, →/↓/PageDown/Space forward, Home/End ends.
   // Ignored while typing into a field so embedded widgets keep their keys.
@@ -213,12 +225,16 @@ export function setupDeck(): Deck | null {
     );
   }
 
-  // Activate the first slide (fragments hidden, progress filled in from 0).
-  enter(0, false);
+  // Activate the first slide (fragments hidden, progress filled in from 0). The
+  // address (address.ts) may page elsewhere right after.
+  enter(0, 0);
 
   return {
     get index() {
       return index;
+    },
+    get step() {
+      return step;
     },
     get total() {
       return slides.length;

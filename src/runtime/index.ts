@@ -1,7 +1,7 @@
 import { defineComponents } from "./elements/index.ts";
 import { wireMathRefs } from "./elements/ref.ts";
-import { flashTarget } from "./elements/shared.ts";
 import { setupDeck, type Deck } from "./deck.ts";
+import { followAddress } from "./address.ts";
 import { popover } from "./utils.ts";
 import { t } from "./i18n.ts";
 import { reviewState } from "./elements/collab.ts";
@@ -32,11 +32,7 @@ const deck = setupDeck();
 // authors) can reuse them.
 window.Delta = { popover: popover, t: t, deck: deck, review: reviewState };
 
-// A cross-file <ref>/<cite> jump lands on `other.html#id`; flash the target on
-// arrival so it reads like an in-page jump (and reaches runtime-built anchors,
-// e.g. a bibliography <li id>, that the browser's native hash-scroll missed).
-const flashHash = (): void => {
-  if (location.hash.length > 1) flashTarget(decodeURIComponent(location.hash.slice(1)));
-};
-flashHash();
-window.addEventListener("hashchange", flashHash);
+// The URL hash is the reader's position: arrive at it (a cross-file <ref>/<cite>
+// lands on `other.html#id`, a shared link on a deck's `#5`) and, in a deck, keep it
+// current, so the editor's live reload lands back in place.
+followAddress(deck);

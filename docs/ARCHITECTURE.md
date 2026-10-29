@@ -199,6 +199,7 @@ src/
   runtime/
     index.ts                   registers the custom elements; window.Delta
     deck.ts                    the presentation controller
+    address.ts                 the URL hash as the position: a deck's slide number, a ToC click's section
     utils.ts, i18n.ts          the shared popover controller; t(key) and nameOf(tag) from the #delta-i18n island
     island.ts                  readIsland: the JSON islands (#delta-i18n, #delta-toc, #delta-review), parsed once
     elements/                  one <delta-*> custom element per file (browser chrome)
