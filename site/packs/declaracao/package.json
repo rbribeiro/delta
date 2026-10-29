@@ -1,0 +1,13 @@
+{
+  "name": "delta-ai-use",
+  "version": "2.0.0",
+  "description": "Selo de transparência para trechos gerados com apoio de IA. Dois designs (type=\"box\" padrão, type=\"icon\") no mesmo componente.",
+  "main": "index.js",
+  "delta": {
+    "js": "index.js",
+    "css": "theme.css",
+    "tags": ["ai-use", "model", "date", "link", "prompt", "answer"],
+    "needs": [],
+    "deltaVersion": ">=0.1"
+  }
+}

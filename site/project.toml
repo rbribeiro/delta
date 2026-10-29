@@ -26,6 +26,7 @@ inputs = [
   "apresentacoes.dlt",  # referência: apresentações
   "projetos.dlt",       # referência: projetos multi-arquivo
   "colaboracao.dlt",    # referência: colaboração (anotações, tarefas, alterações, revisão)
+  "declaracao.dlt",     # referência: declaração do uso de IA (pacote packs/declaracao)
   "temas.dlt",          # referência: temas e pacotes
   "api.dlt",            # referência: API do runtime (window.Delta) para quem escreve pacotes
   "compilador.dlt",    # contribuir: por dentro do compilador (com o explorador do pipeline)
