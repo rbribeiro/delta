@@ -1,10 +1,10 @@
 /* Theme: book — long-form, chaptered documents (`<document type="book">`).
    Starts close to `article` and diverges as book-specific chrome lands
-   (chapter title pages, running heads, wider measure). */
+   (chapter title pages, running heads). The measure is the base one: LaTeX's
+   book and article classes share \textwidth, so equations fit alike. */
 
 @layer delta.theme {
   :root {
-    --delta-measure: 68ch;
     --delta-section-gap: 96px;
   }
 }

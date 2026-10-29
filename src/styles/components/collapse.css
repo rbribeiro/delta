@@ -6,18 +6,10 @@
    host. Here: the disclosure wedge (shared by every fold), the affordance, and the
    hide. Tokens via var(--delta-*). */
 
-@layer delta.components {
-
-.collapse-toggle {
-  cursor: pointer;
-  -webkit-user-select: none;
-  user-select: none;
-}
-.collapse-toggle:focus-visible {
-  outline: 2px solid var(--delta-accent-ink);
-  outline-offset: 3px;
-  border-radius: var(--delta-radius-sm);
-}
+/* The wedge is a shell — drawn here, re-sized and placed by the files that use it —
+   so it sits in @layer delta.shells, below the components: their overrides win by
+   layer, not by whether their file name sorts after this one. */
+@layer delta.shells {
 
 /* -- The disclosure wedge ------------------------------------------------
    One mark for everything that folds: a wedge pointing at the content, ">" while it
@@ -60,6 +52,21 @@
   .collapse-toggle::before, .proof-bar-caret::before, .step-caret::before, .fold-caret::before {
     transition: none;
   }
+}
+
+}
+
+@layer delta.components {
+
+.collapse-toggle {
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.collapse-toggle:focus-visible {
+  outline: 2px solid var(--delta-accent-ink);
+  outline-offset: 3px;
+  border-radius: var(--delta-radius-sm);
 }
 
 /* Headings & proof leads anchor the wedge in the left gutter, out of the text flow —

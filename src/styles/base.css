@@ -7,7 +7,8 @@
    This is the default look for both `article` and `book` documents.
    Delta's own chrome (section headings, theorem/proof boxes, equation
    numbers) lives next to each feature in `components/<name>.css`
-   (wrapped in @layer delta.components). Per-document-type token
+   (wrapped in @layer delta.components; chrome shared by several
+   components in @layer delta.shells). Per-document-type token
    overrides live in `themes/<type>.css` (@layer delta.theme) and are
    selected by `<document type="…">`.
 
@@ -37,12 +38,16 @@
                  must beat a named theme (they exist to recolor whatever is under
                  them) yet stay below components, so components/box.css keeps
                  re-deriving per-box tones.
+     shells      chrome shared by several components: the popover shell (popover.css),
+                 the disclosure wedge (collapse.css). Components are bundled in file-name
+                 order, so a shell in the same layer as the component refining it would
+                 win or lose by the alphabet; one layer down, the component always wins.
      components  Delta's chrome, one file per feature
      theme       per-document-type tokens (themes/<type>.css), selected by `type`
 
    So themes always win regardless of <style> order. (Unlayered rules — inlined
    KaTeX, import-pack CSS, the author's own theme= file — still beat all of these.) */
-@layer delta.base, delta.builtin, delta.mode, delta.components, delta.theme;
+@layer delta.base, delta.builtin, delta.mode, delta.shells, delta.components, delta.theme;
 
 @layer delta.base {
 
@@ -230,7 +235,11 @@
   --delta-tracking-cap: 0.12em;
 
   /* -- layout */
-  --delta-measure:      64ch;          /* main text column width */
+  /* Main text column width. In em, not ch: display math is em-sized, so an em
+     measure keeps "fits on a LaTeX line ⇒ fits here" whatever the prose font.
+     LaTeX article/book at 10pt: \textwidth = 345pt = 34.5em; × the 1.05 math
+     scale ≈ 36.2em. (Authors may still override it in ch.) */
+  --delta-measure:      36.5em;
   --delta-margin-w:     16ch;          /* sidenote rail (floated marginalia) */
   --delta-col-gap:      56px;          /* gap between text column and rail */
   --delta-page-max:     1240px;
@@ -471,13 +480,25 @@ a {
    drop into so they sit beside the line that references them. .bleed
    reclaims the rail to span the full writing area. Content nests as a
    real document tree (delta-document » delta-section » delta-subsection).
-   `delta-document` is the compiled root, so it carries the page model. */
+   `delta-document` is the compiled root, so it carries the page model.
+
+   The box is border-box, so --page-w counts the padding too: the column
+   inside is exactly --delta-measure. It is the *column* that is centred,
+   not the box — the rail hangs in the right margin. margin-left centres the
+   column, ((100% − box) + rail)/2, but never pushes the box past the right
+   edge (100% − box) nor below 0; so a mid-width window slides the column
+   left just enough to keep the rail on screen. */
 .page,
 delta-document {
+  --page-w: min(var(--delta-page-max),
+                calc(var(--delta-measure) + var(--delta-col-gap) + var(--delta-margin-w)
+                     + 2 * var(--delta-page-pad-x)));
   display: block;
-  max-width: min(var(--delta-page-max),
-                 calc(var(--delta-measure) + var(--delta-col-gap) + var(--delta-margin-w)));
-  margin: 0 auto;
+  max-width: var(--page-w);
+  margin-left: clamp(0px,
+                     (100% - var(--page-w) + var(--delta-col-gap) + var(--delta-margin-w)) / 2,
+                     100% - var(--page-w));
+  margin-right: auto;
   /* reserve the rail on the right so normal flow stays within --delta-measure */
   padding: var(--delta-page-pad-y)
            calc(var(--delta-page-pad-x) + var(--delta-col-gap) + var(--delta-margin-w))
@@ -777,10 +798,12 @@ table.t .mono { font-family: var(--delta-mono); font-size: 13px; }
     --delta-section-gap: 56px;
     --delta-t-base: 17px;
   }
-  /* Collapse the rail: full-width flow, sidenotes stack inline. */
+  /* Collapse the rail: full-width flow, sidenotes stack inline, the plain
+     centred box (no rail left to hang). */
   .page,
   delta-document {
-    max-width: min(var(--delta-page-max), calc(var(--delta-measure) + 8ch));
+    max-width: min(var(--delta-page-max), calc(var(--delta-measure) + 2 * var(--delta-page-pad-x)));
+    margin: 0 auto;
     padding: var(--delta-page-pad-y) var(--delta-page-pad-x) calc(var(--delta-page-pad-y) * 2.5);
   }
   .sidenote {

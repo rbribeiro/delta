@@ -2,9 +2,11 @@
    (src/runtime/utils.ts). The controller sets top/left/--arrow-x and toggles
    .is-above (caret side) and, in the no-Popover-API fallback, .is-open.
    Components (.xref-pop, .cite-pop, hint bubbles, …) add their own content
-   classes on top for padding/layout. Tokens via var(--delta-*). */
+   classes on top for padding/layout. It lives in @layer delta.shells, one below
+   the components, so a component's own size and padding win whatever the order
+   its file is bundled in. Tokens via var(--delta-*). */
 
-@layer delta.components {
+@layer delta.shells {
 
 .delta-pop {
   position: fixed;          /* Delta.popover sets top/left */
