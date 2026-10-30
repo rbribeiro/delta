@@ -1,0 +1,81 @@
+<document id="p-galeria" theme="tema.css">
+  <title>Galeria · Delta</title>
+
+  <!-- A galeria de exemplos. Esta página muda sempre: para acrescentar um exemplo,
+       copie um <item> da seção do tipo certo (livro, artigo ou apresentação) e troque o
+       link, o título e a descrição. Um exemplo novo em site/exemplos/ também precisa
+       entrar no script docs:exemplos do package.json, que o compila para docs/exemplos/;
+       um exemplo hospedado fora daqui é só um <link> com o endereço completo. -->
+
+  <floating>
+    <title>Navegação</title>
+    <toc scope="project" depth="1"/>
+  </floating>
+
+  <section id="galeria">
+    <eyebrow>Exemplos</eyebrow>
+    <title>Galeria</title>
+    <intro>
+      Documentos escritos em <em>Delta</em>, compilados e prontos para abrir. Cada um é
+      um único arquivo HTML que funciona sem internet. O fonte de cada exemplo está no
+      repositório, para ler lado a lado com o resultado.
+    </intro>
+
+    <toc/>
+
+    <subsection id="galeria-livros">
+      <title>Livros</title>
+
+      Um capítulo por arquivo, reunidos num projeto: a numeração, as referências entre
+      capítulos e o sumário são do livro inteiro (veja
+      <ref to="projetos">Projetos multi-arquivo</ref>).
+
+      <list>
+        <item>
+          <link to="exemplos/gigante/cap1.html"><b>A componente gigante</b></link>.
+          Uma prova em construção, escrita por uma pessoa e um agente: ajudas de leitura
+          (intuição, estratégia, obstáculo), provas em passos, hipóteses, lemas ainda em
+          aberto e o mapa da prova. Fonte: <c>site/exemplos/gigante/</c>.
+        </item>
+        <item>
+          <link to="exemplos/livro/cap1.html"><b>Análise na reta</b></link>.
+          Dois capítulos sobre sequências, com teoremas, equações e citações que se
+          referenciam de um capítulo no outro. Fonte: <c>site/exemplos/livro/</c>.
+        </item>
+      </list>
+    </subsection>
+
+    <subsection id="galeria-artigos">
+      <title>Artigos</title>
+
+      Um arquivo, <c>type="article"</c>: o formato padrão.
+
+      <list>
+        <item>
+          <link to="exemplos/artigo.html"><b>Funções contínuas em compactos</b></link>.
+          Resumo, teoremas numerados, demonstrações que dobram, tabela, bibliografia e as
+          marcas de uma revisão a quatro mãos. Fonte: <c>site/exemplos/artigo.dlt</c>.
+        </item>
+      </list>
+    </subsection>
+
+    <subsection id="galeria-apresentacoes">
+      <title>Apresentações</title>
+
+      Um arquivo, <c>type="presentation"</c>: as mesmas tags, paginadas em slides (veja
+      <ref to="apresentacoes">Apresentações</ref>).
+
+      <list>
+        <item>
+          <link to="exemplos/apresentacao.html"><b>Compacidade em poucos slides</b></link>.
+          Capa, slides de transição por seção, revelação por etapas e barra de progresso.
+          Fonte: <c>site/exemplos/apresentacao.dlt</c>.
+        </item>
+      </list>
+    </subsection>
+  </section>
+
+  <footer>
+    Feito com ❤️ em Delta no IMPA Tech.
+  </footer>
+</document>

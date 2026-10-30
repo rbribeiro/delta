@@ -1,0 +1,133 @@
+/* proofmap.css — <proof-map>: the results a theorem rests on, as a layered graph. The
+   compiler (compiler/proofmap.ts) lays it out and emits a fixed-size .pm-canvas holding an
+   SVG of edges and absolutely positioned boxes; each box's <delta-ref> is a normal ref
+   (label, preview card, jump). No runtime of its own. Colours follow effective trust:
+   open < heuristic < sketch < verified < formalized. Tokens via var(--delta-*). */
+
+@layer delta.components {
+
+delta-proof-map {
+  display: block;
+  margin: var(--delta-block-gap) 0;
+  /* A map wider than the column scrolls sideways instead of overflowing the page. */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+delta-pm-canvas {
+  display: block;
+  position: relative;
+  margin: 0 auto;
+}
+
+.pm-edges {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+.pm-edges path {
+  fill: none;
+  stroke: var(--delta-rule);
+  stroke-width: 1.25;
+}
+.pm-edges marker path {
+  fill: var(--delta-rule);
+  stroke: none;
+}
+.pm-edges path.pm-back {
+  stroke: var(--delta-proof-alert);
+  stroke-dasharray: 4 3;
+}
+
+/* -- Trust colours (tokens in base.css), shared by boxes and legend keys. The fill
+   strength is this component's own: formalized reads as a deeper verified. ------- */
+[data-eff="open"]       { --pm-hue: var(--delta-trust-open);       --pm-fill: 0%; }
+[data-eff="heuristic"]  { --pm-hue: var(--delta-trust-heuristic);  --pm-fill: 10%; }
+[data-eff="sketch"]     { --pm-hue: var(--delta-trust-sketch);     --pm-fill: 12%; }
+[data-eff="verified"]   { --pm-hue: var(--delta-trust-verified);   --pm-fill: 12%; }
+[data-eff="formalized"] { --pm-hue: var(--delta-trust-formalized); --pm-fill: 26%; }
+
+delta-pm-node {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+  padding: 5px 9px;
+  border: 1.5px solid var(--pm-hue);
+  border-radius: var(--delta-radius);
+  background: color-mix(in oklab, var(--pm-hue) var(--pm-fill), var(--delta-paper));
+  box-shadow: var(--delta-shadow-sm);
+  font-family: var(--delta-sans);
+  line-height: 1.25;
+  overflow: hidden;
+}
+/* Unproved results are drawn hollow; a cycle is flagged in the warning colour. */
+delta-pm-node[data-eff="open"] { border-style: dashed; box-shadow: none; }
+delta-pm-node[data-cyclic="true"] { border-color: var(--delta-proof-alert); }
+/* A verification whose checked content changed: it needs checking again. */
+delta-pm-node[data-stale="true"] { border-color: var(--delta-proof-alert); border-style: dashed; }
+/* Own trust above effective: the proof is fine, something it uses is not. A small dot says so. */
+delta-pm-node[data-own]::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--delta-proof-alert);
+}
+
+delta-pm-node .xref {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--delta-ink);
+  text-align: left;
+}
+/* Two lines, then an ellipsis: the box has a fixed height (laid out at compile time). */
+delta-pm-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  font-family: var(--delta-serif);
+  font-size: 12.5px;
+  line-height: 1.2;
+  color: var(--delta-ink-soft);
+}
+
+/* -- Legend ----------------------------------------------------------- */
+delta-pm-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 16px;
+  margin-top: 10px;
+  font-family: var(--delta-sans);
+  font-size: 11px;
+  color: var(--delta-mute);
+}
+delta-pm-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+delta-pm-key::before {
+  content: "";
+  width: 12px;
+  height: 9px;
+  border: 1.5px solid var(--pm-hue);
+  border-radius: 2px;
+  background: color-mix(in oklab, var(--pm-hue) var(--pm-fill), var(--delta-paper));
+}
+delta-pm-key[data-eff="open"]::before { border-style: dashed; }
+
+@media print {
+  delta-proof-map { overflow: visible; break-inside: avoid; }
+}
+
+}

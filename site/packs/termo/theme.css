@@ -1,0 +1,30 @@
+/* Estilos do <delta-termo> (site/packs/termo). Só variáveis --delta-*, para seguir
+   o tema, a cor de destaque e o modo escuro do documento. O balão (.termo-pop) é
+   movido para o <body> pelo Delta.popover, por isso é estilizado pela classe, e não
+   por "delta-termo .termo-pop", que nunca casaria. Aparece na íntegra em site/api.dlt. */
+delta-termo {
+  border-bottom: 1px dotted var(--delta-accent);
+  cursor: help;
+}
+delta-termo:focus-visible {
+  outline: 2px solid var(--delta-accent);
+  outline-offset: 2px;
+}
+
+/* O balão. Fundo, borda, sombra e seta vêm da classe delta-pop; aqui, só o miolo. */
+.termo-pop {
+  font-family: var(--delta-sans);
+}
+.termo-pop-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.75em;
+  font-weight: var(--delta-weight-strong);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--delta-accent);
+}
+.termo-pop p {
+  margin: 4px 0 0;
+  color: var(--delta-ink-soft);
+}

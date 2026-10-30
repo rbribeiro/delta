@@ -1,0 +1,101 @@
+<document lang="pt-BR" type="presentation" theme-accent="purple">
+  <title>Compacidade em poucos slides</title>
+
+  <!-- Uma apresentação de exemplo, ligada da página inicial do site. As mesmas tags de
+       um artigo (teorema, equação, lista, colunas, referência), paginadas: setas do
+       teclado, toque ou clique avançam; <progress/> liga a barra de progresso. -->
+
+  <progress/>
+
+  <floating>
+    <title>Slides</title>
+    <toc/>
+  </floating>
+
+  <cover>
+    <title>Compacidade em poucos slides</title>
+    <subtitle>Uma apresentação de exemplo, escrita em Delta</subtitle>
+    <author>Ana Ribeiro</author>
+    <affiliation>IMPA Tech</affiliation>
+    <event>Seminário de Análise</event>
+    <date>21 de setembro de 2026</date>
+  </cover>
+
+  <slide>
+    <toc>
+      <title>Roteiro</title>
+    </toc>
+  </slide>
+
+  <section id="sec:definicoes">
+    <title>Definições</title>
+
+    <slide>
+      <title>O que é um compacto</title>
+      <definition id="def:compacto">
+        <title>Compacto</title>
+        $K \subset \mathbb{R}^n$ é <em>compacto</em> quando toda cobertura aberta de $K$
+        admite uma subcobertura finita.
+      </definition>
+      Em $\mathbb{R}^n$, isso equivale a ser fechado e limitado (Heine–Borel).
+    </slide>
+
+    <slide>
+      <title>Exemplos e não exemplos</title>
+      <list animated="true">
+        <item>$[0, 1]$ é compacto.</item>
+        <item>$(0, 1]$ não é: falta o ponto $0$.</item>
+        <item>$[0, \infty)$ não é: não é limitado.</item>
+        <item>A esfera $S^{n-1}$ é compacta.</item>
+      </list>
+    </slide>
+  </section>
+
+  <section id="sec:teorema">
+    <title>O teorema</title>
+
+    <slide>
+      <title>Weierstrass</title>
+      <theorem id="thm:weierstrass">
+        <title>Weierstrass</title>
+        Toda função contínua $f\colon K \to \mathbb{R}$ num compacto não vazio é limitada
+        e atinge máximo e mínimo.
+      </theorem>
+      <equation id="eq:max" reveal="true">\exists\, x_0 \in K \quad\text{tal que}\quad f(x_0) = \max_{x \in K} f(x)</equation>
+    </slide>
+
+    <slide>
+      <title>Por que funciona</title>
+      <list marker="number" animated="true">
+        <item>A imagem contínua de um compacto é compacta.</item>
+        <item>Logo $f(K)$ é fechado e limitado.</item>
+        <item>Um fechado e limitado de $\mathbb{R}$ contém o próprio supremo.</item>
+      </list>
+    </slide>
+
+    <slide>
+      <title>Com e sem compacidade</title>
+      <columns>
+        <column>
+          <strong>Em $[0, 1]$.</strong> A função $f(x) = x$ atinge o máximo $1$, como
+          <ref to="thm:weierstrass"/> promete.
+        </column>
+        <column>
+          <strong>Em $(0, 1)$.</strong> A mesma $f(x) = x$ é limitada, mas não atinge o
+          supremo: o domínio não é compacto.
+        </column>
+      </columns>
+    </slide>
+  </section>
+
+  <section id="sec:fim">
+    <title>Para levar</title>
+
+    <slide>
+      <title>Para levar</title>
+      Compacidade transforma existência em teorema. A referência
+      <ref to="thm:weierstrass"/> leva de volta ao slide do enunciado; e este arquivo
+      inteiro, com fontes e fórmulas, é um único HTML que abre sem internet.
+    </slide>
+  </section>
+</document>

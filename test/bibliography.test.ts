@@ -1,27 +1,21 @@
-import { describe, expect, it } from "vitest";
-import { elements, type ElementNode } from "../src/compiler/ast";
-import { loadBibliography, resolveCitations } from "../src/compiler/bibliography";
-import { createContext, type CompileContext } from "../src/compiler/context";
-import { compileSource } from "../src/compiler/index";
-import { parse } from "../src/compiler/parse";
-import { preprocess } from "../src/compiler/preprocess";
+import { describe, expect, it } from "./harness.ts";
+import { elements, type ElementNode } from "../src/compiler/ast.ts";
+import { loadBibliography, resolveCitations } from "../src/compiler/bibliography.ts";
+import type { CompileContext } from "../src/compiler/context.ts";
+import { compileHtml, parsed, warnings } from "./helpers.ts";
 
-// ctx.file lives in test/, so a `src` resolves relative to test/.
-function run(src: string): { doc: ElementNode; ctx: CompileContext } {
-  const ctx = createContext("test/doc.dlt");
-  const doc = parse(preprocess(src), ctx);
-  if (!doc) throw new Error("parse failed: " + JSON.stringify(ctx.diagnostics));
-  loadBibliography(doc, ctx);
-  resolveCitations(doc, ctx);
-  return { doc, ctx };
+// The document lives in test/, so a `src` resolves relative to test/.
+const FILE = "test/doc.dlt";
+
+/** Parsed, papers loaded and citations numbered: the bibliography passes by hand. */
+function run(src: string) {
+  const out = parsed(src, FILE);
+  loadBibliography(out.doc, out.ctx);
+  resolveCitations(out.doc, out.ctx);
+  return out;
 }
 
-function compile(src: string): string {
-  const ctx = createContext("test/doc.dlt");
-  const html = compileSource(src, ctx);
-  if (html === undefined) throw new Error("compile failed: " + JSON.stringify(ctx.diagnostics));
-  return html;
-}
+const compile = (src: string): string => compileHtml(src, { file: FILE });
 
 const bibPaperIds = (doc: ElementNode): string[] => {
   const bib = [...elements(doc)].find((e) => e.tag === "bibliography");
@@ -31,8 +25,7 @@ const bibPaperIds = (doc: ElementNode): string[] => {
 };
 const cite = (doc: ElementNode): ElementNode | undefined =>
   [...elements(doc)].find((e) => e.tag === "cite");
-const warned = (ctx: CompileContext, re: RegExp): boolean =>
-  ctx.diagnostics.some((d) => d.severity === "warning" && re.test(d.message));
+const warned = (ctx: CompileContext, re: RegExp): boolean => warnings(ctx).some((m) => re.test(m));
 
 describe("loadBibliography", () => {
   it("collects inline <paper> entries into ctx.papers", () => {
@@ -45,7 +38,9 @@ describe("loadBibliography", () => {
   });
 
   it("loads + merges papers from a .ref src", () => {
-    const { ctx } = run(`<document><bibliography src="fixtures/refs.ref" /><cite paper="ARS10" /></document>`);
+    const { ctx } = run(
+      `<document><bibliography src="fixtures/refs.ref" /><cite paper="ARS10" /></document>`,
+    );
     expect([...ctx.papers.keys()].sort()).toEqual(["ARS10", "KL98", "UNCITED"]);
   });
 
@@ -116,7 +111,9 @@ describe("resolveCitations", () => {
   });
 
   it("records cited ids in referencedIds (for emit's template snapshot)", () => {
-    const { ctx } = run(`<document><bibliography src="fixtures/refs.ref" /><cite paper="ARS10" /></document>`);
+    const { ctx } = run(
+      `<document><bibliography src="fixtures/refs.ref" /><cite paper="ARS10" /></document>`,
+    );
     expect(ctx.referencedIds.has("ARS10")).toBe(true);
   });
 
@@ -160,7 +157,9 @@ describe("emit with a bibliography", () => {
 });
 
 describe("emit with a bibliography with custom title", () => {
-  const doc = (body: string) => `<document><title>T</title><section id="s"><title>S</title>${body}</section>
+  const doc = (
+    body: string,
+  ) => `<document><title>T</title><section id="s"><title>S</title>${body}</section>
   <bibliography src="fixtures/refs.ref"><title>My Custom Title</title></bibliography></document>`;
 
   it("preserves the custom <title> ahead of the cited papers", () => {
@@ -170,4 +169,4 @@ describe("emit with a bibliography with custom title", () => {
     expect(html).toMatch(/<delta-bibliography[^>]*><delta-title>My Custom Title<\/delta-title>/);
     expect(html).toContain('<delta-paper id="ARS10"'); // papers still ship after it
   });
-})
+});

@@ -1,26 +1,19 @@
-import { describe, expect, it } from "vitest";
-import type { ElementNode } from "../src/compiler/ast";
-import { createContext, type CompileContext } from "../src/compiler/context";
-import { compileSource } from "../src/compiler/index";
-import { parse } from "../src/compiler/parse";
-import { preprocess } from "../src/compiler/preprocess";
-import { isBuiltinThemeName, resolveTheme } from "../src/compiler/theme";
-import { BUILTIN_THEMES, CORE_CSS, THEMES } from "../src/generated/assets";
+import { describe, expect, it } from "./harness.ts";
+import type { ElementNode } from "../src/compiler/ast.ts";
+import { createContext, type CompileContext } from "../src/compiler/context.ts";
+import { parse } from "../src/compiler/parse.ts";
+import { preprocess } from "../src/compiler/preprocess.ts";
+import { isBuiltinThemeName, resolveTheme } from "../src/compiler/theme.ts";
+import { BUILTIN_THEMES, CORE_CSS, THEMES } from "../src/generated/assets.ts";
+import { compileHtml, parsed } from "./helpers.ts";
+
+const compile = (src: string): string => compileHtml(src, { file: "test/doc.dlt" });
 
 // ctx.file lives in test/, so a `theme` path resolves relative to test/.
 function resolved(src: string): { doc: ElementNode; ctx: CompileContext } {
-  const ctx = createContext("test/doc.dlt");
-  const doc = parse(preprocess(src), ctx);
-  if (!doc) throw new Error("parse failed: " + JSON.stringify(ctx.diagnostics));
+  const { doc, ctx } = parsed(src, "test/doc.dlt");
   resolveTheme(doc, ctx);
   return { doc, ctx };
-}
-
-function compile(src: string): string {
-  const ctx = createContext("test/doc.dlt");
-  const html = compileSource(src, ctx);
-  if (html === undefined) throw new Error("compile failed: " + JSON.stringify(ctx.diagnostics));
-  return html;
 }
 
 describe("resolveTheme", () => {
@@ -54,9 +47,7 @@ describe("resolveTheme", () => {
     const { ctx } = resolved(`<document theme="fixtures/theme-remote.css"></document>`);
     expect(ctx.userCss).toContain("@import");
     expect(
-      ctx.diagnostics.some(
-        (d) => d.severity === "warning" && /external resource/.test(d.message),
-      ),
+      ctx.diagnostics.some((d) => d.severity === "warning" && /external resource/.test(d.message)),
     ).toBe(true);
   });
 });
@@ -101,8 +92,9 @@ describe("built-in themes", () => {
 
   it("hints at the built-in when the author writes the name with a .css extension", () => {
     const { ctx } = resolved(`<document theme="impatech.css"></document>`);
-    expect(ctx.diagnostics.some((d) => /did you mean the built-in theme 'impatech'/.test(d.message)))
-      .toBe(true);
+    expect(
+      ctx.diagnostics.some((d) => /did you mean the built-in theme 'impatech'/.test(d.message)),
+    ).toBe(true);
   });
 
   it("tells names from paths by shape alone", () => {
@@ -110,8 +102,14 @@ describe("built-in themes", () => {
       expect(isBuiltinThemeName(name), name).toBe(true);
     }
     for (const path of [
-      "theme.css", "./x.css", "../shared/x.css", "/abs/x.css",
-      "C:\\x.css", "a/b", "https://x.test/a.css", "impatech.css",
+      "theme.css",
+      "./x.css",
+      "../shared/x.css",
+      "/abs/x.css",
+      "C:\\x.css",
+      "a/b",
+      "https://x.test/a.css",
+      "impatech.css",
     ]) {
       expect(isBuiltinThemeName(path), path).toBe(false);
     }
@@ -176,7 +174,8 @@ describe("base.css invariants", () => {
           depth++;
         } else if (css[i] === "}" && --depth === 0) break;
       }
-      return css.slice(start, i)
+      return css
+        .slice(start, i)
         .split(";")
         .map((d) => d.trim().replace(/\s+/g, " ")) // continuation lines are indented differently
         .filter(Boolean);

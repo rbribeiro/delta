@@ -164,6 +164,8 @@ Packages build against the runtime's public surface, exposed on `window.Delta`
 - `popover` — the shared pop-over controller (hovercards, ref previews).
 - `t(key, fallback?)` — localized strings from the `#delta-i18n` island.
 - `deck` — the presentation deck handle (or `null` off-deck).
+- `review` — the document-wide review switches (`setAnnotations(on)`, `setChanges(mode)`,
+  and the `annotations`/`changes` getters); see [COLLABORATION.md](COLLABORATION.md).
 
 This is the **stable, versioned API** for packs. Growing it is a deliberate decision;
 packs must not reach into runtime internals (anything not on `window.Delta`), because
@@ -177,7 +179,7 @@ A feature that needs **compile-time** work cannot be a third-party package today
 | Feature kind | Example | Ships as |
 |---|---|---|
 | Runtime-only: new tag rendered in the browser | a `<callout>` box, a layout primitive | **package** (npm / local / `<import>`) |
-| Needs a compile-time pass | a new **numbered** environment, a new **reference kind**, a citation style | **first-party** (a row in [../src/compiler/environments.ts](../src/compiler/environments.ts) + a string + a runtime element) |
+| Needs a compile-time pass | a new **numbered** environment, a new **reference kind**, a citation style | **first-party** (a row in [../src/language/environments.ts](../src/language/environments.ts) + a string + a runtime element) |
 
 Adding a numbered environment is still a data-row edit in the compiler — see
 [ARCHITECTURE.md](ARCHITECTURE.md) and [CONTRIBUTING.md](CONTRIBUTING.md). A third-party

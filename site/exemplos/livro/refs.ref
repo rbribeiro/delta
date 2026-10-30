@@ -1,0 +1,14 @@
+<bibliography>
+  <paper id="lima-analise">
+    <author>Elon Lages Lima</author>
+    <title>Curso de Análise, vol. 1</title>
+    <journal>Projeto Euclides, IMPA</journal>
+    <year>1976</year>
+  </paper>
+  <paper id="euler">
+    <author>Leonhard Euler</author>
+    <title>De summis serierum reciprocarum</title>
+    <journal>Commentarii academiae scientiarum Petropolitanae, 7</journal>
+    <year>1740</year>
+  </paper>
+</bibliography>

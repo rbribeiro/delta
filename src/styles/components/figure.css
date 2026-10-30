@@ -1,8 +1,7 @@
 /* figure.css (+ video) — framed media + caption shared by <delta-figure>,
    <delta-video> and <delta-youtube>: .figure/.video (layout), .figure-frame/
    .video-frame (the box), .video-media (the player), .figure-cap/.video-cap.
-   PARTIAL: <delta-youtube> emits an iframe.video-media (styled here); the full
-   figure/video runtime is staged. Tokens via var(--delta-*). */
+   Built by runtime/elements/media.ts. Tokens via var(--delta-*). */
 
 @layer delta.components {
 
@@ -82,7 +81,7 @@ a.yt-facade {
   height: 48px;
   transform: translate(-50%, -50%);
   border-radius: 14px;
-  background: rgba(18, 18, 18, 0.78);
+  background: var(--delta-video-play);
   transition: background var(--delta-dur-fast) var(--delta-ease);
 }
 .yt-play::after {
@@ -93,10 +92,10 @@ a.yt-facade {
   transform: translate(-40%, -50%);
   border: solid transparent;
   border-width: 9px 0 9px 15px;
-  border-left-color: #fff;
+  border-left-color: var(--delta-video-play-icon);
 }
 .yt-facade:hover .yt-play,
-.yt-facade:focus-visible .yt-play { background: #f00; }
+.yt-facade:focus-visible .yt-play { background: var(--delta-video-play-hover); }
 .yt-facade:focus-visible { outline: 2px solid var(--delta-accent-ink); outline-offset: 2px; }
 
 /* Audio reuses the framed box; the native control bar fills the width. */

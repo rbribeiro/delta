@@ -1,12 +1,17 @@
-/* theorems.css — math-environment boxes (.box, .box-tag, .box-title, .box.example)
-   and the <proof>/<solution> formatting. LIVE: DeltaEnvironment adds .box plus a
-   floating .box-tag to box environments, and gives proof/solution the italic lead
-   (proof also gets a QED mark). Consumes tokens via var(--delta-*). */
+/* theorems.css — math-environment cards (.box: .box-sheet with .box-head and .box-body,
+   then folds and a foot) and the <proof>/<solution> formatting. LIVE: DeltaEnvironment
+   builds the card; a proof or solution joined to its box becomes its foot (.proof-foot,
+   a .proof-bar that unfolds it), a proof with steps away from its box a sheet of its own
+   (.proof-sheet, the same bar on top), any other gets the italic lead (proof also a QED
+   mark). The steps' pleats are in proofstructure.css.
+   The folds are in understanding.css, the status marks and paper in status.css.
+   Consumes tokens via var(--delta-*). */
 
 @layer delta.components {
 
 /* Every environment tag is block-level (custom elements default to inline).
-   index.css omitted conjecture/exercise/problem/solution — included here. */
+   One line per ENVIRONMENT_TAGS entry in src/language/tags.ts; test/language.test.ts
+   fails when one is missing. */
 delta-theorem,
 delta-lemma,
 delta-corollary,
@@ -15,6 +20,7 @@ delta-definition,
 delta-conjecture,
 delta-remark,
 delta-example,
+delta-counterexample,
 delta-claim,
 delta-observation,
 delta-exercise,
@@ -33,56 +39,107 @@ delta-claim, delta-observation, delta-conjecture {
   --delta-env-tone: var(--delta-tone-theorem);
 }
 delta-definition           { --delta-env-tone: var(--delta-tone-definition); }
-delta-example              { --delta-env-tone: var(--delta-tone-example); }
+delta-example,
+delta-counterexample       { --delta-env-tone: var(--delta-tone-example); }
 delta-remark               { --delta-env-tone: var(--delta-tone-remark); }
 delta-exercise, delta-problem { --delta-env-tone: var(--delta-tone-exercise); }
 
-/* -- .box and label --------------------------------------------------- */
-.box {
-  /* The border is the neutral rule tinted toward the family tone by
-     --delta-env-tint (0 = neutral, the default, so this is a no-op until a theme
-     opts in; 1 = the tone itself). Expressed as a mix rather than a second set of
-     per-family tokens, so a theme dials the whole effect with one number. */
-  border: var(--delta-hairline) solid
-          color-mix(in oklab,
-                    var(--delta-env-tone, var(--delta-paper)) calc(var(--delta-env-tint, 0) * 100%),
-                    var(--delta-env-border));
-  background: var(--delta-env-bg);
-  border-radius: var(--delta-radius);
-  padding: 20px 24px 18px;
+/* -- The card --------------------------------------------------------
+   A box is one sheet of paper with parts hung under it: the sheet (header + statement),
+   the folds of its aids (understanding.css), and its foot (a joined proof or solution,
+   or where the proof is). Each part paints its own strip of the card; the box itself
+   paints nothing but the edge and the shadow, as a filter, so the outline follows the
+   folds' creases instead of drawing a rectangle around them. The edge is the neutral
+   rule tinted toward the family tone by --delta-env-tint (0 = neutral, the default; a
+   theme dials the whole effect with that one number). Unfinished work trades the
+   shadow for a dashed edge (--box-edge, status.css). A standalone proof sheet is made
+   of the same paper. */
+.box,
+.proof-sheet {
+  --box-r: var(--delta-radius-lg);
+  --box-bg: var(--delta-env-bg);
+  --box-well: var(--delta-env-well);
+  --box-edge: 0 solid transparent;
+  --box-pad-x: 24px;
+  --box-edge-color: color-mix(in oklab,
+                              var(--delta-env-tone, var(--delta-paper)) calc(var(--delta-env-tint, 0) * 100%),
+                              var(--delta-env-border));
   margin: var(--delta-block-gap) 0;
   position: relative;
-  box-shadow: var(--delta-shadow);
+  filter: drop-shadow(0 0 0.6px var(--box-edge-color))
+          drop-shadow(0 2px 4px var(--delta-env-shadow));
 }
-/* The label pill straddles the top border like a fieldset legend, but stays in
-   NORMAL FLOW — a fit-content block lifted onto the border by a negative top
-   margin — so a title too long for one line wraps and PUSHES the content down
-   instead of being absolutely positioned on top of it. max-width keeps a long
-   pill inside the box (box-sizing is border-box globally). */
-.box-tag {
+.box-sheet {
+  background-color: var(--box-bg);
+  border: var(--box-edge);
+  border-bottom: 0;
+  border-radius: var(--box-r) var(--box-r) 0 0;
+}
+/* Nothing hangs under the sheet (or the box is folded): the sheet closes the card. */
+.box:not(.has-folds, .has-foot) > .box-sheet,
+.box.is-collapsed > .box-sheet {
+  border-bottom: var(--box-edge);
+  border-radius: var(--box-r);
+}
+/* Folds and no foot: a narrow strip of the sheet closes the card under the last fold. */
+.box.has-folds::after {
+  content: "";
   display: block;
-  width: fit-content;
-  max-width: 100%;
-  margin: -30px 0 12px;
-  font-family: var(--delta-sans);
-  font-size: 10.5px;
+  height: 14px;
+  background: var(--box-bg);
+  border: var(--box-edge);
+  border-top: 0;
+  border-radius: 0 0 var(--box-r) var(--box-r);
+}
+/* Folded, the box is its header: what hangs under the sheet goes too. */
+.box.is-collapsed > :not(.box-sheet),
+.box.is-collapsed::after { display: none; }
+
+/* -- Header: "LEMMA 2.1.2  Coupling", the status mark at the far end -- */
+.box-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 10px;
+  row-gap: 6px;
+  min-height: 30px;
+  padding: 16px 20px 0 var(--box-pad-x);
+}
+/* --delta-env-tag-fill (0 by default) fills the label with the family tone: a theme of
+   signage pills (impatech) sets it to 1; padding and fill scale with it, so at 0 the
+   label is bare text aligned with the statement. */
+.box-tag {
+  --fill: var(--delta-env-tag-fill, 0);
+  padding: calc(var(--fill) * 2px) calc(var(--fill) * 8px);
+  margin-left: calc(var(--fill) * -8px);
+  border-radius: var(--delta-radius-sm);
+  background: color-mix(in oklab, var(--delta-env-tone, var(--delta-paper)) calc(var(--fill) * 100%), transparent);
+  font-family: var(--delta-serif);
+  font-size: 12px;
+  font-weight: var(--delta-weight-strong);
   line-height: 1.35;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+  white-space: nowrap;
   color: var(--delta-env-tag-ink);
-  background: var(--delta-env-tone, var(--delta-paper));
-  padding: 2px 9px;
-  border-radius: var(--delta-radius-sm);
-  border: var(--delta-hairline) solid var(--delta-env-tag-border);
 }
-/* The author's title rides in the label pill, parenthesised and slightly
-   subordinate so the environment kind + number still reads first. */
+/* An exercise is the reader's to do, not a fact: its label steps back. */
+:is(delta-exercise, delta-problem) > .box-sheet .box-tag { color: var(--delta-mute); }
+/* The author's title follows the label, quieter, in italics. */
 .box-tag-title {
-  font-weight: 400;
-  opacity: 0.7;
+  font-style: italic;
+  font-size: 0.89em;
+  line-height: 1.35;
+  color: var(--delta-mute);
+  text-wrap: balance;
 }
-.box-tag-title::before { content: "("; }
-.box-tag-title::after  { content: ")"; }
+.box-head > .status-mark { margin-left: auto; }
+
+.box-body {
+  padding: 10px var(--box-pad-x) 20px;
+}
+.box-body > :first-child { margin-top: 0; }
+.box-body > :last-child { margin-bottom: 0; }
 
 .box-title {
   font-weight: var(--delta-weight-strong);
@@ -90,9 +147,141 @@ delta-exercise, delta-problem { --delta-env-tone: var(--delta-tone-exercise); }
   margin: 0 0 6px;
   letter-spacing: -0.003em;
 }
-.box.example {
-  background: color-mix(in oklab, var(--delta-accent-soft) 35%, var(--delta-paper));
-  border-color: color-mix(in oklab, var(--delta-accent) 30%, var(--delta-rule));
+/* A counterexample is the one box on tinted paper: it breaks the rule the others state. */
+delta-counterexample.box {
+  --box-bg: color-mix(in oklab, var(--delta-accent-soft) 35%, var(--delta-paper));
+}
+
+/* -- Foot: a joined proof or solution, or where the proof is ----------- */
+.box > .proof-foot,
+.box > .box-foot,
+.box > .collapse-body > .proof-foot,
+.box > .collapse-body > .box-foot {
+  margin: 0;
+  background: var(--box-well);
+  border: var(--box-edge);
+  border-top: var(--delta-hairline) solid var(--delta-rule-soft);
+}
+.box :is(.proof-foot, .box-foot):last-child {
+  border-radius: 0 0 var(--box-r) var(--box-r);
+}
+.box-foot {
+  padding: 12px var(--box-pad-x);
+  font-style: italic;
+  font-size: 0.94em;
+  line-height: 1.4;
+  color: var(--delta-ink-soft);
+}
+.box-foot.proof-pending { color: var(--delta-mute); }
+
+/* The bar: "Proof >" (or "Show solution >", the wedge of collapse.css); the whole bar
+   is the fold's toggle. */
+.proof-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  padding: 12px 20px 12px var(--box-pad-x);
+  font-style: italic;
+  font-size: 0.94em;
+  line-height: 1.4;
+  color: var(--delta-ink-soft);
+  transition: color var(--delta-dur-fast) var(--delta-ease);
+}
+.proof-bar:hover { color: var(--delta-accent-ink); }
+.proof-bar > .status-mark { margin-left: auto; }
+.proof-bar-caret {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1em;
+  height: 1.1em;
+  margin-left: auto;
+  font-style: normal;
+  color: var(--delta-mute);
+  transition: color var(--delta-dur-fast) var(--delta-ease);
+}
+.proof-bar:hover .proof-bar-caret { color: var(--delta-accent-ink); }
+.proof-bar-caret::before { --wedge: 0.5em; --wedge-stroke: 1.6px; }
+.proof-bar > .status-mark + .proof-bar-caret,
+.proof-bar-name + .proof-bar-caret { margin-left: 0; }
+.proof-bar .when-open,
+.is-collapsed > .proof-bar .when-folded { display: inline; }
+.proof-bar .when-folded,
+.is-collapsed > .proof-bar .when-open { display: none; }
+
+/* The proof itself, unfolded under its bar. */
+.proof-foot > .collapse-body,
+.proof-sheet > .collapse-body {
+  padding: var(--sheet-pad-top) var(--box-pad-x) 18px;
+  border-top: var(--delta-hairline) dashed var(--delta-rule-soft);
+}
+.proof-foot,
+.proof-sheet { --sheet-pad-top: 16px; }
+
+/* A proof with steps standing alone: the foot of a card without the card above it. */
+.proof-sheet {
+  background: var(--box-well);
+  border: var(--box-edge);
+  border-radius: var(--box-r);
+}
+.proof-sheet > .collapse-body { border-radius: 0 0 var(--box-r) var(--box-r); }
+
+/* A sheet with steps paints no paper of its own: its parts do, each its strip (the bar,
+   the .sheet-runs of prose, the open steps; proofstructure.css), so the cut corners of
+   the steps' pleats show the page and the card's edge follows them. */
+.box > .proof-foot.has-steps,
+.box > .collapse-body > .proof-foot.has-steps,
+.proof-sheet.has-steps {
+  background: none;
+  border: 0;
+}
+.has-steps > .proof-bar {
+  background: var(--box-well);
+  border-inline: var(--box-edge);
+}
+.box .has-steps > .proof-bar { border-top: var(--delta-hairline) solid var(--delta-rule-soft); }
+.proof-sheet.has-steps > .proof-bar {
+  border-top: var(--box-edge);
+  border-radius: var(--box-r) var(--box-r) 0 0;
+}
+.has-steps:not(.is-collapsed) > .proof-bar {
+  border-bottom: var(--delta-hairline) dashed var(--delta-rule-soft);
+}
+.has-steps > .collapse-body {
+  padding: 0;
+  border-top: 0;
+}
+.sheet-run {
+  padding: 14px var(--box-pad-x);
+  background: var(--box-well);
+  border-inline: var(--box-edge);
+}
+.sheet-run:first-child { padding-top: var(--sheet-pad-top); }
+.sheet-run > :first-child { margin-top: 0; }
+.sheet-run > :last-child { margin-bottom: 0; }
+/* The strip that closes the sheet: the QED, at the far end, or nothing. */
+.sheet-run.sheet-end {
+  padding-top: 6px;
+  padding-bottom: 14px;
+  text-align: right;
+}
+.sheet-run.sheet-end:empty { padding-block: 7px; }
+.sheet-run.sheet-end > .proof-qed { margin: 0; }
+/* The last part of the card rounds its corners: the closing strip, or the bar when the
+   proof is folded. */
+.box .proof-foot.has-steps:last-child > .collapse-body > .sheet-run:last-child,
+.proof-sheet > .collapse-body > .sheet-run:last-child,
+.box .proof-foot.has-steps.is-collapsed:last-child > .proof-bar,
+.proof-sheet.is-collapsed > .proof-bar {
+  border-bottom: var(--box-edge);
+  border-radius: 0 0 var(--box-r) var(--box-r);
+}
+.proof-sheet.is-collapsed > .proof-bar { border-radius: var(--box-r); }
+
+/* A box in a narrow column keeps its parts aligned on the same inset. */
+@media (max-width: 640px) {
+  .box { --box-pad-x: 16px; }
 }
 
 /* -- Box meta: a quiet provenance footer ------------------------------ */
@@ -135,13 +324,11 @@ delta-solution {
   transform: translateY(-1px);
 }
 
-/* -- Narrow-viewport tweaks ------------------------------------------- */
-@media (max-width: 640px) {
-  .box { padding: 18px 16px 14px; }
-}
-
 @media print {
-  .box { break-inside: avoid; }
+  .box-sheet { break-inside: avoid; }
+  /* Paper cannot unfold: a folded proof prints, without its bar's caret. */
+  .proof-foot.is-collapsed > .collapse-body { display: block; }
+  .proof-bar-caret { display: none; }
 }
 
 }

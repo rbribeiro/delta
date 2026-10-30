@@ -15,8 +15,9 @@
  * outside-click dismissal), so it flips up from the fixed button.
  */
 
-import { t } from "../i18n";
-import { popover } from "../utils";
+import { t } from "../i18n.ts";
+import { popover } from "../utils.ts";
+import { button, takeTitle } from "./shared.ts";
 
 class DeltaFloating extends HTMLElement {
   connectedCallback(): void {
@@ -25,23 +26,19 @@ class DeltaFloating extends HTMLElement {
 
     // An optional <delta-title> labels the button + header; clone its children so
     // inline math/markup survive. Fall back to the localized "Contents".
-    const titleEl = this.querySelector(":scope > delta-title");
-    const labelText = (titleEl?.textContent ?? "").trim() || t("contents", "Contents");
-    const titleNodes = titleEl ? [...titleEl.childNodes] : null;
-    titleEl?.remove();
+    const title = takeTitle(this);
+    const labelText = title?.text || t("contents", "Contents");
     const labelFragment = (): Node | string =>
-      titleNodes ? cloneInto(document.createElement("span"), titleNodes) : labelText;
+      title ? cloneInto(document.createElement("span"), title.nodes) : labelText;
 
     // The floating action button: a small icon + the label.
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "floating-fab";
-    button.setAttribute("aria-label", labelText);
+    const fab = button("floating-fab");
+    fab.setAttribute("aria-label", labelText);
     const icon = document.createElement("span");
     icon.className = "floating-icon";
     icon.setAttribute("aria-hidden", "true");
     icon.textContent = "☰"; // ☰
-    button.append(icon, labelFragment());
+    fab.append(icon, labelFragment());
 
     // The panel: a header (title + close) and a body holding the floating's
     // children (the <delta-toc> etc.).
@@ -53,11 +50,8 @@ class DeltaFloating extends HTMLElement {
     const headTitle = document.createElement("span");
     headTitle.className = "floating-title";
     headTitle.append(labelFragment());
-    const close = document.createElement("button");
-    close.type = "button";
-    close.className = "floating-x";
+    const close = button("floating-x", "×");
     close.setAttribute("aria-label", t("close", "Close"));
-    close.textContent = "×"; // ×
     header.append(headTitle, close);
 
     const body = document.createElement("div");
@@ -65,9 +59,9 @@ class DeltaFloating extends HTMLElement {
     body.append(...this.childNodes); // the toc (already upgraded) moves in here
 
     panel.append(header, body);
-    this.append(button);
+    this.append(fab);
 
-    const pop = popover(button, panel, { gap: 12 });
+    const pop = popover(fab, panel, { gap: 12 });
     close.addEventListener("click", () => pop.close());
     // Picking a destination dismisses the panel.
     body.addEventListener("click", (e) => {
@@ -83,5 +77,5 @@ function cloneInto(host: HTMLElement, nodes: Node[]): HTMLElement {
 }
 
 export function defineFloating(): void {
-  customElements.define("delta-floating", class extends DeltaFloating {});
+  customElements.define("delta-floating", DeltaFloating);
 }

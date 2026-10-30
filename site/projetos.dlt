@@ -1,0 +1,189 @@
+<document id="p-projetos" theme="tema.css">
+  <title>Projetos multi-arquivo · Delta</title>
+
+  <floating>
+    <title>Navegação</title>
+    <toc scope="project" depth="1"/>
+  </floating>
+
+  <section id="projetos">
+    <eyebrow>Referência</eyebrow>
+    <title>Projetos multi-arquivo</title>
+    <intro>
+      Um livro raramente cabe num arquivo só. Há duas formas de dividi-lo: juntar
+      as partes num único HTML, ou compilar vários HTMLs que compartilham
+      numeração e referências. Este site é do segundo tipo: cada página é um
+      arquivo, e o botão de navegação lista todos.
+    </intro>
+
+    <toc/>
+
+    <subsection id="tag-include">
+      <title>&lt;include&gt;</title>
+
+      Junta outro <c>.dlt</c> no lugar da tag, ainda na compilação. O resultado é
+      <b>um</b> HTML: o leitor não percebe que o texto veio de vários arquivos.
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">src</column>
+          <column mono="true">arquivo.dlt</column>
+          <column>O arquivo a incluir, relativo a quem inclui</column>
+        </row>
+        <row>
+          <column mono="true">target-id</column>
+          <column mono="true">id</column>
+          <column>Inclui apenas o elemento com esse <c>id</c>, não o arquivo inteiro</column>
+        </row>
+      </table>
+
+      <code lang="xml" numbered="false">
+<document type="book">
+  <title>Análise na reta</title>
+  <include src="cap1-sequencias.dlt"/>
+  <include src="cap2-series.dlt"/>
+</document>
+      </code>
+
+      Cada arquivo incluído é, ele próprio, um <c>.dlt</c> completo e válido,
+      e dá para compilá-lo sozinho enquanto escreve. O <c><document></c> do arquivo
+      principal é quem manda: o <c>lang</c>, o <c>type</c> e o <c>theme</c> das
+      partes são ignorados.
+
+      <box type="warning">
+        <title>Aqui, faltar arquivo é erro</title>
+        Diferente de uma imagem ausente, um <c>include</c> que não resolve derruba
+        a compilação, inclusive quando há ciclo, isto é, quando dois arquivos se
+        incluem mutuamente.
+      </box>
+    </subsection>
+
+    <subsection id="sobre-project-toml">
+      <title>O arquivo project.toml</title>
+
+      A outra forma: vários arquivos, vários HTMLs, uma obra só. Um
+      <c>project.toml</c> descreve o conjunto.
+
+      <table numbered="false">
+        <header>
+          <column>Chave</column>
+          <column>Valor</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">inputs</column>
+          <column mono="true">lista</column>
+          <column>Os arquivos, na ordem. Obrigatório</column>
+        </row>
+        <row>
+          <column mono="true">out</column>
+          <column mono="true">pasta</column>
+          <column>Onde escrever os HTMLs. O padrão é a pasta atual</column>
+        </row>
+        <row>
+          <column mono="true">packages</column>
+          <column mono="true">lista</column>
+          <column>Pacotes aplicados a todos os arquivos</column>
+        </row>
+        <row>
+          <column mono="true">[document]</column>
+          <column mono="true">tabela</column>
+          <column>Valores padrão de <c><document></c> para todos os arquivos</column>
+        </row>
+      </table>
+
+      <code lang="toml" numbered="false">
+inputs = ["cap1.dlt", "cap2.dlt", "cap3.dlt"]
+out = "site"
+
+[document]
+type = "book"
+lang = "pt-BR"
+theme-accent = "blue"
+      </code>
+
+      A tabela <c>[document]</c> só preenche o que estiver faltando: se um capítulo
+      declara o próprio <c>theme-accent</c>, o dele vence. Compile com:
+
+      <code lang="bash" numbered="false">
+delta build project.toml
+      </code>
+
+      <box type="note">
+        <title>Os nomes de saída são achatados</title>
+        Cada <c>cap1.dlt</c> vira <c>cap1.html</c> na pasta de saída, sem
+        subpastas. Dois arquivos de mesmo nome em pastas diferentes colidem e a
+        compilação acusa o conflito.
+      </box>
+    </subsection>
+
+    <subsection id="sobre-projeto-compartilhado">
+      <title>O que os arquivos compartilham</title>
+
+      Compilados juntos, os arquivos deixam de ser documentos independentes:
+
+      <list marker="dash">
+        <item>
+          <b>A numeração é contínua.</b> Se o capítulo 1 termina no Teorema 1.4,
+          o capítulo 2 começa no 2.1: a contagem atravessa os arquivos.
+        </item>
+        <item>
+          <b>As referências cruzam arquivos.</b> Um <c><ref></c> pode apontar para
+          um teorema que está em outro capítulo. A prévia funciona mesmo assim,
+          porque uma cópia do alvo é embarcada nesta página; clicar leva ao
+          capítulo certo, que destaca o alvo ao abrir.
+        </item>
+        <item>
+          <b>A bibliografia é uma só.</b> Coloque o <c><bibliography></c> em um dos
+          arquivos; citações em qualquer capítulo numeram contra ele, na ordem em
+          que aparecem no projeto inteiro.
+        </item>
+      </list>
+    </subsection>
+
+    <subsection id="sobre-toc-project">
+      <title>Sumário do projeto inteiro</title>
+
+      Um <c><toc></c> comum lista só os títulos do próprio arquivo. Com
+      <c>scope="project"</c>, ele lista os de todos, e as entradas de outros
+      arquivos viram links que navegam até lá.
+
+      <code lang="xml" numbered="false">
+<floating>
+  <title>Navegação</title>
+  <toc scope="project" depth="1"/>
+</floating>
+      </code>
+
+      Os dois convivem no mesmo documento: um <c><toc/></c> como índice da página e
+      um <c><toc scope="project"/></c> como índice da obra. É exatamente o que esta
+      página faz.
+    </subsection>
+
+    <subsection id="sobre-cli-projeto">
+      <title>Criando um projeto</title>
+
+      <code lang="bash" numbered="false">
+delta create project meu-livro     # cria a pasta com project.toml e main.dlt
+delta build project.toml           # compila
+delta build project.toml --watch   # recompila a cada alteração
+      </code>
+
+      Sem <c>project.toml</c>, dá para passar os arquivos direto, e nesse caso o <c>-o</c>
+      então é a pasta de saída:
+
+      <code lang="bash" numbered="false">
+delta build cap1.dlt cap2.dlt -o site
+      </code>
+    </subsection>
+  </section>
+
+  <footer>
+    Feito com ❤️ em Delta no IMPA Tech.
+  </footer>
+</document>

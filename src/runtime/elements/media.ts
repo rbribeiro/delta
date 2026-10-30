@@ -4,7 +4,8 @@
  * "Figure N" caption). All caption labels are localized via `t`.
  */
 
-import { t } from "../i18n";
+import { t } from "../i18n.ts";
+import { numberedName } from "./shared.ts";
 
 /**
  * Lifts a `<delta-caption>` child into a caption row: adds `.video-cap` and a
@@ -21,8 +22,7 @@ function mediaCaption(
   caption.classList.add(capClass);
   const lbl = document.createElement("span");
   lbl.className = "lbl";
-  const word = t(labelKey, labelKey.charAt(0).toUpperCase() + labelKey.slice(1));
-  lbl.textContent = word + (num ? ` ${num}` : "");
+  lbl.textContent = numberedName(labelKey, num);
   caption.prepend(lbl, " ");
 }
 
@@ -36,6 +36,14 @@ function frameMedia(host: HTMLElement, media: HTMLElement): void {
   host.prepend(frame);
 }
 
+/** The placeholder shown in place of media that has no source. */
+function missing(text: string): HTMLElement {
+  const el = document.createElement("div");
+  el.className = "video-missing";
+  el.textContent = text;
+  return el;
+}
+
 // Pull the 11-char id out of any common YouTube URL shape, or accept a
 // bare id. Returns "" when nothing usable is found.
 function youtubeId(input: string | null): string | null {
@@ -47,7 +55,9 @@ function youtubeId(input: string | null): string | null {
     if (u.searchParams.has("v")) return u.searchParams.get("v");
     const m = u.pathname.match(/\/(?:embed|shorts)\/([\w-]{11})/);
     if (m) return m[1];
-  } catch { /* not a URL — fall through */ }
+  } catch {
+    /* not a URL — fall through */
+  }
   return "";
 }
 
@@ -80,7 +90,7 @@ class DeltaYouTube extends HTMLElement {
       link.href = `https://www.youtube.com/watch?v=${id}`;
       link.target = "_blank";
       link.rel = "noopener";
-      link.setAttribute("aria-label", "Watch on YouTube");
+      link.setAttribute("aria-label", t("watchOnYoutube", "Watch on YouTube"));
       const thumb = document.createElement("img");
       thumb.src = `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
       thumb.alt = "";
@@ -113,10 +123,7 @@ class DeltaVideo extends HTMLElement {
     this.classList.add("video");
     const src = this.getAttribute("src");
     if (!src) {
-      const missing = document.createElement("div");
-      missing.className = "video-missing";
-      missing.textContent = "No video source.";
-      this.prepend(missing);
+      this.prepend(missing(t("noVideo", "No video source.")));
       return;
     }
     const video = document.createElement("video");
@@ -139,10 +146,7 @@ class DeltaAudio extends HTMLElement {
     this.classList.add("video");
     const src = this.getAttribute("src");
     if (!src) {
-      const missing = document.createElement("div");
-      missing.className = "video-missing";
-      missing.textContent = "No audio source.";
-      this.prepend(missing);
+      this.prepend(missing(t("noAudio", "No audio source.")));
       return;
     }
     const audio = document.createElement("audio");
@@ -163,10 +167,7 @@ class DeltaFigure extends HTMLElement {
     this.classList.add("figure");
     const src = this.getAttribute("src");
     if (!src) {
-      const missing = document.createElement("div");
-      missing.className = "video-missing";
-      missing.textContent = "Image not found.";
-      this.prepend(missing);
+      this.prepend(missing(t("noImage", "Image not found.")));
     } else {
       const frame = document.createElement("div");
       frame.className = "figure-frame";
@@ -181,11 +182,10 @@ class DeltaFigure extends HTMLElement {
   }
 }
 
-
-
+/** Wraps an author's interactive content (a pack's widget) in a frame, with an "Interactive N" caption. */
 class DeltaInteractive extends HTMLElement {
   connectedCallback(): void {
-    if (this.dataset.deltaReady == "1") return;
+    if (this.dataset.deltaReady) return;
     this.dataset.deltaReady = "1";
 
     this.classList.add("interactive");
@@ -196,15 +196,14 @@ class DeltaInteractive extends HTMLElement {
       if (child !== caption) wrapperFrame.append(child);
     }
     this.prepend(wrapperFrame);
-    mediaCaption(this, "interactive", this.getAttribute("num"), "interactive-cap")
-
+    mediaCaption(this, "interactive", this.getAttribute("num"), "interactive-cap");
   }
 }
 
 export function defineMedia(): void {
-  customElements.define("delta-youtube", class extends DeltaYouTube { });
-  customElements.define("delta-video", class extends DeltaVideo { });
-  customElements.define("delta-audio", class extends DeltaAudio { });
-  customElements.define("delta-figure", class extends DeltaFigure { });
-  customElements.define("delta-interactive", class extends DeltaInteractive { });
+  customElements.define("delta-youtube", DeltaYouTube);
+  customElements.define("delta-video", DeltaVideo);
+  customElements.define("delta-audio", DeltaAudio);
+  customElements.define("delta-figure", DeltaFigure);
+  customElements.define("delta-interactive", DeltaInteractive);
 }

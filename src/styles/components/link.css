@@ -1,6 +1,6 @@
 /* link.css — <delta-link>: an underlined anchor (.ext-link) that, when off-site,
    also carries the external-link icon (.ext-icon) and a screen-reader new-tab
-   hint (.ext-sr). STAGED — link.js builds the inner <a>; styling lives here. */
+   hint (.ext-sr). runtime/elements/link.ts builds the inner <a>; styling lives here. */
 
 @layer delta.components {
 

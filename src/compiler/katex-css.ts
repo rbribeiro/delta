@@ -24,6 +24,12 @@ export function katexCss(): string {
   // KaTeX renders math at 1.21em — noticeably larger than surrounding prose. Scale
   // it toward body-text size (LaTeX-like) via --delta-math-scale. Appended last and
   // unlayered, so it overrides KaTeX's own `.katex` rule above (same specificity).
-  cached = inlined + "\n.katex{font-size:var(--delta-math-scale,1.1em)}\n";
+  // Likewise the math tags' display: the tag owns the block margin (math.css), so
+  // KaTeX's own 1em around `.katex-display` must go — a rule in Delta's layers could
+  // never beat this unlayered sheet.
+  cached =
+    inlined +
+    "\n.katex{font-size:var(--delta-math-scale,1.1em)}" +
+    "\n:is(delta-equation,delta-equations,delta-math) .katex-display{margin:0}\n";
   return cached;
 }

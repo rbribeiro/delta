@@ -1,0 +1,14 @@
+# Uma prova em construção, escrita em Delta por um humano e um agente: a componente
+# gigante do grafo aleatório de Erdős–Rényi. Cada resultado traz, além do enunciado,
+# uma camada de entendimento (<intuition>, <strategy>, <obstacle>, também nos passos de uma prova), e os
+# lemas ainda sem prova aparecem como status="open".
+#
+#   delta build project.toml        # daqui
+#   npm run docs:exemplos           # da raiz do repositório, junto com os outros exemplos
+inputs = ["cap1.dlt", "cap2.dlt"]
+out = "../../../docs/exemplos/gigante"
+
+[document]
+lang         = "pt-BR"
+type         = "book"
+theme-accent = "blue"

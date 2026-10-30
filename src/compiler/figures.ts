@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs";
 import { dirname, extname, resolve } from "node:path";
-import { elements, type ElementNode } from "./ast";
-import { addDep, warn, type CompileContext } from "./context";
-
+import { elements, type ElementNode } from "./ast.ts";
+import { addDep, warn, type CompileContext } from "./context.ts";
+import { isRemote } from "./files.ts";
 
 const MIME: Record<string, string> = {
   ".png": "image/png",
@@ -33,7 +33,7 @@ export function inlineFigures(doc: ElementNode, ctx: CompileContext): void {
     const src = el.attrs.src;
     if (!src || src.startsWith("data:")) continue;
 
-    if (/^[a-z]+:\/\//i.test(src)) {
+    if (isRemote(src)) {
       warn(ctx, `figure src must be a local path, not a URL: ${src}`, el.pos);
       delete el.attrs.src;
       continue;
@@ -46,8 +46,8 @@ export function inlineFigures(doc: ElementNode, ctx: CompileContext): void {
     }
     try {
       const imgPath = resolve(base, src);
+      addDep(ctx, imgPath); // even when missing: `--watch` rebuilds once it appears
       const data = readFileSync(imgPath);
-      addDep(ctx, imgPath);
       el.attrs.src = `data:${mime};base64,${data.toString("base64")}`;
     } catch {
       warn(ctx, `figure image not found: ${src}`, el.pos);

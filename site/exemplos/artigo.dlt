@@ -1,0 +1,146 @@
+<document lang="pt-BR" type="article" theme-accent="teal">
+  <title>Funções contínuas em compactos</title>
+
+  <!-- Um artigo de exemplo, ligado da página inicial do site. Mostra o que um .dlt
+       faz: matemática como no LaTeX, ambientes numerados, referências com prévia,
+       demonstrações dobráveis, tabela, bibliografia, e as marcas de uma revisão a
+       quatro mãos entre uma pessoa e um agente; a opção final de `delta build` as remove. -->
+
+  <team>
+    <member id="ana" name="Ana Ribeiro" kind="human" color="blue"/>
+    <member id="claude" name="Claude" kind="agent" color="purple"/>
+  </team>
+
+  <meta>
+    <meta-item key="Autoria">Ana Ribeiro, com anotações de um agente</meta-item>
+    <meta-item key="Fonte">site/exemplos/artigo.dlt</meta-item>
+  </meta>
+  <abstract>
+    Um artigo curto, escrito em Delta, para mostrar a linguagem em uso: matemática como
+    no LaTeX, teoremas e equações numerados, referências que abrem uma prévia,
+    demonstrações que dobram, uma tabela, bibliografia, e as marcas de uma revisão a
+    quatro mãos entre uma pessoa e um agente. Tudo num único HTML que funciona offline.
+  </abstract>
+  <keywords>compacidade, continuidade, Weierstrass, Delta</keywords>
+
+  <floating>
+    <title>Sumário</title>
+    <toc/>
+  </floating>
+
+  <section id="sec:compactos">
+    <title>Conjuntos compactos</title>
+
+    <definition id="def:compacto">
+      <title>Compacto</title>
+      Um conjunto $K \subset \mathbb{R}^n$ é <em>compacto</em> quando toda cobertura de
+      $K$ por abertos admite uma subcobertura finita.
+    </definition>
+
+    Em $\mathbb{R}^n$ a definição tem uma forma concreta,<sidenote>Em espaços métricos
+    gerais, "fechado e limitado" não basta: a bola unitária fechada de um espaço de
+    dimensão infinita é fechada e limitada, mas não é compacta.</sidenote> que é a que se
+    usa na prática:
+
+    <theorem id="thm:heine-borel">
+      <title>Heine–Borel</title>
+      $K \subset \mathbb{R}^n$ é compacto se, e somente se, é fechado e limitado.
+    </theorem>
+
+    <example id="ex:intervalo">
+      O intervalo $[0,1]$ é compacto; $(0,1]$ e $[0,\infty)$ não são: o primeiro não é
+      fechado, o segundo não é limitado.
+    </example>
+
+    <lemma id="lem:imagem" status="verified" by="claude" verified-by="ana">
+      <title>Imagem contínua de compacto</title>
+      Se $K$ é compacto e $f\colon K \to \mathbb{R}^m$ é contínua, então $f(K)$ é compacto.
+    </lemma>
+    <proof of="lem:imagem" collapsible="true" collapsed="true">
+      Seja $\{U_\alpha\}$ uma cobertura aberta de $f(K)$. Como $f$ é contínua, os
+      conjuntos $f^{-1}(U_\alpha)$ são abertos em $K$ e cobrem $K$; por compacidade,
+      finitos deles bastam, e as imagens desses finitos cobrem $f(K)$.
+    </proof>
+    <comment on="lem:imagem" by="ana" status="resolved" date="2026-09-10">
+      Vale dizer que os $f^{-1}(U_\alpha)$ são abertos <em>relativos</em> a $K$.
+      <reply by="claude" date="2026-09-10">Ajustei a demonstração: "abertos em $K$".</reply>
+    </comment>
+  </section>
+
+  <section id="sec:weierstrass">
+    <title>O teorema de Weierstrass</title>
+
+    <theorem id="thm:weierstrass" status="review" by="claude">
+      <title>Weierstrass</title>
+      Toda função contínua $f\colon K \to \mathbb{R}$ num compacto $K \neq \emptyset$ é
+      limitada e atinge máximo e mínimo.
+    </theorem>
+    <proof of="thm:weierstrass" status="sketch" by="claude" collapsible="true">
+      Por <ref to="lem:imagem"/>, $f(K)$ é compacto; por <ref to="thm:heine-borel"/>, é
+      fechado e limitado. Logo existe $M$ com
+      <change id="ch:sinal" by="claude" date="2026-09-12" note="a desigualdade estava invertida"><old>$|f(x)| > M$</old><new>$|f(x)| \le M$</new></change>
+      para todo $x \in K$.<comment id="c:supremo" by="claude" date="2026-09-12">
+        Falta o passo em que $\sup f(K)$ pertence a $f(K)$ porque $f(K)$ é fechado.
+        Escrevo ou deixo como exercício?
+        <reply by="ana" date="2026-09-13">Escreva: é o coração do teorema.</reply>
+      </comment>
+      Como $f(K)$ é fechado, $\sup f(K) \in f(K)$: o máximo é atingido; o mínimo,
+      analogamente.
+    </proof>
+
+    <todo id="t:atinge" for="claude" by="ana" status="open" priority="high" due="2026-09-20">
+      Detalhar por que $\sup f(K) \in f(K)$ na demonstração de <ref to="thm:weierstrass"/>.
+    </todo>
+    <todo id="t:lema" for="claude" status="done">
+      Demonstrar <ref to="lem:imagem"/>.
+    </todo>
+
+    <subsection id="sub:consequencias">
+      <title>Duas consequências</title>
+
+      Com a notação $\lVert f \rVert_\infty = \max_{x \in K} |f(x)|$, que
+      <ref to="thm:weierstrass"/> garante existir,
+      <equations id="eq:norma-sup">
+        \lVert f + g \rVert_\infty &\le \lVert f \rVert_\infty + \lVert g \rVert_\infty, \\
+        \lVert \lambda f \rVert_\infty &= |\lambda| \, \lVert f \rVert_\infty .
+      </equations>
+      A primeira linha de <ref to="eq:norma-sup"/> é a desigualdade triangular, e a
+      referência também funciona dentro da fórmula:
+      $\lVert f + g \rVert_\infty \stackrel{\eqref{eq:norma-sup}}{\le} 2 \max(\lVert f \rVert_\infty, \lVert g \rVert_\infty)$.
+
+      <table id="tab:extremos">
+        <title>Valores extremos de algumas funções contínuas em um compacto</title>
+        <header>
+          <column>Função em $[0, 2\pi]$</column>
+          <column align="right">Máximo</column>
+          <column align="right">Mínimo</column>
+        </header>
+        <row><column>$\sin x$</column><column align="right">$1$</column><column align="right">$-1$</column></row>
+        <row><column>$x^2$</column><column align="right">$4\pi^2$</column><column align="right">$0$</column></row>
+        <row><column>$e^{-x}$</column><column align="right">$1$</column><column align="right">$e^{-2\pi}$</column></row>
+        <caption>Os extremos existem porque $[0, 2\pi]$ é compacto (<ref to="thm:weierstrass"/>).</caption>
+      </table>
+
+      O que falha sem compacidade? <hint><title>Dois exemplos</title>$f(x) = x$ em
+      $(0,1)$ é contínua e limitada, mas não atinge nem o supremo nem o ínfimo;
+      $f(x) = 1/x$ em $(0,1]$ nem limitada é.</hint> Weierstrass é o ponto de partida da
+      otimização em compactos <cite paper="rudin"/>, e a versão para espaços métricos
+      está em <cite paper="lima"/>.
+    </subsection>
+
+    <draft by="claude" note="falta decidir se esta parte entra">
+      A generalização para espaços topológicos compactos segue a mesma demonstração,
+      palavra por palavra, trocando "fechado e limitado" por "compacto".
+    </draft>
+  </section>
+
+  <section id="sec:revisao" numbered="false">
+    <title>Painel de revisão</title>
+    Tudo o que os dois autores deixaram neste arquivo, reunido: anotações, tarefas,
+    alterações e o estado de cada bloco. <c>delta build --final</c> remove essas marcas
+    e publica o artigo limpo.
+    <review/>
+  </section>
+
+  <bibliography src="refs.ref"/>
+</document>

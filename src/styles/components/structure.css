@@ -1,9 +1,7 @@
-/* structure.css — runhead, chapter front-matter, section/subsection headings,
-   and block display for the layout wrappers. Section headings are LIVE:
-   DeltaSection emits <h2 class="section"> / <h3 class="sub"> / <h4 class="subsub">
-   with a <span class="num"> pill. The runhead and front-matter elements
-   (delta-runhead / delta-eyebrow / delta-deck / delta-meta) are STAGED — their
-   rules are inert until those elements ship. Consumes tokens via var(--delta-*). */
+/* structure.css — chapter front-matter (<eyebrow>, <title>, <meta>), section and
+   subsection headings, and block display for the layout wrappers. DeltaSection emits
+   <h2 class="section"> / <h3 class="sub"> / <h4 class="subsub"> with a
+   <span class="num"> pill. Consumes tokens via var(--delta-*). */
 
 @layer delta.components {
 
@@ -48,6 +46,37 @@ delta-document > delta-title {
   margin: 14px 0 0;
   font-variation-settings: var(--delta-font-variation-display);
   text-wrap: balance;
+}
+/* A numbered chapter opens big: its numeral set large and light, beside a small-caps
+   "Chapter 2" over the title (section.ts adds .chapter-kicker and .chapter-name). */
+h1.chapter-title:has(> .chapter-kicker) {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: end;
+  column-gap: 28px;
+  row-gap: 12px;
+}
+h1.chapter-title > .num {
+  grid-row: 1 / 3;
+  font-size: 2.35em;
+  font-weight: 300;
+  line-height: 0.74;
+  letter-spacing: 0;
+  color: color-mix(in oklab, var(--delta-num) 35%, var(--delta-paper));
+}
+.chapter-kicker {
+  grid-column: 2;
+  font-size: 12px;
+  font-weight: var(--delta-weight-strong);
+  line-height: 1;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-variation-settings: normal;
+  color: var(--delta-accent-ink);
+}
+.chapter-name { grid-column: 2; }
+@media (max-width: 640px) {
+  h1.chapter-title:has(> .chapter-kicker) { column-gap: 16px; }
 }
 .chapter-title em,
 delta-document > delta-title em {
@@ -114,7 +143,7 @@ h3.sub {
    every level shares one consistent treatment. */
 h2.section .num,
 h3.sub .num,
-h4.subsub .num { color: var(--delta-num); margin-right: 0.4em; }
+h4.subsub .num { color: var(--delta-num); font-weight: 400; margin-right: 0.55em; }
 
 h4.subsub {
   font-family: var(--delta-serif);
@@ -171,63 +200,6 @@ delta-intro {
 }
 :is(delta-section, delta-subsection, delta-subsubsection) > delta-meta .v {
   color: var(--delta-ink-soft);
-}
-
-/* -- Running head ----------------------------------------------------- */
-.runhead {
-  position: sticky;
-  top: 0;
-  z-index: 40;
-  background: color-mix(in oklab, var(--delta-paper) 92%, transparent);
-  backdrop-filter: blur(8px) saturate(140%);
-  -webkit-backdrop-filter: blur(8px) saturate(140%);
-  border-bottom: var(--delta-hairline) solid var(--delta-rule-soft);
-}
-.runhead-inner {
-  max-width: var(--delta-page-max);
-  margin: 0 auto;
-  padding: 14px var(--delta-page-pad-x);
-  display: flex;
-  align-items: center;
-  gap: 28px;
-  font-family: var(--delta-sans);
-  font-size: 12px;
-  color: var(--delta-mute);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-.runhead-title {
-  color: var(--delta-ink);
-  font-family: var(--delta-serif);
-  text-transform: none;
-  letter-spacing: 0;
-  font-size: 15px;
-  font-weight: 500;
-}
-.runhead-spacer { flex: 1; }
-.runhead-nav {
-  display: flex;
-  gap: 22px;
-}
-.runhead-nav a {
-  color: var(--delta-mute);
-  text-decoration: none;
-  transition: color var(--delta-dur-fast) var(--delta-ease);
-}
-.runhead-nav a:hover,
-.runhead-nav a.is-current { color: var(--delta-ink); }
-.runhead-prog {
-  height: 2px;
-  width: 60px;
-  background: var(--delta-rule);
-  border-radius: 2px;
-  overflow: hidden;
-  position: relative;
-}
-.runhead-prog > i {
-  position: absolute;
-  inset: 0 auto 0 0;
-  background: var(--delta-accent-ink);
 }
 
 /* -- TEXT FORMATTING ----------------------------------------------------- */
@@ -299,8 +271,41 @@ delta-mark {
   :is(delta-page, delta-chapter) > delta-meta > delta-meta-item { min-width: 100%; }
 }
 
+/* -- A folded section: a dashed line standing in for its body --------------
+   section.ts adds a .section-fold to every collapsible heading; it shows only while
+   the section is folded: a dashed rule across the column right under the heading,
+   then a full block gap. The heading keeps something of its own under it, so the
+   text that follows reads as what comes next, not as its body. The line (a taller
+   hit area than it looks) unfolds the section; its title says what it hides. */
+.section-fold {
+  appearance: none;
+  display: none;
+  width: 100%;
+  height: 14px;
+  margin: -4px 0 calc(var(--delta-block-gap) - 4px);
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  color: var(--delta-rule);
+  transition: color var(--delta-dur-fast) var(--delta-ease);
+}
+.section-fold::before {
+  content: "";
+  display: block;
+  border-top: 1.5px dashed currentColor;
+}
+.is-collapsed > .section-fold { display: block; }
+.section-fold:hover { color: var(--delta-accent-ink); }
+.section-fold:focus-visible {
+  outline: 2px solid var(--delta-accent-ink);
+  outline-offset: 2px;
+  border-radius: var(--delta-radius-sm);
+}
+
 @media print {
   .runhead { display: none; }
+  .section-fold { display: none !important; }
 }
 
 }

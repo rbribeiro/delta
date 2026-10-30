@@ -1,4 +1,5 @@
-import { elements, type ElementNode } from "./ast";
+import { elements, type ElementNode } from "./ast.ts";
+import type { CompileContext } from "./context.ts";
 
 /**
  * `animated="true"` is authoring sugar for the reveal fragment system: it marks
@@ -18,7 +19,7 @@ import { elements, type ElementNode } from "./ast";
  */
 const NEVER_REVEAL = new Set(["title", "slide"]);
 
-export function expandAnimated(doc: ElementNode): void {
+export function expandAnimated(doc: ElementNode, _ctx: CompileContext): void {
   if (doc.attrs.type !== "presentation") return;
   for (const el of elements(doc)) {
     if (el.attrs.animated !== "true") continue;

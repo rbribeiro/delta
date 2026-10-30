@@ -1,0 +1,14 @@
+<bibliography>
+  <paper id="rudin">
+    <author>Walter Rudin</author>
+    <title>Principles of Mathematical Analysis</title>
+    <journal>McGraw-Hill, 3.ª ed.</journal>
+    <year>1976</year>
+  </paper>
+  <paper id="lima">
+    <author>Elon Lages Lima</author>
+    <title>Espaços Métricos</title>
+    <journal>Projeto Euclides, IMPA</journal>
+    <year>1977</year>
+  </paper>
+</bibliography>

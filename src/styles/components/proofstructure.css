@@ -1,0 +1,234 @@
+/* proofstructure.css — structured proofs (<step>/<claim>, the sheet's "Steps only · Full
+   proof" control), hypotheses (<hyp> and the "used in" facts its preview shows) and the
+   <counterexample> box. LIVE: runtime/elements/proofstructure.ts adds .step-num, .hyp-num
+   and .steps-control.
+
+   A top-level step of a proof's sheet (.step-pleat) is a pleat of that sheet: folded, its
+   header is the valley of a fold with the number and the claim printed on it and a
+   mountain under it, so the card's outline zig-zags (the box draws its edge as a filter,
+   theorems.css); laid flat, the header is a plain row over the step's proof. Its aids are
+   named folds (understanding.css) of the same sheet. Pleats run edge to edge across the
+   sheet's padding, and everything inside lines up on the claim column. Any other step
+   (a sub-step, a step in a preview) is flat: number, claim, proof right below.
+   Tokens via var(--delta-*). */
+
+@layer delta.components {
+
+delta-step {
+  display: block;
+  margin: 0.6em 0;
+}
+delta-step-claim {
+  display: block;
+}
+.step-num {
+  display: inline-block;
+  min-width: 2.2em;
+  font-family: var(--delta-sans);
+  font-size: 0.78em;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--delta-accent-ink);
+}
+delta-proof.step-body,
+delta-solution.step-body {
+  margin: 0;
+}
+
+/* -- A pleat of the sheet ------------------------------------------------ */
+delta-step.step-pleat {
+  --step-col: calc(var(--box-pad-x, 24px) + 28px); /* where the claim starts */
+  --pleat-inset: 12px;
+  --fold-bg: var(--box-well, var(--delta-env-well));
+  margin: 0; /* pleats meet the sheet's other parts edge to edge */
+}
+
+.step-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  padding: 14px 20px 12px var(--box-pad-x, 24px);
+  background: var(--fold-bg);
+  border-inline: var(--box-edge, 0 solid transparent);
+  border-top: var(--delta-hairline) solid var(--delta-rule-soft);
+  font-style: italic;
+  line-height: 1.4;
+  color: var(--delta-ink);
+  transition: color var(--delta-dur-fast) var(--delta-ease), filter var(--delta-dur-fast) var(--delta-ease);
+}
+.step-head > .step-num {
+  flex: none;
+  min-width: 0;
+  width: calc(var(--step-col) - var(--box-pad-x, 24px));
+  font-family: var(--delta-serif);
+  font-size: 0.82em;
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+}
+.step-text { flex: 1; min-width: 0; }
+.step-text > delta-step-claim { display: inline; }
+.step-head > .status-mark { margin-left: 12px; }
+.step-caret {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1em;
+  height: 1.1em;
+  margin-left: 12px;
+  align-self: center;
+  font-style: normal;
+  color: var(--delta-mute);
+}
+.step-caret::before { --wedge: 0.45em; }
+.step-head.collapse-toggle:hover .step-caret { color: var(--delta-accent-ink); }
+.step-head.collapse-toggle::before { content: none; }
+.step-head.collapse-toggle:hover { color: var(--delta-accent-ink); }
+.step-head.collapse-toggle:focus-visible { outline-offset: -2px; border-radius: 0; }
+.step-mountain { display: none; }
+/* Right under the bar, the bar's own rule is enough. */
+.collapse-body > .step-pleat:first-child > .step-head { border-top: 0; }
+
+/* Folded: the header becomes the valley (lit at the top, shadowed into the crease), the
+   mountain comes back out under it. */
+.step-pleat.is-collapsed > .step-head {
+  padding: 10px calc(20px + var(--pleat-inset)) 9px var(--box-pad-x, 24px);
+  border: 0;
+  background: linear-gradient(to bottom, var(--delta-fold-lit), var(--delta-fold-shade-2) 55%, var(--delta-fold-shade)),
+              var(--fold-bg);
+  clip-path: polygon(0 0, 100% 0, calc(100% - var(--pleat-inset)) 100%, var(--pleat-inset) 100%);
+  color: var(--delta-ink-soft);
+}
+.step-pleat.is-collapsed > .step-head:hover { filter: brightness(1.03); }
+.step-pleat.is-collapsed > .step-mountain {
+  display: block;
+  height: 9px;
+  background: linear-gradient(to bottom, var(--delta-fold-shade-2), transparent 60%), var(--fold-bg);
+  clip-path: polygon(var(--pleat-inset) 0, calc(100% - var(--pleat-inset)) 0, 100% 100%, 0 100%);
+}
+.step-pleat.is-collapsed > .step-body { display: none; }
+
+/* Flat: the step's proof on the claim column. */
+.step-pleat > .step-body {
+  position: relative;
+  padding: 0 var(--box-pad-x, 24px) 16px var(--step-col);
+  background: var(--fold-bg);
+  border-inline: var(--box-edge, 0 solid transparent);
+}
+.step-pleat > .folds + .step-body { padding-top: 14px; }
+.step-pleat > .step-body > :first-child { margin-top: 0; }
+.step-pleat > .step-body > :last-child { margin-bottom: 0; }
+
+/* The paper unfolding, and folding back (the crease keyframes are understanding.css's). */
+.step-pleat.is-unfolding > .step-body {
+  overflow: hidden;
+  transform-origin: top center;
+  animation: step-unfold .55s cubic-bezier(.2, .7, .25, 1);
+}
+.step-pleat.is-refolding > .step-body {
+  overflow: hidden;
+  transform-origin: top center;
+  animation: step-refold .38s cubic-bezier(.55, 0, .8, .3) forwards;
+}
+@keyframes step-unfold {
+  0%   { max-height: 0; opacity: .3;
+         clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 50%, 100% 100%, 0 100%, 12px 50%); }
+  55%  { clip-path: polygon(0 0, 100% 0, calc(100% - 4px) 50%, 100% 100%, 0 100%, 4px 50%); }
+  100% { max-height: 100vh; opacity: 1;
+         clip-path: polygon(0 0, 100% 0, 100% 50%, 100% 100%, 0 100%, 0 50%); }
+}
+@keyframes step-refold {
+  0%   { max-height: 520px; opacity: 1;
+         clip-path: polygon(0 0, 100% 0, 100% 50%, 100% 100%, 0 100%, 0 50%); }
+  100% { max-height: 0; opacity: .2;
+         clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 50%, 100% 100%, 0 100%, 12px 50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .step-pleat > .step-body { animation: none !important; }
+}
+
+/* -- Flat steps: a sub-step, a step in a preview -------------------------- */
+delta-step:not(.step-pleat) > delta-step-claim,
+delta-step:not(.step-pleat) > delta-change delta-step-claim {
+  font-style: italic;
+}
+delta-step:not(.step-pleat) > .step-body {
+  margin: 0.25em 0 0 2.2em;
+  font-size: 0.97em;
+}
+.step-pleat delta-step:not(.step-pleat) { margin: 0.8em 0; }
+
+/* -- "Steps only · Full proof", in the sheet's bar ------------------------ */
+.steps-control {
+  display: inline-flex;
+  gap: 14px;
+  margin-left: auto;
+  font-style: normal;
+}
+.steps-control button {
+  appearance: none;
+  margin: 0;
+  padding: 0 0 3px;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: none;
+  cursor: pointer;
+  font-family: var(--delta-serif);
+  font-size: 10.5px;
+  font-weight: var(--delta-weight-strong);
+  line-height: 1;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--delta-mute);
+}
+.steps-control button:hover { color: var(--delta-ink-soft); }
+.steps-control button[aria-pressed="true"] {
+  color: var(--delta-ink);
+  border-bottom-color: var(--delta-ink);
+}
+.steps-control button:focus-visible {
+  outline: 2px solid var(--delta-accent-ink);
+  outline-offset: 2px;
+}
+.proof-bar > .steps-control + .status-mark { margin-left: 0; }
+.is-collapsed > .proof-bar .steps-control { visibility: hidden; }
+
+@media print {
+  .step-pleat.is-collapsed > .step-body { display: block; }
+  .step-pleat.is-collapsed > .step-head {
+    background: none;
+    clip-path: none;
+    border-top: var(--delta-hairline) solid var(--delta-rule-soft);
+  }
+  .step-pleat.is-collapsed > .step-mountain,
+  .step-caret,
+  .steps-control { display: none; }
+}
+
+/* -- Hypotheses ---------------------------------------------------------- */
+.hyp-num {
+  font-family: var(--delta-sans);
+  font-size: 0.8em;
+  font-weight: 600;
+  color: var(--delta-accent-ink);
+}
+/* What a hypothesis's preview adds: hidden in the page, shown when the hypothesis is the
+   previewed target itself (not when it rides inside a previewed result). */
+delta-hyp-uses { display: none; }
+.xref-pop-body > delta-hyp > delta-hyp-uses {
+  display: block;
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: var(--delta-hairline) solid var(--delta-rule-soft);
+  font-family: var(--delta-sans);
+  font-size: 12.5px;
+  color: var(--delta-ink-soft);
+}
+delta-hyp-used, delta-hyp-needed, delta-hyp-unused { display: block; }
+delta-hyp-unused { color: var(--delta-proof-alert); }
+.hyp-uses-label { color: var(--delta-mute); }
+delta-hyp-used > :not(.hyp-uses-label) + :not(.hyp-uses-label)::before,
+delta-hyp-needed > :not(.hyp-uses-label) + :not(.hyp-uses-label)::before { content: ", "; }
+
+}

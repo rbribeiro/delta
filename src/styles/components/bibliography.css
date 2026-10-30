@@ -65,6 +65,13 @@ delta-cite { display: inline; }
   font-variant-numeric: tabular-nums;
 }
 .cite-pop-num:hover { text-decoration: underline; }
-.cite-pop-text { color: var(--delta-ink-soft); }
+/* A long URL, word or inline formula must break inside the card: as a flex item the
+   text would otherwise be at least its longest unbreakable run wide, and drag every
+   other line of the entry (the title) out past the card's edge with it. */
+.cite-pop-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--delta-ink-soft);
+}
 
 }

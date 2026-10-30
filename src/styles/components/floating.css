@@ -3,7 +3,7 @@
    is pinned bottom-right; the panel composes on top of the shared .delta-pop bubble
    (popover.css) — Delta.popover sets its position and toggles visibility — so this only
    adds sizing, the header (.floating-hd / .floating-x) and the scrollable body
-   (.floating-body). Tokens via var(--delta-*); modeled on the staged .twk-* chrome. */
+   (.floating-body). Tokens via var(--delta-*); modeled on the .twk-* chrome in styles/staged/tweaks.css. */
 
 @layer delta.components {
 

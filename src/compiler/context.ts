@@ -1,10 +1,10 @@
 /******************************************************************************
- * The mutable context threaded through every pass and into the emitter. 
- * Passes communicate through it (and through node attrs). Nothing else is shared. 
-**** ***********************/
+ * The mutable context threaded through every pass and into the emitter.
+ * Passes communicate through it (and through node attrs). Nothing else is shared.
+ **** ***********************/
 
 import { resolve } from "node:path";
-import type { ElementNode, Node, Position } from "./ast";
+import type { ElementNode, Node, Position } from "./ast.ts";
 
 export interface Diagnostic {
   severity: "error" | "warning";
@@ -51,22 +51,91 @@ export interface ImportEntry {
   tags?: string[];
 }
 
+/** One collaborator declared in `<team>`; the runtime colors/badges `by`/`for` chips from it. */
+export interface TeamMember {
+  id: string;
+  name: string;
+  kind: "human" | "agent";
+  /** A base.css accent palette name (`blue`, `purple`, …), explicit or round-robin assigned. */
+  color: string;
+}
+
+/** The nearest enclosing heading of a review item ("where is this?" in the panel / CLI). */
+export interface ReviewHeading {
+  level: number;
+  num: string;
+  id: string;
+  /** Inline title children, serialized by emit (keeps math). */
+  title: Node[];
+}
+
+/** A `<reply>` inside a `<comment>`. */
+export interface ReviewReply {
+  by?: string;
+  date?: string;
+  /** Plain-text rendering (math kept as `$…$`) for the CLI report and "copy as text". */
+  text: string;
+  /** Live child nodes, serialized by emit for the panel. */
+  body: Node[];
+}
+
+/**
+ * One collaboration item collected by `buildReview`: a `<comment>`, a `<todo>`, a
+ * `<change>`, or any block carrying `status`/`by`/`verified-by` (incl. `<draft>`).
+ * Shipped as the `#delta-review` island (panel) and printed by `delta review` (CLI).
+ */
+export interface ReviewItem {
+  kind: "comment" | "todo" | "change" | "status";
+  id: string;
+  /** Source tag: `comment`/`todo`/`change`, or the block's own tag (`proof`, `section`, `draft`…). */
+  tag: string;
+  num?: string;
+  status: string;
+  by?: string;
+  for?: string;
+  verifiedBy?: string;
+  date?: string;
+  due?: string;
+  priority?: string;
+  changeKind?: "insert" | "delete" | "replace";
+  note?: string;
+  /** Anchor id (`on="…"`) when the item is attached to another element. */
+  on?: string;
+  /** Plain-text rendering (math kept as `$…$`). */
+  text: string;
+  /** Live child nodes (the comment/task text, the changed content, a block's title). */
+  body: Node[];
+  replies?: ReviewReply[];
+  heading?: ReviewHeading;
+  /** Home output ("chapter2.html") when the item lives in *another* output of a project. */
+  file?: string;
+}
+
+/** What `compileFile`/`compileProject` hand the CLI for `delta review`: the team + every item. */
+export interface ReviewData {
+  team: TeamMember[];
+  items: ReviewItem[];
+}
+
 export interface CompileContext {
   file: string;
-  /** Output basename for this file (e.g. "chapter1.html"); set only on the project path. */
+  /** file → its original text, for every file `parseSource` read (the master and its includes). */
+  sources: Map<string, string>;
+  /** Output basename for this file (e.g. "chapter1.html"), set by the pipeline runner for every build. */
   outName?: string;
   diagnostics: Diagnostic[];
-  /** id → numbering info; written by numbering, read by the reference pass. 
+  /** id → numbering info; written by numbering, read by the reference pass.
    * Uses Map that is more efficient than Record<string, LabelEntry> for large documents with many labels.
-  */
+   */
   registry: Map<string, LabelEntry>;
-  /** Target ids that a `<ref>` (or other element that references another one) resolved to; emit snapshots each into a `<template>`. 
-   * So custom elements can use them at runtime as, for instance, pop-overs.
-  */
+  /** Target ids something in this file points at: a `<ref>`/`<solution of>`/`<proof of>` (references.ts),
+   *  a `<cite>` (bibliography.ts) or a `\ref{}` inside math (math.ts). Emit snapshots each into a
+   *  `<template>` so the runtime can show a pop-over without fetching. */
   referencedIds: Set<string>;
   /** Heading tree for the table of contents; built by `buildToc`, emit ships it as a JSON island. */
   toc: TocEntry[];
-  /** Set by the math pass; gates inlining KaTeX CSS (~1 MB with embedded fonts). */
+  /** Set by the math pass, and by emit when a snapshot, ToC title or review item carries math rendered
+   *  in another file; gates inlining KaTeX CSS (~1 MB with embedded fonts). */
   mathUsed: boolean;
   /** Document `lang` (raw author value, default "en"); drives i18n and `<html lang>`. */
   lang: string;
@@ -83,6 +152,14 @@ export interface CompileContext {
   papers: Map<string, ElementNode>;
   /** Cited paper ids in first-cite order; index+1 is the citation number. */
   citedPapers: string[];
+
+  /** Collaborators from `<team>` (id → member); shared across a project like `registry`. */
+  team: Map<string, TeamMember>;
+  /** Collaboration items collected by `buildReview` (comments, tasks, changes, status blocks);
+   *  emit ships them as the `#delta-review` island, the CLI prints them. */
+  review: ReviewItem[];
+  /** `--final`: strip every collaboration mark so the output is the clean publication. */
+  final: boolean;
 
   themeAccent?: string;
   /** Color mode from `<document theme-mode>` (`dark` | `auto`); drives `data-mode` on
@@ -107,7 +184,11 @@ export function createContext(file: string): CompileContext {
     imports: [],
     papers: new Map(),
     citedPapers: [],
+    team: new Map(),
+    review: [],
+    final: false,
     deps: new Set(),
+    sources: new Map(),
   };
 }
 
@@ -116,12 +197,14 @@ export function addDep(ctx: CompileContext, p: string): void {
   ctx.deps.add(resolve(p));
 }
 
+// A position carries the file it was parsed from, so a node spliced in by <include> is
+// reported against its own file rather than the master document.
 export function error(ctx: CompileContext, message: string, pos?: Position): void {
-  ctx.diagnostics.push({ severity: "error", message, file: ctx.file, pos });
+  ctx.diagnostics.push({ severity: "error", message, file: pos?.file ?? ctx.file, pos });
 }
 
 export function warn(ctx: CompileContext, message: string, pos?: Position): void {
-  ctx.diagnostics.push({ severity: "warning", message, file: ctx.file, pos });
+  ctx.diagnostics.push({ severity: "warning", message, file: pos?.file ?? ctx.file, pos });
 }
 
 export function hasErrors(ctx: CompileContext): boolean {

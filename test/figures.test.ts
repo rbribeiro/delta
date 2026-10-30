@@ -1,18 +1,15 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { describe, expect, it } from "vitest";
-import { elements, type ElementNode } from "../src/compiler/ast";
-import { createContext, type CompileContext } from "../src/compiler/context";
-import { inlineFigures } from "../src/compiler/figures";
-import { compileSource } from "../src/compiler/index";
-import { parse } from "../src/compiler/parse";
-import { preprocess } from "../src/compiler/preprocess";
+import { describe, expect, it } from "./harness.ts";
+import { elements, type ElementNode } from "../src/compiler/ast.ts";
+import { createContext, type CompileContext } from "../src/compiler/context.ts";
+import { inlineFigures } from "../src/compiler/figures.ts";
+import { compileSource } from "../src/compiler/index.ts";
+import { parsed } from "./helpers.ts";
 
 // ctx.file lives in test/, so a figure `src` resolves relative to test/.
 function inlined(src: string): { doc: ElementNode; ctx: CompileContext } {
-  const ctx = createContext("test/doc.dlt");
-  const doc = parse(preprocess(src), ctx);
-  if (!doc) throw new Error("parse failed: " + JSON.stringify(ctx.diagnostics));
+  const { doc, ctx } = parsed(src, "test/doc.dlt");
   inlineFigures(doc, ctx);
   return { doc, ctx };
 }

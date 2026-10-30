@@ -1,10 +1,10 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { createRequire } from "node:module";
 import { basename, dirname, resolve } from "node:path";
-import type { ElementNode, Position } from "./ast";
-import { addDep, warn, error, type CompileContext, type ImportEntry } from "./context";
-import { EXTERNAL_REF } from "./theme";
-
+import type { ElementNode, Position } from "./ast.ts";
+import { addDep, warn, error, type CompileContext, type ImportEntry } from "./context.ts";
+import { EXTERNAL_REF } from "./theme.ts";
+import { isRemote, readUserFile } from "./files.ts";
 
 const JS_EXTERNAL_REF = /\bfetch\s*\(|\bimport\s*\(|https?:\/\//i;
 
@@ -32,8 +32,8 @@ interface PackManifest {
  * available) and the CSS before the author theme. The `<import>` nodes are stripped so they never
  * serialize as `<delta-import>`. Document-level only — no tree walk.
  *
- * The shared resolution lives in `resolvePack`, which `project.ts` also calls for `project.toml`
- * `packages`, so all channels feed the one inliner. The output references nothing external: pack
+ * The shared resolution lives in `resolvePack`, which the pipeline's `resolvePackages` step also
+ * calls for `project.toml` `packages`, so all channels feed the one inliner. The output references nothing external: pack
  * files are inlined, an external reference inside one (via `fetch()`, `import()`, or `http(s)://`)
  * is a warning. A `src`-less import warns; an unresolvable pack is an error.
  *
@@ -46,13 +46,11 @@ export function resolveImports(doc: ElementNode, ctx: CompileContext): void {
   );
   if (imports.length === 0) return;
   // Strip every <import> so none survive into the output as <delta-import>.
-  doc.children = doc.children.filter(
-    (c) => !(c.type === "element" && c.tag === "import"),
-  );
+  doc.children = doc.children.filter((c) => !(c.type === "element" && c.tag === "import"));
 
   const baseDir = resolve(dirname(ctx.file));
   // Dedup by absolute entry path, seeded with packages already on ctx.imports (e.g. injected
-  // project-wide by project.ts) so the same pack reached through two channels inlines once.
+  // project-wide by the pipeline) so the same pack reached through two channels inlines once.
   const seen = new Set(ctx.imports.map((i) => i.source));
   for (const node of imports) {
     const src = node.attrs.src;
@@ -84,7 +82,7 @@ export function resolvePack(
   seen: Set<string>,
   pos?: Position,
 ): void {
-  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(spec)) {
+  if (isRemote(spec)) {
     warn(ctx, `import src must be a local path or package name, not a URL: ${spec}`, pos);
     return;
   }
@@ -108,8 +106,7 @@ export function resolvePack(
   // Dependencies first, so a pack that `needs` another inlines after it.
   for (const need of manifest.needs ?? []) resolvePack(need, dir, ctx, seen, pos);
 
-  const js = readFileSync(jsPath, "utf8");
-  addDep(ctx, jsPath);
+  const js = readUserFile(ctx, jsPath);
   if (JS_EXTERNAL_REF.test(js)) {
     warn(ctx, `import '${spec}' references an external resource; output may not work offline`, pos);
   }
@@ -118,10 +115,13 @@ export function resolvePack(
   const cssPath = resolve(dir, cssRel);
   let css: string | undefined;
   if (existsSync(cssPath)) {
-    css = readFileSync(cssPath, "utf8");
-    addDep(ctx, cssPath);
+    css = readUserFile(ctx, cssPath);
     if (EXTERNAL_REF.test(css)) {
-      warn(ctx, `import theme '${spec}/${cssRel}' references an external resource; output may not work offline`, pos);
+      warn(
+        ctx,
+        `import theme '${spec}/${cssRel}' references an external resource; output may not work offline`,
+        pos,
+      );
     }
   } else if (manifest.css !== undefined) {
     // The default theme.css is optional, but a manifest that names a css file means it.
@@ -151,7 +151,11 @@ function resolvePackDir(
     const require = createRequire(resolve(baseDir, "noop.js"));
     return dirname(require.resolve(`${spec}/package.json`));
   } catch {
-    error(ctx, `import pack not found: ${spec} (not a local folder, and not installed in node_modules)`, pos);
+    error(
+      ctx,
+      `import pack not found: ${spec} (not a local folder, and not installed in node_modules)`,
+      pos,
+    );
     return undefined;
   }
 }

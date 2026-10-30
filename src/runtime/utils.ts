@@ -6,8 +6,11 @@
  * under the trigger — flipping above when the room below runs out, capping the
  * bubble's height to the roomier side (content with a scroll container scrolls
  * internally), clamping on-screen on both axes, pointing the caret (`--arrow-x`)
- * at the trigger, re-anchoring on scroll/resize, and dismissing on Esc or
- * outside-click. Only one popover is
+ * at the trigger, following it while open (checked every frame, so no missed
+ * scroll event can leave the bubble behind; it closes once the trigger leaves the
+ * viewport), and dismissing on Esc, outside-click or a second click. With
+ * `hover: true`, a mouse opens it by resting on the trigger and closes it by leaving
+ * both trigger and bubble; a click pins it; touch still taps. Only one popover is
  * open at a time. It uses the Popover API (real top layer) where available and
  * falls back to a fixed-positioned `.is-open` toggle otherwise. Build or refresh
  * the bubble in the `onOpen` hook. The shared look lives in
@@ -23,6 +26,11 @@ export interface PopoverOptions {
   gap?: number;
   /** Wire a click on the trigger to toggle the bubble. Default true. */
   triggerClick?: boolean;
+  /**
+   * Also open on hover where the device has a mouse: resting on the trigger opens the
+   * bubble, leaving both trigger and bubble closes it, a click pins it open. Default false.
+   */
+  hover?: boolean;
 }
 
 export interface Popover {
@@ -36,8 +44,13 @@ export interface Popover {
   destroy(): void;
 }
 
-const HAS_POPOVER = typeof HTMLElement !== "undefined" && "popover" in HTMLElement.prototype;
+// `showPopover`, not the `popover` property: an engine can know the attribute without
+// implementing the methods (older browsers, DOM emulators), and then nothing would open.
+const HAS_POPOVER =
+  typeof HTMLElement !== "undefined" && typeof HTMLElement.prototype.showPopover === "function";
 const EDGE = 8; // keep the bubble at least this far from the viewport edges
+const HOVER_OPEN_MS = 120; // how long the mouse rests on a trigger before the bubble opens
+const HOVER_CLOSE_MS = 160; // grace for the trip from the trigger into the bubble
 const CARET_INSET = 12; // keep the caret this far from the bubble's corners
 
 // Only one popover open at a time: the currently-open instance's close fn.
@@ -48,7 +61,7 @@ export function popover(
   content: HTMLElement,
   options: PopoverOptions = {},
 ): Popover {
-  const { onOpen, onClose, gap = 10, triggerClick = true } = options;
+  const { onOpen, onClose, gap = 10, triggerClick = true, hover = false } = options;
 
   content.classList.add("delta-pop");
   // The Popover API gives us a real top layer; "manual" means we own dismissal
@@ -71,6 +84,7 @@ export function popover(
     const roomAbove = tr.top - gap - EDGE;
 
     content.style.maxHeight = ""; // measure the natural height (un-cap after a resize)
+    content.classList.remove("is-capped");
     let cr = content.getBoundingClientRect();
 
     // Flip above when it doesn't fit below and there is more room above —
@@ -81,6 +95,7 @@ export function popover(
       // Cap to the available room; content with a scroll container (.floating-body,
       // .xref-pop-body) scrolls internally instead of leaving the viewport.
       content.style.maxHeight = `${Math.max(0, Math.floor(room))}px`;
+      content.classList.add("is-capped"); // the shell scrolls (popover.css)
       cr = content.getBoundingClientRect();
     }
     content.classList.toggle("is-above", above);
@@ -100,7 +115,31 @@ export function popover(
     content.style.setProperty("--arrow-x", `${Math.round(caret)}px`);
   }
 
-  const onScrollResize = (): void => position();
+  // Keep up with the trigger: re-anchor when it moved, close once it left the viewport.
+  // Scrolling and resizing call it, and so does a per-frame check while open (`follow`),
+  // so neither a missed scroll event nor a layout shift can leave the bubble behind.
+  let last = "";
+  const track = (): boolean => {
+    if (!isOpen) return false;
+    const r = trigger.getBoundingClientRect();
+    const vh = document.documentElement.clientHeight;
+    if (r.bottom < 0 || r.top > vh || (r.width === 0 && r.height === 0)) {
+      close();
+      return false;
+    }
+    const at = `${r.left},${r.top},${r.width},${r.height}`;
+    if (at !== last) {
+      last = at;
+      position();
+    }
+    return true;
+  };
+  const onScrollResize = (): void => void track();
+  // Content that changes size while open (a ref preview unfolding an aid) re-anchors,
+  // so a bubble above its trigger grows upward instead of over it. position() settles
+  // the size it sets, so this does not loop.
+  const sizeWatch =
+    typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => isOpen && position()) : null;
   const onKeydown = (e: KeyboardEvent): void => {
     if (e.key === "Escape") close();
   };
@@ -109,40 +148,74 @@ export function popover(
     if (!content.contains(target) && !trigger.contains(target)) close();
   };
 
+  let frame = 0;
+  const follow = (): void => {
+    if (track()) frame = requestAnimationFrame(follow);
+  };
+
+  // Hover: who opened it, and whether the mouse is still on the trigger or the bubble.
+  let byHover = false;
+  let hoverTimer: number | undefined;
+  const canHover =
+    hover && typeof matchMedia === "function" && matchMedia("(hover: hover) and (pointer: fine)").matches;
+  const near = (x: number, y: number): boolean =>
+    [trigger, content].some((el) => {
+      const r = el.getBoundingClientRect();
+      const pad = gap + 2; // the gap the mouse crosses on its way into the bubble
+      return x >= r.left - pad && x <= r.right + pad && y >= r.top - pad && y <= r.bottom + pad;
+    });
+  const onPointerMove = (e: PointerEvent): void => {
+    if (!byHover || e.pointerType !== "mouse") return;
+    clearTimeout(hoverTimer);
+    hoverTimer = undefined;
+    if (!near(e.clientX, e.clientY)) hoverTimer = window.setTimeout(close, HOVER_CLOSE_MS);
+  };
+
   function open(): void {
     if (isOpen) return;
     if (closeOpen && closeOpen !== close) closeOpen(); // one at a time
-    onOpen?.(content, trigger);
-    if (HAS_POPOVER) content.showPopover();
-    else content.classList.add("is-open");
-    position(); // synchronous → positioned before the first paint, no flash
-
-    window.addEventListener("scroll", onScrollResize, { capture: true, passive: true });
-    window.addEventListener("resize", onScrollResize);
-    document.addEventListener("keydown", onKeydown);
-    // Defer outside-click wiring so the opening click doesn't immediately close it.
-    setTimeout(() => document.addEventListener("pointerdown", onPointerDown), 0);
-
+    // State and dismissal first: whatever happens while showing, the bubble can be closed.
     isOpen = true;
     closeOpen = close;
     trigger.setAttribute("aria-expanded", "true");
+    window.addEventListener("scroll", onScrollResize, { capture: true, passive: true });
+    window.addEventListener("resize", onScrollResize);
+    document.addEventListener("keydown", onKeydown);
+    document.addEventListener("pointermove", onPointerMove, { passive: true });
+    // Defer outside-click wiring so the opening click doesn't immediately close it.
+    setTimeout(() => isOpen && document.addEventListener("pointerdown", onPointerDown), 0);
+
+    onOpen?.(content, trigger);
+    if (HAS_POPOVER) {
+      if (!content.matches(":popover-open")) content.showPopover();
+    } else content.classList.add("is-open");
+    position(); // synchronous → positioned before the first paint, no flash
+    sizeWatch?.observe(content);
+    last = "";
+    frame = requestAnimationFrame(follow);
   }
 
   function close(): void {
     if (!isOpen) return;
+    isOpen = false;
+    byHover = false;
+    clearTimeout(hoverTimer);
+    hoverTimer = undefined;
+    cancelAnimationFrame(frame);
     if (HAS_POPOVER) {
       if (content.matches(":popover-open")) content.hidePopover();
     } else {
       content.classList.remove("is-open");
     }
-    content.classList.remove("is-above");
+    content.classList.remove("is-above", "is-capped");
 
     window.removeEventListener("scroll", onScrollResize, { capture: true } as EventListenerOptions);
     window.removeEventListener("resize", onScrollResize);
     document.removeEventListener("keydown", onKeydown);
     document.removeEventListener("pointerdown", onPointerDown);
+    document.removeEventListener("pointermove", onPointerMove);
+    sizeWatch?.disconnect();
 
-    isOpen = false;
     if (closeOpen === close) closeOpen = null;
     trigger.setAttribute("aria-expanded", "false");
     onClose?.(content, trigger);
@@ -161,13 +234,42 @@ export function popover(
     });
   }
 
+  // A click toggles; on a bubble the mouse opened by resting there, it pins it instead.
+  // It stays the trigger's own: a ref in a box header must not also fold the box.
   const onTriggerClick = (e: Event): void => {
     e.preventDefault();
-    toggle();
+    e.stopPropagation();
+    if (isOpen && byHover) {
+      byHover = false;
+      clearTimeout(hoverTimer);
+      hoverTimer = undefined;
+    } else toggle();
   };
   if (triggerClick) {
     trigger.addEventListener("click", onTriggerClick);
     trigger.setAttribute("aria-expanded", "false");
+  }
+
+  const onEnter = (e: PointerEvent): void => {
+    if (e.pointerType !== "mouse" || isOpen) return;
+    clearTimeout(hoverTimer);
+    hoverTimer = window.setTimeout(() => {
+      hoverTimer = undefined;
+      if (isOpen) return;
+      open();
+      byHover = true;
+    }, HOVER_OPEN_MS);
+  };
+  const onLeave = (e: PointerEvent): void => {
+    // Left before the bubble opened: never mind. Once open, pointermove decides.
+    if (e.pointerType === "mouse" && !isOpen) {
+      clearTimeout(hoverTimer);
+      hoverTimer = undefined;
+    }
+  };
+  if (canHover) {
+    trigger.addEventListener("pointerenter", onEnter);
+    trigger.addEventListener("pointerleave", onLeave);
   }
 
   return {
@@ -181,6 +283,8 @@ export function popover(
     destroy() {
       close();
       if (triggerClick) trigger.removeEventListener("click", onTriggerClick);
+      trigger.removeEventListener("pointerenter", onEnter);
+      trigger.removeEventListener("pointerleave", onLeave);
       content.remove();
     },
   };

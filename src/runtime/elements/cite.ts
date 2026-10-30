@@ -9,8 +9,8 @@
  * A cite whose ids were all unknown stays inert.
  */
 
-import { popover } from "../utils";
-import { flashTarget, formatPaper } from "./shared";
+import { popover } from "../utils.ts";
+import { formatPaper, linkJump, templateFor } from "./shared.ts";
 
 class DeltaCite extends HTMLElement {
   connectedCallback(): void {
@@ -45,6 +45,7 @@ class DeltaCite extends HTMLElement {
     card.className = "cite-pop";
     let filled = false;
     const pop = popover(cite, card, {
+      hover: true,
       onOpen: () => {
         if (filled) return;
         filled = true;
@@ -55,19 +56,10 @@ class DeltaCite extends HTMLElement {
           numEl.className = "cite-pop-num";
           numEl.href = citeFile ? `${citeFile}#${id}` : `#${id}`;
           numEl.textContent = `[${nums[i]}]`;
-          numEl.addEventListener("click", (e) => {
-            pop.close(); // dismiss the card, then jump — like DeltaRef's go button
-            if(window.Delta?.deck?.goToId(id)) return; // in a deck, page to the target's slide
-            if (citeFile) return; // cross-file: let the browser navigate to the other output
-            e.preventDefault();
-            flashTarget(id);
-          });
+          linkJump(numEl, id, citeFile, { before: () => pop.close() }); // close the card, then jump
           const text = document.createElement("span");
           text.className = "cite-pop-text";
-          const tpl = [...document.querySelectorAll("template[data-delta-pop]")].find(
-            (el) => (el as HTMLTemplateElement).dataset.deltaPop === id,
-          ) as HTMLTemplateElement | undefined;
-          const paper = tpl?.content.querySelector("delta-paper");
+          const paper = templateFor(id)?.content.querySelector("delta-paper");
           if (paper) text.append(formatPaper(paper));
           item.append(numEl, text);
           card.append(item);
@@ -78,5 +70,5 @@ class DeltaCite extends HTMLElement {
 }
 
 export function defineCite(): void {
-  customElements.define("delta-cite", class extends DeltaCite {});
+  customElements.define("delta-cite", DeltaCite);
 }

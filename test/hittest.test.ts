@@ -1,10 +1,6 @@
-import { execFileSync } from "node:child_process";
-import { mkdtempSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { describe, expect, it } from "vitest";
-import { createContext } from "../src/compiler/context";
-import { compileSource } from "../src/compiler/index";
+import { describe, expect, it } from "./harness.ts";
+import { BROWSER, evaluate } from "./browser.ts";
+import { compileHtml } from "./helpers.ts";
 
 /**
  * Hit-testing regression guard — the ONE thing a DOM shim cannot check.
@@ -20,49 +16,6 @@ import { compileSource } from "../src/compiler/index";
  * machine with no Chromium rather than pretend this was verified.
  */
 
-function findBrowser(): string | undefined {
-  if (process.env.CHROME_PATH) return process.env.CHROME_PATH;
-  for (const cmd of ["chromium", "chromium-browser", "google-chrome-stable", "google-chrome"]) {
-    try {
-      // `which` rather than a shell, so no argument concatenation is involved.
-      const p = execFileSync("which", [cmd], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
-      if (p.trim()) return p.trim();
-    } catch {
-      /* not installed — try the next one */
-    }
-  }
-  return undefined;
-}
-
-const BROWSER = findBrowser();
-
-/** Renders `html` with `probe` appended, and returns whatever the probe puts in document.title. */
-function evaluate(html: string, probe: string): string {
-  const dir = mkdtempSync(join(tmpdir(), "delta-hittest-"));
-  const file = join(dir, "page.html");
-  writeFileSync(
-    file,
-    html.replace(
-      "</body>",
-      `<script>window.addEventListener("load",()=>{setTimeout(()=>{${probe}},350);});</script></body>`,
-    ),
-  );
-  const dom = execFileSync(
-    BROWSER!,
-    [
-      "--headless=new",
-      "--no-sandbox",
-      "--disable-gpu",
-      "--virtual-time-budget=2500",
-      "--window-size=1200,900",
-      "--dump-dom",
-      `file://${file}`,
-    ],
-    { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], maxBuffer: 64 * 1024 * 1024 },
-  );
-  return dom.match(/RESULT::([^<]*)/)?.[1] ?? "";
-}
-
 // `&` is written bare: <equations> is a RAW_TAG, so preprocess entity-escapes it.
 const DOC = `<document lang="en">
   <title>T</title>
@@ -77,12 +30,7 @@ const DOC = `<document lang="en">
   </section>
 </document>`;
 
-function compile(): string {
-  const ctx = createContext("test/doc.dlt");
-  const html = compileSource(DOC, ctx);
-  if (!html) throw new Error("compile failed: " + JSON.stringify(ctx.diagnostics));
-  return html;
-}
+const compile = (): string => compileHtml(DOC, { file: "test/doc.dlt" });
 
 describe.skipIf(!BROWSER)("in-math \\ref markers are actually clickable", () => {
   it("owns the pixels across its own box, in display and inline math", () => {
@@ -134,5 +82,164 @@ describe.skipIf(!BROWSER)("in-math \\ref markers are actually clickable", () => 
        document.title="RESULT::focusable="+focused+",space="+(open()>0);`,
     );
     expect(out).toBe("focusable=true,space=true");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Collaboration components: the marker/popover/relocation wiring and the
+// document-wide review switch are DOM behaviour, so they are checked here too.
+
+const COLLAB_DOC = `<document lang="en">
+  <title>T</title>
+  <team>
+    <member id="rb" name="Rodrigo" color="blue"/>
+    <member id="ai" name="Claude" kind="agent" color="purple"/>
+  </team>
+  <section id="s"><title>S</title>
+    Some prose.<comment id="c-inline" by="ai" date="2026-09-12">Inline note with $x$.
+      <reply by="rb">Reply.</reply></comment>
+    <theorem id="thm" status="review" by="ai"><title>Main</title>body</theorem>
+    <comment id="c-on" on="thm" by="rb" status="resolved">Anchored note.</comment>
+    <proof of="thm" status="sketch" by="ai">sketchy</proof>
+    <todo id="t1" for="ai" priority="high">Finish the proof.</todo>
+    <draft by="ai" note="loose">Loose prose.</draft>
+    Then <change id="ch1" by="ai" date="2026-09-12" note="sign"><old>$x < 0$</old><new>$x > 0$</new></change> holds.
+    <change id="ch2" by="rb"><lemma id="new-lemma">Inserted lemma.</lemma></change>
+  </section>
+</document>`;
+
+const compileSrc = (src: string): string => compileHtml(src, { file: "test/doc.dlt" });
+
+describe.skipIf(!BROWSER)("collaboration runtime", () => {
+  it("opens a comment thread from its marker, with the author chip in the member's color", () => {
+    const out = evaluate(
+      compileSrc(COLLAB_DOC),
+      `const m=document.querySelector('#c-inline .note-marker');
+       m.click();
+       const pop=[...document.querySelectorAll(".note-pop")].find(p=>getComputedStyle(p).display!=="none");
+       const chip=pop&&pop.querySelector(".who");
+       const badge=pop&&pop.querySelector(".who-badge");
+       const replies=pop?pop.querySelectorAll(".note-reply").length:0;
+       document.title="RESULT::open="+!!pop+",accent="+(chip&&chip.dataset.accent)+",badge="+!!badge
+         +",replies="+replies+",math="+!!(pop&&pop.querySelector(".katex"));`,
+    );
+    expect(out).toBe("open=true,accent=purple,badge=true,replies=1,math=true");
+  });
+
+  it(`moves an on="id" comment into its target's label and marks resolved ones`, () => {
+    const out = evaluate(
+      compileSrc(COLLAB_DOC),
+      `const c=document.getElementById("c-on");
+       const inTag=c.parentElement.classList.contains("box-head");
+       const resolved=c.querySelector(".note-marker").classList.contains("is-resolved");
+       const mark=document.querySelector("#thm .box-head .status-mark");
+       const proofMark=document.querySelector('#thm delta-proof[status="sketch"] .proof-bar .status-mark');
+       document.title="RESULT::inTag="+inTag+",resolved="+resolved
+         +",thmMark="+(mark&&mark.dataset.status)+",proofMark="+(proofMark&&proofMark.dataset.status);`,
+    );
+    // The theorem shows its own status; its joined proof (past the comment) shows its own.
+    expect(out).toBe("inTag=true,resolved=true,thmMark=review,proofMark=sketch");
+  });
+
+  it("hides every annotation under the review switch and restores it", () => {
+    const out = evaluate(
+      compileSrc(COLLAB_DOC),
+      `const vis=el=>getComputedStyle(el).display!=="none";
+       const c=document.getElementById("c-inline"), t=document.getElementById("t1");
+       const pill=document.querySelector("#thm .status-mark"), bar=document.querySelector("delta-draft .status-bar");
+       const before=[c,t,pill,bar].every(vis);
+       window.Delta.review.setAnnotations(false);
+       const off=document.documentElement.dataset.review==="off" && ![c,t,pill,bar].some(vis);
+       window.Delta.review.setAnnotations(true);
+       const back=document.documentElement.dataset.review===undefined && [c,t,pill,bar].every(vis);
+       document.title="RESULT::before="+before+",off="+off+",back="+back;`,
+    );
+    expect(out).toBe("before=true,off=true,back=true");
+  });
+
+  it("renders a task row with its state, number and assignee", () => {
+    const out = evaluate(
+      compileSrc(COLLAB_DOC),
+      `const t=document.getElementById("t1");
+       document.title="RESULT::state="+t.querySelector(".todo-state").textContent
+         +",num="+t.querySelector(".todo-num").textContent
+         +",for="+(t.querySelector(".todo-for .who")||{}).dataset?.accent
+         +",prio="+t.dataset.priority;`,
+    );
+    expect(out).toBe("RESULT::state=☐,num=Task 1,for=purple,prio=high".slice(8));
+  });
+});
+
+describe.skipIf(!BROWSER)("tracked changes runtime", () => {
+  it("renders both sides in markup view and switches to final / original", () => {
+    const out = evaluate(
+      compileSrc(COLLAB_DOC),
+      `const vis=el=>getComputedStyle(el).display!=="none";
+       const ch=document.getElementById("ch1");
+       const del=ch.querySelector(".chg-del"), ins=ch.querySelector(".chg-ins"), mk=ch.querySelector(".chg-marker");
+       const markup=vis(del)&&vis(ins)&&vis(mk)&&getComputedStyle(ins).textDecorationLine.includes("underline")
+         &&getComputedStyle(del).textDecorationLine.includes("line-through");
+       window.Delta.review.setChanges("final");
+       const fin=!vis(del)&&vis(ins)&&!vis(mk)&&getComputedStyle(ins).textDecorationLine==="none";
+       window.Delta.review.setChanges("original");
+       const orig=vis(del)&&!vis(ins)&&getComputedStyle(del).textDecorationLine==="none";
+       window.Delta.review.setChanges("markup");
+       const back=document.documentElement.dataset.changes===undefined&&vis(del)&&vis(ins);
+       const block=document.getElementById("ch2").classList.contains("chg-block")
+         &&getComputedStyle(document.getElementById("ch2")).display==="block";
+       document.title="RESULT::markup="+markup+",final="+fin+",original="+orig+",back="+back+",block="+block;`,
+    );
+    expect(out).toBe("markup=true,final=true,original=true,back=true,block=true");
+  });
+});
+
+const PANEL_DOC = COLLAB_DOC.replace('<section id="s">', '<review/><section id="s">');
+
+describe.skipIf(!BROWSER)("review panel runtime", () => {
+  it("summarizes, groups and links the items", () => {
+    const out = evaluate(
+      compileSrc(PANEL_DOC),
+      `const r=document.querySelector("delta-review .review");
+       const stats=[...r.querySelectorAll(".review-stat")].map(s=>s.textContent.trim());
+       const groups=[...r.querySelectorAll(".review-group-title")].map(g=>g.textContent);
+       const items=r.querySelectorAll(".review-item").length;
+       const jump=r.querySelector('.review-item[data-kind="comment"] .review-jump');
+       document.title="RESULT::stats="+stats.join("|")+";groups="+groups.join("|")+";items="+items+";href="+jump.getAttribute("href");`,
+    );
+    expect(out).toBe(
+      "stats=1 open comments|1 open tasks|2 pending changes|1 In review|1 Sketch|1 Draft;groups=Annotations|Tasks|Changes|Blocks;items=8;href=#c-inline",
+    );
+  });
+
+  it("drives the review switches and filters", () => {
+    const out = evaluate(
+      compileSrc(PANEL_DOC),
+      `const r=document.querySelector("delta-review .review");
+       const sw=r.querySelector(".review-switch");
+       sw.click();
+       const off=document.documentElement.dataset.review==="off"&&sw.getAttribute("aria-pressed")==="false";
+       sw.click();
+       const on=document.documentElement.dataset.review===undefined&&sw.getAttribute("aria-pressed")==="true";
+       r.querySelector('.review-seg [data-mode="final"]').click();
+       const fin=document.documentElement.dataset.changes==="final"&&r.querySelector('.review-seg [data-mode="final"]').classList.contains("is-active");
+       r.querySelector('.review-filter[data-member="rb"]').click();
+       const onlyRb=[...r.querySelectorAll(".review-item")].length;
+       r.querySelector('.review-filter[data-member="rb"]').click();
+       const all=[...r.querySelectorAll(".review-item")].length;
+       document.title="RESULT::off="+off+",on="+on+",final="+fin+",rb="+onlyRb+",all="+all;`,
+    );
+    // rb authored c-on, ch2 and replied on c-inline (replies don't count) → 2 items
+    expect(out).toBe("off=true,on=true,final=true,rb=2,all=8");
+  });
+
+  it("jumps to an item and flashes it", () => {
+    const out = evaluate(
+      compileSrc(PANEL_DOC),
+      `const a=document.querySelector('delta-review .review-item[data-kind="todo"] .review-jump');
+       a.click();
+       const flashed=document.getElementById("t1").classList.contains("is-xref-target");
+       document.title="RESULT::flashed="+flashed;`,
+    );
+    expect(out).toBe("flashed=true");
   });
 });

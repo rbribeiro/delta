@@ -1,0 +1,136 @@
+<document id="p-midia" theme="tema.css">
+  <title>Mídia · Delta</title>
+
+  <floating>
+    <title>Navegação</title>
+    <toc scope="project" depth="1"/>
+  </floating>
+
+  <section id="midia">
+    <eyebrow>Referência</eyebrow>
+    <title>Mídia</title>
+    <intro>
+      Imagens, vídeo, áudio e blocos interativos. Todos são numerados e aceitam
+      uma legenda; a diferença importante está em quais deles viajam dentro do
+      arquivo e quais precisam ser levados junto.
+    </intro>
+
+    <toc/>
+
+    <subsection id="tag-figure">
+      <title>&lt;figure&gt;</title>
+
+      Uma imagem. O arquivo é lido na compilação e embutido no HTML como dado, o
+      que mantém a página inteira num arquivo só.
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">src</column>
+          <column mono="true">caminho</column>
+          <column>Caminho relativo ao documento. É embutido na compilação</column>
+        </row>
+        <row>
+          <column mono="true">alt</column>
+          <column mono="true">texto</column>
+          <column>Descrição para leitores de tela</column>
+        </row>
+        <row>
+          <column mono="true">id</column>
+          <column mono="true">texto</column>
+          <column>Alvo de <c><ref></c></column>
+        </row>
+      </table>
+
+      <code lang="xml" numbered="false">
+<figure src="diagrama.png" alt="O diagrama comutativo" id="fig:diagrama">
+  <caption>O quadrado comuta em ambas as direções.</caption>
+</figure>
+      </code>
+
+      <box type="warning">
+        <title>Imagem que falta não derruba a compilação</title>
+        Um <c>src</c> ausente, remoto ou de formato não suportado vira aviso, não
+        erro: o documento compila sem a imagem. Confira os avisos antes de publicar.
+      </box>
+    </subsection>
+
+    <subsection id="tag-video-audio">
+      <title>&lt;video&gt; e &lt;audio&gt;</title>
+
+      Ao contrário das imagens, vídeo e áudio <b>não</b> são embutidos, porque ficariam
+      grandes demais. O <c>src</c> continua relativo, então leve o arquivo de mídia
+      junto com o HTML quando for distribuir.
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Vale para</column>
+          <column>O que faz</column>
+        </header>
+        <row><column mono="true">src</column><column>ambos</column><column>Caminho do arquivo, mantido relativo</column></row>
+        <row><column mono="true">poster</column><column mono="true">video</column><column>Imagem exibida antes de dar play</column></row>
+        <row><column mono="true">loop</column><column>ambos</column><column>Repete ao terminar</column></row>
+        <row><column mono="true">muted</column><column mono="true">video</column><column>Começa sem som</column></row>
+        <row><column mono="true">autoplay</column><column mono="true">video</column><column>Inicia sozinho (exige <c>muted</c> na maioria dos navegadores)</column></row>
+        <row><column mono="true">playsinline</column><column mono="true">video</column><column>Evita tela cheia forçada no celular</column></row>
+      </table>
+
+      <code lang="xml" numbered="false">
+<video src="simulacao.mp4" poster="capa.png" muted="true" loop="true">
+  <caption>A convergência do método, em tempo real.</caption>
+</video>
+      </code>
+    </subsection>
+
+    <subsection id="tag-youtube">
+      <title>&lt;youtube&gt;</title>
+
+      Um vídeo do YouTube embutido. Aceita a URL completa, o link curto, o endereço
+      de <c>/embed</c>, o de <c>/shorts</c> ou apenas o identificador de 11
+      caracteres.
+
+      <code lang="xml" numbered="false">
+<youtube src="https://youtu.be/dQw4w9WgXcQ">
+  <caption>A palestra completa.</caption>
+</youtube>
+      </code>
+
+      <box type="note">
+        <title>Este é o único elemento que precisa de internet</title>
+        Todo o resto do Delta funciona offline. Um vídeo do YouTube, por natureza,
+        é carregado do YouTube. Se o documento precisa funcionar sem rede, use
+        <c><video></c> com o arquivo ao lado.
+      </box>
+    </subsection>
+
+    <subsection id="tag-interactive">
+      <title>&lt;interactive&gt;</title>
+
+      Um bloco numerado para conteúdo que o leitor manipula. O que você colocar
+      dentro é exibido como está. É o lugar natural para um componente vindo de um
+      pacote.
+
+      <code lang="xml" numbered="false">
+<interactive id="int:grafico">
+  <caption>Arraste o ponto para ver a tangente acompanhar.</caption>
+</interactive>
+      </code>
+    </subsection>
+
+    <subsection id="tag-caption">
+      <title>&lt;caption&gt;</title>
+
+      A legenda, filha de qualquer um dos elementos acima. Aparece abaixo da mídia,
+      precedida do número ("Figura 5.1"), e pode conter matemática e formatação.
+    </subsection>
+  </section>
+
+  <footer>
+    Feito com ❤️ em Delta no IMPA Tech.
+  </footer>
+</document>

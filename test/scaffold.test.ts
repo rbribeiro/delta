@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { scaffoldFiles, tagFor } from "../src/scaffold";
+import { describe, expect, it } from "./harness.ts";
+import { scaffoldFiles, tagFor } from "../src/scaffold.ts";
 
 describe("tagFor", () => {
   it("strips a leading delta- prefix, else uses the name", () => {

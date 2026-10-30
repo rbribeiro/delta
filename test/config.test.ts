@@ -1,8 +1,8 @@
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
-import { loadProjectConfig } from "../src/compiler/config";
+import { describe, expect, it } from "./harness.ts";
+import { loadProjectConfig } from "../src/compiler/config.ts";
 
 /** Write a project.toml to a fresh temp dir and return its path. */
 function writeToml(content: string): string {
@@ -55,7 +55,9 @@ describe("loadProjectConfig", () => {
   });
 
   it("errors when packages is not a list of strings", () => {
-    expect(loadProjectConfig(writeToml(`inputs = ["a.dlt"]\npackages = "delta-foo"`)).config).toBeUndefined();
+    expect(
+      loadProjectConfig(writeToml(`inputs = ["a.dlt"]\npackages = "delta-foo"`)).config,
+    ).toBeUndefined();
     const bad = loadProjectConfig(writeToml(`inputs = ["a.dlt"]\npackages = [1, 2]`));
     expect(bad.config).toBeUndefined();
     expect(bad.diagnostics.some((d) => /packages/.test(d.message))).toBe(true);

@@ -1,16 +1,16 @@
-import { readFileSync } from "node:fs";
 import { dirname, relative, resolve, sep } from "node:path";
-import { type ElementNode, type Node, findElementById } from "./ast";
-import { addDep, error, type CompileContext } from "./context";
-import { parse } from "./parse";
-import { preprocess } from "./preprocess";
+import { element, findElementById, type ElementNode, type Node } from "./ast.ts";
+import { error, type CompileContext } from "./context.ts";
+import { isRemote, readUserFile, withFile } from "./files.ts";
+import { parseSource } from "./parse.ts";
 
-// figure, video and audio are the only tags that can have a relative src that needs to be rewritten to be relative to the master document.
-const ASSET_TAGS = new Set(["figure", "video", "audio"]);
+// Tags whose relative `src` is written from the included file's folder, so it is rewritten to be
+// relative to the master document (which resolves it later).
+const ASSET_TAGS = new Set(["figure", "video", "audio", "bibliography", "import"]);
 
 /**
  * Resolves `<include>` nodes in `doc` by reading the referenced files, parsing them, and splicing their children in place of the `<include>`. Relative asset paths are rewritten relative to the master document. Cycles are detected and reported as errors.
- * 
+ *
  * @param doc - the document node to scan for `<include>` children
  * @param ctx - the compiler context, used for errors and for the current file path (used to resolve relative includes)
  */
@@ -46,12 +46,12 @@ function expand(
 ): Node[] {
   const src = inc.attrs.src;
   const targetId = inc.attrs["target-id"];
-  
+
   if (!src) {
     error(ctx, "<include> without a 'src' attribute", inc.pos);
     return [];
   }
-  if (/^[a-z]+:\/\//i.test(src)) {
+  if (isRemote(src)) {
     error(ctx, `include src must be a local path, not a URL: ${src}`, inc.pos);
     return [];
   }
@@ -65,45 +65,46 @@ function expand(
 
   let text: string;
   try {
-    text = readFileSync(abs, "utf8");
+    text = readUserFile(ctx, abs);
   } catch {
     error(ctx, `include file not found: ${src}`, inc.pos);
     return [];
   }
-  addDep(ctx, abs);
 
-  // Attribute diagnostics from the included file to the included file.
-  const prevFile = ctx.file;
-  ctx.file = abs;
-  const root = parse(preprocess(text), ctx);
-  let kids: Node[] = [];
-  if (root) {
-    // Check for a target-id attribute on the <include> tag. If present, we only include the element with that id from the included document.
-    if(targetId) {
+  // Diagnostics raised while parsing and walking the included file point at that file.
+  return withFile(ctx, abs, (): Node[] => {
+    const root = parseSource(text, ctx);
+    if (!root) return [];
+    // `target-id` includes only the element with that id, not the whole file.
+    if (targetId) {
       const target = findElementById(root, targetId);
-      if(target === null) {
+      if (target === null) {
         error(ctx, `include target-id not found: ${targetId}`, inc.pos);
-      } else if(target === undefined) {
-        error(ctx, `Can't resolve include target-id: ${targetId} (multiple elements with the same id found)`, inc.pos);
+      } else if (target === undefined) {
+        error(
+          ctx,
+          `Can't resolve include target-id: ${targetId} (multiple elements with the same id found)`,
+          inc.pos,
+        );
       } else {
-        root.children = [target]; // replace the children of the root with only the target element
+        root.children = [target];
       }
     }
-      // Splice the children of the included document into the parent, but wrap them in a `#include` so we can walk them and rewrite their asset paths.
-      kids = root.tag === "document" ? root.children : [root];
-      const container: ElementNode = { type: "element", tag: "#include", attrs: {}, children: kids };
-      // Walk the included content, rewriting asset paths relative to the master document.
-      walk(container, dirname(abs), [...stack, abs], masterDir, ctx);
-      kids = container.children;
-  }
-  ctx.file = prevFile;
-  return kids;
+    // Splice the included document's children (a non-document root is spliced as-is), wrapped in a
+    // throwaway container so nested includes and asset paths resolve relative to the included file.
+    const kids = root.tag === "document" ? root.children : [root];
+    const container = element("#include", {}, kids);
+    walk(container, dirname(abs), [...stack, abs], masterDir, ctx);
+    return container.children;
+  });
 }
 
 /** Rewrite a relative asset `src` so it resolves relative to the master document. */
 function rewriteAsset(el: ElementNode, dir: string, masterDir: string): void {
   if (dir === masterDir || !ASSET_TAGS.has(el.tag)) return;
   const src = el.attrs.src;
-  if (!src || src.startsWith("data:") || src.startsWith("/") || /^[a-z]+:\/\//i.test(src)) return;
+  if (!src || src.startsWith("data:") || src.startsWith("/") || isRemote(src)) return;
+  // A bare `<import src="pack">` names an installed package, not a path.
+  if (el.tag === "import" && !/^\.\.?\//.test(src)) return;
   el.attrs.src = relative(masterDir, resolve(dir, src)).split(sep).join("/");
 }

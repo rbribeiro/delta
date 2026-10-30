@@ -14,12 +14,11 @@
  * from that one seed via color-mix, so nothing is hardcoded and it tracks light/dark.
  */
 
+import { PALETTE } from "../../language/palette.ts";
+
 // The named palettes defined in base.css ([data-accent="…"]); anything else is
 // treated as a literal CSS color set inline on --delta-accent.
-const PALETTES = new Set([
-  "red", "orange", "yellow", "lime", "green", "teal",
-  "sky", "blue", "indigo", "purple", "pink", "slate",
-]);
+const PALETTES = new Set(PALETTE);
 
 // Semantic presets → a palette hue. `color` overrides this.
 const TYPE_COLOR: Record<string, string> = {

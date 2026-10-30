@@ -118,7 +118,7 @@ usable on its own. Checked items are implemented and tested.
        headings into one ordered list tagged with each section's home output, and the runtime navigates
        cross-file (a plain `<toc/>` still lists only its own file — both can coexist in one file)
 - [x] 22. `project.toml` (`config.ts`): `inputs` (ordered, required) + `out` (output dir, default `.`),
-       resolved relative to the toml; parsed with `smol-toml`. The CLI takes a `.toml` (or `--project`),
+       resolved relative to the toml; parsed by `src/compiler/toml.ts`. The CLI takes a `.toml` (or `--project`),
        several `.dlt` inputs (a project with `-o` as the out dir), or one `.dlt` (single-file, unchanged).
        Outputs are flat `<basename>.html`; colliding basenames are an error
 - [x] 47. Project-wide document defaults in `project.toml` (`config.ts`): a `[document]` table
@@ -217,7 +217,7 @@ usable on its own. Checked items are implemented and tested.
        runtime `t()`; environment labels localized. 
 - [ ] 29. Diagnostics polish: warnings for unresolved refs/cites, unclosed math regions
 - [x] 30. Author documentation (docs/get-started) and richer examples
-- [x] 31. Code component with highlight syntax
+- [x] 65. Code component with highlight syntax
 
 ## M7 — Presentations (core deck)
 
@@ -310,3 +310,40 @@ fragments are shown does it move to the next slide (the reveal.js model).
        repeats it. Skips `<title>`/`<slide>` and respects an explicit `reveal` (so `reveal="false"`
        opts a child out). Presentation-only (no-op otherwise); emits the same `reveal` data item 37
        consumes, so **no runtime/CSS change**
+
+## M9 — Collaboration (human + agent)
+
+Delta as a first-class language for papers written by several hands — humans and AI agents.
+The `.dlt` source is the collaboration medium (everyone edits it; git holds history); the
+compiled HTML is the review surface (rich, navigable, offline; no persistence, no fetch); a
+`--final` build strips every mark so the same source publishes clean. Small, fixed, lowercase
+vocabularies so an agent writes them reliably and `grep` finds them. Design + agent guide:
+`docs/COLLABORATION.md`; user docs (pt): `site/colaboracao.dlt`.
+
+- [x] 56. `<team>`/`<member id name kind color>` registry (`team.ts`): `ctx.team`, shared across a
+       project, node removed from the output; `by`/`for`/`verified-by` validated against it; members get
+       a fixed accent color (round-robin default) and agents an "agent" badge (`memberChip`,
+       `runtime/elements/collab.ts`). Ships in the `#delta-review` island
+- [x] 57. `<comment by status date on>` + `<reply>`: threaded, status-tracked (`open`/`resolved`)
+       review notes. Numbered with their own counter (no prefix, no reset — `<ref>` says "Comment 3";
+       pt "Anotação"); descendants of a comment are never numbered (`OPAQUE`, numbering.ts). Runtime:
+       a superscript marker in the author's color + the thread in the shared popover; `on="id"` moves it
+       into the target's label
+- [x] 58. `<todo for by status priority due on>`: owned tasks (`open`/`doing`/`done`, `high`/`normal`/
+       `low`), their own counter, a checklist row in place
+- [x] 59. `status="draft|sketch|review|verified"` / `by` / `verified-by` on any block + `<draft by note>`:
+       maturity and authorship marks; `applyStatus` (shared.ts) pins a `.status-pill` to the box tag /
+       proof lead / heading, hooked in `environment.ts` and `section.ts`
+- [x] 60. `<change by date note>` + `<old>`/`<new>`: tracked changes, `kind` inferred (insert/delete/
+       replace) and `block="true"` for block content; three pure-CSS views off `html[data-changes]`
+       (markup / final / original), print = final
+- [x] 61. `<review scope>` panel + `#delta-review` island (`review.ts`, `buildReview`/
+       `buildProjectReview`): summary counts, the two document-wide switches (`window.Delta.review`),
+       filters by member/status, items grouped by kind with jump (cross-file in a project), "Copy as
+       text". Items carry their nearest heading (slugged only when needed) and auto-ids
+- [x] 62. `delta build --final` (`final.ts`: strip/unwrap/accept before bibliography + numbering, one
+       summary warning) and `delta review <file|toml> [--json] [--status] [--for] [--by] [--kind]`
+       (`review-report.ts`) — the agent-facing view, no browser needed
+- [ ] 63. `delta accept <file.dlt> [--all | --id …] [--by …]`: accept/reject tracked changes in the
+       source itself (today: edit the source, or build with `--final`)
+- [ ] 64. Margin placement for comments on wide screens (`display="margin"`), reusing the sidenote rail
