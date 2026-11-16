@@ -1,7 +1,7 @@
 import katex from "katex";
 import { textContent, type ElementNode, type Node, type Position } from "./ast.ts";
 import { error, warn, type CompileContext } from "./context.ts";
-import { MATH_REF, MATH_TAGS, RAW_TAGS } from "../language/tags.ts";
+import { MATH_MACROS, MATH_REF, MATH_TAGS, RAW_TAGS } from "../language/tags.ts";
 import { escapeAttr, findMathEnd } from "./preprocess.ts";
 
 /** The marker KaTeX renders for the k-th \ref of a formula, swapped for its real attributes. */
@@ -18,7 +18,7 @@ const REF_MARK = /data-delta-ref="(\d+)"/g;
  * parenthesized for \eqref) wrapped in a `\htmlData` span carrying the link
  * metadata; the runtime (`wireMathRefs` in elements/ref.ts) makes it clickable
  * with the same popover/jump as <ref>. KaTeX `trust` is enabled for `\htmlData`
- * only. On the project path `idToFile` bakes the cross-file href (a RawNode is a
+ * only, which is also what the `\pause` and `\part` macros (MATH_MACROS) expand to. On the project path `idToFile` bakes the cross-file href (a RawNode is a
  * finished HTML string, so annotateCrossFileRefs can't touch it later).
  *
  * @param doc - the root element of the document
@@ -123,6 +123,8 @@ function render(
       // handler silences KaTeX's "HTML extension" nag for that one feature.
       trust: (c) => c.command === "\\htmlData",
       strict: (code: string) => (code === "htmlExtension" ? "ignore" : "warn"),
+      // A fresh copy per formula: KaTeX writes `\gdef`s into the object it is given.
+      macros: { ...MATH_MACROS },
     });
     return {
       type: "raw",

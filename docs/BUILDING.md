@@ -29,9 +29,9 @@ Both use [esbuild](https://esbuild.github.io/).
 ## Step 1: the generated assets (`src/generated/assets.ts`)
 
 This file is **generated and git-ignored**, yet the compiler imports it
-([emit.ts](../src/compiler/emit.ts) reads `RUNTIME_JS`, `CORE_CSS` and `THEMES` from it, and
+([emit.ts](../src/compiler/emit.ts) reads `RUNTIME_JS`, `CORE_CSS`, `HAND_CSS` and `THEMES` from it, and
 [theme.ts](../src/compiler/theme.ts) reads `BUILTIN_THEMES`). So it must exist before anything
-compiles, type-checks or tests. `buildAssets()` writes four constants:
+compiles, type-checks or tests. `buildAssets()` writes five constants:
 
 - **`RUNTIME_JS`** -- the browser runtime. esbuild bundles
   [src/runtime/index.ts](../src/runtime/index.ts) into a single **minified IIFE** string
@@ -47,6 +47,10 @@ compiles, type-checks or tests. `buildAssets()` writes four constants:
   alphabet. That is why chrome several components share sits one layer down, in
   `delta.shells`. Adding a `components/<name>.css` file needs no build wiring -- it is picked
   up automatically.
+- **`HAND_CSS`** -- one `@font-face` rule for Caveat, the handwriting of an `<animation>`'s
+  notes (the woff2 in `src/styles/fonts/`, inlined the same way). It is kept out of
+  `CORE_CSS` on purpose: the emitter adds it only to a document that has a `<note>`, as it
+  adds KaTeX's stylesheet only to a document that has math.
 - **`THEMES`** -- a `{ [type]: css }` map built from `src/styles/themes/<type>.css`. The
   emitter selects one by the document's `<document type="...">` (default `article`).
 - **`BUILTIN_THEMES`** -- a `{ [name]: css }` map built from `src/styles/builtin/<name>.css`,
@@ -121,8 +125,8 @@ runtime/CSS. In `test:watch`, the assets are rebuilt once per start, not on ever
 
 - **Runtime** (`dependencies`): `katex` (compile-time math rendering). That is all: the XML
   parser (`src/compiler/xml.ts`), the `project.toml` parser (`src/compiler/toml.ts`) and the
-  syntax highlighter (`src/compiler/highlight.ts`) are Delta's own, and the body font is
-  vendored in `src/styles/fonts/`.
+  syntax highlighter (`src/compiler/highlight.ts`) are Delta's own, and the two fonts (the
+  body face and the notes' handwriting) are vendored in `src/styles/fonts/`.
 - **Build / dev** (`devDependencies`): `esbuild` (bundling), `typescript` (type-checking),
   `prettier` (formatting, pinned exactly so every machine formats alike), `@types/node`. Node itself runs the TypeScript sources (22.18+ / 24+) and runs the tests
   (`node --test`, with the small `expect` in [test/harness.ts](../test/harness.ts)), so there

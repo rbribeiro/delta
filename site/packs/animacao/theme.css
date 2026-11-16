@@ -1,0 +1,29 @@
+/* Estilos do <delta-parabola> (site/packs/animacao). Só variáveis --delta-*, para seguir
+   o tema, a cor de destaque e o modo escuro do documento. Aparece na íntegra em
+   site/animacoes.dlt. */
+delta-parabola {
+  display: block;
+  max-width: 320px;
+  margin: 0.6em auto;
+}
+.parabola-axis {
+  fill: none;
+  stroke: var(--delta-rule);
+  stroke-width: 1;
+}
+.parabola-curve {
+  fill: none;
+  stroke: var(--delta-accent-ink);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.parabola-vertex {
+  fill: var(--delta-accent-ink);
+}
+.parabola-value {
+  font-family: var(--delta-sans);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  fill: var(--delta-mute);
+}

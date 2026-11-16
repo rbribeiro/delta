@@ -127,6 +127,22 @@ Somando <m>A \stackrel{\ref{eq:euler}}{=} 0</m>, concluímos…
         segue. Leia os avisos: eles apontam exatamente o que ficou pela metade.
       </box>
     </subsection>
+
+    <subsection id="sobre-pause-math">
+      <title>Fórmulas em pedaços: \pause e \part</title>
+
+      Dois comandos existem para as <ref to="animacoes">animações</ref>. O
+      <c>\pause</c> corta a fórmula em pedaços que entram um a cada passo, e o
+      <c>\part{nome}{...}</c> dá nome a um pedaço, para uma nota apontar para ele ou
+      uma transformação saber de onde ele vem.
+
+      <code lang="xml" numbered="false">
+<math>a^2 \pause + b^2 \pause = \part{hip}{c^2}</math>
+      </code>
+
+      Fora de um <c><animation></c> eles não fazem nada, e em lugar nenhum mudam o
+      espaçamento: a fórmula é composta como se eles não estivessem ali.
+    </subsection>
   </section>
 
   <footer>

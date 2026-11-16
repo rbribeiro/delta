@@ -161,6 +161,36 @@ Anything outside this table (internal helpers, private classes) is **not** a con
 The Portuguese reference, with a live pop-over demo powered by a twenty-line pack, is the site page
 *API do runtime* ([../site/api.dlt](../site/api.dlt), published as `docs/api.html`).
 
+### Animatable attributes (how your element takes part in an `<animation>`)
+
+Delta has no built-in plot; it has a protocol, and the protocol is the DOM's own. On an
+`<animation>` board, `<set target="id" a="2"/>` writes attribute `a` of the target frame by
+frame, from its current value to the one asked for (numbers are interpolated; any other value
+is written when the step lands). An element animates if it redraws when its attribute changes:
+
+```js
+customElements.define("delta-wave", class extends HTMLElement {
+  static get observedAttributes() { return ["freq", "phase"]; }   // the parameters
+  connectedCallback() { this.draw(); }
+  attributeChangedCallback() { this.draw(); }                     // once per frame during a <set>
+  draw() { /* render from this.getAttribute("freq") … */ }
+});
+```
+
+- **No Delta API is involved**, so the element works the same outside an animation, and a
+  slider of your own can drive the same attributes.
+- **Keep `draw()` cheap**: during a `<set>` it runs every frame. Redraw from the attributes;
+  do not rebuild what does not depend on them.
+- **Do not guard `draw()` with `deltaReady`**: that guard is for one-time chrome in
+  `connectedCallback`, and a parameter change must always redraw.
+- Stepping back or reloading sets the attributes straight to their value at that step, so
+  `draw()` must not depend on having seen the values in between.
+
+A complete 40-line example is [../site/packs/animacao/](../site/packs/animacao/) (`<parabola>`),
+shown live on the site page *Animações* ([../site/animacoes.dlt](../site/animacoes.dlt)). A board
+itself is scriptable through its element: `delta-animation` exposes `length`, `pos`,
+`seek(pos, animate?)`, `play()` and `stop()` (documented in `site/api.dlt`).
+
 ---
 
 ## 4. Styling with the design system (CSS conventions)

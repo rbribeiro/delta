@@ -1,0 +1,559 @@
+<document id="p-animacoes" theme="tema.css">
+  <title>Animações · Delta</title>
+
+  <import src="packs/animacao"/>
+
+  <floating>
+    <title>Navegação</title>
+    <toc scope="project" depth="1"/>
+  </floating>
+
+  <section id="animacoes">
+    <eyebrow>Referência</eyebrow>
+    <title>Animações</title>
+    <intro>
+      Um <c><animation></c> é um quadro que se escreve sozinho, passo a passo, como numa
+      aula: as fórmulas são traçadas, transformam-se umas nas outras, ganham notas feitas
+      à mão, e um gráfico acompanha um parâmetro. Você escreve Delta comum, na ordem em
+      que as coisas acontecem, e marca com <c><pause/></c> onde o leitor assume.
+    </intro>
+
+    <toc/>
+
+    <subsection id="tag-animation">
+      <title>&lt;animation&gt;</title>
+
+      O quadro. A regra é uma só: <b>a ordem do documento é a ordem do tempo</b>. O que
+      você escreve dentro dele aparece na sequência em que foi escrito, cada coisa já
+      no lugar em que vai ficar, e um <c><pause/></c> encerra o passo e espera o leitor.
+      Para mexer em algo que já está no quadro, uma ação aponta para ele com
+      <c>target</c>.
+
+      <code lang="xml" numbered="false">
+<animation id="anim:euler">
+  <caption>A identidade de Euler, em três passos.</caption>
+  Partimos da fórmula de Euler:
+  <math id="f">e^{i\theta} = \cos\theta + i\,\sin\theta</math>
+  <pause/>
+  Em $\theta = \pi$, o cosseno vale $-1$ e o seno se anula:
+  <morph target="f">e^{i\pi} = -1</morph>
+  <pause/>
+  <morph target="f">e^{i\pi} + 1 = 0</morph>
+</animation>
+      </code>
+
+      Resultado:
+
+      <animation id="anim-euler">
+        <caption>A identidade de Euler, em três passos.</caption>
+        Partimos da fórmula de Euler:
+        <math id="anim-euler-f">e^{i\theta} = \cos\theta + i\,\sin\theta</math>
+        <pause/>
+        Em $\theta = \pi$, o cosseno vale $-1$ e o seno se anula:
+        <morph target="anim-euler-f">e^{i\pi} = -1</morph>
+        <pause/>
+        <morph target="anim-euler-f">e^{i\pi} + 1 = 0</morph>
+      </animation>
+
+      Num artigo ou num livro, a animação repousa no estado final, como uma figura: quem
+      só passa os olhos, imprime ou está sem JavaScript lê o quadro pronto. Os controles
+      abaixo dele refazem o caminho.
+
+      <table numbered="false">
+        <header>
+          <column>Controle</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column>Próximo (ou →, com o quadro em foco)</column>
+          <column>Toca o passo seguinte e espera. No fim, limpa o quadro e recomeça</column>
+        </row>
+        <row>
+          <column>Anterior (ou ←)</column>
+          <column>Desfaz o último passo, sem animação</column>
+        </row>
+        <row>
+          <column>Reproduzir</column>
+          <column>Toca todos os passos em sequência, com uma pausa entre eles</column>
+        </row>
+      </table>
+
+      Como uma figura, o quadro é numerado e aceita <c><caption></c>; com um <c>id</c>,
+      vira alvo de <c><ref></c>.
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">id</column>
+          <column>texto</column>
+          <column>Identificador para referências</column>
+        </row>
+        <row>
+          <column mono="true">enter</column>
+          <column mono="true">write, fade, none</column>
+          <column>Como tudo entra neste quadro, quando você não quer o padrão de cada coisa (veja <ref to="sobre-animacao-entrada">abaixo</ref>)</column>
+        </row>
+      </table>
+
+      <box type="note">
+        <title>Nada muda de lugar</title>
+        O quadro é montado inteiro desde o início, com cada coisa na sua posição final;
+        o que ainda não entrou fica invisível, guardando o lugar. Por isso nada se
+        desloca quando um passo toca, e o que vale para a disposição de qualquer
+        documento vale aqui: <c><columns></c>, listas e caixas funcionam como sempre.
+      </box>
+    </subsection>
+
+    <subsection id="tag-pause">
+      <title>&lt;pause&gt; e \pause</title>
+
+      Uma tag vazia que encerra o passo: o que vem depois só toca quando o leitor
+      avança. Ela pode aparecer em qualquer ponto do quadro, inclusive entre os itens de
+      uma lista ou dentro de uma coluna.
+
+      <code lang="xml" numbered="false">
+<list>
+  <item>Primeiro isto.</item>
+  <pause/>
+  <item>Depois isto.</item>
+</list>
+      </code>
+
+      Dentro de uma fórmula, o mesmo papel é do comando <c>\pause</c>, como no Beamer:
+      ele corta a fórmula em pedaços que entram um a cada passo.
+
+      <code lang="xml" numbered="false">
+<animation>
+  <caption>Uma soma, parcela por parcela.</caption>
+  <math>1 + \frac{1}{2} \pause + \frac{1}{4} \pause + \frac{1}{8} \pause + \cdots \pause = 2</math>
+</animation>
+      </code>
+
+      Resultado:
+
+      <animation id="anim-soma">
+        <caption>Uma soma, parcela por parcela.</caption>
+        <math>1 + \frac{1}{2} \pause + \frac{1}{4} \pause + \frac{1}{8} \pause + \cdots \pause = 2</math>
+      </animation>
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">for</column>
+          <column mono="true">1s, 800ms</column>
+          <column>Faz da pausa um descanso cronometrado dentro do passo: a animação espera esse tempo e segue, sem esperar o leitor</column>
+        </row>
+      </table>
+
+      <box type="warning">
+        <title>O \pause vale no nível de cima da fórmula</title>
+        Ele corta entre termos, e entre as células de um <c>aligned</c> (linha por
+        linha). Dentro de uma fração, de uma raiz ou de um expoente ele é ignorado: ali
+        não existe um "depois" que faça sentido para quem lê.
+      </box>
+    </subsection>
+
+    <subsection id="sobre-animacao-entrada">
+      <title>Como cada coisa entra</title>
+
+      Texto e matemática são <em>escritos</em>: o contorno de cada símbolo é traçado e
+      depois preenchido, um após o outro, da esquerda para a direita. O que tem moldura
+      própria (uma caixa, uma figura, uma tabela, um teorema) surge de uma vez, com uma
+      transição suave. Dois atributos, em qualquer elemento do quadro, mudam isso:
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">enter</column>
+          <column mono="true">write</column>
+          <column>Traça e preenche o texto do elemento</column>
+        </row>
+        <row>
+          <column mono="true">enter</column>
+          <column mono="true">fade</column>
+          <column>O elemento surge inteiro, por transparência</column>
+        </row>
+        <row>
+          <column mono="true">enter</column>
+          <column mono="true">none</column>
+          <column>O elemento simplesmente está lá quando chega a sua vez</column>
+        </row>
+        <row>
+          <column mono="true">duration</column>
+          <column mono="true">1.5s, 800ms</column>
+          <column>Quanto tempo a entrada leva. Vale também nas ações: <c><morph></c>, <c><note></c>, <c><set></c>, <c><hide></c></column>
+        </row>
+      </table>
+
+      Dentro de um passo, as coisas tocam uma depois da outra, na ordem em que estão
+      escritas. Quem prefere reduzir movimento (uma preferência do sistema) recebe os
+      mesmos passos, sem a animação.
+    </subsection>
+
+    <subsection id="tag-morph">
+      <title>&lt;morph&gt;</title>
+
+      Troca uma fórmula por outra, no mesmo lugar. O conteúdo é o TeX da nova forma, e
+      <c>target</c> diz qual fórmula ela substitui. Os símbolos que existem nas duas
+      viajam do lugar antigo para o novo; os que só existem na antiga somem, e os novos
+      surgem.
+
+      <code lang="xml" numbered="false">
+<animation>
+  <caption>Completando o quadrado.</caption>
+  <math id="q">x^2 + 6x + 5 = 0</math>
+  <pause/>
+  <morph target="q">(x^2 + 6x + 9) - 9 + 5 = 0</morph>
+  <pause/>
+  <morph target="q">(x + 3)^2 - 4 = 0</morph>
+  <pause/>
+  <morph target="q">(x + 3)^2 = 4</morph>
+</animation>
+      </code>
+
+      Resultado:
+
+      <animation id="anim-quadrado">
+        <caption>Completando o quadrado.</caption>
+        <math id="anim-quadrado-q">x^2 + 6x + 5 = 0</math>
+        <pause/>
+        <morph target="anim-quadrado-q">(x^2 + 6x + 9) - 9 + 5 = 0</morph>
+        <pause/>
+        <morph target="anim-quadrado-q">(x + 3)^2 - 4 = 0</morph>
+        <pause/>
+        <morph target="anim-quadrado-q">(x + 3)^2 = 4</morph>
+      </animation>
+
+      O alvo é uma fórmula em destaque: um <c><equation></c> (que mantém o número) ou um
+      <c><math></c>. O lugar reservado é o da maior das formas, então o que está em volta
+      não se mexe.
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">target</column>
+          <column>um id do quadro</column>
+          <column>A fórmula que esta forma substitui</column>
+        </row>
+        <row>
+          <column mono="true">duration</column>
+          <column mono="true">1.5s, 800ms</column>
+          <column>Quanto tempo a transformação leva</column>
+        </row>
+      </table>
+
+      <box type="tip">
+        <title>Quem vai para onde</title>
+        O par de cada símbolo é o símbolo igual, na ordem de leitura: o primeiro
+        <m>x</m> da forma antiga vai para o primeiro <m>x</m> da nova. Para decidir você
+        mesmo, dê o mesmo nome ao pedaço nas duas formas com
+        <c>\part{nome}{...}</c>: pedaços de mesmo nome são pareados antes de tudo.
+      </box>
+    </subsection>
+
+    <subsection id="tag-note">
+      <title>&lt;note&gt;</title>
+
+      Uma nota feita à mão sobre algo do quadro: uma marca (um círculo, um sublinhado,
+      uma seta) e, se a tag tiver conteúdo, algumas palavras manuscritas ao lado. A nota
+      não ocupa lugar no texto: é desenhada por cima, como quem anota na lousa.
+
+      Para apontar para um pedaço de uma fórmula, dê um nome a ele com
+      <c>\part{nome}{...}</c> e use <c>part="nome"</c>.
+
+      <code lang="xml" numbered="false">
+<animation>
+  <caption>Lendo uma equação em voz alta.</caption>
+  <math id="n">\part{quad}{(x + 3)^2} = \part{quatro}{4}</math>
+  <pause/>
+  <note id="n1" target="n" part="quad" mark="underline" side="top">um quadrado perfeito</note>
+  <pause/>
+  <note id="n2" target="n" part="quatro" mark="circle">outro: $2^2$</note>
+  <pause/>
+  <hide target="n1"/>
+  <hide target="n2"/>
+  <morph target="n">x + 3 = \pm 2</morph>
+</animation>
+      </code>
+
+      Resultado:
+
+      <animation id="anim-notas">
+        <caption>Lendo uma equação em voz alta.</caption>
+        <math id="anim-notas-n">\part{quad}{(x + 3)^2} = \part{quatro}{4}</math>
+        <pause/>
+        <note id="anim-notas-n1" target="anim-notas-n" part="quad" mark="underline" side="top">um quadrado perfeito</note>
+        <pause/>
+        <note id="anim-notas-n2" target="anim-notas-n" part="quatro" mark="circle">outro: $2^2$</note>
+        <pause/>
+        <hide target="anim-notas-n1"/>
+        <hide target="anim-notas-n2"/>
+        <morph target="anim-notas-n">x + 3 = \pm 2</morph>
+      </animation>
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">target</column>
+          <column>um id do quadro</column>
+          <column>O que a nota marca. Sem <c>target</c>, a nota é só uma linha manuscrita no meio do texto</column>
+        </row>
+        <row>
+          <column mono="true">part</column>
+          <column>um nome</column>
+          <column>O pedaço da fórmula, nomeado com <c>\part{nome}{...}</c></column>
+        </row>
+        <row>
+          <column mono="true">mark</column>
+          <column mono="true">circle</column>
+          <column>Um círculo em volta. É o padrão quando a nota não tem texto</column>
+        </row>
+        <row>
+          <column mono="true">mark</column>
+          <column mono="true">box</column>
+          <column>Um retângulo em volta</column>
+        </row>
+        <row>
+          <column mono="true">mark</column>
+          <column mono="true">underline</column>
+          <column>Um traço por baixo</column>
+        </row>
+        <row>
+          <column mono="true">mark</column>
+          <column mono="true">cross</column>
+          <column>Um risco por cima, como quem cancela um termo</column>
+        </row>
+        <row>
+          <column mono="true">mark</column>
+          <column mono="true">arrow</column>
+          <column>Uma seta do texto até o alvo. É o padrão quando a nota tem texto</column>
+        </row>
+        <row>
+          <column mono="true">side</column>
+          <column mono="true">top, right, bottom, left</column>
+          <column>De que lado do alvo o texto fica. O padrão é <c>bottom</c></column>
+        </row>
+        <row>
+          <column mono="true">id</column>
+          <column>texto</column>
+          <column>Para apagar a nota depois, com <c><hide></c></column>
+        </row>
+      </table>
+
+      A cor da caneta é a variável <c>--delta-note-ink</c>, e a letra, a família
+      <c>--delta-hand</c> (veja <ref to="temas">Temas e pacotes</ref>).
+    </subsection>
+
+    <subsection id="tag-hide">
+      <title>&lt;hide&gt; e &lt;show&gt;</title>
+
+      <c><hide target="id"/></c> apaga algo do quadro, e <c><show target="id"/></c> traz
+      de volta. Servem para qualquer coisa com <c>id</c>: uma nota, uma fórmula, uma
+      caixa. Com <c>part</c>, apagam só um pedaço de uma fórmula. O que foi apagado
+      continua guardando o seu lugar.
+    </subsection>
+
+    <subsection id="tag-set">
+      <title>&lt;set&gt;</title>
+
+      Varia os parâmetros de um elemento: cada atributo que você escreve no
+      <c><set></c> vai, quadro a quadro, do valor que o alvo tem até o valor pedido. É
+      assim que um gráfico acompanha um parâmetro.
+
+      <code lang="xml" numbered="false">
+<import src="packs/animacao"/>
+
+<animation>
+  <caption>O vértice acompanha os parâmetros.</caption>
+  <math>y = (x - a)^2 + b</math>
+  <parabola id="p" a="0" b="0"/>
+  <pause/>
+  <set target="p" a="2"/>
+  <pause/>
+  <set target="p" b="1.5" duration="1.5s"/>
+  <pause/>
+  <set target="p" a="-1" b="0"/>
+</animation>
+      </code>
+
+      Resultado:
+
+      <animation id="anim-parabola">
+        <caption>O vértice acompanha os parâmetros.</caption>
+        <math>y = (x - a)^2 + b</math>
+        <parabola id="anim-parabola-p" a="0" b="0"/>
+        <pause/>
+        <set target="anim-parabola-p" a="2"/>
+        <pause/>
+        <set target="anim-parabola-p" b="1.5" duration="1.5s"/>
+        <pause/>
+        <set target="anim-parabola-p" a="-1" b="0"/>
+      </animation>
+
+      <table numbered="false">
+        <header>
+          <column>Atributo</column>
+          <column>Valores</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">target</column>
+          <column>um id do quadro</column>
+          <column>O elemento cujos atributos mudam</column>
+        </row>
+        <row>
+          <column mono="true">duration</column>
+          <column mono="true">1.5s, 800ms</column>
+          <column>Quanto tempo a variação leva</column>
+        </row>
+        <row>
+          <column>qualquer outro</column>
+          <column>um valor</column>
+          <column>O atributo de mesmo nome do alvo vai até este valor. Números variam aos poucos; outros valores são trocados ao fim do passo</column>
+        </row>
+      </table>
+
+      O <c><parabola></c> acima não faz parte do Delta: vem de um pacote de poucas
+      linhas, importado por esta página. O Delta não tem um elemento de gráfico próprio;
+      o que ele define é o <b>protocolo</b>, e o protocolo é este: o elemento declara em
+      <c>observedAttributes</c> os atributos de que o desenho depende e se redesenha
+      quando um deles muda. Qualquer elemento de um pacote que faça isso pode ser
+      animado com <c><set></c>. O pacote desta página, na íntegra
+      (<c>site/packs/animacao/index.js</c> no repositório):
+
+      <code lang="javascript" numbered="false">
+customElements.define(
+  "delta-parabola",
+  class extends HTMLElement {
+    // Os parâmetros: mudar um deles redesenha.
+    static get observedAttributes() {
+      return ["a", "b"];
+    }
+    connectedCallback() {
+      this.draw();
+    }
+    attributeChangedCallback() {
+      this.draw();
+    }
+
+    draw() {
+      const a = Number(this.getAttribute("a")) || 0;
+      const b = Number(this.getAttribute("b")) || 0;
+      // A janela vai de −4 a 4 em x e de −1 a 5 em y, a 40 unidades do SVG por unidade.
+      const X = (x) => ((x + 4) * 40).toFixed(1);
+      const Y = (y) => ((5 - y) * 40).toFixed(1);
+      let curve = "";
+      for (let x = -4; x <= 4.001; x += 0.1) {
+        curve += `${curve ? "L" : "M"}${X(x)} ${Y((x - a) ** 2 + b)}`;
+      }
+      this.innerHTML = `<svg viewBox="0 0 320 240" role="img" aria-label="y = (x − a)² + b">
+        <path class="parabola-axis" d="M0 ${Y(0)}H320M${X(0)} 0V240"/>
+        <path class="parabola-curve" d="${curve}"/>
+        <circle class="parabola-vertex" cx="${X(a)}" cy="${Y(b)}" r="4"/>
+        <text class="parabola-value" x="8" y="20">a = ${a.toFixed(2)}, b = ${b.toFixed(2)}</text>
+      </svg>`;
+    }
+  },
+);
+      </code>
+
+      Como escrever e importar um pacote está em <ref to="temas">Temas e pacotes</ref>.
+    </subsection>
+
+    <subsection id="tag-together">
+      <title>&lt;together&gt;</title>
+
+      Dentro de um passo, as coisas tocam em sequência. O que estiver num
+      <c><together></c> toca ao mesmo tempo.
+
+      <code lang="xml" numbered="false">
+<animation>
+  <caption>Dois lados, de uma vez.</caption>
+  <math id="t">\part{catetos}{a^2 + b^2} = \part{hip}{c^2}</math>
+  <pause/>
+  <together>
+    <note target="t" part="catetos" mark="underline" side="top">os catetos</note>
+    <note target="t" part="hip" mark="underline">a hipotenusa</note>
+  </together>
+</animation>
+      </code>
+
+      Resultado:
+
+      <animation id="anim-juntos">
+        <caption>Dois lados, de uma vez.</caption>
+        <math id="anim-juntos-t">\part{catetos}{a^2 + b^2} = \part{hip}{c^2}</math>
+        <pause/>
+        <together>
+          <note target="anim-juntos-t" part="catetos" mark="underline" side="top">os catetos</note>
+          <note target="anim-juntos-t" part="hip" mark="underline">a hipotenusa</note>
+        </together>
+      </animation>
+    </subsection>
+
+    <subsection id="sobre-animacao-slides">
+      <title>Em apresentações</title>
+
+      Num slide, o quadro não tem moldura nem controles: quem o conduz são as teclas da
+      própria apresentação. Cada avanço toca um passo do quadro, e só depois do último a
+      apresentação segue para o próximo slide. Voltar desfaz um passo.
+
+      <code lang="xml" numbered="false">
+<slide>
+  <title>Completando o quadrado</title>
+  <animation>
+    <math id="q">x^2 + 6x + 5 = 0</math>
+    <pause/>
+    <morph target="q">(x + 3)^2 = 4</morph>
+  </animation>
+</slide>
+      </code>
+
+      O primeiro passo é escrito assim que o slide entra. Para o slide abrir com o quadro
+      vazio, comece o quadro por um <c><pause/></c>. Um exemplo completo está na
+      <ref to="galeria">Galeria</ref>.
+    </subsection>
+
+    <subsection id="sobre-animacao-avisos">
+      <title>O que o compilador confere</title>
+
+      Uma animação com um <c>target</c> errado não quebra a página: o passo apenas não
+      faz nada. Para que isso não passe despercebido, a compilação avisa quando:
+
+      <list>
+        <item>uma ação (<c><pause/></c>, <c><morph></c>, <c><hide></c>…) está fora de um <c><animation></c>;</item>
+        <item>um <c>target</c> não é o <c>id</c> de algo do mesmo quadro;</item>
+        <item>um <c>part</c> não foi nomeado com <c>\part</c> na fórmula alvo;</item>
+        <item>um <c><morph></c> aponta para algo que não é <c><equation></c> nem <c><math></c>;</item>
+        <item><c>mark</c>, <c>side</c>, <c>enter</c> ou uma duração têm um valor que o Delta não conhece.</item>
+      </list>
+
+      Os <c>id</c> valem para o documento inteiro, como sempre: dois quadros não podem
+      repetir o mesmo.
+    </subsection>
+  </section>
+
+  <footer>
+    Feito com ❤️ em Delta no IMPA Tech.
+  </footer>
+</document>

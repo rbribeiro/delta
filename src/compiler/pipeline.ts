@@ -26,6 +26,7 @@ import { expandAnimated } from "./animated.ts";
 import { expandCover } from "./cover.ts";
 import { resolveCollab } from "./collab.ts";
 import { checkUnderstanding } from "./understanding.ts";
+import { checkAnimations } from "./animation.ts";
 import { linkProofs, structureProofs } from "./structure.ts";
 import { linkRemoteProofs } from "./proof-links.ts";
 import { fillProjectBibliography, loadBibliography, numberCitations } from "./bibliography.ts";
@@ -250,6 +251,11 @@ export const PIPELINE: Phase[] = [
         name: "checkUnderstanding",
         what: "<intuition>/<strategy>/<obstacle> on a result or a step: placement errors, no ids, folded by default.",
         each: perFile(checkUnderstanding),
+      },
+      {
+        name: "checkAnimations",
+        what: "<animation> boards: warn on an action outside a board, a target or \\part that is not on it, a <morph> of something that is not a display formula, unknown mark/side/enter values.",
+        each: perFile(checkAnimations),
       },
       {
         name: "summarizeFinal",

@@ -85,8 +85,10 @@ class DeltaList extends HTMLElement {
     }
 
     // Each direct <item> becomes a real <li>; a nested <list> rides along inside an
-    // item's children and upgrades itself once reconnected.
-    this.querySelectorAll(":scope > delta-item").forEach((item) => {
+    // item's children and upgrades itself once reconnected. A <pause/> between two items
+    // (a list on an <animation> board) keeps its place, so the items come in step by step.
+    this.querySelectorAll(":scope > delta-item, :scope > delta-pause").forEach((item) => {
+      if (item.localName === "delta-pause") return void listEl.append(item);
       const li = document.createElement("li");
       li.className = "delta-list-item";
       // Carry reveal fragment attributes onto the real <li> so a list item can be a

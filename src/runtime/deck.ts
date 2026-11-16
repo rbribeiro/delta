@@ -14,6 +14,7 @@
 
 import { t } from "./i18n.ts";
 import { button } from "./elements/shared.ts";
+import type { DeltaAnimation } from "./elements/animation.ts";
 
 /** Public handle exposed as `window.Delta.deck` (null when not a deck). Lets
  *  add-ons (e.g. the upcoming progress bar) read position and drive navigation. */
@@ -57,22 +58,43 @@ export function setupDeck(): Deck | null {
 
   const clamp = (i: number): number => Math.max(0, Math.min(slides.length - 1, i));
 
-  // Per-slide ordered fragment lists (elements the author marked reveal="true").
-  // Effective order = reveal-order if given, else the element's DOM position; a
+  // An <animation> board on a slide steps with the deck: each of its steps is one advance.
+  const isBoard = (el: Element): el is DeltaAnimation => el.localName === "delta-animation";
+  // Steps a board shows without an advance: its first one comes with the slide, unless the
+  // board is itself a fragment (its reveal then plays that step) or opens with a <pause/>.
+  const given = (board: DeltaAnimation): number =>
+    board.matches('[reveal="true"]') || board.startsBlank ? 0 : Math.min(1, board.length);
+
+  // Per-slide ordered fragment lists (elements the author marked reveal="true", and
+  // boards). Effective order = reveal-order if given, else the element's DOM position; a
   // stable sort keeps DOM order as the natural default and the tiebreak, so
-  // reveal-order just repositions an element relative to its peers.
+  // reveal-order just repositions an element relative to its peers. A board appears in
+  // the list once per step the reader advances through.
   const fragmentsOf = (slide: HTMLElement): HTMLElement[] =>
-    [...slide.querySelectorAll<HTMLElement>('[reveal="true"]')]
+    [...slide.querySelectorAll<HTMLElement>('[reveal="true"], delta-animation')]
       .map((el, i) => ({
         el,
         order: el.hasAttribute("reveal-order") ? Number(el.getAttribute("reveal-order")) : i,
       }))
       .sort((a, b) => a.order - b.order)
-      .map((x) => x.el);
+      .flatMap(({ el }) => (isBoard(el) ? Array<HTMLElement>(el.length - given(el)).fill(el) : [el]));
   const frags = slides.map(fragmentsOf);
 
-  const showFragments = (i: number, count: number): void =>
-    frags[i].forEach((el, k) => el.classList.toggle("is-revealed", k < count));
+  // `animate`: the reader advanced, so a board plays the step it gains instead of jumping.
+  const showFragments = (i: number, count: number, animate = false): void => {
+    const steps = new Map<DeltaAnimation, number>();
+    for (const board of slides[i].querySelectorAll<DeltaAnimation>("delta-animation")) {
+      steps.set(board, given(board));
+    }
+    frags[i].forEach((el, k) => {
+      if (!isBoard(el)) el.classList.toggle("is-revealed", k < count);
+      else if (k < count) steps.set(el, steps.get(el)! + 1);
+    });
+    for (const [board, pos] of steps) {
+      if (board.matches('[reveal="true"]')) board.classList.toggle("is-revealed", pos > 0);
+      void board.seek(pos, animate);
+    }
+  };
 
   // Fraction of the deck reached (slide 1 of 4 → 0.25, last slide → 1), published
   // alongside the previous fraction so the active slide's line can animate from
@@ -90,26 +112,32 @@ export function setupDeck(): Deck | null {
   };
 
   // Show `count` fragments of the active slide (clamped to how many it has).
-  const setStep = (count: number): void => {
+  const setStep = (count: number, animate = false): void => {
     step = Math.max(0, Math.min(frags[index].length, count));
-    showFragments(index, step);
+    showFragments(index, step, animate);
     notify();
   };
 
   // Switch the active slide, entering it with `count` fragments shown: none going
-  // forward or jumping, all (Infinity) when stepping back into a prior slide.
-  const enter = (i: number, count: number): void => {
+  // forward or jumping, all (Infinity) when stepping back into a prior slide. Entering by
+  // an advance (`animate`), the slide's boards start from nothing and write their first step.
+  const enter = (i: number, count: number, animate = false): void => {
     slides[index]?.classList.remove("is-active");
     index = clamp(i);
     setProgress();
     slides[index].classList.add("is-active");
-    setStep(count);
+    if (animate) {
+      for (const board of slides[index].querySelectorAll<DeltaAnimation>("delta-animation")) {
+        void board.seek(0);
+      }
+    }
+    setStep(count, animate);
   };
 
   // Reveal the next fragment; once a slide's fragments are all shown, advance.
   const next = (): void => {
-    if (step < frags[index].length) setStep(step + 1);
-    else if (index < slides.length - 1) enter(index + 1, 0);
+    if (step < frags[index].length) setStep(step + 1, true);
+    else if (index < slides.length - 1) enter(index + 1, 0, true);
   };
   // Hide the last fragment; with none left, step back into the prior slide shown.
   const prev = (): void => {

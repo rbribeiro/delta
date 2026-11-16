@@ -133,6 +133,10 @@ delta build artigo.dlt -o artigo.html
           <ref to="apresentacoes">Apresentações</ref>.
         </item>
         <item>
+          <ref to="animacoes">Animações</ref>: quadros que se escrevem passo a passo,
+          com fórmulas que se transformam, notas à mão e gráficos com parâmetros.
+        </item>
+        <item>
           Escrever a várias mãos, com pessoas ou agentes: <ref to="colaboracao">Colaboração</ref>,
           anotações, tarefas, alterações rastreadas e o painel de revisão.
         </item>
