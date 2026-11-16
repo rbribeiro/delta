@@ -1,0 +1,160 @@
+/* animation.css — the <animation> board (runtime/elements/animation.ts).
+   .anim (host) · .anim-frame (the box) · .anim-board (the author's content) ·
+   .anim-ink (SVG overlay: glyph proxies and the marks of notes) · .anim-notes (the
+   labels of notes) · .anim-controls.
+   Everything is laid out in its final place; .anim-off only hides, so nothing reflows.
+   With JS off none of these classes exist and the whole board simply shows.
+   Tokens via var(--delta-*). */
+
+@layer delta.components {
+
+delta-animation { display: block; }
+
+/* The actions are instructions, not content. A <morph> is the exception while JS is off:
+   its form then reads as the next line of the derivation. */
+delta-pause,
+delta-hide,
+delta-show,
+delta-set { display: none; }
+delta-together { display: contents; }
+delta-morph { display: block; margin: 1em 0; }
+.anim delta-morph { display: none; } /* its form has joined the equation it replaces */
+
+.anim {
+  margin: 36px 0 var(--delta-block-gap);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.anim-frame {
+  position: relative; /* the ink overlay covers it */
+  background: var(--delta-surface-1);
+  border: var(--delta-hairline) solid var(--delta-rule);
+  border-radius: var(--delta-radius);
+  box-shadow: var(--delta-shadow);
+  padding: 20px 28px;
+}
+.anim-board:focus-visible {
+  outline: 2px solid var(--delta-accent-ink);
+  outline-offset: 6px;
+  border-radius: var(--delta-radius-sm);
+}
+
+/* The overlay: as large as the frame, drawn over it, never in the way of the pointer.
+   (base.css sizes every svg as a block image; this one is a layer.) */
+.anim-ink {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  overflow: visible;
+  pointer-events: none;
+}
+.anim-ink text {
+  white-space: pre;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* Notes. The mark is a few pen strokes in the overlay; the label is handwriting beside
+   it, placed by the runtime (marks.ts) and as wide as its words, up to a few of them per
+   line. A <note> the runtime has not taken (JS off, a <ref> preview, or one without a
+   target) is a handwritten line where it stands. */
+.anim-mark path {
+  fill: none;
+  stroke: var(--delta-note-ink);
+  stroke-width: 1.7px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.anim-notes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.anim-note,
+delta-note {
+  font-family: var(--delta-hand);
+  font-size: 1.32em; /* the face is small on its body */
+  line-height: 1.1;
+  color: var(--delta-note-ink);
+}
+.anim-note {
+  position: absolute;
+  width: max-content;
+  max-width: 13em;
+  text-align: center;
+}
+.anim-note[data-side="right"] { text-align: left; }
+.anim-note[data-side="left"] { text-align: right; }
+delta-note { display: block; margin: 0.4em 0; }
+.anim delta-note[target] { display: none; } /* it became a mark and a label */
+
+/* Switched off: hidden, but keeping its place. An animation shows it on the way in. */
+.anim-off { visibility: hidden; }
+/* An equation written in pieces shows its number with the first piece. */
+.anim-blank::after { visibility: hidden; }
+/* The forms of a morphed equation share one cell (the grid itself is set inline: KaTeX's
+   own sheet, unlayered, owns `display` here). */
+.anim-forms > .katex { grid-area: 1 / 1; }
+
+/* Controls: a quiet row under the board. */
+.anim-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.anim-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--delta-radius-pill);
+  background: transparent;
+  color: var(--delta-mute);
+  cursor: pointer;
+  transition: background var(--delta-dur-fast) var(--delta-ease),
+              color var(--delta-dur-fast) var(--delta-ease);
+}
+.anim-btn:hover { background: var(--delta-surface-2); color: var(--delta-ink); }
+.anim-btn:focus-visible { outline: 2px solid var(--delta-accent-ink); outline-offset: 1px; }
+.anim-btn:disabled { opacity: 0.35; cursor: default; background: transparent; }
+.anim-btn svg {
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.anim-play { color: var(--delta-accent-ink); }
+.anim-play svg { fill: currentColor; }
+.anim-count {
+  margin-left: 8px;
+  font-family: var(--delta-sans);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  color: var(--delta-mute);
+}
+
+/* On a slide the board is part of the slide: no box, and the deck's keys drive it. */
+.anim-bare { margin: 0; }
+.anim-bare .anim-frame {
+  background: none;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+}
+
+@media print {
+  .anim-controls { display: none; }
+}
+
+}

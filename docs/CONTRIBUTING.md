@@ -215,7 +215,7 @@ Localized text goes through `t(key, fallback)` or `nameOf(tag)` from
 `readIsland` ([island.ts](../src/runtime/island.ts)). Register a single-tag element with its
 class directly (`customElements.define("delta-quote", DeltaQuote)`); only a class shared by
 several tags needs `class extends …{}` per tag. The order elements are registered in matters
-in three places, listed at the top of [elements/index.ts](../src/runtime/elements/index.ts).
+in four places, listed at the top of [elements/index.ts](../src/runtime/elements/index.ts).
 
 Reach for this shape whenever the behavior is local to one element and needs no
 knowledge the browser doesn't already have.
@@ -247,6 +247,13 @@ Tests live in [test/](../test/) and mirror the passes. Patterns to follow:
   result (`lazy()`). See [test/runtime/references.test.ts](../test/runtime/references.test.ts).
   [test/hittest.test.ts](../test/hittest.test.ts) and `overflow.test.ts` use the same browser
   for what only a layout engine can tell (what is under the mouse, what overflows on a phone).
+- **Motion is never waited for.** Headless Chromium draws no frames between two lines of a
+  probe: `requestAnimationFrame` does not tick and an animation never ends by itself. So
+  runtime code that moves things returns Web Animations, and a test either holds one at a
+  chosen time (`a.pause(); a.currentTime = 200`) to look at it, or finishes it
+  (`a.finish()`). Assert on what is painted (computed `visibility`, rectangles), not on the
+  element's own idea of its state. See
+  [test/runtime/animation.test.ts](../test/runtime/animation.test.ts).
 
 When you add a pass, add a matching test file. When you add a numbered environment,
 add a numbering case. When you add or change a runtime element, add a case to the

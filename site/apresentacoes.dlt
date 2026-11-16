@@ -137,6 +137,14 @@
       O <c>animated="true"</c> poupa marcar item por item: ele marca cada filho do
       elemento, sem tocar em títulos e sem sobrescrever um <c>reveal</c> que você
       já tenha escrito à mão.
+
+      <box type="tip">
+        <title>Para escrever no slide como numa lousa</title>
+        O <c>reveal</c> mostra um elemento inteiro de cada vez. Para traçar uma fórmula
+        pedaço por pedaço, transformá-la em outra ou anotá-la à mão, use um
+        <c><animation></c> dentro do slide: os mesmos avanços o conduzem (veja
+        <ref to="animacoes">Animações</ref>).
+      </box>
     </subsection>
 
     <subsection id="tag-progress">

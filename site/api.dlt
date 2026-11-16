@@ -388,6 +388,66 @@ document.addEventListener("delta:review", () => {
       marcação de revisão está em <ref to="colaboracao">Colaboração</ref>.
     </subsection>
 
+    <subsection id="api-animacao">
+      <title>Animações: parâmetros e o quadro</title>
+
+      As <ref to="animacoes">animações</ref> não acrescentam nada a <c>window.Delta</c>.
+      O que um pacote precisa saber cabe em duas coisas.
+
+      <b>Um elemento seu pode ser animado.</b> O <c><set target="id" a="2"/></c> de uma
+      animação escreve o atributo <c>a</c> do alvo quadro a quadro, do valor atual até
+      o pedido. Para acompanhar, o elemento declara o atributo em
+      <c>observedAttributes</c> e se redesenha em <c>attributeChangedCallback</c>. É
+      todo o protocolo: nenhuma função do Delta é chamada, e o elemento continua
+      funcionando fora de uma animação.
+
+      <code lang="javascript" numbered="false">
+customElements.define("delta-meu-grafico", class extends HTMLElement {
+  static get observedAttributes() { return ["a"]; }
+  connectedCallback() { this.draw(); }
+  attributeChangedCallback() { this.draw(); }   // chamado a cada quadro de um <set>
+  draw() { /* desenha a partir de this.getAttribute("a") */ }
+});
+      </code>
+
+      O desenho deve ser barato: durante um <c><set></c> ele roda uma vez por quadro.
+      Um exemplo completo, com o pacote na íntegra, está em
+      <ref to="tag-set">Animações</ref>.
+
+      <b>O quadro pode ser conduzido por código.</b> Cada <c><animation></c> vira um
+      elemento <c>delta-animation</c> com estes membros:
+
+      <table numbered="false">
+        <header>
+          <column>Membro</column>
+          <column>O que faz</column>
+        </header>
+        <row>
+          <column mono="true">length</column>
+          <column>Quantos passos o quadro tem.</column>
+        </row>
+        <row>
+          <column mono="true">pos</column>
+          <column>Quantos deles estão à mostra, de <c>0</c> (quadro vazio) a <c>length</c> (quadro pronto).</column>
+        </row>
+        <row>
+          <column mono="true">seek(pos, animate)</column>
+          <column>Vai para o passo <c>pos</c>. Com <c>animate</c> verdadeiro e um único passo à frente, toca a animação desse passo; em qualquer outro caso, o quadro muda de uma vez. Devolve uma promessa que se resolve quando o quadro chegou lá.</column>
+        </row>
+        <row>
+          <column mono="true">play(), stop()</column>
+          <column>Tocam os passos restantes em sequência (do início, se o quadro já está no fim) e interrompem essa sequência.</column>
+        </row>
+      </table>
+
+      <code lang="javascript" numbered="false">
+const quadro = document.querySelector("#anim\\:euler");
+meuBotao.addEventListener("click", () => quadro.seek(quadro.pos + 1, true));
+      </code>
+
+      É por esses membros que a apresentação conduz os quadros de um slide.
+    </subsection>
+
     <subsection id="sobre-contrato">
       <title>O que não é contrato</title>
 

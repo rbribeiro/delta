@@ -144,6 +144,10 @@
           <column>As cores do destaque de sintaxe dentro de um bloco <c>code</c></column>
         </row>
         <row>
+          <column mono="true">--delta-note-ink</column>
+          <column>A caneta de uma nota numa animação: o traço da marca e as palavras escritas à mão (a letra vem de <c>--delta-hand</c>)</column>
+        </row>
+        <row>
           <column mono="true">--delta-video-play, -play-hover, -play-icon</column>
           <column>O botão de play sobre a imagem de um vídeo (fundo, fundo ao passar o mouse, triângulo)</column>
         </row>

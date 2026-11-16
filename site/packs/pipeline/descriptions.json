@@ -21,6 +21,7 @@
     "linkProofs": "Uma <proof> sem `of` prova o resultado logo antes dela: ganha data-of=\"<id>\" (o rótulo continua só \"Demonstração.\").",
     "structureProofs": "<step> numerados 1, 2.1, … (com id para quem não tem; a 2ª prova de um resultado dá <id>-proof2-step-…) e com a prova fechada; <hyp> numeradas H1, H2, … por resultado; o lugar de cada um é conferido.",
     "checkUnderstanding": "<intuition>/<strategy>/<obstacle> num resultado ou num passo: erro se estiverem fora do lugar ou tiverem id; todas começam fechadas.",
+    "checkAnimations": "Os quadros de <animation>: avisa quando uma ação (<pause/>, <morph>, <hide>…) está fora de um quadro, quando um target ou um \\part não existe nele, quando um <morph> troca algo que não é uma fórmula em destaque e quando mark, side ou enter têm um valor desconhecido.",
     "summarizeFinal": "Só com --final: um único aviso com o que a compilação final deixou pendente.",
     "loadBibliography": "Os <paper> e o arquivo .ref vão para o mapa de artigos compartilhado; o <bibliography> é esvaziado (o título fica).",
     "numberCitations": "Cada <cite> é numerado pela ordem de primeira aparição no projeto; os ids citados entram em referencedIds.",

@@ -60,7 +60,7 @@
     "predocs:site": "npm run assets && npm run trace",
     "docs:site": "node src/cli.ts build site/project.toml",
     "predocs:exemplos": "npm run assets",
-    "docs:exemplos": "node src/cli.ts build site/exemplos/livro/project.toml && node src/cli.ts build site/exemplos/gigante/project.toml && node src/cli.ts build site/exemplos/artigo.dlt -o docs/exemplos/artigo.html && node src/cli.ts build site/exemplos/apresentacao.dlt -o docs/exemplos/apresentacao.html",
+    "docs:exemplos": "node src/cli.ts build site/exemplos/livro/project.toml && node src/cli.ts build site/exemplos/gigante/project.toml && node src/cli.ts build site/exemplos/artigo.dlt -o docs/exemplos/artigo.html && node src/cli.ts build site/exemplos/apresentacao.dlt -o docs/exemplos/apresentacao.html && node src/cli.ts build site/exemplos/animacao.dlt -o docs/exemplos/animacao.html",
     "predocs:watch": "npm run assets && npm run trace",
     "docs:watch": "node src/cli.ts build site/project.toml --watch",
     "preexample": "npm run assets",

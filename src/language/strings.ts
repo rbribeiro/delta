@@ -35,6 +35,7 @@ export const STRINGS: Record<string, Record<string, string>> = {
     equation: "Equation",
     figure: "Figure",
     interactive: "Interactive",
+    animation: "Animation",
     table: "Table",
     video: "Video",
     youtube: "Video", // a ref to a <youtube> reads like its caption
@@ -48,6 +49,11 @@ export const STRINGS: Record<string, Record<string, string>> = {
     copied: "Copied",
     prevSlide: "Previous slide",
     nextSlide: "Next slide",
+    // <animation> controls
+    animPlay: "Play",
+    animPause: "Pause",
+    animNext: "Next step",
+    animPrev: "Previous step",
     // media placeholders
     watchOnYoutube: "Watch on YouTube",
     noVideo: "No video source.",
@@ -170,6 +176,7 @@ export const STRINGS: Record<string, Record<string, string>> = {
     equations: "Equações",
     figure: "Figura",
     interactive: "Interativo",
+    animation: "Animação",
     table: "Tabela",
     video: "Vídeo",
     youtube: "Vídeo",
@@ -183,6 +190,11 @@ export const STRINGS: Record<string, Record<string, string>> = {
     copied: "Copiado",
     prevSlide: "Slide anterior",
     nextSlide: "Próximo slide",
+    // controles de <animation>
+    animPlay: "Reproduzir",
+    animPause: "Pausar",
+    animNext: "Próximo passo",
+    animPrev: "Passo anterior",
     // media placeholders
     watchOnYoutube: "Assistir no YouTube",
     noVideo: "Sem fonte de vídeo.",

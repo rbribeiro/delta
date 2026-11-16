@@ -296,13 +296,11 @@ fragments are shown does it move to the next slide (the reveal.js model).
        the prior slide fully revealed (reveal.js model). Hidden-state CSS (`opacity`/`visibility`,
        gated on `.deck-js`) lives in `components/slide.css`; `<list>` forwards `reveal`/`reveal-order`
        onto its `<li>` so bullets can be fragments
-- [ ] 38. Equation-part reveal (KaTeX `\reveal` macro): reveal pieces of a single equation in any
-       order. `math.ts` enables KaTeX `trust` and passes a `macros` map — `\reveal{…}` →
-       `\htmlClass{delta-reveal}{…}`, `\revealAt{n}{…}` → adds `\htmlData{reveal-order=n}` — so
-       tagged sub-spans render inside the one equation. The deck reveals `.delta-reveal` spans with
-       the **same** stepping logic as item 37, unifying both animation features. (Trade-off:
-       `trust` + the `\html*` extension let LaTeX emit classes/attributes — acceptable since the
-       author owns their own source.)
+- [x] 38. Equation-part reveal: superseded by `\pause` inside an `<animation>` (M10, item 66),
+       which splits a formula into pieces that come in one advance at a time, on a slide or in an
+       article. (The plan here was a `\reveal` macro stepped by the deck; `\pause` reads like
+       Beamer, needs no ordering attribute, and uses `\htmlData` only, so KaTeX `trust` did not
+       have to widen.)
 - [x] 39. `animated="true"` shorthand: a tiny compiler pass (`animated.ts`, run after
        `resolveIncludes` in both entry points) adds `reveal="true"` to every child **element** of an
        `animated` carrier — so `<slide animated="true">` reveals its blocks for free, `<list
@@ -347,3 +345,47 @@ vocabularies so an agent writes them reliably and `grep` finds them. Design + ag
 - [ ] 63. `delta accept <file.dlt> [--all | --id …] [--by …]`: accept/reject tracked changes in the
        source itself (today: edit the source, or build with `--final`)
 - [ ] 64. Margin placement for comments on wide screens (`display="margin"`), reusing the sidenote rail
+
+## M10 — Animations
+
+A board that builds itself up the way a lecturer writes: formulas traced stroke by stroke,
+morphing into each other, annotated by hand, next to graphs that follow a parameter (the
+Manim / 3Blue1Brown idiom). One authoring rule: the board is ordinary Delta laid out in its
+final place, things appear in document order, and `<pause/>` hands over to the reader; an
+action that changes something already there names it with `target="id"`. Almost all runtime
+(`src/runtime/animation/`); user docs (pt): `site/animacoes.dlt`.
+
+- [x] 66. `<animation>` board, `<pause/>` and `\pause`. Numbered and captioned like a figure
+       (`environments.ts`). `runtime/animation/timeline.ts` reads the board once into parts → beats →
+       actions; an action only folds a `State` (elements switched off, attributes set) and `paint` is
+       the single writer, so step k is `paint(stateAt(k))`: back, reload, print and reduced motion are
+       one path. Everything keeps its final place (`visibility: hidden` until its turn), so nothing
+       reflows. In an article the board rests on its final state with a small control bar; on a slide
+       it has no chrome and `deck.ts` steps it with the slide's fragments. `\pause` is a KaTeX macro
+       (`MATH_MACROS`) leaving an inert marker; only top-level markers (and `aligned` cells, row by
+       row) split a formula, because KaTeX's DOM order inside fractions and scripts is not reading order
+- [x] 67. Writing (`runtime/animation/ink.ts`): KaTeX output is font text, so each character gets an
+       SVG `<text>` proxy in one overlay per board, placed by measurement (a `Range` box, a baseline
+       probe, snapped to device pixels as the browser snaps text); its outline is traced with
+       `stroke-dashoffset`, then filled, then the real glyph takes over. No glyph data is shipped and
+       nothing is computed at compile time. Text and math are written; framed blocks fade
+       (`enter="write|fade|none"`, `duration`)
+- [x] 68. `<morph target>` and `\part{name}{…}`: the new form (compile-time KaTeX: `morph` is in
+       `MATH_TAGS`) joins the target equation's cell, stacked on one baseline, so the equation and its
+       number do not move. Proxies of matching glyphs travel (same-named `\part`s pair first, then the
+       k-th occurrence of each character in the same face); the rest fade
+- [x] 69. `<note target part mark side>`, `<hide>`, `<show>` (`runtime/animation/marks.ts`): a seeded,
+       slightly wobbly SVG mark (`circle`, `box`, `underline`, `cross`, `arrow`) and a handwritten
+       label. Tokens `--delta-note-ink` and `--delta-hand`; the Caveat face (OFL, vendored) ships as
+       `HAND_CSS` only in documents that have a `<note>`
+- [x] 70. `<set target a="…"/>`: animated parameters as a protocol, not a plot. The numeric attributes
+       are written frame by frame and any custom element observing them redraws
+       (`docs/AUTHORING_PACKAGES.md`); demo element `<parabola>` in `site/packs/animacao/`.
+       `<together>` plays its children at once; `<pause for="1s"/>` is a timed rest
+- [x] 71. `checkAnimations` (`compiler/animation.ts`): warn-only. An action outside a board, a `target`
+       or `part` that is not on it, a `<morph>` of something that is not a display formula, unknown
+       `mark`/`side`/`enter` values
+- [ ] 72. The `<plot>` pack (branch `feature/plot`) adopts the parameter protocol: function
+       expressions read their parameters from attributes
+- [ ] 73. More marks (`brace`, `highlight`); `\pause` inside fractions and scripts; morphing an inline
+       `<m>`; playing a step backwards (today "back" undoes it at once); play on scroll into view

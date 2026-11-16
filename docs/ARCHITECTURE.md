@@ -123,12 +123,13 @@ with file, line and column.
 The runtime ([src/runtime/](../src/runtime/)) is bundled **separately** from the CLI.
 [scripts/build.ts](../scripts/build.ts) uses esbuild to bundle `src/runtime/index.ts` into a
 minified IIFE string and, together with the stylesheets, writes them as constants into
-`src/generated/assets.ts` (`RUNTIME_JS`, `CORE_CSS`, `THEMES`, `BUILTIN_THEMES`). That file is
+`src/generated/assets.ts` (`RUNTIME_JS`, `CORE_CSS`, `HAND_CSS`, `THEMES`, `BUILTIN_THEMES`). That file is
 generated and git-ignored; every relevant npm script regenerates it first. The build is
 documented in [BUILDING.md](BUILDING.md).
 
 `emit` assembles, in this order: core CSS, the built-in named theme, the per-type theme, the
-KaTeX CSS (only when `mathUsed`), each pack's CSS, the author's theme (last, unlayered);
+KaTeX CSS (only when `mathUsed`), the handwriting face (only when the body has a `<note>`),
+each pack's CSS, the author's theme (last, unlayered);
 then the serialized body, one `<template data-delta-pop="id">` per referenced id (a copy of
 the target; for containers only the title), the `#delta-toc`, `#delta-review` and
 `#delta-i18n` islands, the runtime, and each pack's JS after it (so `window.Delta` exists).
@@ -139,6 +140,36 @@ copy of every referenced target (from the project-wide `globalById` when the tar
 another output). The same inlining seam is how Delta is **extended**: `<import>` packs and
 `project.toml` packages are read at compile time and inlined ([PACKAGES.md](PACKAGES.md),
 [AUTHORING_PACKAGES.md](AUTHORING_PACKAGES.md)).
+
+### Animations: the split at its extreme
+
+An `<animation>` board (formulas written stroke by stroke, morphing, hand-drawn notes,
+animated parameters) is almost entirely runtime, and shows what "the compiler resolves data;
+the runtime draws chrome" means when there is no global data to resolve. The compiler's
+whole share is: two KaTeX macros (`\pause`, `\part`, in `MATH_MACROS`) that leave inert
+`data-delta-*` spans in the formula, `<morph>` joining `MATH_TAGS` so its TeX is rendered,
+and one warn-only pass (`checkAnimations`). Everything else is in
+[runtime/animation/](../src/runtime/animation/):
+
+- **`timeline.ts`** reads the board once, in document order, into parts → beats → actions.
+  An action never touches the page: it *folds* a small `State` (which elements are switched
+  off, which attributes are set), and `paint(state)` is the only writer. Being at step k is
+  `paint(stateAt(k))`, so going back, reloading, printing and reduced motion are one code
+  path; an animation is a decoration played between two states.
+- **`ink.ts`** draws. KaTeX output is font text, which a browser can only paint whole, so
+  each character gets an SVG `<text>` proxy placed by measurement (a `Range` for its box, a
+  zero-size probe for its baseline, snapped to device pixels the way the browser snaps
+  text). The proxy's outline is traced with `stroke-dashoffset`, then filled, and the real
+  glyph takes over. Nothing about the fonts is shipped or computed at compile time. A morph
+  moves the same proxies from one form to the other.
+- **`marks.ts`** draws a note's mark as a seeded, slightly wobbly SVG path and places its
+  handwritten label.
+
+Everything is laid out in its final place from the start (`visibility: hidden` until its
+turn), so a board never reflows. `<set>` is a protocol, not a plot: it writes numeric
+attributes frame by frame, and any custom element observing them animates
+([AUTHORING_PACKAGES.md](AUTHORING_PACKAGES.md)). The deck drives a board on a slide through
+its public `length` / `pos` / `seek()`.
 
 ## File map
 
@@ -176,6 +207,7 @@ src/
     collab.ts                  comment/todo/change/status vocabulary: defaults + warnings
     structure.ts               linkProofs (a proof without `of`; proofs joined to their box), numbered steps and hypotheses
     understanding.ts           reader aids (<intuition>, <strategy>, <obstacle>): placement + fold default
+    animation.ts               <animation> boards: warn-only checks (targets, parts, mark/side/enter values)
     animated.ts, cover.ts      presentation sugar (animated → reveal; <cover> → <slide>)
     bibliography.ts            load .ref papers; number <cite>; fill the (first) <bibliography>
     numbering.ts               assigns num attrs, fills the registry; NumberingState
@@ -184,7 +216,7 @@ src/
     graph-hash.ts              the hash a verification is pinned to (what counts as changing a proof)
     proof-links.ts             linkRemoteProofs: where a result's proof is ("Proof in Section 2.3"), or that it is pending
     proofmap.ts                <proof-map> → a laid-out SVG of the graph (layered layout, at compile time)
-    math.ts                    compile-time KaTeX (+ \ref{} inside math)
+    math.ts                    compile-time KaTeX (+ \ref{} inside math; the \pause and \part macros)
     code.ts                    <code lang> blocks: dedent + highlight
     highlight.ts               the syntax highlighter (Delta's own): one small grammar per language
     toc.ts                     heading tree + auto-slug ids (single + project)
@@ -198,24 +230,30 @@ src/
     katex-css.ts               KaTeX CSS with data: fonts (offline math)
   runtime/
     index.ts                   registers the custom elements; window.Delta
-    deck.ts                    the presentation controller
+    deck.ts                    the presentation controller (steps a slide's fragments and its <animation> boards)
     address.ts                 the URL hash as the position: a deck's slide number, a ToC click's section
     utils.ts, i18n.ts          the shared popover controller; t(key) and nameOf(tag) from the #delta-i18n island
     island.ts                  readIsland: the JSON islands (#delta-i18n, #delta-toc, #delta-review), parsed once
     elements/                  one <delta-*> custom element per file (browser chrome)
+    animation/                 what an <animation> board plays (its element is elements/animation.ts):
+      timeline.ts              the board read into steps; State, fold/paint, seek, play-all
+      ink.ts                   glyph proxies: measuring, writing, morphing
+      marks.ts                 a note's hand-drawn mark and its label
   styles/
     base.css                   @layer delta.base — tokens + page grid + primitives
     components/*.css           @layer delta.components — one file per component
     themes/<type>.css          @layer delta.theme — per-document-type overrides
     builtin/<name>.css         @layer delta.builtin — named themes (theme="impatech")
     staged/                    chrome no element builds yet; not part of the build (see its README)
-  generated/assets.ts          GENERATED, git-ignored (RUNTIME_JS + CORE_CSS + THEMES + BUILTIN_THEMES)
+  styles/fonts/                vendored woff2 (Newsreader, the body face; Caveat, the notes' handwriting) + LICENSE
+  generated/assets.ts          GENERATED, git-ignored (RUNTIME_JS + CORE_CSS + HAND_CSS + THEMES + BUILTIN_THEMES)
 scripts/build.ts               bundles runtime → assets.ts, and CLI → dist/cli.js
 scripts/trace.ts               compiles the explorer's sample with the trace hook → site/packs/pipeline/dist/index.js
 site/                          the documentation site, written in Delta (pt-BR); compiled into docs/
 site/packs/pipeline/           the pipeline explorer pack (element.js, theme.css, descriptions.json, sample/)
 site/inicio.css                the landing page's theme (site/index.dlt); every other page shares site/tema.css
 site/packs/inicio/             the landing page's pack: <go> (a same-tab link) and <h> (a real heading element)
+site/packs/animacao/           the animations page's pack: <parabola>, a 40-line element animated by <set>
 site/exemplos/                 the live examples linked from the landing page (article, presentation, book project);
                                built by `npm run docs:exemplos` into docs/exemplos/, outside the site project
 examples/                      hello.dlt (single file), project/ (multi-file), collab.dlt, slides.dlt

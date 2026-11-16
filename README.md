@@ -78,9 +78,12 @@ site in `docs/` (`npm run docs`). [docs/index.html](docs/index.html) is the land
 [site/comecar.dlt](site/comecar.dlt) is the getting-started guide and the tag reference
 begins at [site/estrutura.dlt](site/estrutura.dlt). The CLI reference is
 [site/cli.dlt](site/cli.dlt), and [site/api.dlt](site/api.dlt) documents the `window.Delta`
-runtime API for package authors, with a live pop-over demo. The live examples linked from the
-landing page (an article with review marks, a presentation, a two-chapter book) are in
-[site/exemplos/](site/exemplos/) and are published under `docs/exemplos/`.
+runtime API for package authors, with a live pop-over demo.
+[site/animacoes.dlt](site/animacoes.dlt) covers `<animation>`: boards that write themselves
+step by step (formulas traced and morphed, hand-drawn notes, animated parameters). The live
+examples linked from the landing page (an article with review marks, two presentations, a
+two-chapter book) are in [site/exemplos/](site/exemplos/) and are published under
+`docs/exemplos/`.
 
 - **[docs/TUTORIAL_COMPONENTES.md](docs/TUTORIAL_COMPONENTES.md)** (pt-BR) — building a
   custom component end to end, the entry point to the package system.

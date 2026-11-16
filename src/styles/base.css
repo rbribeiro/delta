@@ -197,6 +197,10 @@
   --delta-video-play-hover: rgb(255 0 0);
   --delta-video-play-icon:  rgb(255 255 255);
 
+  /* A note on an <animation> board (components/animation.css): the pen that draws its
+     mark and writes its words. One ink for both, since one hand holds the pen. */
+  --delta-note-ink:         var(--delta-accent-ink);
+
   /* The quiet figures: heading numbers and equation numbers. One token, because
      they are the same typographic gesture — a number set back from its content. */
   --delta-num:          var(--delta-mute);
@@ -208,6 +212,9 @@
   --delta-serif:        "Newsreader", "Source Serif 4", ui-serif, Georgia, serif;
   --delta-sans:         ui-sans-serif, -apple-system, "Helvetica Neue", system-ui, sans-serif;
   --delta-mono:         "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  /* Handwriting: the notes of an <animation>. Caveat ships with the documents that have a
+     note (compiler/emit.ts); the rest of the stack is what systems call handwriting. */
+  --delta-hand:         "Caveat", "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
 
   /* -- type weight + variable-font axes. Headings and bold text read these
      instead of hardcoding a number, so a theme built on a heavier family can
