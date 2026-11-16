@@ -43,7 +43,8 @@ function followDeck(deck: Deck): void {
 }
 
 function followPage(): void {
-  const nav = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+  const nav = performance.getEntriesByType("navigation")[0] as
+    PerformanceNavigationTiming | undefined;
   if (hashId() && nav?.type !== "reload") flashTarget(hashId());
   window.addEventListener("hashchange", () => {
     if (hashId()) flashTarget(hashId());

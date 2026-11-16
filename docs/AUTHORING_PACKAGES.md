@@ -84,9 +84,10 @@ Every field is optional; an absent manifest means the `index.js` + `theme.css` c
 ```
 
 - **`tags`** — list the author-facing tag names you register, **bare** (`"callout"`, not
-  `"delta-callout"`). Declaring them is good documentation today and the hook for **tag-gating**
-  (roadmap 48): a document that never uses one of your tags won't inline your JS/CSS at all. Declare
-  them accurately.
+  `"delta-callout"`). Today the list is documentation only: every imported package is inlined,
+  whether or not the document uses its tags. It is reserved for **tag-gating** (roadmap 48, not
+  implemented yet): a document that never uses one of your tags would not inline your JS/CSS at
+  all. Declare them accurately so that works the day it lands.
 - **`needs`** — depend on another package; the resolver inlines dependencies first so your code can
   build on theirs. A dependency library that exposes no author tags should declare no `tags` (it is
   always inlined for anyone who needs it).

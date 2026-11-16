@@ -48,8 +48,8 @@ node --test --test-name-pattern "resets across" test/
         versionado. Todo script do <c>npm</c> que precisa dele o regenera antes. Mas se você
         chamar <c>node --test</c> ou <c>tsc</c> diretamente numa cópia recém-clonada, ou depois de
         mexer em <c>src/runtime/</c> ou <c>src/styles/</c>, rode <c>npm run assets</c> uma
-        vez, ou verá um módulo faltando ou um runtime velho. O mesmo vale para os dados do
-        explorador (<c>npm run trace</c>).
+        vez, ou verá um módulo faltando ou um runtime velho (<c>test/assets.test.ts</c> acusa
+        o arquivo velho). O mesmo vale para os dados do explorador (<c>npm run trace</c>).
       </box>
     </subsection>
 
@@ -317,7 +317,8 @@ describe("countWords", () => {
       <c>src/language/</c> concorda com os textos traduzidos e com o CSS.
 
       O runtime tem os seus testes em <c>test/runtime/</c>, no Chromium da máquina (sem
-      janela; numa máquina sem Chromium eles são pulados): <c>inspect(src, script)</c>
+      janela; numa máquina sem Chromium eles são pulados, menos na CI, onde a falta do
+      navegador reprova a rodada): <c>inspect(src, script)</c>
       compila o documento, abre a página e roda o <c>script</c> dentro dela. O script olha o
       que o leitor veria e faz o que ele faria: <c>text(".box-tag")</c>,
       <c>click(".collapse-toggle")</c>, <c>key("Escape")</c>, e devolve o que o teste confere.
@@ -331,7 +332,8 @@ describe("countWords", () => {
       <title>Antes do pull request</title>
 
       <list marker="dash">
-        <item><c>npm test</c> e <c>npm run typecheck</c> verdes.</item>
+        <item><c>npm test</c> e <c>npm run typecheck</c> verdes. A CI roda os dois em todo pull request, com os testes do navegador.</item>
+        <item><c>npm run format</c> rodou: a CI confere a formatação (Prettier) e reprova arquivo fora do padrão.</item>
         <item>O passo tem um arquivo próprio, a assinatura <c>(doc, ctx)</c>, e uma linha em <c>pipeline.ts</c> com um <c>what</c> honesto.</item>
         <item>Nada de <c>throw</c> para erro do autor; <c>error</c>/<c>warn</c> com <c>el.pos</c>.</item>
         <item>Arquivos lidos passam por <c>readUserFile</c>; URLs são recusadas.</item>

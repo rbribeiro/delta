@@ -22,7 +22,8 @@ export interface FinalStats {
  *   <change>                             accepted: <new> (or the bare insertion) stays, <old> goes
  *   status / by / verified-by / verified-on / against  removed from every element (`stripReviewMarks`)
  *
- * Runs right after includes, BEFORE bibliography and numbering — so a `<cite>` quoted
+ * Runs in the `load` phase, after includes and the `[document]` defaults, BEFORE the
+ * collaboration checks, bibliography and numbering — so a `<cite>` quoted
  * inside a dropped comment never numbers a paper, and nothing stripped ever consumed a
  * counter (the OPAQUE set in language/tags.ts already keeps a review build's numbers identical).
  * The block marks go later, at the start of render: the proof graph reads a proof's

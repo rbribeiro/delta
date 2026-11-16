@@ -1,7 +1,6 @@
 # Delta roadmap
 
-The feature set comes from `DELTA_INFO.md`. Items are ordered so each milestone is
-usable on its own. Checked items are implemented and tested.
+Items are ordered so each milestone is usable on its own. Checked items are implemented and tested.
 
 ## M1 — Core authoring loop (v0.1)
 
@@ -14,8 +13,8 @@ usable on its own. Checked items are implemented and tested.
        fonts, runtime IIFE inlined, **"no external resources" test**
 - [x] 6. `<ref to="…">`: `references.ts` resolves against the registry (writes `num`+`kind`), emit
        snapshots each referenced target into `<template data-delta-pop="id">`; `delta-ref` composes the
-       localized link ("Theorem 1.1") and clicks open a `.delta-pop` preview cloned from the template
-       (no `fetch`), with a jump-to button. Unresolved/`to`-less refs warn and render as inert text
+       localized link ("Theorem 1.1"); resting the mouse on it (a click pins it) opens a `.delta-pop`
+       preview cloned from the template (no `fetch`), with a jump-to button. Unresolved/`to`-less refs warn and render as inert text
 - [x] 7. Table of contents: `<toc/>` → `toc.ts` builds the heading tree (auto-slugging ids for headings
        without one), emit ships it as the `#delta-toc` island, `<delta-toc>` renders a nested nav that
        smooth-scrolls + flashes the target; `depth` (default subsections) limits it at runtime
@@ -165,8 +164,9 @@ usable on its own. Checked items are implemented and tested.
        `index.js` + optional `theme.css` (relative to the doc) and inlines both — the JS in a `<script>`
        **after** the runtime (so `window.Delta` is available; the pack registers its own `delta-*`
        elements), the CSS in a `<style>` **before** the author theme. Imports are direct children of
-       `<document>` and are stripped from the tree; a missing/remote pack is a warning, an external
-       reference inside a pack file warns but is still inlined, and the same pack imported twice inlines once
+       `<document>` and are stripped from the tree; a missing pack is an error and a remote one a warning, an
+       external reference inside a pack file warns but is still inlined, and the same pack imported twice
+       inlines once (with a warning)
 - [x] 46. Package system (npm + `project.toml` + `<import>`): the `<import>` pack generalized into a
        distributable **package** — an npm dependency (`<import src="pkg-name">` resolved from `node_modules`,
        or a project-wide `packages = [...]` in `project.toml`) or a local folder, with an optional `delta`
@@ -215,7 +215,8 @@ usable on its own. Checked items are implemented and tested.
 
 - [x] 28. `lang` attribute + i18n strings: `strings.ts` table (en + pt), `#delta-i18n` data-island,
        runtime `t()`; environment labels localized. 
-- [ ] 29. Diagnostics polish: warnings for unresolved refs/cites, unclosed math regions
+- [x] 29. Diagnostics polish: warnings for unresolved refs/cites, unclosed math regions (an unmatched
+       `$` is an error since strict `$`)
 - [x] 30. Author documentation (docs/get-started) and richer examples
 - [x] 65. Code component with highlight syntax
 
@@ -347,3 +348,47 @@ vocabularies so an agent writes them reliably and `grep` finds them. Design + ag
 - [ ] 63. `delta accept <file.dlt> [--all | --id …] [--by …]`: accept/reject tracked changes in the
        source itself (today: edit the source, or build with `--final`)
 - [ ] 64. Margin placement for comments on wide screens (`display="margin"`), reusing the sidenote rail
+
+## M10 — Maintainability
+
+Not features: the safety nets, the upstream path for student packs, and the clean-ups that keep
+Delta easy to contribute to. The review behind this milestone, with the reason, the evidence and
+the "done when" of every item, is [docs/MAINTAINABILITY_PLAN.md](docs/MAINTAINABILITY_PLAN.md);
+read the work package there before starting an item. Items are named by work package (WP), not
+numbered, and are listed in the suggested order. One WP is one PR.
+
+Safety nets
+- [x] WP-S1. CI: typecheck + tests (with Chromium) on every PR; browser suites fail, not skip, in CI
+- [x] WP-S2. Publish the site from CI; `docs/*.html` and `docs/exemplos/` leave git
+- [x] WP-S3. A test that fails when `src/generated/assets.ts` is stale
+- [x] WP-S4. Dead files and code removed; doc drift fixed; a test pinning the docs to `PIPELINE`
+- [x] WP-S5. Formatter enforced by CI (optional; maintainer's call)
+
+Packs upstream (standard packs: `packs/<name>/`, TypeScript, shipped in the CLI, loaded by tag)
+- [ ] WP-P1. Build `packs/*` into `BUILTIN_PACKS`; TypeScript enforced; no imports from outside the pack
+- [ ] WP-P2. Emit inlines a standard pack when one of its tags is used; an explicit pack wins
+- [ ] WP-P3. Manifest `strings` merged into the i18n island; the `window.Delta` contract typed in one file
+- [ ] WP-P4. Invariants test, `packs/example/`, the admission checklist and the three-tier docs
+- [ ] Port `plot`, `question` and `ai-use` into `packs/` (by their authors, after WP-P4)
+
+Runtime
+- [ ] WP-R1. Folder layout: `elements/` registers tags, the rest of `src/runtime/` is shared library
+       (after `feature/animation` is merged)
+- [ ] WP-R6. Runtime tests: page errors fail `inspect()`, one test style, smoke tests for untested tags
+- [ ] WP-R2. One fold helper, one activation helper; check Space on a focused control in a deck
+- [ ] WP-R4. Shared chrome in `delta.shells`; a test proving CSS file order does not matter
+- [ ] WP-R3. Named helpers for the DOM contracts between elements
+- [ ] WP-R5. Accessibility: keyboard-reachable citations, popover role, `aria-pressed` on toggles
+
+Compiler ↔ runtime contract
+- [ ] WP-K1. One definition of each JSON island (`src/language/islands.ts`)
+- [ ] WP-K2. A table of compiler-written attributes, kept honest by a test
+
+Compiler hygiene
+- [ ] WP-C1. Pipeline table: every step calls a function of its own name
+- [ ] WP-C2. One tree walker with named skip policies
+- [ ] WP-C3. Local tag sets and vocabularies back in `src/language/`
+- [ ] WP-C4. Same API and failure rule for one file and for a project
+- [ ] WP-C5. Diagnostics carry a code
+- [ ] WP-C6. `graph.ts`, `graph-report.ts`, `commands.ts` split along their seams; one `lineOf`
+- [ ] WP-C7. Pass tests use the production front end (`parseSource`)

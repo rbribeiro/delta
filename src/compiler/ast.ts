@@ -4,7 +4,7 @@
  * numbering pass writes `num`); there are no per-feature node subclasses, so adding
  * an environment is configuration, not a new node type. RawNode carries pre-rendered
  * HTML the emitter must not escape: KaTeX output, highlighted code, a proof map's SVG,
- * and the `<br>`s of a blank line inside `<linebreaks>`.
+ * and the `<br><br>` a blank line in prose becomes (`resolveLineBreaks`).
  */
 
 /** A position represents the location of a node in the source document. It is used for warning and error reporting. */

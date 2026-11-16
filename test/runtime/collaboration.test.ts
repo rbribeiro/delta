@@ -128,7 +128,10 @@ describe.skipIf(!BROWSER)("status marks", () => {
 
   it("opens the history from the mark, without folding the box", () => {
     expect(facts().title).toBe("Verified");
-    expect(facts().rows).toEqual(["Written by Claude (agent)", "Checked by Ana Ribeiro, Sep 13, 2026"]);
+    expect(facts().rows).toEqual([
+      "Written by Claude (agent)",
+      "Checked by Ana Ribeiro, Sep 13, 2026",
+    ]);
     expect(facts().avatars).toEqual(["agent", "human"]);
     expect(facts().headFolds).toBe(false);
     expect(facts().open).toBe("Open");
@@ -205,7 +208,12 @@ describe.skipIf(!BROWSER)("<review>", () => {
   );
 
   it("summarizes open work and lists the items grouped by kind", () => {
-    expect(facts().stats).toEqual(["1 open comments", "1 open tasks", "0 pending changes", "1 Sketch"]);
+    expect(facts().stats).toEqual([
+      "1 open comments",
+      "1 open tasks",
+      "0 pending changes",
+      "1 Sketch",
+    ]);
     expect(facts().groups).toEqual(["Annotations", "Tasks", "Blocks"]);
     expect(facts().items).toBe(4);
     expect(facts().loc).toBe("§ 1 Intro");
@@ -268,8 +276,16 @@ describe.skipIf(!BROWSER)("previews (refs, status marks)", () => {
   );
 
   it("follow their trigger while it scrolls, and close once it leaves the screen", () => {
-    expect([facts().markClick, facts().markFollows, facts().markOffscreen]).toEqual(["status-history", true, null]);
-    expect([facts().refClick, facts().refFollows, facts().refOffscreen]).toEqual(["xref-pop", true, null]);
+    expect([facts().markClick, facts().markFollows, facts().markOffscreen]).toEqual([
+      "status-history",
+      true,
+      null,
+    ]);
+    expect([facts().refClick, facts().refFollows, facts().refOffscreen]).toEqual([
+      "xref-pop",
+      true,
+      null,
+    ]);
   });
 
   it("open when a mouse rests on the trigger and close when it leaves (where there is a mouse)", () => {

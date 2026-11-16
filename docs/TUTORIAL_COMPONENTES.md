@@ -563,8 +563,9 @@ está no bloco `:root` de [`src/styles/base.css`](../src/styles/base.css) e resu
 resto. Um seletor `.quote-author { … }` solto vazaria para qualquer elemento com essa classe.
 Escreva sempre `delta-quote .quote-author`.
 
-> Uma nota de cascata: o CSS do core vive dentro de `@layer` (`delta.base`, `delta.components`,
-> `delta.theme`), mas o CSS de pacote é inlinado **fora** de qualquer layer, o que o coloca
+> Uma nota de cascata: o CSS do core vive dentro de seis `@layer` (`delta.base`, `delta.builtin`,
+> `delta.mode`, `delta.shells`, `delta.components`, `delta.theme`; o topo de
+> `src/styles/base.css` explica cada uma), mas o CSS de pacote é inlinado **fora** de qualquer layer, o que o coloca
 > naturalmente acima do core. Ainda assim o tema do autor (`<document theme="meu.css">`) vem
 > depois e vence você — é intencional: quem escreve o documento tem a última palavra.
 

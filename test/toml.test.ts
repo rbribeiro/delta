@@ -18,7 +18,8 @@ function error(src: string): TomlError {
 function projectFiles(dir: string): string[] {
   const out: string[] = [];
   for (const name of readdirSync(dir)) {
-    if (name === "node_modules" || name === "dist" || name === "docs" || name.startsWith(".")) continue;
+    if (name === "node_modules" || name === "dist" || name === "docs" || name.startsWith("."))
+      continue;
     const p = join(dir, name);
     if (statSync(p).isDirectory()) out.push(...projectFiles(p));
     else if (name === "project.toml") out.push(p);
@@ -57,7 +58,10 @@ packages = []
 lang         = "pt-BR"
 theme-accent = "orange"
 `);
-    expect(data).toEqual({ inputs: ["a.dlt"], document: { lang: "pt-BR", "theme-accent": "orange" } });
+    expect(data).toEqual({
+      inputs: ["a.dlt"],
+      document: { lang: "pt-BR", "theme-accent": "orange" },
+    });
   });
 
   it("parses integers and booleans into values, so config.ts can reject them by type", () => {
@@ -76,7 +80,11 @@ theme-accent = "orange"
 b = 'C:\raw\path'
 c = [["x", "y"], []]
 `);
-    expect(data).toEqual({ a: 'quote " slash \\ tab \t café', b: "C:\\raw\\path", c: [["x", "y"], []] });
+    expect(data).toEqual({
+      a: 'quote " slash \\ tab \t café',
+      b: "C:\\raw\\path",
+      c: [["x", "y"], []],
+    });
   });
 
   it("accepts CRLF line endings and a dotted [a.b] header", () => {
@@ -89,7 +97,10 @@ c = [["x", "y"], []]
     for (const f of files) {
       const data = parseToml(readFileSync(f, "utf8"));
       expect(Array.isArray(data.inputs), f).toBe(true);
-      expect((data.inputs as unknown[]).every((i) => typeof i === "string"), f).toBe(true);
+      expect(
+        (data.inputs as unknown[]).every((i) => typeof i === "string"),
+        f,
+      ).toBe(true);
     }
   });
 });

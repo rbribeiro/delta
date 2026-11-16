@@ -3,8 +3,9 @@
 #   npm run docs          compila uma vez
 #   npm run docs:watch    recompila a cada alteração
 #
-# A saída vai direto para docs/, que é o diretório que o GitHub Pages publica.
-# Por isso os HTMLs gerados são versionados junto com os fontes.
+# A saída vai para docs/. Os HTMLs gerados NÃO são versionados (.gitignore): a CI
+# compila o site e publica docs/ no GitHub Pages a cada push na main
+# (.github/workflows/pages.yml).
 #
 # Os exemplos ao vivo (site/exemplos/) NÃO fazem parte deste projeto: um projeto
 # compartilha numeração e sumário, e um artigo, uma apresentação e um livro de

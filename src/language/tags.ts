@@ -75,8 +75,6 @@ export const LITERAL_TAGS: ReadonlySet<string> = new Set(["code", "c"]);
 /** Tags whose text is taken literally (math or code): never `$`-scanned, never walked into. */
 export const RAW_TAGS: ReadonlySet<string> = new Set([...MATH_TAGS, ...LITERAL_TAGS]);
 
-/** Collaboration items: numbered, collected by `<review>`, removed by `--final`. */
-export const COLLAB_TAGS: ReadonlySet<string> = new Set(["comment", "todo", "change"]);
 /** Structural parts of the collaboration vocabulary; never blocks in their own right. */
 export const COLLAB_PARTS: ReadonlySet<string> = new Set([
   "reply",

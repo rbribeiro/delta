@@ -41,8 +41,12 @@ documented in [BUILDING.md](BUILDING.md).
 
 ## Conventions
 
-- **Style follows the file you are in**: 100-column lines, double quotes, semicolons, trailing
-  commas, two-space indent. There is no formatter to run; keep a diff about what it changes.
+- **Formatting is Prettier's** ([.prettierrc.json](../.prettierrc.json): 100 columns, double
+  quotes, semicolons, trailing commas, two-space indent). Run `npm run format` before you
+  push; CI runs `npm run format:check` and fails on an unformatted file, so nobody reviews
+  style. It formats code and config (`.ts`, `.js`, `.json`, `.yml`); CSS and the Markdown
+  docs are aligned and wrapped by hand ([.prettierignore](../.prettierignore)). A table that
+  reads better one row per line keeps its shape with a `// prettier-ignore` above it.
 - **ESM throughout**, `verbatimModuleSyntax` on — use `import type` for type-only
   imports.
 - Relative imports always carry the **`.ts` extension** (`from "./ast.ts"`): Node runs the
@@ -52,12 +56,15 @@ documented in [BUILDING.md](BUILDING.md).
   annotations, interfaces, `import type`. No `enum`, no `namespace`, no
   `constructor(private x)`; Node would refuse to run them.
 - CSS is namespaced `--delta-*` and lives under [src/styles/](../src/styles/) in
-  three cascade layers (declared once at the top of
-  [base.css](../src/styles/base.css)): `delta.base` (tokens, page grid, shared
-  primitives), `delta.components` (Delta's chrome, one file per feature under
+  six cascade layers, declared once, lowest first, at the top of
+  [base.css](../src/styles/base.css) (which says why each sits where it does):
+  `delta.base` (tokens, page grid, shared primitives), `delta.builtin` (a named theme,
+  `theme="impatech"`, tokens only), `delta.mode` (the `[data-accent]` and `[data-mode]`
+  overlays), `delta.shells` (chrome several components share: the popover shell, the
+  disclosure wedge), `delta.components` (Delta's chrome, one file per feature under
   `components/`), and `delta.theme` (per-document-type token overrides under
   `themes/`, selected by `<document type="…">`). Theming means overriding the
-  `--delta-*` tokens; the theme layer always wins over base and components, so a
+  `--delta-*` tokens; the theme layer always wins over the others, so a
   theme only needs to restate the few variables it changes. New components style
   with **classes** in their own `components/<name>.css`.
 - Diagnostics, not exceptions: report problems with `error(ctx, msg, pos)` /
@@ -191,7 +198,8 @@ label, and toggles a class the CSS responds to. `applyCollapsible(host, label)` 
 exactly this — it moves the label's following siblings into a `.collapse-body` (so even
 loose text folds) and toggles `.is-collapsed`; `DeltaSection`/`DeltaEnvironment` call it
 with their heading / box tag / proof lead. The styles live in
-[components/collapse.css](../src/styles/components/collapse.css) (`@layer delta.components`),
+[components/collapse.css](../src/styles/components/collapse.css) (the shared wedge in
+`@layer delta.shells`, so a component refining it always wins; the rest in `delta.components`),
 and the new element/behavior is registered in `defineComponents`.
 
 Before writing chrome by hand, check [shared.ts](../src/runtime/elements/shared.ts): it
@@ -236,9 +244,13 @@ Tests live in [test/](../test/) and mirror the passes. Patterns to follow:
 - **Architecture tests** live in [test/pipeline.test.ts](../test/pipeline.test.ts): the step
   order, "a single file equals a project of one file", the trace hook and `stopAfter`.
   [test/language.test.ts](../test/language.test.ts) checks that the vocabulary agrees with
-  itself, the strings and the CSS.
+  itself, the strings and the CSS. [test/docs.test.ts](../test/docs.test.ts) fails when a
+  `PIPELINE` step is missing from `ARCHITECTURE.md` or from the explorer's
+  `descriptions.json`, and [test/assets.test.ts](../test/assets.test.ts) when
+  `src/generated/assets.ts` is stale (run `npm run assets`).
 - **Runtime tests** live in [test/runtime/](../test/runtime/) and run in the machine's
-  Chromium (through [test/browser.ts](../test/browser.ts); they skip when none can start):
+  Chromium (through [test/browser.ts](../test/browser.ts); they skip when none can start,
+  except in CI, where a missing browser fails the run):
   `inspect(dlt, script)` from [test/runtime/helpers.ts](../test/runtime/helpers.ts) compiles
   the document, loads it headless, runs `script` inside the page and returns what it
   returns. The script reads and does what the reader would: `text(".box-tag")`,
@@ -247,6 +259,10 @@ Tests live in [test/](../test/) and mirror the passes. Patterns to follow:
   result (`lazy()`). See [test/runtime/references.test.ts](../test/runtime/references.test.ts).
   [test/hittest.test.ts](../test/hittest.test.ts) and `overflow.test.ts` use the same browser
   for what only a layout engine can tell (what is under the mouse, what overflows on a phone).
+
+**CI** ([.github/workflows/ci.yml](../.github/workflows/ci.yml)) runs `npm run format:check`,
+`npm run typecheck` and `npm test`, browser suites included, on every pull request and every push to `main`.
+A PR is ready to review when it is green.
 
 When you add a pass, add a matching test file. When you add a numbered environment,
 add a numbering case. When you add or change a runtime element, add a case to the

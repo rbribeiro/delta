@@ -21,7 +21,11 @@ export { BROWSER };
  * `click(sel)`, `key(k, target?)` (a keydown), `openPopover()` (the bubble that is open),
  * and `await` (the script runs in an async function; `await sleep(ms)` lets a promise settle).
  */
-export function inspect<T = Record<string, unknown>>(dlt: string, script: string, file = "test/doc.dlt"): T {
+export function inspect<T = Record<string, unknown>>(
+  dlt: string,
+  script: string,
+  file = "test/doc.dlt",
+): T {
   const probe = `
     const $ = (s, root = document) => root.querySelector(s);
     const $$ = (s, root = document) => [...root.querySelectorAll(s)];
@@ -40,7 +44,10 @@ export function inspect<T = Record<string, unknown>>(dlt: string, script: string
       });`;
   const raw = evaluate(compileHtml(dlt, { file }), probe);
   if (!raw) throw new Error("the page produced no result: the runtime or the probe did not finish");
-  const out = JSON.parse(Buffer.from(raw, "base64").toString("utf8")) as { result?: T; error?: string };
+  const out = JSON.parse(Buffer.from(raw, "base64").toString("utf8")) as {
+    result?: T;
+    error?: string;
+  };
   if (out.error !== undefined) throw new Error(`the probe failed in the page:\n${out.error}`);
   return out.result as T;
 }

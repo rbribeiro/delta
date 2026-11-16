@@ -19,15 +19,10 @@ export function loadBibliography(doc: ElementNode, ctx: CompileContext): void {
     }
     if (bib.attrs.src) loadRefFile(bib.attrs.src, ctx, bib);
     // Database consumed (papers are registered); keep only an optional <title> so the
-    // author's custom heading survives. resolveCitations re-adds the cited papers after it.
+    // author's custom heading survives. fillBibliography re-adds the cited papers after it.
     const title = titleOf(bib);
     bib.children = title ? [title] : [];
   }
-}
-
-export function resolveCitations(doc: ElementNode, ctx: CompileContext): void {
-  numberCitations(doc, ctx);
-  fillBibliography(doc, ctx);
 }
 
 /**
@@ -81,10 +76,9 @@ function fillBibliography(doc: ElementNode, ctx: CompileContext): void {
     return;
   }
   bib.children.push(
-    ...ctx.citedPapers.map((id, i) => {
+    ...ctx.citedPapers.map((id) => {
       const paper = ctx.papers.get(id)!;
       paper.attrs.id = id;
-      paper.attrs["data-cite-num"] = String(i + 1);
       return paper;
     }),
   );
