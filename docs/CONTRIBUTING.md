@@ -86,12 +86,14 @@ the browser can't compute on its own, or just behavior?**
 |---|---|---|
 | Pure numbering | A row in [environments.ts](../src/language/environments.ts) + its family in [tags.ts](../src/language/tags.ts) | a new theorem-like environment |
 | Data about *other* elements, resolved at compile time | A new pass + a `ctx` field, a step in [pipeline.ts](../src/compiler/pipeline.ts) | `<ref>`, table of contents, `<cite>`, bibliography, `<include>` |
-| Only local browser behavior | A class in its own file under [src/runtime/elements/](../src/runtime/elements/) | collapsible sections, pop-over interaction |
+| Only local browser behavior, for chrome every document may need | A class in its own file under [src/runtime/elements/](../src/runtime/elements/) | collapsible sections, pop-over interaction |
+| Only browser behavior, for an optional component with its own tags | A **standard pack**: one TypeScript folder under [packs/](../packs/), loaded only where its tag is used ([packs/README.md](../packs/README.md)) | `<pack-example>`; plots, quizzes |
 
 The rule of thumb: **anything requiring knowledge of another element** (its number,
 its content, where it sits in the document) **is a compile-time pass that reads or
 writes `ctx.registry`** — because the browser can't `fetch` other files from
-`file://`. Anything purely local (toggle, hover, click) is a runtime element.
+`file://`. Anything purely local (toggle, hover, click) is a runtime element, and an optional
+component with tags of its own is a standard pack, which needs no change outside its folder.
 
 ---
 

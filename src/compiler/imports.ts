@@ -14,7 +14,7 @@ import { EXTERNAL_REF } from "./theme.ts";
 import { isRemote, readUserFile } from "./files.ts";
 import { BUILTIN_PACKS } from "../generated/assets.ts";
 
-const JS_EXTERNAL_REF = /\bfetch\s*\(|\bimport\s*\(|https?:\/\//i;
+export const JS_EXTERNAL_REF = /\bfetch\s*\(|\bimport\s*\(|https?:\/\//i;
 
 /** The browser-side contract a package declares — a `"delta"` field in its `package.json`
  *  or a `delta.pack.json`. Every field is optional; an absent manifest is the folder

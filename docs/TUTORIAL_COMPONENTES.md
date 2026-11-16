@@ -643,25 +643,36 @@ cd delta-quote && npm install
 npm run build && npm test
 ```
 
-**Quando o componente vira parte do Delta.** Um elemento nasce como pacote, que você testa à
-vontade sem tocar no Delta, e entra no core depois de estável. A mudança é pequena:
+**Quando o componente vira parte do Delta.** Há três lugares para um componente, com um só
+contrato, `window.Delta` (tipado em [`src/runtime/api.ts`](../src/runtime/api.ts)):
 
-1. O código vai para `src/runtime/elements/quote.ts`, em TypeScript, com uma função
-   `defineQuote()` chamada em [`elements/index.ts`](../src/runtime/elements/index.ts) (o topo
-   desse arquivo diz onde a ordem de registro importa). O CSS vai para
-   `src/styles/components/quote.css`, dentro de `@layer delta.components`.
-2. Antes de escrever DOM à mão, veja [`shared.ts`](../src/runtime/elements/shared.ts): ele já
-   tem `button`, `takeTitle` (o `<title>` com a matemática intacta), `numberedName`
-   ("Figura 1.2" traduzido), `renderMeta`, `jumpTo` e o resto. Texto visível passa por `t()` ou
-   `nameOf()`, e cada chave nova entra em todos os blocos de
-   [`src/language/strings.ts`](../src/language/strings.ts).
-3. Escreva um teste em `test/runtime/`. `inspect()` compila o documento, abre a página no
-   Chromium da máquina (sem janela) e roda um trecho de JavaScript dentro dela; o teste
-   confere o que esse trecho devolve.
+| Onde | Carregado | Escrito em | Para |
+|---|---|---|---|
+| pacote local ou npm (a sua pasta, `node_modules`) | quando o documento declara | um script clássico, qualquer fonte | protótipos e terceiros |
+| **pacote padrão** (`packs/<nome>/` no repositório) | quando o documento **usa uma das tags** | TypeScript, o mesmo `tsconfig.json` do core | componentes opcionais que vêm com o Delta |
+| core (`src/runtime/elements/`) | sempre | TypeScript | o que precisa de dados do compilador (numeração, refs, sumário) |
+
+O caminho normal é: o componente nasce como pacote local (em JavaScript, tudo bem), que você
+testa à vontade sem tocar no Delta; estável, ele entra como **pacote padrão**, um pull request
+que acrescenta uma pasta em `packs/`; o core é raro.
+
+Para virar pacote padrão:
+
+1. Copie [`packs/example/`](../packs/example/). O código passa para TypeScript: `index.ts`
+   registra o elemento e importa os outros módulos da pasta (`import { x } from "./x.ts"`). O
+   build junta tudo num script só. Nada de importar de `src/`: o core se alcança por
+   `window.Delta` (importar só tipos, com `import type`, pode).
+2. Liste em `delta.pack.json` as tags que o pacote registra, sem nomes genéricos (`option`,
+   `title`, `date`): o pacote passa a ser carregado em todo documento que use a tag. O texto
+   visível passa por `window.Delta.t("quote.autor", "Autor")`, com as chaves em `strings.json`,
+   um bloco por idioma.
+3. Escreva um teste de navegador em `test/packs/`. `inspect()` compila o documento, abre a
+   página no Chromium da máquina (sem janela) e roda um trecho de JavaScript dentro dela; o
+   teste confere o que esse trecho devolve.
 
 ```ts
 import { describe, expect, it } from "../harness.ts";
-import { BROWSER, inspect } from "./helpers.ts";
+import { BROWSER, inspect } from "../runtime/helpers.ts";
 
 describe.skipIf(!BROWSER)("<quote>", () => {
   it("mostra o autor da citação", () => {
@@ -674,8 +685,18 @@ describe.skipIf(!BROWSER)("<quote>", () => {
 });
 ```
 
-`npm test` roda esses testes junto com os do compilador, então um erro no runtime aparece no
-mesmo lugar que um erro de compilação. Numa máquina sem Chromium eles são pulados, não falham.
+`npm test` roda esses testes junto com os do compilador, e `test/packs.test.ts` confere sozinho
+as regras de todo pacote padrão (TypeScript, sem `any`, as tags que ele registra, as chaves dos
+textos, as cores só por tokens). Numa máquina sem Chromium os testes de navegador são pulados,
+não falham; na CI, falham. A lista completa do que um pacote padrão precisa está em
+[`packs/README.md`](../packs/README.md).
+
+Para ir ao **core**, raro: o código vai para `src/runtime/elements/quote.ts`, com uma função
+`defineQuote()` chamada em [`elements/index.ts`](../src/runtime/elements/index.ts), o CSS para
+`src/styles/components/quote.css`, e o texto para todos os blocos de
+[`src/language/strings.ts`](../src/language/strings.ts). Lá você usa os auxiliares de
+[`shared.ts`](../src/runtime/elements/shared.ts) (`button`, `takeTitle`, `numberedName`,
+`jumpTo`…), e o teste vai para `test/runtime/`.
 
 **O que um pacote não pode fazer:** pacotes são exclusivamente de runtime. Não rodam nenhum
 código no compilador, então não conseguem numerar ambientes, registrar um tipo de `<ref>`, ler

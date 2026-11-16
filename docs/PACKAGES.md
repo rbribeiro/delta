@@ -32,6 +32,11 @@ only when a document declares it.
 - **Packages are runtime-only.** They never run code in the compiler. Features that need
   compile-time work (numbering, references) stay first-party.
 - **`window.Delta` is the public API** packs build against.
+- **Three tiers, one contract.** Core (`src/runtime/elements/`, always inlined); **standard
+  packs** (`packs/<name>/`, TypeScript, shipped inside the CLI and inlined when a document uses
+  one of their tags; see [packs/README.md](../packs/README.md)); and local / npm packs (declared
+  by the author, any source). The usual path for a new component is local pack → standard
+  pack; core is for what needs compile-time data.
 
 ## Why core stays monolithic
 

@@ -367,7 +367,7 @@ Packs upstream (standard packs: `packs/<name>/`, TypeScript, shipped in the CLI,
 - [x] WP-P1. Build `packs/*` into `BUILTIN_PACKS`; TypeScript enforced; no imports from outside the pack
 - [x] WP-P2. Emit inlines a standard pack when one of its tags is used; an explicit pack wins
 - [x] WP-P3. Manifest `strings` merged into the i18n island; the `window.Delta` contract typed in one file
-- [ ] WP-P4. Invariants test, `packs/example/`, the admission checklist and the three-tier docs
+- [x] WP-P4. Invariants test, `packs/example/`, the admission checklist and the three-tier docs
 - [ ] Port `plot`, `question` and `ai-use` into `packs/` (by their authors, after WP-P4)
 
 Runtime

@@ -80,6 +80,11 @@ node --test --test-name-pattern "resets across" test/
           <column>um custom element em <c>src/runtime/elements/</c>, sem mexer no compilador</column>
           <column>seções dobráveis, a prévia de uma referência</column>
         </row>
+        <row>
+          <column>só comportamento, num componente opcional com tags próprias</column>
+          <column>um <b>pacote padrão</b>: uma pasta em TypeScript em <c>packs/</c>, carregada só onde a tag aparece (<c>packs/README.md</c>)</column>
+          <column><c>pack-example</c>; gráficos, questionários</column>
+        </row>
       </table>
 
       A regra prática: tudo o que precisa <b>conhecer outro elemento</b> é um passo, porque o

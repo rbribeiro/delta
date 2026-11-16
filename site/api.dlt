@@ -291,7 +291,7 @@ Delta.t("termo", "Definição")   // o texto traduzido, ou "Definição"
       Um pacote traz as suas próprias chaves num <c>strings.json</c> ao lado do script,
       um bloco por idioma, cada chave com o nome do pacote na frente:
 
-      <code lang="json" numbered="false">
+      <code lang="javascript" numbered="false">
 {
   "en": { "glossario.fechar": "Close" },
   "pt": { "glossario.fechar": "Fechar" }
