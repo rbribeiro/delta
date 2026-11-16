@@ -77,7 +77,9 @@ export function setupDeck(): Deck | null {
         order: el.hasAttribute("reveal-order") ? Number(el.getAttribute("reveal-order")) : i,
       }))
       .sort((a, b) => a.order - b.order)
-      .flatMap(({ el }) => (isBoard(el) ? Array<HTMLElement>(el.length - given(el)).fill(el) : [el]));
+      .flatMap(({ el }) =>
+        isBoard(el) ? Array<HTMLElement>(el.length - given(el)).fill(el) : [el],
+      );
   const frags = slides.map(fragmentsOf);
 
   // `animate`: the reader advanced, so a board plays the step it gains instead of jumping.

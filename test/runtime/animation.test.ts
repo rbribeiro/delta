@@ -165,7 +165,8 @@ describe.skipIf(!BROWSER)("an <animation> in running text", () => {
     ),
   );
 
-  it("counts one step per pause, inside formulas and lists too", () => expect(facts().length).toBe(6));
+  it("counts one step per pause, inside formulas and lists too", () =>
+    expect(facts().length).toBe(6));
   it("rests on its final state, as a figure", () => {
     expect(facts().restPos).toBe(6);
     expect(facts().restShown).toBe(true);

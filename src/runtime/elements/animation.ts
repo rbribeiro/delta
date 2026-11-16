@@ -71,7 +71,8 @@ export class DeltaAnimation extends HTMLElement {
     if (this.closest(".xref-pop-body")) return;
 
     const onSlide =
-      document.documentElement.dataset.type === "presentation" && this.closest("delta-slide") !== null;
+      document.documentElement.dataset.type === "presentation" &&
+      this.closest("delta-slide") !== null;
     this.classList.add("anim");
     if (onSlide) this.classList.add("anim-bare");
 

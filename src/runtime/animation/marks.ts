@@ -84,7 +84,12 @@ function loop(box: Box, rnd: () => number): string {
 }
 
 /** The paths of one mark around `box`, in drawing order, and the box the mark itself fills. */
-function draw(mark: string, box: Box, em: number, rnd: () => number): { paths: string[]; outer: Box } {
+function draw(
+  mark: string,
+  box: Box,
+  em: number,
+  rnd: () => number,
+): { paths: string[]; outer: Box } {
   const pad = 0.28 * em;
   const jitter = (): number => (rnd() - 0.5) * 0.12 * em;
   switch (mark) {
@@ -103,10 +108,17 @@ function draw(mark: string, box: Box, em: number, rnd: () => number): { paths: s
       return { paths: [loop(outer, rnd)], outer };
     }
     case "box": {
-      const o = { left: box.left - pad, right: box.right + pad, top: box.top - pad, bottom: box.bottom + pad };
+      const o = {
+        left: box.left - pad,
+        right: box.right + pad,
+        top: box.top - pad,
+        bottom: box.bottom + pad,
+      };
       const over = 0.18 * em; // each side runs a little past its corner, as a ruler-less hand does
       return {
         outer: o,
+        // One stroke per side, as rows: top, right, bottom, left.
+        // prettier-ignore
         paths: [
           stroke([o.left - over, o.top + jitter()], [o.right + over, o.top + jitter()], rnd, 0.012),
           stroke([o.right + jitter(), o.top - over], [o.right + jitter(), o.bottom + over], rnd, 0.012),
@@ -119,7 +131,14 @@ function draw(mark: string, box: Box, em: number, rnd: () => number): { paths: s
       const y = box.bottom + 0.16 * em;
       return {
         outer: { ...box, bottom: y + 0.1 * em },
-        paths: [stroke([box.left - 0.1 * em, y + jitter()], [box.right + 0.15 * em, y + jitter()], rnd, 0.02)],
+        paths: [
+          stroke(
+            [box.left - 0.1 * em, y + jitter()],
+            [box.right + 0.15 * em, y + jitter()],
+            rnd,
+            0.02,
+          ),
+        ],
       };
     }
     case "cross":
@@ -151,7 +170,8 @@ function arrow(a: Point, b: Point, em: number, rnd: () => number): string[] {
 }
 
 /** Targets whose ink is their text: a mark hugs the glyphs. Anything else is marked by its box. */
-const TEXTUAL = "[data-delta-part], .katex, .katex-display, .anim-run, delta-equation, delta-equations, delta-math, delta-m";
+const TEXTUAL =
+  "[data-delta-part], .katex, .katex-display, .anim-run, delta-equation, delta-equations, delta-math, delta-m";
 
 /** The box a mark goes around, in the overlay's coordinates. */
 function targetBox(targets: Element[], layer: SVGGElement): Box | null {
@@ -252,6 +272,8 @@ export function makeNote(
     if (mark === "arrow") {
       // From the label's near edge (or from where it would be) to just short of the target.
       const off = 0.25 * em;
+      // One row per side: [from, to].
+      // prettier-ignore
       const ends: Record<string, [Point, Point]> = {
         bottom: [[cx + 0.6 * em, y - off], [cx, outer.bottom + off]],
         top: [[cx + 0.6 * em, y + lh + off], [cx, outer.top - off]],

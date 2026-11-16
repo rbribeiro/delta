@@ -161,7 +161,7 @@ export function glyphsOf(roots: Iterable<Element>, layer: SVGGElement): Glyph[] 
 
     // 3. Reading order. Prose is already in it; inside a formula KaTeX's DOM order is not
     //    (a denominator comes before its numerator), so each formula is swept left to right.
-    for (let a = 0; a < found.length; ) {
+    for (let a = 0; a < found.length;) {
       let b = a + 1;
       while (b < found.length && found[b].math === found[a].math) b++;
       const run = found.slice(a, b).map((f) => f.glyph);
@@ -291,7 +291,11 @@ export function fadeIn(el: Element, ms = FADE_MS, delay = 0): Animation {
 
 /** Fades out an element that is showing (the caller then switches it off). */
 export function fadeOut(el: Element, ms = FADE_MS): Animation {
-  return el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: ms, fill: "both", easing: "ease-in" });
+  return el.animate([{ opacity: 1 }, { opacity: 0 }], {
+    duration: ms,
+    fill: "both",
+    easing: "ease-in",
+  });
 }
 
 /** Default length of a morph. */
@@ -338,9 +342,16 @@ export function morph(from: Element, to: Element, layer: SVGGElement, ms = MORPH
   const news = glyphsOf([to], layer);
   const pairs = matchGlyphs(olds, news);
   const arriving = new Set(pairs.values());
-  const timing: KeyframeAnimationOptions = { duration: ms, fill: "both", easing: "cubic-bezier(.45,0,.2,1)" };
+  const timing: KeyframeAnimationOptions = {
+    duration: ms,
+    fill: "both",
+    easing: "cubic-bezier(.45,0,.2,1)",
+  };
   const anims: Animation[] = [
-    from.animate([{ visibility: "hidden" }, { visibility: "hidden" }], { duration: ms, fill: "both" }),
+    from.animate([{ visibility: "hidden" }, { visibility: "hidden" }], {
+      duration: ms,
+      fill: "both",
+    }),
   ];
 
   for (const g of olds) {
@@ -359,7 +370,10 @@ export function morph(from: Element, to: Element, layer: SVGGElement, ms = MORPH
       t.animate(
         [
           { transform: "translate(0px, 0px) scale(1)", fill: g.color },
-          { transform: `translate(${dx}px, ${dy}px) scale(${partner.size / g.size})`, fill: partner.color },
+          {
+            transform: `translate(${dx}px, ${dy}px) scale(${partner.size / g.size})`,
+            fill: partner.color,
+          },
         ],
         timing,
       ),

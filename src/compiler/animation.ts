@@ -23,7 +23,8 @@ export function checkAnimations(doc: ElementNode, ctx: CompileContext): void {
       return false; // checkBoard has seen everything inside
     }
     // A <note> with no target is just a handwritten line, fine anywhere.
-    const needsBoard = ACTION_TAGS.has(el.tag) && (el.tag !== "note" || el.attrs.target !== undefined);
+    const needsBoard =
+      ACTION_TAGS.has(el.tag) && (el.tag !== "note" || el.attrs.target !== undefined);
     if (needsBoard && !ancestors.some((a) => a.tag === "animation")) {
       warn(ctx, `<${el.tag}> only works inside an <animation>`, el.pos);
     }
@@ -67,7 +68,11 @@ function checkBoard(board: ElementNode, ctx: CompileContext): void {
   const time = (el: ElementNode, attr: string): void => {
     const value = el.attrs[attr];
     if (value !== undefined && !DURATION.test(value)) {
-      warn(ctx, `<${el.tag}> has an unreadable ${attr} "${value}" (write 1.5s, 800ms or 2)`, el.pos);
+      warn(
+        ctx,
+        `<${el.tag}> has an unreadable ${attr} "${value}" (write 1.5s, 800ms or 2)`,
+        el.pos,
+      );
     }
   };
 
@@ -108,7 +113,11 @@ function checkBoard(board: ElementNode, ctx: CompileContext): void {
       oneOf(el, "side", NOTE_SIDES);
     }
     if (el.tag === "set" && !Object.keys(el.attrs).some((name) => !SET_OWN.has(name))) {
-      warn(ctx, '<set> sets nothing: give it the attributes to change, as in <set target="p" a="2"/>', el.pos);
+      warn(
+        ctx,
+        '<set> sets nothing: give it the attributes to change, as in <set target="p" a="2"/>',
+        el.pos,
+      );
     }
   }
 }

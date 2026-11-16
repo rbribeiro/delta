@@ -90,7 +90,8 @@ export function mathSegments(html: Element): Element[][] {
   const walk = (nodes: Iterable<Element>): void => {
     for (const el of nodes) {
       if (el.hasAttribute("data-delta-pause")) segments.push([]);
-      else if (el.matches(".base, .enclosing") && el.querySelector("[data-delta-pause]")) walk(el.children);
+      else if (el.matches(".base, .enclosing") && el.querySelector("[data-delta-pause]"))
+        walk(el.children);
       else if (isTable(el) && el.querySelector("[data-delta-pause]")) {
         for (const cell of cellsRowMajor(el.firstElementChild!)) walk(cell.children);
       } else segments[segments.length - 1].push(el);
@@ -102,14 +103,18 @@ export function mathSegments(html: Element): Element[][] {
 
 /** KaTeX wraps an `aligned` (or any array) in a lone `.mord > .mtable`. */
 function isTable(el: Element): boolean {
-  return el.matches(".mord") && el.children.length === 1 && el.firstElementChild!.matches(".mtable");
+  return (
+    el.matches(".mord") && el.children.length === 1 && el.firstElementChild!.matches(".mtable")
+  );
 }
 
 /** The cells of a KaTeX table in reading order. KaTeX stores them column by column. */
 function cellsRowMajor(table: Element): Element[] {
   const columns = [...table.children]
     .filter((col) => /\bcol-align-/.test(col.className))
-    .map((col) => [...col.querySelectorAll(":scope > .vlist-t > .vlist-r:first-child > .vlist > span > .mord")]);
+    .map((col) => [
+      ...col.querySelectorAll(":scope > .vlist-t > .vlist-r:first-child > .vlist > span > .mord"),
+    ]);
   const rows = Math.max(0, ...columns.map((col) => col.length));
   const cells: Element[] = [];
   for (let r = 0; r < rows; r++) for (const col of columns) if (col[r]) cells.push(col[r]);
@@ -186,7 +191,8 @@ export function collect(stage: Stage, boardEnter: string | null): Timeline {
         case "delta-pause": {
           const ms = duration(child, "for");
           // Timed: a rest inside the step. Bare: the step ends here (not inside <together>).
-          if (ms !== undefined) sink({ fold: () => {}, play: (_s, stage) => [stage.board.animate([], ms)] });
+          if (ms !== undefined)
+            sink({ fold: () => {}, play: (_s, stage) => [stage.board.animate([], ms)] });
           else if (sink === beat) parts.push([]);
           continue;
         }
@@ -205,7 +211,11 @@ export function collect(stage: Stage, boardEnter: string | null): Timeline {
           // Both forms share one grid cell, on one baseline: the cell is as large as the
           // largest form, so nothing moves when one replaces the other. Inline, because
           // KaTeX's own sheet (unlayered) sets `display` on this element.
-          Object.assign((cell as HTMLElement).style, { display: "grid", alignItems: "baseline", justifyItems: "center" });
+          Object.assign((cell as HTMLElement).style, {
+            display: "grid",
+            alignItems: "baseline",
+            justifyItems: "center",
+          });
           cell.classList.add("anim-forms");
           cell.append(to);
           forms.set(cell, to);
@@ -293,7 +303,14 @@ export function collect(stage: Stage, boardEnter: string | null): Timeline {
 
   walk(board, beat);
   const startsBlank = parts.length > 1 && parts[0].length === 0;
-  return { parts: parts.filter((part) => part.length > 0), initial, tracked, hosts, startsBlank, notes };
+  return {
+    parts: parts.filter((part) => part.length > 0),
+    initial,
+    tracked,
+    hosts,
+    startsBlank,
+    notes,
+  };
 }
 
 /** Attributes of a `<set>` that are about the action; every other one is a value to set. */
@@ -392,7 +409,10 @@ export class Player {
     for (const note of this.timeline.notes) note.place(); // around its target as it is now
     for (const el of this.timeline.tracked) el.classList.toggle("anim-off", s.off.has(el));
     for (const [host, first] of this.timeline.hosts) {
-      host.classList.toggle("anim-blank", first.every((el) => s.off.has(el)));
+      host.classList.toggle(
+        "anim-blank",
+        first.every((el) => s.off.has(el)),
+      );
     }
     for (const [el, values] of s.attr) {
       for (const [name, value] of Object.entries(values)) el.setAttribute(name, value);
@@ -420,7 +440,8 @@ export class Player {
   seek(pos: number, animate = false): Promise<void> {
     const k = Math.max(0, Math.min(this.length, pos));
     if (k === this.pos) return Promise.resolve();
-    const step = animate && k === this.pos + 1 && !matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const step =
+      animate && k === this.pos + 1 && !matchMedia("(prefers-reduced-motion: reduce)").matches;
     this.settle(); // a part cut short lands on its end before the next one starts
     if (step) return this.run(k);
     this.pos = k;

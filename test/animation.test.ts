@@ -39,7 +39,9 @@ describe("<animation>", () => {
 
   it("turns \\pause and \\part into inert markers inside the formula", () => {
     expect(html).toContain('<span class="enclosing" data-delta-pause="1"></span>');
-    expect(html).toMatch(/<span class="enclosing" data-delta-part="one"><span class="mord">1<\/span><\/span>/);
+    expect(html).toMatch(
+      /<span class="enclosing" data-delta-part="one"><span class="mord">1<\/span><\/span>/,
+    );
   });
 
   it("references no external resources (the offline invariant)", () => {
@@ -52,7 +54,9 @@ describe("<animation>", () => {
 describe("the handwriting face", () => {
   it("ships with a document that has a <note>, and only with it", () => {
     expect(compile(BOARD).html).toContain('@font-face{font-family:"Caveat"');
-    const plain = compile(`<document><section id="s"><title>S</title><animation>text</animation></section></document>`);
+    const plain = compile(
+      `<document><section id="s"><title>S</title><animation>text</animation></section></document>`,
+    );
     expect(plain.html).not.toContain('@font-face{font-family:"Caveat"');
   });
 });
@@ -79,7 +83,9 @@ describe("checkAnimations", () => {
 
   it("warns about an action outside a board, which would do nothing", () => {
     expect(check("text", "<pause/>")).toEqual(["<pause> only works inside an <animation>"]);
-    expect(check("text", '<hide target="s"/>')).toEqual(["<hide> only works inside an <animation>"]);
+    expect(check("text", '<hide target="s"/>')).toEqual([
+      "<hide> only works inside an <animation>",
+    ]);
   });
   it("lets a <note> without a target stand anywhere: it is a handwritten line", () => {
     expect(check("text", "<note>remember this</note>")).toEqual([]);
@@ -103,7 +109,9 @@ describe("checkAnimations", () => {
   });
   it("accepts a part named by a <morph> of the target", () => {
     expect(
-      check(`${EQ}<morph target="e">x + \\part{two}{2}</morph><note target="e" part="two">x</note>`),
+      check(
+        `${EQ}<morph target="e">x + \\part{two}{2}</morph><note target="e" part="two">x</note>`,
+      ),
     ).toEqual([]);
   });
 
