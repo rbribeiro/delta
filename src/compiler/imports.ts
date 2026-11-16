@@ -2,11 +2,19 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import { createRequire } from "node:module";
 import { basename, dirname, resolve } from "node:path";
 import type { ElementNode, Position } from "./ast.ts";
-import { addDep, warn, error, type CompileContext, type ImportEntry } from "./context.ts";
+import {
+  addDep,
+  warn,
+  error,
+  type CompileContext,
+  type ImportEntry,
+  type PackStrings,
+} from "./context.ts";
 import { EXTERNAL_REF } from "./theme.ts";
 import { isRemote, readUserFile } from "./files.ts";
+import { BUILTIN_PACKS } from "../generated/assets.ts";
 
-const JS_EXTERNAL_REF = /\bfetch\s*\(|\bimport\s*\(|https?:\/\//i;
+export const JS_EXTERNAL_REF = /\bfetch\s*\(|\bimport\s*\(|https?:\/\//i;
 
 /** The browser-side contract a package declares — a `"delta"` field in its `package.json`
  *  or a `delta.pack.json`. Every field is optional; an absent manifest is the folder
@@ -16,8 +24,11 @@ interface PackManifest {
   js?: string;
   /** Component stylesheet, relative to the pack dir. Default `theme.css` (silent if absent). */
   css?: string;
-  /** `delta-*` tags the pack owns; stored for future tag-gating, unused today. */
+  /** Tags the pack owns, bare (`"plot"`); stored for future tag-gating, unused today. */
   tags?: string[];
+  /** Localized UI strings, `{ "en": { key: text }, "pt": {…} }`, relative to the pack dir.
+   *  Default `strings.json` (silent if absent); merged into the `#delta-i18n` island. */
+  strings?: string;
   /** Other packages this one pulls in (resolved relative to this pack's dir). */
   needs?: string[];
   /** Compatible Delta version range; parsed but not enforced yet. */
@@ -81,6 +92,7 @@ export function resolvePack(
   ctx: CompileContext,
   seen: Set<string>,
   pos?: Position,
+  viaNeeds = false,
 ): void {
   if (isRemote(spec)) {
     warn(ctx, `import src must be a local path or package name, not a URL: ${spec}`, pos);
@@ -98,13 +110,14 @@ export function resolvePack(
     return;
   }
   if (seen.has(jsPath)) {
-    if (pos) warn(ctx, `import pack already imported: ${spec}`, pos);
-    return; // cross-channel duplicate: inline once, silently
+    // Only an author's own second <import> warns; two packs needing one library is normal.
+    if (pos && !viaNeeds) warn(ctx, `import pack already imported: ${spec}`, pos);
+    return; // cross-channel or shared dependency: inline once, silently
   }
   seen.add(jsPath); // reserve before recursing `needs` so a cycle terminates
 
   // Dependencies first, so a pack that `needs` another inlines after it.
-  for (const need of manifest.needs ?? []) resolvePack(need, dir, ctx, seen, pos);
+  for (const need of manifest.needs ?? []) resolvePack(need, dir, ctx, seen, pos, true);
 
   const js = readUserFile(ctx, jsPath);
   if (JS_EXTERNAL_REF.test(js)) {
@@ -128,7 +141,60 @@ export function resolvePack(
     warn(ctx, `import '${spec}' declares css '${manifest.css}' but it was not found`, pos);
   }
 
-  ctx.imports.push({ source: jsPath, js, css, name, tags: manifest.tags } satisfies ImportEntry);
+  const strings = readStrings(dir, manifest.strings, spec, ctx, pos);
+
+  ctx.imports.push({
+    source: jsPath,
+    js,
+    css,
+    name,
+    tags: manifest.tags,
+    ...(strings ? { strings } : {}),
+  } satisfies ImportEntry);
+}
+
+/**
+ * A pack's strings file: `{ "<lang>": { "<key>": "<text>" } }`, for instance
+ * `{ "en": { "callout.close": "Close" }, "pt": { "callout.close": "Fechar" } }`. The default
+ * `strings.json` is optional; a file the manifest names must exist and parse, else a warning
+ * (the pack still loads, and `Delta.t` falls back). Non-string texts are dropped.
+ */
+function readStrings(
+  dir: string,
+  named: string | undefined,
+  spec: string,
+  ctx: CompileContext,
+  pos?: Position,
+): PackStrings | undefined {
+  const path = resolve(dir, named ?? "strings.json");
+  if (!existsSync(path)) {
+    if (named !== undefined)
+      warn(ctx, `import '${spec}' declares strings '${named}' but it was not found`, pos);
+    return undefined;
+  }
+  let data: unknown;
+  try {
+    data = JSON.parse(readUserFile(ctx, path));
+  } catch {
+    warn(
+      ctx,
+      `import '${spec}': ${basename(path)} is not valid JSON; its strings are ignored`,
+      pos,
+    );
+    return undefined;
+  }
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    warn(ctx, `import '${spec}': ${basename(path)} must map a language to its strings`, pos);
+    return undefined;
+  }
+  const out: PackStrings = {};
+  for (const [lang, table] of Object.entries(data)) {
+    if (!table || typeof table !== "object") continue;
+    out[lang] = Object.fromEntries(
+      Object.entries(table).filter((e): e is [string, string] => typeof e[1] === "string"),
+    );
+  }
+  return out;
 }
 
 /** Maps a specifier to its pack directory: an existing local folder (back-compat, including bare
@@ -191,6 +257,7 @@ function normalizeManifest(d: Record<string, unknown>): PackManifest {
   if (typeof d.js === "string") m.js = d.js;
   if (typeof d.css === "string") m.css = d.css;
   if (typeof d.deltaVersion === "string") m.deltaVersion = d.deltaVersion;
+  if (typeof d.strings === "string") m.strings = d.strings;
   if (Array.isArray(d.tags)) m.tags = d.tags.filter((t): t is string => typeof t === "string");
   if (Array.isArray(d.needs)) m.needs = d.needs.filter((t): t is string => typeof t === "string");
   return m;
@@ -202,4 +269,36 @@ function tryReadJson(path: string): Record<string, unknown> | undefined {
   } catch {
     return undefined;
   }
+}
+
+/** The `delta-*` names a pack's script registers, read from its `customElements.define("…"` calls. */
+const DEFINE = /customElements\.define\(\s*["'`]delta-([a-z0-9-]+)["'`]/g;
+
+/**
+ * The standard packs (`packs/<name>/`, shipped as `BUILTIN_PACKS`) a document needs: those with
+ * a tag in `used` (every tag emit wrote). A standard pack is skipped when one of the author's
+ * explicit packs already registers one of its tags, so a document that brought its own
+ * `<plot>` keeps it. Called by emit, after the tags are known; adds no dependency (the pack
+ * ships inside the compiler). `table` is a parameter so tests can pass a fake one.
+ */
+export function standardPacksFor(
+  used: ReadonlySet<string>,
+  explicit: readonly ImportEntry[],
+  table: Record<
+    string,
+    { js: string; css?: string; tags: string[]; strings?: PackStrings }
+  > = BUILTIN_PACKS,
+): ImportEntry[] {
+  const taken = new Set(explicit.flatMap((i) => [...i.js.matchAll(DEFINE)].map((m) => m[1])));
+  return Object.entries(table)
+    .filter(([, pack]) => pack.tags.some((t) => used.has(t)))
+    .filter(([, pack]) => !pack.tags.some((t) => taken.has(t)))
+    .map(([name, pack]) => ({
+      source: `delta:${name}`,
+      name: `delta:${name}`,
+      js: pack.js,
+      css: pack.css,
+      tags: pack.tags,
+      ...(pack.strings ? { strings: pack.strings } : {}),
+    }));
 }

@@ -43,6 +43,6 @@
     "resolveTheme": "theme, theme-accent e theme-mode do <document> vão para ctx.userCss / builtinCss / themeAccent / themeMode.",
     "resolveImports": "Primeiro os pacotes do projeto, depois os <import> do arquivo, vão para ctx.imports (JS depois do runtime, CSS antes do tema do autor).",
     "resolveLineBreaks": "Uma linha em branco na prosa vira uma quebra (<br><br>). Por último, para que os outros passos vejam o texto original.",
-    "emit": "Renomeia as tags para <delta-*>, embute CSS, runtime e pacotes, serializa cada alvo de referencedIds (buscado em globalById) num <template> e grava as ilhas JSON. A árvore não muda: veja a aba Saída."
+    "emit": "Renomeia as tags para <delta-*>, embute CSS, runtime e pacotes (mais cada pacote padrão cuja tag foi escrita), serializa cada alvo de referencedIds (buscado em globalById) num <template> e grava as ilhas JSON. A árvore não muda: veja a aba Saída."
   }
 }

@@ -1,5 +1,5 @@
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { build } from "esbuild";
 
@@ -69,6 +69,87 @@ function cssMap(dir: string): Record<string, string> {
   return out;
 }
 
+/** The standard packs: `packs/<name>/`, each with a `delta.pack.json`. */
+const PACKS = "packs";
+
+/** One standard pack as the compiler inlines it (see `BUILTIN_PACKS`). */
+export interface BuiltPack {
+  /** The bundled entry: one minified IIFE, a classic script like any pack's. */
+  js: string;
+  css?: string;
+  /** The tags it registers, bare (`"plot"`); emit inlines the pack when one is used. */
+  tags: string[];
+  /** `{ "en": { key: text }, "pt": {…} }`, merged into the `#delta-i18n` island. */
+  strings?: Record<string, Record<string, string>>;
+}
+
+/**
+ * Bundles one standard pack. The sources are TypeScript modules; the result is one script,
+ * like any other pack's. Two rules are enforced here, with the offending file in the message:
+ *
+ *   - the entry is a `.ts` file (standard packs are TypeScript: see packs/README.md);
+ *   - every bundled file sits inside the pack's folder. A *value* import from `src/` would
+ *     copy a core module into the pack, and core modules hold singletons (the one open
+ *     popover, the island caches) that must exist once per page. A pack reaches core
+ *     through `window.Delta`; a type-only import from `src/` is erased and is fine.
+ */
+export async function bundlePack(dir: string): Promise<BuiltPack> {
+  const manifest = JSON.parse(readFileSync(join(dir, "delta.pack.json"), "utf8")) as {
+    js?: string;
+    css?: string;
+    tags?: string[];
+    strings?: string;
+  };
+  const entry = manifest.js ?? "index.ts";
+  if (!entry.endsWith(".ts")) {
+    throw new Error(`${join(dir, entry)}: a standard pack's entry must be a .ts file`);
+  }
+  const result = await build({
+    entryPoints: [join(dir, entry)],
+    bundle: true,
+    format: "iife",
+    target: "es2020",
+    minify: true,
+    write: false,
+    metafile: true,
+  });
+  const root = resolve(dir) + sep;
+  for (const input of Object.keys(result.metafile.inputs)) {
+    if (!resolve(input).startsWith(root)) {
+      throw new Error(
+        `${dir}: the bundle pulls in ${input}, which is outside the pack. ` +
+          "Reach core through window.Delta, or import only types (import type …).",
+      );
+    }
+  }
+  // `theme.css` and `strings.json` are optional; a file the manifest names must exist.
+  const optional = (named: string | undefined, conventional: string): string | undefined => {
+    const path = join(dir, named ?? conventional);
+    if (existsSync(path)) return readFileSync(path, "utf8");
+    if (named !== undefined) throw new Error(`${path}: named in delta.pack.json but missing`);
+    return undefined;
+  };
+  const css = optional(manifest.css, "theme.css");
+  const strings = optional(manifest.strings, "strings.json");
+  return {
+    js: result.outputFiles[0].text.trim(),
+    ...(css !== undefined ? { css } : {}),
+    tags: manifest.tags ?? [],
+    ...(strings !== undefined ? { strings: JSON.parse(strings) as BuiltPack["strings"] } : {}),
+  };
+}
+
+/** Every `packs/<name>/` that has a `delta.pack.json`, bundled, by name. */
+async function bundlePacks(): Promise<Record<string, BuiltPack>> {
+  const out: Record<string, BuiltPack> = {};
+  if (!existsSync(PACKS)) return out;
+  for (const name of readdirSync(PACKS).sort()) {
+    const dir = join(PACKS, name);
+    if (existsSync(join(dir, "delta.pack.json"))) out[name] = await bundlePack(dir);
+  }
+  return out;
+}
+
 /** Where `assets` writes; `test/assets.test.ts` compares this file with `renderAssets()`. */
 export const ASSETS_FILE = "src/generated/assets.ts";
 
@@ -89,7 +170,8 @@ export async function renderAssets(): Promise<string> {
     `export const CORE_CSS = ${JSON.stringify(coreCss())};\n` +
     `export const HAND_CSS = ${JSON.stringify(handCss())};\n` +
     `export const THEMES: Record<string, string> = ${JSON.stringify(cssMap(join(STYLES, "themes")))};\n` +
-    `export const BUILTIN_THEMES: Record<string, string> = ${JSON.stringify(cssMap(join(STYLES, "builtin")))};\n`
+    `export const BUILTIN_THEMES: Record<string, string> = ${JSON.stringify(cssMap(join(STYLES, "builtin")))};\n` +
+    `export const BUILTIN_PACKS: Record<string, { js: string; css?: string; tags: string[]; strings?: Record<string, Record<string, string>> }> = ${JSON.stringify(await bundlePacks())};\n`
   );
 }
 

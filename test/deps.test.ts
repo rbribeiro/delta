@@ -37,6 +37,12 @@ describe("dependency tracking (for --watch)", () => {
     expect(withBuiltin.deps).toEqual([resolve("test/fixtures/theme-builtin.dlt")]);
   });
 
+  it("records nothing for a standard pack (it ships inside the compiler)", () => {
+    const r = compileFile(resolve("test/fixtures/standard-pack.dlt"));
+    expect(r.html).toContain("/* pack: delta:example */");
+    expect(r.deps).toEqual([resolve("test/fixtures/standard-pack.dlt")]);
+  });
+
   it("records a missing include or figure, so --watch rebuilds once it appears", () => {
     const include = compileFile(resolve("test/fixtures/missing-include.dlt"));
     expect(include.deps).toContain(resolve("test/fixtures/not-written-yet.dlt"));

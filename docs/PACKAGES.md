@@ -32,6 +32,11 @@ only when a document declares it.
 - **Packages are runtime-only.** They never run code in the compiler. Features that need
   compile-time work (numbering, references) stay first-party.
 - **`window.Delta` is the public API** packs build against.
+- **Three tiers, one contract.** Core (`src/runtime/elements/`, always inlined); **standard
+  packs** (`packs/<name>/`, TypeScript, shipped inside the CLI and inlined when a document uses
+  one of their tags; see [packs/README.md](../packs/README.md)); and local / npm packs (declared
+  by the author, any source). The usual path for a new component is local pack → standard
+  pack; core is for what needs compile-time data.
 
 ## Why core stays monolithic
 
@@ -148,11 +153,32 @@ it's read straight from disk.)
 
 ## On-demand granularity
 
-Today's guarantee is **package-level**: a package is inlined when it is **declared**
-(imported, or listed in `packages`). Declare it, you pay for it; don't, you don't. That
-is the "inline only what's needed" promise at the grain that matters — optional features.
+For the author's own packages the guarantee is **package-level**: a package is inlined when
+it is **declared** (imported, or listed in `packages`). Declare it, you pay for it; don't,
+you don't. That is the "inline only what's needed" promise at the grain that matters —
+optional features.
 
-**Future refinement (not adopted yet): tag-gating.** Inline a *declared* package only if
+**Standard packs are gated by tag.** A standard pack (`packs/<name>/`, shipped inside the
+CLI as `BUILTIN_PACKS`) is never declared: emit inlines it when the file it writes contains
+one of the pack's tags, and only then. "Contains" means every `<delta-…>` emit serializes:
+the body, and also what it copies from other files (a pop-over snapshot of a cross-file
+target, a project-wide ToC title, a review body). It is checked per output file, so one
+chapter can carry a pack another does not. A document that uses none is byte-identical to
+one built without the pack existing. Two rules keep the author in charge:
+
+- an explicit pack wins: when one of the author's packs registers one of a standard pack's
+  tags (a `customElements.define("delta-<tag>"` in its script), the standard pack is left
+  out of that file;
+- standard packs are inlined **last**, CSS and JS, so a collision the check above misses
+  fails inside the standard pack's own script and the author's pack keeps working.
+
+The function is `standardPacksFor(usedTags, explicit)` in
+[../src/compiler/imports.ts](../src/compiler/imports.ts); it adds no dependency (the pack is
+inside the compiler, like a built-in theme). Adding a standard pack changes what its tag
+means in documents that already use that tag with no pack of their own; the admission
+checklist in [packs/README.md](../packs/README.md) therefore forbids generic tag names.
+
+**Future refinement (not adopted yet): tag-gating declared packages.** Inline a *declared* package only if
 one of its manifest `tags` actually appears in the document. This lets a project list a
 broad set of packages in `project.toml` while each output carries only the ones its own
 content uses. The manifest's `tags` field exists so this can be added later **without a
@@ -160,11 +186,13 @@ format change** — it's the one hook we're paying for up front.
 
 ## The `window.Delta` contract
 
-Packages build against the runtime's public surface, exposed on `window.Delta`
-([../src/runtime/index.ts](../src/runtime/index.ts)):
+Packages build against the runtime's public surface, exposed on `window.Delta`, typed in
+[../src/runtime/api.ts](../src/runtime/api.ts) and assigned in
+[../src/runtime/index.ts](../src/runtime/index.ts):
 
 - `popover` — the shared pop-over controller (hovercards, ref previews).
-- `t(key, fallback?)` — localized strings from the `#delta-i18n` island.
+- `t(key, fallback?)` — localized strings from the `#delta-i18n` island, core's and each
+  pack's own (`strings.json`, merged by the compiler; core keys win).
 - `deck` — the presentation deck handle (or `null` off-deck).
 - `review` — the document-wide review switches (`setAnnotations(on)`, `setChanges(mode)`,
   and the `annotations`/`changes` getters); see [COLLABORATION.md](COLLABORATION.md).

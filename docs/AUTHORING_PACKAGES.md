@@ -77,6 +77,7 @@ Every field is optional; an absent manifest means the `index.js` + `theme.css` c
     "js":  "dist/pack.min.js",   // entry script, relative to the pack dir (default "index.js")
     "css": "dist/pack.min.css",  // stylesheet, relative to the pack dir (default "theme.css")
     "tags": ["callout", "marginfig"],  // the delta-* tags this pack owns (bare, no "delta-" prefix)
+    "strings": "strings.json",   // localized UI strings (default "strings.json", optional)
     "needs": ["delta-baseui"],   // other packages this one pulls in (resolved dependency-first)
     "deltaVersion": ">=0.2"      // compatible Delta range (parsed, not yet enforced)
   }
@@ -130,10 +131,12 @@ customElements.define(
 
 Conventions, all load-bearing:
 
-- **Classic script, not a module.** The entry is inlined into a `<script>` (no `type="module"`).
-  Do **not** use `import`/`export`; bundle to a single classic IIFE/script if you use tooling
-  (esbuild `--format=iife`, Rollup `format: "iife"`). `import(...)` and top-level `export` are
-  flagged as external references (see §6).
+- **The shipped script is a classic script, not a module.** The entry is inlined into a
+  `<script>` (no `type="module"`), so the file Delta reads must have no `import`/`export`. Your
+  *sources* may be modules: bundle them into one classic IIFE (esbuild `--bundle
+  --format=iife`, Rollup `format: "iife"`), which is what `delta create package` sets up and
+  what Delta's own standard packs do. `import(...)` in the shipped file is flagged as an
+  external reference (see §6).
 - **Register `delta-<tag>`.** The author writes `<foo>`; you define `delta-foo`.
 - **Idempotent `connectedCallback`.** Guard with `this.dataset.deltaReady`; the callback can fire
   more than once (moves, re-parenting by other elements like the deck).
@@ -153,11 +156,12 @@ ready event to wait for.
 | Member | Signature | Use |
 |---|---|---|
 | `Delta.popover` | `popover(trigger, content, options?) → Popover` | The shared top-layer bubble controller (hovercards, reveal-on-click, menus). Anchors `content` under `trigger` (above when short of room), clamps it on screen, points the caret, re-anchors on scroll/resize, closes on Esc/outside-click, one open at a time. `options`: `onOpen(content, trigger)` (build or refresh the bubble here, lazily), `onClose(content, trigger)`, `gap` (px, default 10), `triggerClick` (default true). Returns `{ open(), close(), toggle(), isOpen, reposition(), destroy() }`. **Side effects at call time:** adds the `delta-pop` class to `content`, **moves `content` to `<body>`**, sets `aria-haspopup="dialog"` (and, with `triggerClick`, `aria-expanded`) on `trigger`. So style the bubble by a namespaced class, never by descent from your tag. |
-| `Delta.t` | `t(key, fallback?) → string` | Localized UI string for the document's `lang`, read once from the `#delta-i18n` island. Packs cannot add keys, so always pass a `fallback`; never hardcode user-visible English. |
+| `Delta.t` | `t(key, fallback?) → string` | Localized UI string for the document's `lang`, read once from the `#delta-i18n` island. A pack adds its own keys in `strings.json` — `{ "en": { "callout.close": "Close" }, "pt": { "callout.close": "Fechar" } }` — which the compiler merges for the document's language (English underneath, like core's). Prefix every key with your pack's name: a core key with the same name wins. Still pass a `fallback`; never hardcode user-visible English. |
 | `Delta.deck` | `Deck \| null` | The presentation deck handle when `type="presentation"` with at least one slide, else `null`. `{ index, total, go(i), next(), prev(), goToId(id) → boolean, onChange(cb(index, total)) }` — `next`/`prev` step through `reveal="true"` fragments first; `onChange` also fires immediately with the current position. |
 | `Delta.review` | `{ annotations, setAnnotations(on), changes, setChanges(mode) }` | The document-wide review switches: whether annotations show, and how `<change>`s render (`"markup"`, `"final"`, `"original"`). Every setter dispatches a `"delta:review"` `CustomEvent` on `document` (no detail); listen to it and re-read the getters. The switches live on `<html data-review>` / `<html data-changes>`, which CSS may target. |
 
 Anything outside this table (internal helpers, private classes) is **not** a contract and may change.
+The typed declaration of the contract is [src/runtime/api.ts](../src/runtime/api.ts).
 The Portuguese reference, with a live pop-over demo powered by a twenty-line pack, is the site page
 *API do runtime* ([../site/api.dlt](../site/api.dlt), published as `docs/api.html`).
 
@@ -285,9 +289,11 @@ amortized across a CDN; they live in the document. So:
 ## 6. Checklist
 
 - [ ] One coherent feature per package; unrelated tags → separate packages.
-- [ ] `index.js` is a **classic script** (no `import`/`export`); it `customElements.define("delta-<tag>", …)`.
+- [ ] The shipped script is a **classic script** (no `import`/`export`; bundle module sources into
+      one IIFE); it `customElements.define("delta-<tag>", …)`.
 - [ ] `connectedCallback` is guarded with `this.dataset.deltaReady`.
-- [ ] UI strings go through `Delta.t(key, fallback)`; pop-overs use `Delta.popover`.
+- [ ] UI strings go through `Delta.t("<pack>.key", fallback)`, with the keys in `strings.json`;
+      pop-overs use `Delta.popover`.
 - [ ] `theme.css` scopes **every** selector to `delta-<tag>` and styles only via `--delta-*` tokens
       and the shared primitives — no hardcoded colors/sizes.
 - [ ] Manifest declares accurate `tags` (bare names) and any `needs`.

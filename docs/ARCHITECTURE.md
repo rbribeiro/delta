@@ -230,6 +230,7 @@ src/
     katex-css.ts               KaTeX CSS with data: fonts (offline math)
   runtime/
     index.ts                   registers the custom elements; window.Delta
+    api.ts                     the type of window.Delta: the one contract every pack builds against
     deck.ts                    the presentation controller (steps a slide's fragments and its <animation> boards)
     address.ts                 the URL hash as the position: a deck's slide number, a ToC click's section
     utils.ts, i18n.ts          the shared popover controller; t(key) and nameOf(tag) from the #delta-i18n island
@@ -248,8 +249,11 @@ src/
     builtin/<name>.css         @layer delta.builtin — named themes (theme="impatech")
     staged/                    chrome no element builds yet; not part of the build (see its README)
   styles/fonts/                vendored woff2 (Newsreader, the body face; Caveat, the notes' handwriting) + LICENSE
-  generated/assets.ts          GENERATED, git-ignored (RUNTIME_JS + CORE_CSS + HAND_CSS + THEMES + BUILTIN_THEMES)
-scripts/build.ts               bundles runtime → assets.ts, and CLI → dist/cli.js
+  generated/assets.ts          GENERATED, git-ignored (RUNTIME_JS + CORE_CSS + HAND_CSS + THEMES + BUILTIN_THEMES + BUILTIN_PACKS)
+packs/<name>/                  standard packs: optional components shipped with Delta, TypeScript, one folder each
+                               (delta.pack.json, index.ts, theme.css, strings.json); bundled into BUILTIN_PACKS
+  example/                     the smallest one, <pack-example>: the template to copy
+scripts/build.ts               bundles runtime and packs → assets.ts, and CLI → dist/cli.js
 scripts/trace.ts               compiles the explorer's sample with the trace hook → site/packs/pipeline/dist/index.js
 site/                          the documentation site, written in Delta (pt-BR); compiled into docs/
 site/packs/pipeline/           the pipeline explorer pack (element.js, theme.css, descriptions.json, sample/)

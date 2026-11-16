@@ -1,0 +1,4 @@
+<document>
+  <title>Uses a standard pack</title>
+  <pack-example>Shipped inside the compiler: nothing to watch.</pack-example>
+</document>

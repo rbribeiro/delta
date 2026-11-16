@@ -90,7 +90,8 @@ function packageFiles(name: string): Record<string, string> {
     ) + "\n";
 
   const indexJs = `// Delta package: registers <${tag}> (the compiler renames it to <${el}>).
-// This is a classic browser script — no import/export. It runs after the core
+// \`npm run build\` bundles src/ into one classic script (dist/pack.min.js), so you may split
+// it into modules with import/export; the shipped file has none. It runs after the core
 // runtime, so \`window.Delta\` (popover, t, deck, review) is available if you need it.
 customElements.define(
   "${el}",

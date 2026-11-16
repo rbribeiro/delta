@@ -207,6 +207,18 @@ delta install delta-callout
       todos os arquivos, dispensando o <c><import></c> em cada um.
     </subsection>
 
+    <subsection id="sobre-pacotes-padrao">
+      <title>Pacotes padrão</title>
+
+      Alguns pacotes vêm com o próprio Delta, os <b>pacotes padrão</b>. Eles não
+      precisam de <c><import></c>: basta usar a tag, e o compilador embute o pacote
+      naquele arquivo, e só nele. Um documento que não usa nenhuma tag de pacote padrão
+      sai exatamente como sairia sem eles.
+
+      Se você trouxer um pacote seu que registre a mesma tag, o seu vence: o pacote
+      padrão fica de fora daquele documento.
+    </subsection>
+
     <subsection id="sobre-escrever-pacote">
       <title>Escrevendo um pacote</title>
 

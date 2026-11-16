@@ -407,7 +407,7 @@ export const PIPELINE: Phase[] = [
     steps: [
       {
         name: "emit",
-        what: "Rename tags to <delta-*>, inline CSS/runtime/packs, snapshot referenced targets, ship the JSON islands.",
+        what: "Rename tags to <delta-*>, inline CSS/runtime/packs (plus each standard pack whose tag was written), snapshot referenced targets, ship the JSON islands.",
         each: perFile((doc, ctx, s, f) => {
           f.html = emit(doc, ctx, s.globalById);
         }),
