@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -30,20 +30,42 @@ function findBrowser(): string | undefined {
   return undefined;
 }
 
-/** True when `browser` starts and renders a blank page; a binary that is merely installed is not enough. */
+/**
+ * How long one start may take. Generous on purpose: every browser test file runs this check in
+ * its own process, `node --test` runs files in parallel, and a cold Chrome on a small CI runner
+ * can take well over 15 s when several start at once. A slow start is not a missing browser.
+ */
+const LAUNCH_TIMEOUT_MS = 60_000;
+
+/** Why the browser did not start, for the warning and for the CI error. */
+let launchFailure = "";
+
+/**
+ * True when `browser` starts and renders a blank page; a binary that is merely installed is not
+ * enough. Tried twice, so one start lost to a busy machine does not fail a whole test file.
+ */
 function canLaunch(browser: string): boolean {
-  try {
-    execFileSync(browser, [...FLAGS, "--dump-dom", "about:blank"], {
-      stdio: "ignore",
-      timeout: 15_000,
-    });
-    return true;
-  } catch {
-    console.warn(
-      `test/browser.ts: ${browser} is installed but did not start; browser suites are skipped`,
-    );
-    return false;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      execFileSync(browser, [...FLAGS, "--dump-dom", "about:blank"], {
+        stdio: ["ignore", "ignore", "pipe"],
+        timeout: LAUNCH_TIMEOUT_MS,
+      });
+      return true;
+    } catch (e) {
+      const err = e as NodeJS.ErrnoException & { stderr?: Buffer };
+      const stderr = err.stderr?.toString().trim().split("\n").slice(-5).join("\n");
+      launchFailure =
+        err.code === "ETIMEDOUT"
+          ? `no page after ${LAUNCH_TIMEOUT_MS / 1000} s`
+          : stderr || err.message;
+    }
   }
+  console.warn(
+    `test/browser.ts: ${browser} is installed but did not start (${launchFailure}); ` +
+      "browser suites are skipped",
+  );
+  return false;
 }
 
 const found = findBrowser();
@@ -52,7 +74,9 @@ export const BROWSER = found && canLaunch(found) ? found : undefined;
 if (process.env.CI && !BROWSER) {
   throw new Error(
     "test/browser.ts: CI is set but no browser started, so the runtime suites cannot run. " +
-      "Install Chromium or Chrome, or point CHROME_PATH at one.",
+      (found
+        ? `${found} failed to start: ${launchFailure}`
+        : "None was found: install Chromium or Chrome, or point CHROME_PATH at one."),
   );
 }
 
@@ -91,5 +115,7 @@ export function evaluate(html: string, probe: string, width = 1200): string {
     const stderr = (e as { stderr?: string }).stderr ?? "";
     throw new Error(`${BROWSER} failed on ${file}:\n${stderr}`, { cause: e });
   }
+  // Kept when the browser failed (the error names it); otherwise ~1 MB per probe piles up in /tmp.
+  rmSync(dir, { recursive: true, force: true });
   return dom.match(/RESULT::([^<]*)/)?.[1] ?? "";
 }
