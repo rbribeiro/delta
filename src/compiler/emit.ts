@@ -1,6 +1,7 @@
 import { basename, dirname } from "node:path";
 import { element, hasTag, titleOf, type ElementNode, type Node } from "./ast.ts";
 import type { CompileContext } from "./context.ts";
+import { standardPacksFor } from "./imports.ts";
 import { escapeAttr, escapeHtml } from "./preprocess.ts";
 import { katexCss } from "./katex-css.ts";
 import { plainText } from "./paper.ts";
@@ -42,16 +43,23 @@ export function emit(
   // island the runtime reads via t().
   const i18n = jsonIsland("delta-i18n", strings);
 
-  const body = serialize(doc);
+  // Every tag this file writes, wherever it comes from (the body, a pop-over snapshot of
+  // another file, a project ToC title, a review body): a standard pack loads when it is used.
+  const used = new Set<string>();
+  const body = serialize(doc, used);
   // Snapshot every <ref> target into an inert <template> so the runtime can clone
   // it into a pop-over preview without a fetch. Only referenced ids are emitted.
   // On the project path `globalById` spans every file, so a cross-file target's
   // copy ships into this output too.
-  const templates = renderTemplates(ctx, globalById);
+  const templates = renderTemplates(ctx, globalById, used);
   // Heading tree for <delta-toc>, shipped as an inert JSON island.
-  const toc = renderTocIsland(ctx);
+  const toc = renderTocIsland(ctx, used);
   // Collaboration data (<team> + the items a <review> panel lists), same shape.
-  const review = renderReviewIsland(doc, ctx);
+  const review = renderReviewIsland(doc, ctx, used);
+  // The author's packs first, then the standard packs the document uses. Last on purpose:
+  // a tag collision the check in standardPacksFor misses then throws inside the standard
+  // pack's own script, and the author's pack keeps working.
+  const packs = [...ctx.imports, ...standardPacksFor(used, ctx.imports)];
 
   // The head is assembled after the templates/ToC island, because on the project
   // path those can carry math rendered in *another* file (a cross-file snapshot,
@@ -75,15 +83,15 @@ export function emit(
     ...(/<delta-note[\s>]/.test(body + templates) ? [`<style>\n${HAND_CSS}\n</style>`] : []),
     // Custom-element pack themes (<import>): inlined before the author theme so a
     // pack styles its own elements, but the document author's theme still wins.
-    ...ctx.imports.flatMap((i) => (i.css ? [`<style>\n${i.css}\n</style>`] : [])),
+    ...packs.flatMap((i) => (i.css ? [`<style>\n${i.css}\n</style>`] : [])),
     // Author theme (<document theme>) goes last and unlayered, so it overrides
     // the design system, the per-type theme layer, and even the inlined KaTeX CSS.
     ...(ctx.userCss ? [`<style>\n${ctx.userCss}\n</style>`] : []),
   ].join("\n");
   // Custom-element pack scripts (<import>): inlined after the runtime so they can
   // use window.Delta; each registers its own delta-* custom elements.
-  const packScripts = ctx.imports.length
-    ? ctx.imports
+  const packScripts = packs.length
+    ? packs
         .map(
           (i) =>
             `<script>\n/* pack: ${i.name ?? basename(dirname(i.source))} */\n${i.js}\n</script>`,
@@ -129,7 +137,11 @@ ${packScripts}
  *
  * @returns - the serialized HTML string of the templates for referenced IDs or empty string if no IDs are referenced
  */
-function renderTemplates(ctx: CompileContext, globalById: Map<string, ElementNode>): string {
+function renderTemplates(
+  ctx: CompileContext,
+  globalById: Map<string, ElementNode>,
+  used: Set<string>,
+): string {
   if (ctx.referencedIds.size === 0) return "";
   const out: string[] = [];
   for (const id of ctx.referencedIds) {
@@ -150,7 +162,9 @@ function renderTemplates(ctx: CompileContext, globalById: Map<string, ElementNod
       }
       // A cross-file target may carry math this file didn't render itself.
       ctx.mathUsed ||= containsMath([snapshot]);
-      out.push(`<template data-delta-pop="${escapeAttr(id)}">${serialize(snapshot)}</template>`);
+      out.push(
+        `<template data-delta-pop="${escapeAttr(id)}">${serialize(snapshot, used)}</template>`,
+      );
     }
   }
   return out.length ? out.join("\n") + "\n" : "";
@@ -162,7 +176,7 @@ function renderTemplates(ctx: CompileContext, globalById: Map<string, ElementNod
  * @param ctx - the compiler context
  * @returns - the serialized stringfied array of objects representing the table of contents as a `<script type="application/json" id="delta-toc">` element, or an empty string if there are no entries in the table of contents
  */
-function renderTocIsland(ctx: CompileContext): string {
+function renderTocIsland(ctx: CompileContext, used: Set<string>): string {
   if (ctx.toc.length === 0) return "";
   // A project-wide ToC may carry heading math rendered in another file.
   ctx.mathUsed ||= ctx.toc.some((e) => containsMath(e.title));
@@ -170,7 +184,7 @@ function renderTocIsland(ctx: CompileContext): string {
     level: e.level,
     id: e.id,
     num: e.num,
-    title: e.title.map((n) => serialize(n)).join(""),
+    title: e.title.map((n) => serialize(n, used)).join(""),
     // Present only for a project-wide entry whose section lives in another output.
     ...(e.file ? { file: e.file } : {}),
   }));
@@ -185,12 +199,12 @@ function renderTocIsland(ctx: CompileContext): string {
  * with a panel, or one whose own collaboration items need the team for their author chips.
  * A plain document — or a project file that merely shares the team — stays byte-identical.
  */
-function renderReviewIsland(doc: ElementNode, ctx: CompileContext): string {
+function renderReviewIsland(doc: ElementNode, ctx: CompileContext, used: Set<string>): string {
   const hasPanel = hasTag(doc, "review");
   const ownItems = ctx.review.some((i) => !i.file);
   if (!hasPanel && !(ctx.team.size > 0 && ownItems)) return "";
 
-  const ser = (nodes: Node[]): string => nodes.map((n) => serialize(n)).join("");
+  const ser = (nodes: Node[]): string => nodes.map((n) => serialize(n, used)).join("");
   const data: Record<string, unknown> = { team: [...ctx.team.values()] };
   if (hasPanel) {
     // A project-wide panel may carry bodies/titles with math rendered in another file.
@@ -261,14 +275,18 @@ function containsMath(nodes: Node[]): boolean {
   );
 }
 
-/** `inOld`: inside a `<change>`'s `<old>`, ids are dropped so the page has one element per id (the new one). */
-function serialize(node: Node, inOld = false): string {
+/**
+ * The one place that writes `<delta-…>`. Records each tag it writes in `used`. `inOld`: inside
+ * a `<change>`'s `<old>`, ids are dropped so the page has one element per id (the new one).
+ */
+function serialize(node: Node, used: Set<string>, inOld = false): string {
   switch (node.type) {
     case "text":
       return escapeHtml(node.text);
     case "raw":
       return node.html;
     case "element": {
+      used.add(node.tag);
       const tag = `delta-${node.tag}`;
       const attrs = Object.entries(node.attrs)
         .filter(([k]) => !(inOld && k === "id"))
@@ -276,7 +294,7 @@ function serialize(node: Node, inOld = false): string {
         .join("");
       const bare = inOld || node.tag === "old";
       // Custom elements cannot self-close in HTML; always emit an explicit close tag.
-      return `<${tag}${attrs}>${node.children.map((c) => serialize(c, bare)).join("")}</${tag}>`;
+      return `<${tag}${attrs}>${node.children.map((c) => serialize(c, used, bare)).join("")}</${tag}>`;
     }
   }
 }

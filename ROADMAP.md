@@ -180,7 +180,8 @@ Items are ordered so each milestone is usable on its own. Checked items are impl
        existing pack). `emit` collects the document's used tags via the `elements()` walk and filters
        `ctx.imports`; a kept pack still pulls in its `needs` (dependency closure) even when the
        dependency's own tags are unused. No manifest format change — `tags` was reserved for exactly
-       this (see docs/PACKAGES.md "On-demand granularity")
+       this (see docs/PACKAGES.md "On-demand granularity"). Standard packs (`packs/`, M10 WP-P2) are
+       already gated this way, from the tags `serialize` records in emit; reuse that set
 - [x] 49. `delta create project <name>` (`scaffold.ts` + `cli.ts`): scaffolds a **bare** project —
        `project.toml` (`inputs`/`out`, an empty `packages = []` anchor, and a commented `[document]`
        defaults block) + a minimal `main.dlt`. Pure `scaffoldFiles("project", …)` returns a path→content
@@ -364,7 +365,7 @@ Safety nets
 
 Packs upstream (standard packs: `packs/<name>/`, TypeScript, shipped in the CLI, loaded by tag)
 - [x] WP-P1. Build `packs/*` into `BUILTIN_PACKS`; TypeScript enforced; no imports from outside the pack
-- [ ] WP-P2. Emit inlines a standard pack when one of its tags is used; an explicit pack wins
+- [x] WP-P2. Emit inlines a standard pack when one of its tags is used; an explicit pack wins
 - [ ] WP-P3. Manifest `strings` merged into the i18n island; the `window.Delta` contract typed in one file
 - [ ] WP-P4. Invariants test, `packs/example/`, the admission checklist and the three-tier docs
 - [ ] Port `plot`, `question` and `ai-use` into `packs/` (by their authors, after WP-P4)

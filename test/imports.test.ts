@@ -4,11 +4,11 @@ import { join } from "node:path";
 import { describe, expect, it } from "./harness.ts";
 import type { ElementNode } from "../src/compiler/ast.ts";
 import { createContext, type CompileContext } from "../src/compiler/context.ts";
-import { resolveImports } from "../src/compiler/imports.ts";
+import { resolveImports, standardPacksFor } from "../src/compiler/imports.ts";
 import { parse } from "../src/compiler/parse.ts";
 import { preprocess } from "../src/compiler/preprocess.ts";
 import { THEMES } from "../src/generated/assets.ts";
-import { compileHtml, parsed } from "./helpers.ts";
+import { compileFiles, compileHtml, parsed } from "./helpers.ts";
 
 const compile = (src: string): string => compileHtml(src, { file: "test/doc.dlt" });
 
@@ -91,6 +91,14 @@ describe("resolveImports", () => {
     expect(ctx.diagnostics).toHaveLength(0);
   });
 
+  it("inlines a library two packs need once, without an 'already imported' warning", () => {
+    const { ctx } = resolved(
+      `<document><import src="fixtures/needs-pack" /><import src="fixtures/needs-pack-2" /></document>`,
+    );
+    expect(ctx.imports.filter((i) => i.js.includes("delta-widget"))).toHaveLength(1);
+    expect(ctx.diagnostics).toHaveLength(0);
+  });
+
   it("resolves a bare specifier from node_modules", () => {
     // Build a throwaway project dir with the package installed under node_modules.
     const root = mkdtempSync(join(tmpdir(), "delta-pack-"));
@@ -166,5 +174,94 @@ describe("emit with an import", () => {
     for (const m of html.matchAll(/url\(\s*([^)]*)\)/g)) {
       expect(m[1]).toMatch(/^["']?data:/);
     }
+  });
+});
+
+describe("standardPacksFor", () => {
+  const table = {
+    plot: {
+      js: `customElements.define("delta-plot", class {})`,
+      css: "delta-plot{}",
+      tags: ["plot"],
+    },
+    quiz: { js: `customElements.define("delta-quiz", class {})`, tags: ["quiz"] },
+  };
+  const own = (js: string) => ({ source: "/own/index.js", js });
+
+  it("returns the packs whose tags are used, as delta:<name> entries", () => {
+    const packs = standardPacksFor(new Set(["p", "plot"]), [], table);
+    expect(packs.map((p) => p.source)).toEqual(["delta:plot"]);
+    expect(packs[0]).toMatchObject({ name: "delta:plot", css: "delta-plot{}", tags: ["plot"] });
+  });
+
+  it("returns nothing when no pack tag is used", () => {
+    expect(standardPacksFor(new Set(["p", "theorem"]), [], table)).toEqual([]);
+  });
+
+  it("skips a pack whose tag an explicit pack already registers", () => {
+    const explicit = [own(`customElements.define( 'delta-plot' , X)`)];
+    const packs = standardPacksFor(new Set(["plot", "quiz"]), explicit, table);
+    expect(packs.map((p) => p.source)).toEqual(["delta:quiz"]);
+  });
+});
+
+describe("emit with a standard pack", () => {
+  const doc = (body: string, head = "") =>
+    `<document>${head}<title>T</title><section id="s"><title>S</title>${body}</section></document>`;
+
+  it("inlines the pack's JS and CSS when its tag is used", () => {
+    const html = compile(doc(`<pack-example>Hi</pack-example>`));
+    expect(html.match(/\/\* pack: delta:example \*\//g)).toHaveLength(1);
+    expect(html).toContain('customElements.define("delta-pack-example"');
+    expect(html).toContain("delta-pack-example .pack-example-label");
+  });
+
+  it("inlines nothing when the tag is not used", () => {
+    const html = compile(doc(`text`));
+    expect(html).not.toContain("delta:example");
+    expect(html).not.toContain("delta-pack-example");
+  });
+
+  it("puts standard packs after the author's packs, and their CSS before the author theme", () => {
+    const html = compile(
+      doc(`<pack-example>Hi</pack-example>`, `<import src="fixtures/pack" />`).replace(
+        "<document>",
+        `<document theme="fixtures/theme.css">`,
+      ),
+    );
+    expect(html.indexOf("/* pack: delta:example */")).toBeGreaterThan(
+      html.indexOf("/* pack: pack */"),
+    );
+    const css = html.indexOf("delta-pack-example .pack-example-label");
+    expect(css).toBeGreaterThan(html.indexOf("#abcdef")); // the author's pack CSS
+    expect(css).toBeLessThan(html.indexOf("#c0392b")); // the author theme
+  });
+
+  it("leaves the tag to an explicit pack that registers it", () => {
+    const html = compile(
+      doc(`<pack-example>Hi</pack-example>`, `<import src="fixtures/own-example" />`),
+    );
+    expect(html).toContain("/* pack: own-example */");
+    expect(html).not.toContain("delta:example");
+  });
+
+  it("loads the pack for a tag that only arrives in another file's pop-over snapshot", () => {
+    const r = compileFiles({
+      "a.dlt": `<document><title>A</title><p>See <ref to="thm:x" />.</p></document>`,
+      "b.dlt": `<document><title>B</title><theorem id="thm:x"><pack-example>Hi</pack-example></theorem></document>`,
+    });
+    const a = r.html("a.html");
+    expect(a).toContain('<template data-delta-pop="thm:x">');
+    // The tag is nowhere in a.html's own body: only inside the snapshot of b.dlt's theorem.
+    const ownBody = a.slice(a.indexOf("<body>"), a.indexOf("<template"));
+    expect(ownBody).not.toContain("<delta-pack-example");
+    expect(a.match(/\/\* pack: delta:example \*\//g)).toHaveLength(1);
+  });
+
+  it("keeps the offline invariant", () => {
+    const html = compile(doc(`<pack-example>Hi</pack-example>`));
+    expect(html).not.toMatch(/(src|href)\s*=\s*["']https?:/i);
+    expect(html).not.toMatch(/<link/i);
+    for (const m of html.matchAll(/url\(\s*([^)]*)\)/g)) expect(m[1]).toMatch(/^["']?data:/);
   });
 });

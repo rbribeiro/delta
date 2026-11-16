@@ -39,7 +39,8 @@ export interface TocEntry {
 
 /** One resolved package (a `<import>` pack or a `project.toml` package); inlined by emit. */
 export interface ImportEntry {
-  /** Absolute path to the pack's entry script (the dedup key across all channels). */
+  /** Absolute path to the pack's entry script (the dedup key across all channels);
+   *  `delta:<name>` for a standard pack. */
   source: string;
   /** Entry-script contents, inlined verbatim into a `<script>` after the runtime. */
   js: string;
@@ -47,7 +48,8 @@ export interface ImportEntry {
   css?: string;
   /** Display label for the emit "pack:" marker (pkg name or folder basename). */
   name?: string;
-  /** Tags the pack declares it owns; reserved for future tag-gating, unused today. */
+  /** Tags the pack declares it owns. A standard pack is inlined only when one is used;
+   *  for the author's own packs this is reserved for tag-gating (ROADMAP 48). */
   tags?: string[];
 }
 

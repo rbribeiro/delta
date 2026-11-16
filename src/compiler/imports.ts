@@ -5,6 +5,7 @@ import type { ElementNode, Position } from "./ast.ts";
 import { addDep, warn, error, type CompileContext, type ImportEntry } from "./context.ts";
 import { EXTERNAL_REF } from "./theme.ts";
 import { isRemote, readUserFile } from "./files.ts";
+import { BUILTIN_PACKS } from "../generated/assets.ts";
 
 const JS_EXTERNAL_REF = /\bfetch\s*\(|\bimport\s*\(|https?:\/\//i;
 
@@ -16,7 +17,7 @@ interface PackManifest {
   js?: string;
   /** Component stylesheet, relative to the pack dir. Default `theme.css` (silent if absent). */
   css?: string;
-  /** `delta-*` tags the pack owns; stored for future tag-gating, unused today. */
+  /** Tags the pack owns, bare (`"plot"`); stored for future tag-gating, unused today. */
   tags?: string[];
   /** Other packages this one pulls in (resolved relative to this pack's dir). */
   needs?: string[];
@@ -81,6 +82,7 @@ export function resolvePack(
   ctx: CompileContext,
   seen: Set<string>,
   pos?: Position,
+  viaNeeds = false,
 ): void {
   if (isRemote(spec)) {
     warn(ctx, `import src must be a local path or package name, not a URL: ${spec}`, pos);
@@ -98,13 +100,14 @@ export function resolvePack(
     return;
   }
   if (seen.has(jsPath)) {
-    if (pos) warn(ctx, `import pack already imported: ${spec}`, pos);
-    return; // cross-channel duplicate: inline once, silently
+    // Only an author's own second <import> warns; two packs needing one library is normal.
+    if (pos && !viaNeeds) warn(ctx, `import pack already imported: ${spec}`, pos);
+    return; // cross-channel or shared dependency: inline once, silently
   }
   seen.add(jsPath); // reserve before recursing `needs` so a cycle terminates
 
   // Dependencies first, so a pack that `needs` another inlines after it.
-  for (const need of manifest.needs ?? []) resolvePack(need, dir, ctx, seen, pos);
+  for (const need of manifest.needs ?? []) resolvePack(need, dir, ctx, seen, pos, true);
 
   const js = readUserFile(ctx, jsPath);
   if (JS_EXTERNAL_REF.test(js)) {
@@ -202,4 +205,32 @@ function tryReadJson(path: string): Record<string, unknown> | undefined {
   } catch {
     return undefined;
   }
+}
+
+/** The `delta-*` names a pack's script registers, read from its `customElements.define("…"` calls. */
+const DEFINE = /customElements\.define\(\s*["'`]delta-([a-z0-9-]+)["'`]/g;
+
+/**
+ * The standard packs (`packs/<name>/`, shipped as `BUILTIN_PACKS`) a document needs: those with
+ * a tag in `used` (every tag emit wrote). A standard pack is skipped when one of the author's
+ * explicit packs already registers one of its tags, so a document that brought its own
+ * `<plot>` keeps it. Called by emit, after the tags are known; adds no dependency (the pack
+ * ships inside the compiler). `table` is a parameter so tests can pass a fake one.
+ */
+export function standardPacksFor(
+  used: ReadonlySet<string>,
+  explicit: readonly ImportEntry[],
+  table: Record<string, { js: string; css?: string; tags: string[] }> = BUILTIN_PACKS,
+): ImportEntry[] {
+  const taken = new Set(explicit.flatMap((i) => [...i.js.matchAll(DEFINE)].map((m) => m[1])));
+  return Object.entries(table)
+    .filter(([, pack]) => pack.tags.some((t) => used.has(t)))
+    .filter(([, pack]) => !pack.tags.some((t) => taken.has(t)))
+    .map(([name, pack]) => ({
+      source: `delta:${name}`,
+      name: `delta:${name}`,
+      js: pack.js,
+      css: pack.css,
+      tags: pack.tags,
+    }));
 }
