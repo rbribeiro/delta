@@ -347,3 +347,47 @@ vocabularies so an agent writes them reliably and `grep` finds them. Design + ag
 - [ ] 63. `delta accept <file.dlt> [--all | --id …] [--by …]`: accept/reject tracked changes in the
        source itself (today: edit the source, or build with `--final`)
 - [ ] 64. Margin placement for comments on wide screens (`display="margin"`), reusing the sidenote rail
+
+## M10 — Maintainability
+
+Not features: the safety nets, the upstream path for student packs, and the clean-ups that keep
+Delta easy to contribute to. The review behind this milestone, with the reason, the evidence and
+the "done when" of every item, is [docs/MAINTAINABILITY_PLAN.md](docs/MAINTAINABILITY_PLAN.md);
+read the work package there before starting an item. Items are named by work package (WP), not
+numbered, and are listed in the suggested order. One WP is one PR.
+
+Safety nets
+- [x] WP-S1. CI: typecheck + tests (with Chromium) on every PR; browser suites fail, not skip, in CI
+- [ ] WP-S2. Publish the site from CI; `docs/*.html` and `docs/exemplos/` leave git
+- [ ] WP-S3. A test that fails when `src/generated/assets.ts` is stale
+- [ ] WP-S4. Dead files and code removed; doc drift fixed; a test pinning the docs to `PIPELINE`
+- [ ] WP-S5. Formatter enforced by CI (optional; maintainer's call)
+
+Packs upstream (standard packs: `packs/<name>/`, TypeScript, shipped in the CLI, loaded by tag)
+- [ ] WP-P1. Build `packs/*` into `BUILTIN_PACKS`; TypeScript enforced; no imports from outside the pack
+- [ ] WP-P2. Emit inlines a standard pack when one of its tags is used; an explicit pack wins
+- [ ] WP-P3. Manifest `strings` merged into the i18n island; the `window.Delta` contract typed in one file
+- [ ] WP-P4. Invariants test, `packs/example/`, the admission checklist and the three-tier docs
+- [ ] Port `plot`, `question` and `ai-use` into `packs/` (by their authors, after WP-P4)
+
+Runtime
+- [ ] WP-R1. Folder layout: `elements/` registers tags, the rest of `src/runtime/` is shared library
+       (after `feature/animation` is merged)
+- [ ] WP-R6. Runtime tests: page errors fail `inspect()`, one test style, smoke tests for untested tags
+- [ ] WP-R2. One fold helper, one activation helper; check Space on a focused control in a deck
+- [ ] WP-R4. Shared chrome in `delta.shells`; a test proving CSS file order does not matter
+- [ ] WP-R3. Named helpers for the DOM contracts between elements
+- [ ] WP-R5. Accessibility: keyboard-reachable citations, popover role, `aria-pressed` on toggles
+
+Compiler ↔ runtime contract
+- [ ] WP-K1. One definition of each JSON island (`src/language/islands.ts`)
+- [ ] WP-K2. A table of compiler-written attributes, kept honest by a test
+
+Compiler hygiene
+- [ ] WP-C1. Pipeline table: every step calls a function of its own name
+- [ ] WP-C2. One tree walker with named skip policies
+- [ ] WP-C3. Local tag sets and vocabularies back in `src/language/`
+- [ ] WP-C4. Same API and failure rule for one file and for a project
+- [ ] WP-C5. Diagnostics carry a code
+- [ ] WP-C6. `graph.ts`, `graph-report.ts`, `commands.ts` split along their seams; one `lineOf`
+- [ ] WP-C7. Pass tests use the production front end (`parseSource`)

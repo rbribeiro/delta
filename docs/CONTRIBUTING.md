@@ -238,7 +238,8 @@ Tests live in [test/](../test/) and mirror the passes. Patterns to follow:
   [test/language.test.ts](../test/language.test.ts) checks that the vocabulary agrees with
   itself, the strings and the CSS.
 - **Runtime tests** live in [test/runtime/](../test/runtime/) and run in the machine's
-  Chromium (through [test/browser.ts](../test/browser.ts); they skip when none can start):
+  Chromium (through [test/browser.ts](../test/browser.ts); they skip when none can start,
+  except in CI, where a missing browser fails the run):
   `inspect(dlt, script)` from [test/runtime/helpers.ts](../test/runtime/helpers.ts) compiles
   the document, loads it headless, runs `script` inside the page and returns what it
   returns. The script reads and does what the reader would: `text(".box-tag")`,
@@ -247,6 +248,10 @@ Tests live in [test/](../test/) and mirror the passes. Patterns to follow:
   result (`lazy()`). See [test/runtime/references.test.ts](../test/runtime/references.test.ts).
   [test/hittest.test.ts](../test/hittest.test.ts) and `overflow.test.ts` use the same browser
   for what only a layout engine can tell (what is under the mouse, what overflows on a phone).
+
+**CI** ([.github/workflows/ci.yml](../.github/workflows/ci.yml)) runs `npm run typecheck`
+and `npm test`, browser suites included, on every pull request and every push to `main`.
+A PR is ready to review when it is green.
 
 When you add a pass, add a matching test file. When you add a numbered environment,
 add a numbering case. When you add or change a runtime element, add a case to the

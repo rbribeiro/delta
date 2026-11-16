@@ -1,0 +1,25 @@
+# Typecheck and test every pull request and every push to main.
+# The runtime suites need a real browser: GitHub's Ubuntu image ships Google Chrome, which
+# test/browser.ts finds on its own, and with CI set a missing browser fails the run.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test

@@ -7,6 +7,8 @@ import { join } from "node:path";
  * A real browser for the few checks only a layout engine can make (hit-testing, overflow).
  * Suites using it `describe.skipIf(!BROWSER)`, so a machine with no Chromium (or one whose
  * Chromium cannot start, e.g. in a sandbox) stays green rather than pretending the check ran.
+ * In CI (`CI` set, as GitHub Actions does) a missing browser is an error instead: there a
+ * skipped runtime suite would let a broken element through.
  */
 
 const FLAGS = ["--headless=new", "--no-sandbox", "--disable-gpu"];
@@ -46,6 +48,13 @@ function canLaunch(browser: string): boolean {
 
 const found = findBrowser();
 export const BROWSER = found && canLaunch(found) ? found : undefined;
+
+if (process.env.CI && !BROWSER) {
+  throw new Error(
+    "test/browser.ts: CI is set but no browser started, so the runtime suites cannot run. " +
+      "Install Chromium or Chrome, or point CHROME_PATH at one.",
+  );
+}
 
 /**
  * Renders `html` at `width` px with `probe` appended, and returns what the probe writes
