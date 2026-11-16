@@ -31,7 +31,7 @@ Both use [esbuild](https://esbuild.github.io/).
 This file is **generated and git-ignored**, yet the compiler imports it
 ([emit.ts](../src/compiler/emit.ts) reads `RUNTIME_JS`, `CORE_CSS`, `HAND_CSS` and `THEMES` from it, and
 [theme.ts](../src/compiler/theme.ts) reads `BUILTIN_THEMES`). So it must exist before anything
-compiles, type-checks or tests. `buildAssets()` writes five constants:
+compiles, type-checks or tests. `buildAssets()` writes six constants:
 
 - **`RUNTIME_JS`** -- the browser runtime. esbuild bundles
   [src/runtime/index.ts](../src/runtime/index.ts) into a single **minified IIFE** string
@@ -62,6 +62,15 @@ compiles, type-checks or tests. `buildAssets()` writes five constants:
   theme. Both are built by the same `cssMap(dir)` helper, so adding either is just dropping a
   file in the directory -- no build wiring. Only the selected theme is inlined into a document;
   the rest cost a couple of KB in `dist/cli.js` and nothing in the output.
+- **`BUILTIN_PACKS`** -- the standard packs, `{ [name]: { js, css?, tags, strings? } }`, one per
+  `packs/<name>/` that has a `delta.pack.json`. `bundlePack(dir)` bundles the pack's entry
+  (`index.ts`, or the manifest's `js`) with the runtime's esbuild options into one minified
+  IIFE, and reads its `theme.css` and `strings.json` (or the files the manifest names). It
+  **throws**, naming the file, when the entry is not a `.ts` file or when the bundle pulls in
+  a file outside the pack's folder: a value import from `src/` would duplicate core modules
+  that hold page-wide singletons (the one open popover, the island caches). A pack reaches core
+  through `window.Delta`; a type-only import from `src/` is erased and allowed. Packs are
+  type-checked with core: `tsconfig.json` includes `packs/`.
 
 Because it is generated, never edit `src/generated/assets.ts` by hand and never commit it.
 

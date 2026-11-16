@@ -1,0 +1,20 @@
+/* <pack-example>: every selector under the root tag, every colour a --delta-* token, so the
+   card follows the accent and dark mode with no rule of its own. */
+delta-pack-example {
+  display: block;
+  margin: 1em 0;
+  padding: 0.75em 1em;
+  border: 1px solid var(--delta-rule);
+  border-radius: var(--delta-radius);
+  background: var(--delta-surface-1);
+}
+
+delta-pack-example .pack-example-label {
+  display: block;
+  margin-bottom: 0.35em;
+  font-family: var(--delta-sans);
+  font-size: 0.75em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--delta-accent-ink);
+}
