@@ -362,7 +362,7 @@ Safety nets
 - [x] WP-S2. Publish the site from CI; `docs/*.html` and `docs/exemplos/` leave git
 - [x] WP-S3. A test that fails when `src/generated/assets.ts` is stale
 - [x] WP-S4. Dead files and code removed; doc drift fixed; a test pinning the docs to `PIPELINE`
-- [ ] WP-S5. Formatter enforced by CI (optional; maintainer's call)
+- [x] WP-S5. Formatter enforced by CI (optional; maintainer's call)
 
 Packs upstream (standard packs: `packs/<name>/`, TypeScript, shipped in the CLI, loaded by tag)
 - [ ] WP-P1. Build `packs/*` into `BUILTIN_PACKS`; TypeScript enforced; no imports from outside the pack

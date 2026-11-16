@@ -69,7 +69,8 @@ export function evaluate(html: string, probe: string, width = 1200): string {
     file,
     html.replace(
       "</body>",
-      () => `<script>window.addEventListener("load",()=>{setTimeout(()=>{${probe}},350);});</script></body>`,
+      () =>
+        `<script>window.addEventListener("load",()=>{setTimeout(()=>{${probe}},350);});</script></body>`,
     ),
   );
   let dom: string;

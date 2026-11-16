@@ -45,7 +45,8 @@ interface Asymmetric {
   /** How a failure message shows it. */
   [inspect.custom]: () => string;
 }
-const isAsymmetric = (v: unknown): v is Asymmetric => typeof v === "object" && v !== null && ASYMMETRIC in v;
+const isAsymmetric = (v: unknown): v is Asymmetric =>
+  typeof v === "object" && v !== null && ASYMMETRIC in v;
 
 export interface Matchers {
   readonly not: Matchers;
@@ -71,7 +72,9 @@ export function expect(actual: unknown, message?: string): Matchers {
 }
 /** Matches any string that `expected` matches (a RegExp) or contains (a string). */
 expect.stringMatching = (expected: RegExp | string): Asymmetric => ({
-  [ASYMMETRIC]: (v) => typeof v === "string" && (typeof expected === "string" ? v.includes(expected) : expected.test(v)),
+  [ASYMMETRIC]: (v) =>
+    typeof v === "string" &&
+    (typeof expected === "string" ? v.includes(expected) : expected.test(v)),
   [inspect.custom]: () => `StringMatching(${String(expected)})`,
 });
 
@@ -92,7 +95,8 @@ function matchers(actual: unknown, negated: boolean, message?: string): Matchers
     throw new ExpectationError(message ? `${message}: ${detail}` : detail, check);
   };
   const number = (): number => {
-    if (typeof actual !== "number") throw new ExpectationError(`expected a number, got ${short(actual)}`, number);
+    if (typeof actual !== "number")
+      throw new ExpectationError(`expected a number, got ${short(actual)}`, number);
     return actual;
   };
 
@@ -122,10 +126,15 @@ function matchers(actual: unknown, negated: boolean, message?: string): Matchers
       check(pass, `to contain ${short(item)}`);
     },
     toContainEqual(item) {
-      check(isIterable(actual) && Array.from(actual).some((x) => equals(x, item)), `to contain an item equal to ${short(item)}`);
+      check(
+        isIterable(actual) && Array.from(actual).some((x) => equals(x, item)),
+        `to contain an item equal to ${short(item)}`,
+      );
     },
     toMatch(expected) {
-      const pass = typeof actual === "string" && (typeof expected === "string" ? actual.includes(expected) : expected.test(actual));
+      const pass =
+        typeof actual === "string" &&
+        (typeof expected === "string" ? actual.includes(expected) : expected.test(actual));
       check(pass, `to match ${String(expected)}`);
     },
     toHaveLength(length) {
@@ -163,7 +172,8 @@ function matchers(actual: unknown, negated: boolean, message?: string): Matchers
       check(matchesSubset(actual, expected), `to match ${short(expected)}`);
     },
     toThrow(expected) {
-      if (typeof actual !== "function") throw new ExpectationError(`expected a function, got ${short(actual)}`, check);
+      if (typeof actual !== "function")
+        throw new ExpectationError(`expected a function, got ${short(actual)}`, check);
       let thrown: unknown;
       let threw = false;
       try {
@@ -174,8 +184,15 @@ function matchers(actual: unknown, negated: boolean, message?: string): Matchers
       }
       const text = thrown instanceof Error ? thrown.message : String(thrown);
       const pass =
-        threw && (expected === undefined || (typeof expected === "string" ? text.includes(expected) : expected.test(text)));
-      check(pass, expected === undefined ? "to throw" : `to throw ${String(expected)}${threw ? ` (it threw ${short(text)})` : " (it did not throw)"}`);
+        threw &&
+        (expected === undefined ||
+          (typeof expected === "string" ? text.includes(expected) : expected.test(text)));
+      check(
+        pass,
+        expected === undefined
+          ? "to throw"
+          : `to throw ${String(expected)}${threw ? ` (it threw ${short(text)})` : " (it did not throw)"}`,
+      );
     },
   };
 }
@@ -185,7 +202,8 @@ function matchers(actual: unknown, negated: boolean, message?: string): Matchers
 /** Deep equality where an undefined-valued key is the same as a missing one, and asymmetric matchers apply. */
 function equals(a: unknown, b: unknown): boolean {
   if (isAsymmetric(b)) return b[ASYMMETRIC](a);
-  if (Array.isArray(a) && Array.isArray(b)) return a.length === b.length && a.every((x, i) => equals(x, b[i]));
+  if (Array.isArray(a) && Array.isArray(b))
+    return a.length === b.length && a.every((x, i) => equals(x, b[i]));
   if (isPlainObject(a) && isPlainObject(b)) {
     const ka = definedKeys(a);
     const kb = definedKeys(b);
@@ -198,7 +216,11 @@ function equals(a: unknown, b: unknown): boolean {
 function matchesSubset(actual: unknown, expected: unknown): boolean {
   if (isAsymmetric(expected)) return expected[ASYMMETRIC](actual);
   if (Array.isArray(expected)) {
-    return Array.isArray(actual) && actual.length === expected.length && expected.every((x, i) => matchesSubset(actual[i], x));
+    return (
+      Array.isArray(actual) &&
+      actual.length === expected.length &&
+      expected.every((x, i) => matchesSubset(actual[i], x))
+    );
   }
   if (isPlainObject(expected)) {
     if (typeof actual !== "object" || actual === null) return false;
@@ -214,10 +236,13 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
   return proto === Object.prototype || proto === null;
 }
 
-const definedKeys = (o: Record<string, unknown>): string[] => Object.keys(o).filter((k) => o[k] !== undefined);
+const definedKeys = (o: Record<string, unknown>): string[] =>
+  Object.keys(o).filter((k) => o[k] !== undefined);
 
 const isIterable = (v: unknown): v is Iterable<unknown> =>
-  typeof v === "object" && v !== null && typeof (v as { [Symbol.iterator]?: unknown })[Symbol.iterator] === "function";
+  typeof v === "object" &&
+  v !== null &&
+  typeof (v as { [Symbol.iterator]?: unknown })[Symbol.iterator] === "function";
 
 /** A value for a message: inspected, on one line where it fits, never longer than a screen. */
 function short(v: unknown): string {

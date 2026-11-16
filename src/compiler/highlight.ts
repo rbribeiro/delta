@@ -16,7 +16,8 @@
 
 import { escapeHtml } from "./preprocess.ts";
 
-export type Token = "comment" | "string" | "number" | "keyword" | "name" | "builtin" | "tag" | "attr";
+export type Token =
+  "comment" | "string" | "number" | "keyword" | "name" | "builtin" | "tag" | "attr";
 
 interface Rule {
   /** The regex must be sticky (`y`). */
@@ -60,7 +61,10 @@ function tokenize(source: string, grammar: Rule[]): string {
 // -- shared pieces ------------------------------------------------------------------------
 
 /** A keyword rule: the words, whole only. */
-const words = (cls: Token, list: string): Rule => ({ cls, re: new RegExp(`\\b(?:${list.trim().split(/\s+/).join("|")})\\b`, "y") });
+const words = (cls: Token, list: string): Rule => ({
+  cls,
+  re: new RegExp(`\\b(?:${list.trim().split(/\s+/).join("|")})\\b`, "y"),
+});
 const IDENT: Rule = { cls: null, re: /[A-Za-z_$][\w$]*/y };
 /** `name(`: a call or a definition. Comes after the keyword rules, so `if (` is not a name. */
 const CALL: Rule = { cls: "name", re: /[A-Za-z_$][\w$]*(?=\s*\()/y };
@@ -85,7 +89,10 @@ const GRAMMARS: Record<string, Rule[]> = {
   bash: [
     { cls: "comment", re: /(?<=^|\s)#.*/y },
     { cls: "string", re: /"(?:[^"\\]|\\[\s\S])*"|'[^']*'/y },
-    words("keyword", "if then else elif fi for in do done while until case esac function return exit export local source"),
+    words(
+      "keyword",
+      "if then else elif fi for in do done while until case esac function return exit export local source",
+    ),
     // The command: the first word of a line or of a pipeline segment.
     { cls: "builtin", re: /(?<=(?:^|[\n;|&])[ \t]*)[A-Za-z_][\w./-]*/y },
     { cls: "name", re: /\$(?:\{[^}]*\}|[A-Za-z_]\w*|[0-9@#?*$!])/y },
@@ -94,9 +101,15 @@ const GRAMMARS: Record<string, Rule[]> = {
 
   python: [
     { cls: "comment", re: /#.*/y },
-    { cls: "string", re: /[rbfRBF]{0,2}(?:"""[\s\S]*?"""|'''[\s\S]*?'''|"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*')/y },
+    {
+      cls: "string",
+      re: /[rbfRBF]{0,2}(?:"""[\s\S]*?"""|'''[\s\S]*?'''|"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*')/y,
+    },
     { cls: "name", re: /@[A-Za-z_][\w.]*/y },
-    { re: /\b(?:def|class)\s+[A-Za-z_]\w*/y, sub: [words("keyword", "def class"), { cls: "name", re: /[A-Za-z_]\w*/y }] },
+    {
+      re: /\b(?:def|class)\s+[A-Za-z_]\w*/y,
+      sub: [words("keyword", "def class"), { cls: "name", re: /[A-Za-z_]\w*/y }],
+    },
     words(
       "keyword",
       `and as assert async await break class continue def del elif else except finally for from global if import
@@ -115,7 +128,10 @@ const GRAMMARS: Record<string, Rule[]> = {
   javascript: [
     { cls: "comment", re: /\/\/.*|\/\*[\s\S]*?\*\//y },
     { cls: "string", re: /"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|`(?:[^`\\]|\\[\s\S])*`/y },
-    { re: /\b(?:function|class)\s+[A-Za-z_$][\w$]*/y, sub: [words("keyword", "function class"), { cls: "name", re: /[A-Za-z_$][\w$]*/y }] },
+    {
+      re: /\b(?:function|class)\s+[A-Za-z_$][\w$]*/y,
+      sub: [words("keyword", "function class"), { cls: "name", re: /[A-Za-z_$][\w$]*/y }],
+    },
     words(
       "keyword",
       `abstract as async await break case catch class const continue debugger declare default delete do else enum
@@ -128,7 +144,10 @@ const GRAMMARS: Record<string, Rule[]> = {
       `document window console Math JSON Object Array String Number Boolean Promise Map Set Symbol Error Date RegExp
        customElements HTMLElement Delta`,
     ),
-    { cls: "number", re: /\b0[xob][\da-fA-F_]+n?\b|\b\d[\d_]*(?:\.\d[\d_]*)?(?:[eE][+-]?\d+)?n?\b/y },
+    {
+      cls: "number",
+      re: /\b0[xob][\da-fA-F_]+n?\b|\b\d[\d_]*(?:\.\d[\d_]*)?(?:[eE][+-]?\d+)?n?\b/y,
+    },
     CALL,
     IDENT,
   ],
@@ -138,7 +157,10 @@ const GRAMMARS: Record<string, Rule[]> = {
     { cls: "string", re: QUOTED },
     { cls: "keyword", re: /@[A-Za-z-]+|!important\b/y },
     { cls: "attr", re: /-{0,2}[A-Za-z][\w-]*(?=\s*:)/y },
-    { cls: "number", re: /#[0-9a-fA-F]{3,8}\b|(?:\b\d+(?:\.\d+)?|\.\d+)(?:px|em|rem|ch|vw|vh|%|s|ms|deg|fr)?(?![\w.])/y },
+    {
+      cls: "number",
+      re: /#[0-9a-fA-F]{3,8}\b|(?:\b\d+(?:\.\d+)?|\.\d+)(?:px|em|rem|ch|vw|vh|%|s|ms|deg|fr)?(?![\w.])/y,
+    },
     { cls: "name", re: /[A-Za-z-]+(?=\()/y },
     IDENT,
   ],

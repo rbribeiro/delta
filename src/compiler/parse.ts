@@ -26,7 +26,8 @@ export function parse(source: string, ctx: CompileContext, map?: number[]): Elem
   const file = ctx.file;
   // The map has one entry per character of `source`; an exclusive end at EOF maps past the
   // author's last character.
-  const orig = (at: number): number => (!map ? at : at < map.length ? map[at] : (map[map.length - 1] ?? -1) + 1);
+  const orig = (at: number): number =>
+    !map ? at : at < map.length ? map[at] : (map[map.length - 1] ?? -1) + 1;
   const posAt = locator(source, orig, file);
 
   const doc = parseXml(source, file, (message, at) => error(ctx, message, posAt(at)));
@@ -34,7 +35,13 @@ export function parse(source: string, ctx: CompileContext, map?: number[]): Elem
   for (const el of elements(doc)) {
     const s = el.src!;
     el.pos = posAt(s.start);
-    el.src = { file, start: orig(s.start), end: orig(s.end), inner: orig(s.inner), innerEnd: orig(s.innerEnd) };
+    el.src = {
+      file,
+      start: orig(s.start),
+      end: orig(s.end),
+      inner: orig(s.inner),
+      innerEnd: orig(s.innerEnd),
+    };
   }
   return doc;
 }
@@ -44,7 +51,11 @@ export function parse(source: string, ctx: CompileContext, map?: number[]): Elem
  * Preprocessing never adds or removes a newline, so lines coincide; the column is measured
  * through `orig`, which undoes any escaping earlier on the same line.
  */
-function locator(text: string, orig: (at: number) => number, file: string): (at: number) => Position {
+function locator(
+  text: string,
+  orig: (at: number) => number,
+  file: string,
+): (at: number) => Position {
   const newlines: number[] = [];
   for (let i = text.indexOf("\n"); i !== -1; i = text.indexOf("\n", i + 1)) newlines.push(i);
   return (at) => {

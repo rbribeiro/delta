@@ -333,6 +333,7 @@ describe("countWords", () => {
 
       <list marker="dash">
         <item><c>npm test</c> e <c>npm run typecheck</c> verdes. A CI roda os dois em todo pull request, com os testes do navegador.</item>
+        <item><c>npm run format</c> rodou: a CI confere a formatação (Prettier) e reprova arquivo fora do padrão.</item>
         <item>O passo tem um arquivo próprio, a assinatura <c>(doc, ctx)</c>, e uma linha em <c>pipeline.ts</c> com um <c>what</c> honesto.</item>
         <item>Nada de <c>throw</c> para erro do autor; <c>error</c>/<c>warn</c> com <c>el.pos</c>.</item>
         <item>Arquivos lidos passam por <c>readUserFile</c>; URLs são recusadas.</item>

@@ -1,0 +1,4 @@
+# Prettier also skips everything in .gitignore (generated assets, dist/, the built site).
+# Formatted: code and config (`npm run format`). Not formatted: CSS, whose palettes and
+# token tables are aligned by hand, and the Markdown docs, wrapped by hand.
+package-lock.json

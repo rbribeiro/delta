@@ -14,13 +14,16 @@ function load(src: string) {
 }
 
 /** The whole pipeline: citations numbered, bibliography filled, HTML emitted. */
-const full = (src: string): { html: string; ctx: CompileContext } => compileAll(src, { file: FILE });
+const full = (src: string): { html: string; ctx: CompileContext } =>
+  compileAll(src, { file: FILE });
 const compile = (src: string): string => compileHtml(src, { file: FILE });
 
 /** `data-cite-nums` of every emitted `<delta-cite paper…>`, in document order (undefined: inert).
  *  Attributes required: the runtime's own source mentions a bare `<delta-cite>`. */
 const citeNums = (html: string): (string | undefined)[] =>
-  [...html.matchAll(/<delta-cite\s([^>]*)>/g)].map((m) => /data-cite-nums="([^"]*)"/.exec(m[1])?.[1]);
+  [...html.matchAll(/<delta-cite\s([^>]*)>/g)].map(
+    (m) => /data-cite-nums="([^"]*)"/.exec(m[1])?.[1],
+  );
 /** Ids of the `<delta-paper>`s inside `<delta-bibliography>`, in order (not the pop-over templates). */
 const bibPaperIds = (html: string): string[] => {
   const bib = /<delta-bibliography[\s>][\s\S]*?<\/delta-bibliography>/.exec(html)?.[0] ?? "";

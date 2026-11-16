@@ -157,7 +157,9 @@ export function popover(
   let byHover = false;
   let hoverTimer: number | undefined;
   const canHover =
-    hover && typeof matchMedia === "function" && matchMedia("(hover: hover) and (pointer: fine)").matches;
+    hover &&
+    typeof matchMedia === "function" &&
+    matchMedia("(hover: hover) and (pointer: fine)").matches;
   const near = (x: number, y: number): boolean =>
     [trigger, content].some((el) => {
       const r = el.getBoundingClientRect();

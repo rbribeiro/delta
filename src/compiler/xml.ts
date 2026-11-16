@@ -61,7 +61,9 @@ class XmlParser {
       else if (text.startsWith("<![CDATA[", this.i)) this.cdata();
       else if (text.startsWith("</", this.i)) this.closeTag();
       else if (text.startsWith("<?", this.i)) {
-        const what = text.startsWith("<?xml", this.i) ? "the XML declaration must be at the very start of the file" : "processing instructions are not supported";
+        const what = text.startsWith("<?xml", this.i)
+          ? "the XML declaration must be at the very start of the file"
+          : "processing instructions are not supported";
         this.error(what, this.i);
         this.skipPast("?>");
       } else if (text.startsWith("<!", this.i)) {
@@ -71,7 +73,8 @@ class XmlParser {
     }
 
     // Innermost first: the element nearest the end is the one the author forgot.
-    for (const el of this.stack.slice(1).reverse()) this.error(`unclosed <${el.tag}>: reached the end of the file`, el.src!.start);
+    for (const el of this.stack.slice(1).reverse())
+      this.error(`unclosed <${el.tag}>: reached the end of the file`, el.src!.start);
     const doc = this.root.children.find((c): c is ElementNode => c.type === "element");
     if (!doc) this.error("no root element found", 0);
     return this.failed || !doc ? null : doc;
@@ -133,24 +136,31 @@ class XmlParser {
 
   /** Replaces entity references in `raw` (which starts at offset `at`); errors keep the text as written. */
   private decode(raw: string, at: number): string {
-    return raw.replace(ENTITY, (m: string, hex?: string, dec?: string, name?: string, offset?: number) => {
-      const where = at + (offset ?? 0);
-      if (hex !== undefined || dec !== undefined) {
-        const code = parseInt(hex ?? dec!, hex !== undefined ? 16 : 10);
-        if (code === 0 || code > 0x10ffff || (code >= 0xd800 && code <= 0xdfff)) {
-          this.error(`invalid character reference ${m}`, where);
-          return m;
+    return raw.replace(
+      ENTITY,
+      (m: string, hex?: string, dec?: string, name?: string, offset?: number) => {
+        const where = at + (offset ?? 0);
+        if (hex !== undefined || dec !== undefined) {
+          const code = parseInt(hex ?? dec!, hex !== undefined ? 16 : 10);
+          if (code === 0 || code > 0x10ffff || (code >= 0xd800 && code <= 0xdfff)) {
+            this.error(`invalid character reference ${m}`, where);
+            return m;
+          }
+          return String.fromCodePoint(code);
         }
-        return String.fromCodePoint(code);
-      }
-      if (name !== undefined) {
-        const value = ENTITIES[name];
-        if (value === undefined) this.error(`unknown entity ${m} (XML has only &amp; &lt; &gt; &quot; and &apos;)`, where);
-        return value ?? m;
-      }
-      this.error("bare `&`: write &amp;", where);
-      return m;
-    });
+        if (name !== undefined) {
+          const value = ENTITIES[name];
+          if (value === undefined)
+            this.error(
+              `unknown entity ${m} (XML has only &amp; &lt; &gt; &quot; and &apos;)`,
+              where,
+            );
+          return value ?? m;
+        }
+        this.error("bare `&`: write &amp;", where);
+        return m;
+      },
+    );
   }
 
   // -- tags ------------------------------------------------------------------------------
@@ -233,8 +243,10 @@ class XmlParser {
       const raw = text.slice(valueAt, close);
       this.i = close + 1;
       const lt = raw.indexOf("<");
-      if (lt !== -1) this.error("`<` is not allowed in an attribute value (write &lt;)", valueAt + lt);
-      if (Object.hasOwn(el.attrs, name)) this.error(`duplicate attribute \`${name}\` in <${el.tag}>`, nameAt);
+      if (lt !== -1)
+        this.error("`<` is not allowed in an attribute value (write &lt;)", valueAt + lt);
+      if (Object.hasOwn(el.attrs, name))
+        this.error(`duplicate attribute \`${name}\` in <${el.tag}>`, nameAt);
       // Line breaks and tabs in a value are spaces (XML's attribute-value normalisation).
       el.attrs[name] = this.decode(raw.replace(/[\t\r\n]/g, " "), valueAt);
     }

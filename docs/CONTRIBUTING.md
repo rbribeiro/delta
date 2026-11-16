@@ -41,8 +41,12 @@ documented in [BUILDING.md](BUILDING.md).
 
 ## Conventions
 
-- **Style follows the file you are in**: 100-column lines, double quotes, semicolons, trailing
-  commas, two-space indent. There is no formatter to run; keep a diff about what it changes.
+- **Formatting is Prettier's** ([.prettierrc.json](../.prettierrc.json): 100 columns, double
+  quotes, semicolons, trailing commas, two-space indent). Run `npm run format` before you
+  push; CI runs `npm run format:check` and fails on an unformatted file, so nobody reviews
+  style. It formats code and config (`.ts`, `.js`, `.json`, `.yml`); CSS and the Markdown
+  docs are aligned and wrapped by hand ([.prettierignore](../.prettierignore)). A table that
+  reads better one row per line keeps its shape with a `// prettier-ignore` above it.
 - **ESM throughout**, `verbatimModuleSyntax` on — use `import type` for type-only
   imports.
 - Relative imports always carry the **`.ts` extension** (`from "./ast.ts"`): Node runs the
@@ -256,8 +260,8 @@ Tests live in [test/](../test/) and mirror the passes. Patterns to follow:
   [test/hittest.test.ts](../test/hittest.test.ts) and `overflow.test.ts` use the same browser
   for what only a layout engine can tell (what is under the mouse, what overflows on a phone).
 
-**CI** ([.github/workflows/ci.yml](../.github/workflows/ci.yml)) runs `npm run typecheck`
-and `npm test`, browser suites included, on every pull request and every push to `main`.
+**CI** ([.github/workflows/ci.yml](../.github/workflows/ci.yml)) runs `npm run format:check`,
+`npm run typecheck` and `npm test`, browser suites included, on every pull request and every push to `main`.
 A PR is ready to review when it is green.
 
 When you add a pass, add a matching test file. When you add a numbered environment,

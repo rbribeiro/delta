@@ -9,9 +9,10 @@ import { PIPELINE } from "../src/compiler/pipeline.ts";
  */
 
 const architecture = readFileSync("docs/ARCHITECTURE.md", "utf8");
-const descriptions = JSON.parse(
-  readFileSync("site/packs/pipeline/descriptions.json", "utf8"),
-) as { phases: Record<string, string>; steps: Record<string, string> };
+const descriptions = JSON.parse(readFileSync("site/packs/pipeline/descriptions.json", "utf8")) as {
+  phases: Record<string, string>;
+  steps: Record<string, string>;
+};
 
 const phases = PIPELINE.map((p) => p.name);
 const steps = PIPELINE.flatMap((p) => p.steps.map((s) => s.name));

@@ -32,7 +32,15 @@ export function parseToml(text: string): Table {
 const BARE_KEY = /[A-Za-z0-9_-]+/y;
 const DIGITS = /[0-9_]+/y;
 const SPACES = /[ \t]*/y;
-const ESCAPES: Record<string, string> = { '"': '"', "\\": "\\", b: "\b", f: "\f", n: "\n", r: "\r", t: "\t" };
+const ESCAPES: Record<string, string> = {
+  '"': '"',
+  "\\": "\\",
+  b: "\b",
+  f: "\f",
+  n: "\n",
+  r: "\r",
+  t: "\t",
+};
 
 class Parser {
   private readonly text: string;
@@ -68,7 +76,8 @@ class Parser {
   /** `[name]` or `[a.b]`: every later `key = value` goes into that table. */
   private header(): void {
     const at = this.i;
-    if (this.text.startsWith("[[", at)) this.fail("arrays of tables ([[x]]) are not supported in project.toml");
+    if (this.text.startsWith("[[", at))
+      this.fail("arrays of tables ([[x]]) are not supported in project.toml");
     this.i++;
     const path: string[] = [];
     do {
@@ -96,7 +105,8 @@ class Parser {
     const at = this.i;
     const key = this.key();
     this.skipSpaces();
-    if (this.text[this.i] === ".") this.fail("dotted keys (a.b = …) are not supported in project.toml: use a [table] header");
+    if (this.text[this.i] === ".")
+      this.fail("dotted keys (a.b = …) are not supported in project.toml: use a [table] header");
     if (!this.eat("=")) this.fail(`expected \`=\` after key \`${key}\``);
     this.skipSpaces();
     const value = this.value();
@@ -126,15 +136,18 @@ class Parser {
   private value(): unknown {
     const c = this.text[this.i];
     if (c === '"') {
-      if (this.text.startsWith('"""', this.i)) this.fail('multi-line strings (""" or \'\'\') are not supported in project.toml');
+      if (this.text.startsWith('"""', this.i))
+        this.fail("multi-line strings (\"\"\" or ''') are not supported in project.toml");
       return this.basicString();
     }
     if (c === "'") {
-      if (this.text.startsWith("'''", this.i)) this.fail('multi-line strings (""" or \'\'\') are not supported in project.toml');
+      if (this.text.startsWith("'''", this.i))
+        this.fail("multi-line strings (\"\"\" or ''') are not supported in project.toml");
       return this.literalString();
     }
     if (c === "[") return this.array();
-    if (c === "{") this.fail("inline tables ({ … }) are not supported in project.toml: use a [table] header");
+    if (c === "{")
+      this.fail("inline tables ({ … }) are not supported in project.toml: use a [table] header");
     if (this.word("true")) return true;
     if (this.word("false")) return false;
     const ahead = this.text.slice(this.i, this.i + 4);
@@ -147,11 +160,13 @@ class Parser {
     const at = this.i;
     const negative = this.eat("-");
     if (!negative) this.eat("+");
-    if (/^0[xob]/.test(this.text.slice(this.i, this.i + 2))) this.fail("hex, octal and binary numbers are not supported in project.toml", at);
+    if (/^0[xob]/.test(this.text.slice(this.i, this.i + 2)))
+      this.fail("hex, octal and binary numbers are not supported in project.toml", at);
     const digits = this.match(DIGITS)!;
     const next = this.text[this.i];
     if (next && ".eE".includes(next)) this.fail("floats are not supported in project.toml", at);
-    if (next && "-:T".includes(next)) this.fail("dates and times are not supported in project.toml", at);
+    if (next && "-:T".includes(next))
+      this.fail("dates and times are not supported in project.toml", at);
     const n = Number(digits.replace(/_/g, ""));
     return negative ? -n : n;
   }
@@ -175,7 +190,8 @@ class Parser {
       } else if (e === "u" || e === "U") {
         const len = e === "u" ? 4 : 8;
         const hex = this.text.slice(this.i, this.i + len);
-        if (!/^[0-9A-Fa-f]+$/.test(hex) || hex.length !== len) this.fail(`invalid escape \`\\${e}${hex}\` in string`, this.i - 2);
+        if (!/^[0-9A-Fa-f]+$/.test(hex) || hex.length !== len)
+          this.fail(`invalid escape \`\\${e}${hex}\` in string`, this.i - 2);
         out += String.fromCodePoint(parseInt(hex, 16));
         this.i += len;
       } else {
@@ -235,7 +251,8 @@ class Parser {
   }
 
   private newline(): void {
-    if (this.eat("\r") && this.text[this.i] !== "\n") this.fail("a bare carriage return is not a newline", this.i - 1);
+    if (this.eat("\r") && this.text[this.i] !== "\n")
+      this.fail("a bare carriage return is not a newline", this.i - 1);
     this.eat("\n");
   }
 
@@ -247,7 +264,11 @@ class Parser {
 
   /** `true` / `false`, only when not the start of a longer word. */
   private word(w: string): boolean {
-    if (!this.text.startsWith(w, this.i) || /[A-Za-z0-9_-]/.test(this.text[this.i + w.length] ?? "")) return false;
+    if (
+      !this.text.startsWith(w, this.i) ||
+      /[A-Za-z0-9_-]/.test(this.text[this.i + w.length] ?? "")
+    )
+      return false;
     this.i += w.length;
     return true;
   }

@@ -156,7 +156,10 @@ describe("delta verify", () => {
       ),
     );
     expect(
-      text.replace(/ status="verified" verified-by="rodrigo" verified-on="[\d-]+" against="\w+"/, ""),
+      text.replace(
+        / status="verified" verified-by="rodrigo" verified-on="[\d-]+" against="\w+"/,
+        "",
+      ),
     ).toBe(SRC);
     expect(deltaIn(dir, "lint", "--json").stdout).not.toContain('"stale"');
   });

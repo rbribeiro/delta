@@ -20,7 +20,8 @@ function firstElement(el: ElementNode | null, tag: string): ElementNode | undefi
   return el?.children.find((c): c is ElementNode => c.type === "element" && c.tag === tag);
 }
 
-const errors = (ctx: { diagnostics: Diagnostic[] }) => ctx.diagnostics.filter((d) => d.severity === "error");
+const errors = (ctx: { diagnostics: Diagnostic[] }) =>
+  ctx.diagnostics.filter((d) => d.severity === "error");
 
 describe("parse", () => {
   it("builds a generic element tree with attributes", () => {
@@ -65,7 +66,9 @@ describe("parse", () => {
   });
 
   it("decodes the five entities and numeric references, in text and in attribute values", () => {
-    const { doc } = run('<document t="&lt;x&gt; &amp; &quot;&apos;">&#65;&#x42; &lt;&amp;&gt;</document>');
+    const { doc } = run(
+      '<document t="&lt;x&gt; &amp; &quot;&apos;">&#65;&#x42; &lt;&amp;&gt;</document>',
+    );
     expect(doc!.attrs.t).toBe(`<x> & "'`);
     expect(textContent(doc!)).toBe("AB <&>");
   });
@@ -90,6 +93,8 @@ describe("parse", () => {
 });
 
 describe("parse: errors", () => {
+  // One row per case: the table reads as a table.
+  // prettier-ignore
   const cases: [string, string, RegExp, number, number][] = [
     ["a bare `<` in text", "<document>a < b</document>", /expected `>` to end <document>, found `<`|expected a tag name/, 1, 13],
     ["a bare `&` in text", "<document>a & b</document>", /bare `&`: write &amp;/, 1, 13],
@@ -150,7 +155,11 @@ describe("parseSource: positions in the author's coordinates", () => {
     const src = "<document>$a<b$ and & more</document>";
     const { doc, ctx } = runSource(src);
     expect(doc).toBeNull();
-    expect(errors(ctx)[0]?.pos).toEqual({ line: 1, column: src.indexOf("&") + 1, file: "test.dlt" });
+    expect(errors(ctx)[0]?.pos).toEqual({
+      line: 1,
+      column: src.indexOf("&") + 1,
+      file: "test.dlt",
+    });
   });
 
   it("positions a forgotten \\$ at the dollar itself", () => {

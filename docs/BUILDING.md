@@ -94,6 +94,8 @@ So `npm publish` ships only `dist/`, and an installed `delta` command runs the b
 | `test` | `node --test "test/**/*.test.ts"` | run the test suite once (`pretest` regenerates the assets) |
 | `test:watch` | `node --test --watch …` | rerun the suite on every save |
 | `typecheck` | `tsc --noEmit` | type-check without emitting |
+| `format` | `prettier --write "**/*.{ts,js,json,yml}"` | format the code and config in place (`.prettierrc.json`, `.prettierignore`) |
+| `format:check` | `prettier --check …` (same files) | fail on an unformatted file; CI runs it |
 | `example` | `node src/cli.ts build examples/hello.dlt -o out.html` | compile the single-file example |
 | `example:project` | `node src/cli.ts build examples/project/project.toml` | compile the multi-file project example |
 | `example:collab` | `node src/cli.ts build examples/collab.dlt -o examples/collab.html` | compile the collaboration example |
@@ -122,7 +124,7 @@ runtime/CSS. In `test:watch`, the assets are rebuilt once per start, not on ever
   syntax highlighter (`src/compiler/highlight.ts`) are Delta's own, and the body font is
   vendored in `src/styles/fonts/`.
 - **Build / dev** (`devDependencies`): `esbuild` (bundling), `typescript` (type-checking),
-  `@types/node`. Node itself runs the TypeScript sources (22.18+ / 24+) and runs the tests
+  `prettier` (formatting, pinned exactly so every machine formats alike), `@types/node`. Node itself runs the TypeScript sources (22.18+ / 24+) and runs the tests
   (`node --test`, with the small `expect` in [test/harness.ts](../test/harness.ts)), so there
   is no transpiler and no test framework to install.
 
@@ -130,8 +132,8 @@ runtime/CSS. In `test:watch`, the assets are rebuilt once per start, not on ever
 
 Two workflows in `.github/workflows/`, both on the Node version in `.node-version`:
 
-- `ci.yml`, on every pull request and push to `main`: `npm ci`, `npm run typecheck`,
-  `npm test`. GitHub's Ubuntu image has Chrome, so the browser suites run; with `CI` set,
+- `ci.yml`, on every pull request and push to `main`: `npm ci`, `npm run format:check`,
+  `npm run typecheck`, `npm test`. GitHub's Ubuntu image has Chrome, so the browser suites run; with `CI` set,
   `test/browser.ts` fails instead of skipping when no browser starts.
 - `pages.yml`, on every push to `main`: `npm ci && npm run docs`, then publishes `docs/` to
   GitHub Pages. The built HTML (`docs/*.html`, `docs/exemplos/`) is ignored by git; build it
