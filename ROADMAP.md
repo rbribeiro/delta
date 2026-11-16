@@ -359,7 +359,7 @@ numbered, and are listed in the suggested order. One WP is one PR.
 Safety nets
 - [x] WP-S1. CI: typecheck + tests (with Chromium) on every PR; browser suites fail, not skip, in CI
 - [x] WP-S2. Publish the site from CI; `docs/*.html` and `docs/exemplos/` leave git
-- [ ] WP-S3. A test that fails when `src/generated/assets.ts` is stale
+- [x] WP-S3. A test that fails when `src/generated/assets.ts` is stale
 - [ ] WP-S4. Dead files and code removed; doc drift fixed; a test pinning the docs to `PIPELINE`
 - [ ] WP-S5. Formatter enforced by CI (optional; maintainer's call)
 

@@ -48,8 +48,8 @@ node --test --test-name-pattern "resets across" test/
         versionado. Todo script do <c>npm</c> que precisa dele o regenera antes. Mas se você
         chamar <c>node --test</c> ou <c>tsc</c> diretamente numa cópia recém-clonada, ou depois de
         mexer em <c>src/runtime/</c> ou <c>src/styles/</c>, rode <c>npm run assets</c> uma
-        vez, ou verá um módulo faltando ou um runtime velho. O mesmo vale para os dados do
-        explorador (<c>npm run trace</c>).
+        vez, ou verá um módulo faltando ou um runtime velho (<c>test/assets.test.ts</c> acusa
+        o arquivo velho). O mesmo vale para os dados do explorador (<c>npm run trace</c>).
       </box>
     </subsection>
 
