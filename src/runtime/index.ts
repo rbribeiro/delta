@@ -1,22 +1,12 @@
 import { defineComponents } from "./elements/index.ts";
 import { wireMathRefs } from "./elements/ref.ts";
-import { setupDeck, type Deck } from "./deck.ts";
+import { setupDeck } from "./deck.ts";
 import { followAddress } from "./address.ts";
 import { popover } from "./utils.ts";
 import { t } from "./i18n.ts";
 import { reviewState } from "./elements/collab.ts";
 
-declare global {
-  interface Window {
-    Delta: {
-      popover: typeof popover;
-      t: typeof t;
-      deck: Deck | null;
-      /** Document-wide review switches: annotations on/off, changes markup/final/original. */
-      review: typeof reviewState;
-    };
-  }
-}
+// The type of window.Delta, the contract every pack builds against, is declared in ./api.ts.
 
 defineComponents();
 

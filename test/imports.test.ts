@@ -265,3 +265,45 @@ describe("emit with a standard pack", () => {
     for (const m of html.matchAll(/url\(\s*([^)]*)\)/g)) expect(m[1]).toMatch(/^["']?data:/);
   });
 });
+
+describe("pack strings", () => {
+  /** The `#delta-i18n` island of a compiled page, parsed. */
+  const island = (html: string): Record<string, string> =>
+    JSON.parse(/<script type="application\/json" id="delta-i18n">(.*?)<\/script>/.exec(html)![1]);
+  const doc = (lang: string, head: string, body: string) =>
+    `<document lang="${lang}">${head}<title>T</title>${body}</document>`;
+
+  it("merges a pack's strings for the document's language (English underneath)", () => {
+    const pack = `<import src="fixtures/strings-pack" />`;
+    expect(island(compile(doc("en", pack, "x")))["greeting.hello"]).toBe("Hello");
+    expect(island(compile(doc("pt-BR", pack, "x")))["greeting.hello"]).toBe("Olá");
+    expect(island(compile(doc("fr", pack, "x")))["greeting.hello"]).toBe("Hello");
+  });
+
+  it("lets a core key win over a pack's", () => {
+    const html = compile(doc("en", `<import src="fixtures/strings-pack" />`, "x"));
+    expect(island(html).theorem).toBe("Theorem");
+  });
+
+  it("switches a standard pack's label with the language", () => {
+    const body = `<pack-example>Hi</pack-example>`;
+    expect(island(compile(doc("en", "", body)))["example.label"]).toBe("Example pack");
+    expect(island(compile(doc("pt-BR", "", body)))["example.label"]).toBe("Pacote de exemplo");
+  });
+
+  it("leaves the island byte-identical when no pack has strings", () => {
+    const i18n = (html: string) =>
+      /<script type="application\/json" id="delta-i18n">.*?<\/script>/.exec(html)![0];
+    const without = compile(doc("pt-BR", "", "x"));
+    const withPack = compile(doc("pt-BR", `<import src="fixtures/pack" />`, "x"));
+    expect(i18n(withPack)).toBe(i18n(without));
+  });
+
+  it("warns when the manifest names a strings file that is missing", () => {
+    const { ctx } = resolved(`<document><import src="fixtures/bad-strings-pack" /></document>`);
+    expect(ctx.imports).toHaveLength(1);
+    expect(ctx.diagnostics.map((d) => d.message)).toEqual([
+      "import 'fixtures/bad-strings-pack' declares strings 'missing.json' but it was not found",
+    ]);
+  });
+});

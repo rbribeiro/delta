@@ -288,10 +288,21 @@ Delta.t("termo", "Definição")   // o texto traduzido, ou "Definição"
       embute numa ilha JSON (<c>#delta-i18n</c>), que o runtime lê uma única vez. Não
       há busca na rede.
 
-      Um pacote não acrescenta chaves à tabela: ela é fixa na compilação. Por isso,
-      passe sempre um padrão, e trate-o como o texto que de fato aparecerá. O que
-      <c>t</c> compra é reaproveitar os textos que o Delta já traduz (os nomes dos
-      ambientes, os rótulos do painel de revisão), que ficam em
+      Um pacote traz as suas próprias chaves num <c>strings.json</c> ao lado do script,
+      um bloco por idioma, cada chave com o nome do pacote na frente:
+
+      <code lang="json" numbered="false">
+{
+  "en": { "glossario.fechar": "Close" },
+  "pt": { "glossario.fechar": "Fechar" }
+}
+      </code>
+
+      O compilador junta o bloco do idioma do documento (com o inglês por baixo, como
+      no core) à mesma ilha. Uma chave do core vence uma do pacote com o mesmo nome; por
+      isso o prefixo. Passe sempre um padrão mesmo assim: é o que aparece se o arquivo
+      faltar. E <c>t</c> também reaproveita os textos que o Delta já traduz (os nomes
+      dos ambientes, os rótulos do painel de revisão), que ficam em
       <c>src/language/strings.ts</c>.
     </subsection>
 

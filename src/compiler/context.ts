@@ -37,6 +37,9 @@ export interface TocEntry {
   file?: string;
 }
 
+/** A pack's localized strings by language: `{ "en": { "plot.zoom": "Zoom" }, "pt": {…} }`. */
+export type PackStrings = Record<string, Record<string, string>>;
+
 /** One resolved package (a `<import>` pack or a `project.toml` package); inlined by emit. */
 export interface ImportEntry {
   /** Absolute path to the pack's entry script (the dedup key across all channels);
@@ -51,6 +54,8 @@ export interface ImportEntry {
   /** Tags the pack declares it owns. A standard pack is inlined only when one is used;
    *  for the author's own packs this is reserved for tag-gating (ROADMAP 48). */
   tags?: string[];
+  /** Localized strings; emit merges the document's language into `#delta-i18n` (core keys win). */
+  strings?: PackStrings;
 }
 
 /** One collaborator declared in `<team>`; the runtime colors/badges `by`/`for` chips from it. */

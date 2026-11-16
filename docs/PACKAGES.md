@@ -181,11 +181,13 @@ format change** — it's the one hook we're paying for up front.
 
 ## The `window.Delta` contract
 
-Packages build against the runtime's public surface, exposed on `window.Delta`
-([../src/runtime/index.ts](../src/runtime/index.ts)):
+Packages build against the runtime's public surface, exposed on `window.Delta`, typed in
+[../src/runtime/api.ts](../src/runtime/api.ts) and assigned in
+[../src/runtime/index.ts](../src/runtime/index.ts):
 
 - `popover` — the shared pop-over controller (hovercards, ref previews).
-- `t(key, fallback?)` — localized strings from the `#delta-i18n` island.
+- `t(key, fallback?)` — localized strings from the `#delta-i18n` island, core's and each
+  pack's own (`strings.json`, merged by the compiler; core keys win).
 - `deck` — the presentation deck handle (or `null` off-deck).
 - `review` — the document-wide review switches (`setAnnotations(on)`, `setChanges(mode)`,
   and the `annotations`/`changes` getters); see [COLLABORATION.md](COLLABORATION.md).

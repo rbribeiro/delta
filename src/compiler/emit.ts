@@ -1,6 +1,6 @@
 import { basename, dirname } from "node:path";
 import { element, hasTag, titleOf, type ElementNode, type Node } from "./ast.ts";
-import type { CompileContext } from "./context.ts";
+import type { CompileContext, ImportEntry } from "./context.ts";
 import { standardPacksFor } from "./imports.ts";
 import { escapeAttr, escapeHtml } from "./preprocess.ts";
 import { katexCss } from "./katex-css.ts";
@@ -39,10 +39,6 @@ export function emit(
   const type = doc.attrs.type ?? DEFAULT_TYPE;
   const themeCss = THEMES[type] ?? THEMES[DEFAULT_TYPE];
 
-  // Localized UI strings for the document's language, inlined as an inert data
-  // island the runtime reads via t().
-  const i18n = jsonIsland("delta-i18n", strings);
-
   // Every tag this file writes, wherever it comes from (the body, a pop-over snapshot of
   // another file, a project ToC title, a review body): a standard pack loads when it is used.
   const used = new Set<string>();
@@ -60,6 +56,9 @@ export function emit(
   // a tag collision the check in standardPacksFor misses then throws inside the standard
   // pack's own script, and the author's pack keeps working.
   const packs = [...ctx.imports, ...standardPacksFor(used, ctx.imports)];
+  // Localized UI strings for the document's language, inlined as an inert data island the
+  // runtime reads via t(): each pack's own strings first, then core's, so a core key wins.
+  const i18n = jsonIsland("delta-i18n", { ...packStringsFor(packs, ctx.lang), ...strings });
 
   // The head is assembled after the templates/ToC island, because on the project
   // path those can carry math rendered in *another* file (a cross-file snapshot,
@@ -248,6 +247,19 @@ function renderReviewIsland(doc: ElementNode, ctx: CompileContext, used: Set<str
     );
   }
   return jsonIsland("delta-review", data);
+}
+
+/**
+ * The packs' strings for `lang`, resolved the way `stringsFor` resolves core's: English
+ * underneath, then the exact language (`pt-br`) or else its base (`pt`).
+ */
+function packStringsFor(packs: ImportEntry[], lang: string): Record<string, string> {
+  const exact = lang.toLowerCase();
+  const base = exact.split("-")[0];
+  return Object.assign(
+    {},
+    ...packs.map((p) => ({ ...p.strings?.en, ...(p.strings?.[exact] ?? p.strings?.[base]) })),
+  );
 }
 
 /**

@@ -230,6 +230,7 @@ src/
     katex-css.ts               KaTeX CSS with data: fonts (offline math)
   runtime/
     index.ts                   registers the custom elements; window.Delta
+    api.ts                     the type of window.Delta: the one contract every pack builds against
     deck.ts                    the presentation controller (steps a slide's fragments and its <animation> boards)
     address.ts                 the URL hash as the position: a deck's slide number, a ToC click's section
     utils.ts, i18n.ts          the shared popover controller; t(key) and nameOf(tag) from the #delta-i18n island

@@ -2,7 +2,14 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import { createRequire } from "node:module";
 import { basename, dirname, resolve } from "node:path";
 import type { ElementNode, Position } from "./ast.ts";
-import { addDep, warn, error, type CompileContext, type ImportEntry } from "./context.ts";
+import {
+  addDep,
+  warn,
+  error,
+  type CompileContext,
+  type ImportEntry,
+  type PackStrings,
+} from "./context.ts";
 import { EXTERNAL_REF } from "./theme.ts";
 import { isRemote, readUserFile } from "./files.ts";
 import { BUILTIN_PACKS } from "../generated/assets.ts";
@@ -19,6 +26,9 @@ interface PackManifest {
   css?: string;
   /** Tags the pack owns, bare (`"plot"`); stored for future tag-gating, unused today. */
   tags?: string[];
+  /** Localized UI strings, `{ "en": { key: text }, "pt": {…} }`, relative to the pack dir.
+   *  Default `strings.json` (silent if absent); merged into the `#delta-i18n` island. */
+  strings?: string;
   /** Other packages this one pulls in (resolved relative to this pack's dir). */
   needs?: string[];
   /** Compatible Delta version range; parsed but not enforced yet. */
@@ -131,7 +141,60 @@ export function resolvePack(
     warn(ctx, `import '${spec}' declares css '${manifest.css}' but it was not found`, pos);
   }
 
-  ctx.imports.push({ source: jsPath, js, css, name, tags: manifest.tags } satisfies ImportEntry);
+  const strings = readStrings(dir, manifest.strings, spec, ctx, pos);
+
+  ctx.imports.push({
+    source: jsPath,
+    js,
+    css,
+    name,
+    tags: manifest.tags,
+    ...(strings ? { strings } : {}),
+  } satisfies ImportEntry);
+}
+
+/**
+ * A pack's strings file: `{ "<lang>": { "<key>": "<text>" } }`, for instance
+ * `{ "en": { "callout.close": "Close" }, "pt": { "callout.close": "Fechar" } }`. The default
+ * `strings.json` is optional; a file the manifest names must exist and parse, else a warning
+ * (the pack still loads, and `Delta.t` falls back). Non-string texts are dropped.
+ */
+function readStrings(
+  dir: string,
+  named: string | undefined,
+  spec: string,
+  ctx: CompileContext,
+  pos?: Position,
+): PackStrings | undefined {
+  const path = resolve(dir, named ?? "strings.json");
+  if (!existsSync(path)) {
+    if (named !== undefined)
+      warn(ctx, `import '${spec}' declares strings '${named}' but it was not found`, pos);
+    return undefined;
+  }
+  let data: unknown;
+  try {
+    data = JSON.parse(readUserFile(ctx, path));
+  } catch {
+    warn(
+      ctx,
+      `import '${spec}': ${basename(path)} is not valid JSON; its strings are ignored`,
+      pos,
+    );
+    return undefined;
+  }
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    warn(ctx, `import '${spec}': ${basename(path)} must map a language to its strings`, pos);
+    return undefined;
+  }
+  const out: PackStrings = {};
+  for (const [lang, table] of Object.entries(data)) {
+    if (!table || typeof table !== "object") continue;
+    out[lang] = Object.fromEntries(
+      Object.entries(table).filter((e): e is [string, string] => typeof e[1] === "string"),
+    );
+  }
+  return out;
 }
 
 /** Maps a specifier to its pack directory: an existing local folder (back-compat, including bare
@@ -194,6 +257,7 @@ function normalizeManifest(d: Record<string, unknown>): PackManifest {
   if (typeof d.js === "string") m.js = d.js;
   if (typeof d.css === "string") m.css = d.css;
   if (typeof d.deltaVersion === "string") m.deltaVersion = d.deltaVersion;
+  if (typeof d.strings === "string") m.strings = d.strings;
   if (Array.isArray(d.tags)) m.tags = d.tags.filter((t): t is string => typeof t === "string");
   if (Array.isArray(d.needs)) m.needs = d.needs.filter((t): t is string => typeof t === "string");
   return m;
@@ -220,7 +284,10 @@ const DEFINE = /customElements\.define\(\s*["'`]delta-([a-z0-9-]+)["'`]/g;
 export function standardPacksFor(
   used: ReadonlySet<string>,
   explicit: readonly ImportEntry[],
-  table: Record<string, { js: string; css?: string; tags: string[] }> = BUILTIN_PACKS,
+  table: Record<
+    string,
+    { js: string; css?: string; tags: string[]; strings?: PackStrings }
+  > = BUILTIN_PACKS,
 ): ImportEntry[] {
   const taken = new Set(explicit.flatMap((i) => [...i.js.matchAll(DEFINE)].map((m) => m[1])));
   return Object.entries(table)
@@ -232,5 +299,6 @@ export function standardPacksFor(
       js: pack.js,
       css: pack.css,
       tags: pack.tags,
+      ...(pack.strings ? { strings: pack.strings } : {}),
     }));
 }
