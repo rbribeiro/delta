@@ -123,6 +123,17 @@ runtime/CSS. In `test:watch`, the assets are rebuilt once per start, not on ever
   (`node --test`, with the small `expect` in [test/harness.ts](../test/harness.ts)), so there
   is no transpiler and no test framework to install.
 
+## CI and the published site
+
+Two workflows in `.github/workflows/`, both on the Node version in `.node-version`:
+
+- `ci.yml`, on every pull request and push to `main`: `npm ci`, `npm run typecheck`,
+  `npm test`. GitHub's Ubuntu image has Chrome, so the browser suites run; with `CI` set,
+  `test/browser.ts` fails instead of skipping when no browser starts.
+- `pages.yml`, on every push to `main`: `npm ci && npm run docs`, then publishes `docs/` to
+  GitHub Pages. The built HTML (`docs/*.html`, `docs/exemplos/`) is ignored by git; build it
+  locally with `npm run docs` to preview.
+
 ## A typical loop
 
 ```

@@ -70,17 +70,18 @@ See [ROADMAP.md](ROADMAP.md) for what's done and what's next.
 ## Documentation
 
 **For writing documents** — the user-facing docs are in **Portuguese**, and they are
-written in Delta itself: the sources are in [site/](site/) and compile to the published
-site in `docs/` (`npm run docs`). [docs/index.html](docs/index.html) is the landing page
-(a `.dlt` with its own theme, `site/inicio.css`, and a two-tag pack in
-`site/packs/inicio/`); the documentation proper starts at
-[docs/documentacao.html](docs/documentacao.html). Or read the sources directly —
+written in Delta itself: the sources are in [site/](site/) and `npm run docs` compiles them
+into `docs/`. The built HTML is not in git: CI builds it and publishes it to
+[GitHub Pages](https://rbribeiro.github.io/delta/) on every push to `main`
+(`.github/workflows/pages.yml`). The landing page, `index.html`, is a `.dlt` with its own
+theme (`site/inicio.css`) and a two-tag pack (`site/packs/inicio/`); the documentation proper
+starts at `documentacao.html`. Or read the sources directly —
 [site/comecar.dlt](site/comecar.dlt) is the getting-started guide and the tag reference
 begins at [site/estrutura.dlt](site/estrutura.dlt). The CLI reference is
 [site/cli.dlt](site/cli.dlt), and [site/api.dlt](site/api.dlt) documents the `window.Delta`
 runtime API for package authors, with a live pop-over demo. The live examples linked from the
 landing page (an article with review marks, a presentation, a two-chapter book) are in
-[site/exemplos/](site/exemplos/) and are published under `docs/exemplos/`.
+[site/exemplos/](site/exemplos/) and are built into `docs/exemplos/`.
 
 - **[docs/TUTORIAL_COMPONENTES.md](docs/TUTORIAL_COMPONENTES.md)** (pt-BR) — building a
   custom component end to end, the entry point to the package system.

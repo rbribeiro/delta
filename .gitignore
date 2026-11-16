@@ -12,3 +12,8 @@ mise.toml
 
 # Compiled examples: regenerate with `npm run example`, `example:project`, `example:collab`.
 examples/**/*.html
+
+# The built site: `npm run docs` writes it, CI publishes it (.github/workflows/pages.yml).
+# docs/ keeps the developer docs (*.md) and the static files the site links to.
+docs/*.html
+docs/exemplos/
