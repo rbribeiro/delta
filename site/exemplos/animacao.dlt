@@ -1,0 +1,83 @@
+<document lang="pt-BR" type="presentation" theme-accent="orange">
+  <title>A fórmula de Bhaskara, na lousa</title>
+
+  <!-- Uma apresentação de exemplo com animações, ligada da Galeria do site. Cada slide
+       tem um <animation>: os mesmos avanços da apresentação (setas, toque, clique nos
+       controles) tocam um passo do quadro de cada vez, e só depois do último passam ao
+       slide seguinte. O <parabola> do último slide vem do pacote de demonstração da
+       página "Animações"; é ele que mostra o <set>. -->
+
+  <import src="../packs/animacao"/>
+
+  <progress/>
+
+  <cover>
+    <title>A fórmula de Bhaskara, na lousa</title>
+    <subtitle>Uma apresentação de exemplo, com animações, escrita em Delta</subtitle>
+    <author>Ana Ribeiro</author>
+    <affiliation>IMPA Tech</affiliation>
+    <date>16 de novembro de 2026</date>
+  </cover>
+
+  <slide>
+    <title>O problema</title>
+    <animation>
+      Queremos resolver, para $a \neq 0$,
+      <math id="problema">a x^2 + b x + c = 0</math>
+      <pause/>
+      <note target="problema" mark="box"/>
+      <pause/>
+      A ideia: transformar o lado esquerdo num <em>quadrado perfeito</em>.
+    </animation>
+  </slide>
+
+  <slide>
+    <title>Completando o quadrado</title>
+    <animation>
+      <math id="conta">x^2 + \frac{b}{a}\,x + \frac{c}{a} = 0</math>
+      <pause/>
+      <morph target="conta">x^2 + \frac{b}{a}\,x = -\frac{c}{a}</morph>
+      <pause/>
+      <morph target="conta">x^2 + \frac{b}{a}\,x + \part{novo}{\frac{b^2}{4a^2}} = \part{novo}{\frac{b^2}{4a^2}} - \frac{c}{a}</morph>
+      <note id="nota-soma" target="conta" part="novo" mark="underline">somamos o mesmo dos dois lados</note>
+      <pause/>
+      <hide target="nota-soma"/>
+      <morph target="conta">\left(x + \frac{b}{2a}\right)^2 = \frac{b^2 - 4ac}{4a^2}</morph>
+    </animation>
+  </slide>
+
+  <slide>
+    <title>A fórmula</title>
+    <animation>
+      <math id="raiz">x + \frac{b}{2a} = \pm\frac{\sqrt{b^2 - 4ac}}{2a}</math>
+      <pause/>
+      <morph target="raiz">x = \frac{-b \pm \sqrt{\part{delta}{b^2 - 4ac}}}{2a}</morph>
+      <pause/>
+      <note target="raiz" part="delta" mark="circle" side="top">o discriminante $\Delta$</note>
+    </animation>
+  </slide>
+
+  <slide>
+    <title>O que o discriminante decide</title>
+    <columns>
+      <column>
+        <animation>
+          <pause/>
+          <math>y = (x - 1)^2 + b</math>
+          <parabola id="grafico" a="1" b="-1"/>
+          <pause/>
+          <set target="grafico" b="0" duration="1.6s"/>
+          <pause/>
+          <set target="grafico" b="1.5" duration="1.6s"/>
+        </animation>
+      </column>
+      <column>
+        <list animated="true">
+          <item>$\Delta > 0$: a parábola corta o eixo em dois pontos.</item>
+          <item>$\Delta = 0$: ela encosta no eixo.</item>
+          <item>$\Delta < 0$: ela não chega até ele.</item>
+        </list>
+      </column>
+    </columns>
+  </slide>
+</document>

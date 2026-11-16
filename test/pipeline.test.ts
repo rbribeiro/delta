@@ -70,6 +70,7 @@ describe("the declared pipeline", () => {
       "collab/linkProofs",
       "collab/structureProofs",
       "collab/checkUnderstanding",
+      "collab/checkAnimations",
       "collab/summarizeFinal",
       "bibliography/loadBibliography",
       "bibliography/numberCitations",

@@ -6,7 +6,7 @@ import { katexCss } from "./katex-css.ts";
 import { plainText } from "./paper.ts";
 import { stringsFor } from "../language/strings.ts";
 import { HEADING_TAGS, PROOF_TAGS } from "../language/tags.ts";
-import { CORE_CSS, RUNTIME_JS, THEMES } from "../generated/assets.ts";
+import { CORE_CSS, HAND_CSS, RUNTIME_JS, THEMES } from "../generated/assets.ts";
 
 const DEFAULT_TYPE = "article";
 
@@ -70,6 +70,9 @@ export function emit(
     ...(ctx.builtinCss ? [`<style>\n${ctx.builtinCss}\n</style>`] : []),
     ...(themeCss ? [`<style>\n${themeCss}\n</style>`] : []),
     ...(ctx.mathUsed ? [`<style>\n${katexCss()}\n</style>`] : []),
+    // The handwriting face, only where a hand writes: a document with a <note> (on an
+    // <animation> board, or in the snapshot of one a <ref> previews).
+    ...(/<delta-note[\s>]/.test(body + templates) ? [`<style>\n${HAND_CSS}\n</style>`] : []),
     // Custom-element pack themes (<import>): inlined before the author theme so a
     // pack styles its own elements, but the document author's theme still wins.
     ...ctx.imports.flatMap((i) => (i.css ? [`<style>\n${i.css}\n</style>`] : [])),

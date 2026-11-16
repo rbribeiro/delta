@@ -48,6 +48,7 @@ export const ENVIRONMENTS: Record<string, EnvironmentSpec> = {
   table: { counter: "table", prefixWith: "section" },
 
   interactive: { counter: "interactive", prefixWith: "section" },
+  animation: { counter: "animation", prefixWith: "section" },
   code: { counter: "code", prefixWith: "section" },
 
   // Collaboration items (<comment>, <todo>, <change>): one document/project-wide counter

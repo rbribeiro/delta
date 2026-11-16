@@ -68,8 +68,28 @@ export const MATH_REF = /\\(eqref|ref)\{([^}]*)\}/g;
 /** Reader aids that fold under a result or a proof step. */
 export const AID_TAGS: ReadonlySet<string> = new Set(["intuition", "strategy", "obstacle"]);
 
-/** Tags whose content is LaTeX, rendered by KaTeX at compile time. */
-export const MATH_TAGS: ReadonlySet<string> = new Set(["m", "math", "equation", "equations"]);
+/**
+ * Tags whose content is LaTeX, rendered by KaTeX at compile time. `<morph>` is the next
+ * form of an equation on an `<animation>` board: its TeX is math like any other.
+ */
+export const MATH_TAGS: ReadonlySet<string> = new Set([
+  "m",
+  "math",
+  "equation",
+  "equations",
+  "morph",
+]);
+
+/**
+ * Macros every formula may use, for `<animation>`: `\pause` ends a step in the middle of a
+ * formula, and `\part{name}{tex}` names a piece of it (a target for `part="name"`, and what
+ * a `<morph>` matches first). Both expand to inert `data-delta-*` spans the runtime reads;
+ * KaTeX lays them out as if they were not there.
+ */
+export const MATH_MACROS: Readonly<Record<string, string>> = {
+  "\\pause": "\\htmlData{delta-pause=1}{}",
+  "\\part": "\\htmlData{delta-part=#1}{#2}",
+};
 /** Literal code: no `$`, no `\ref`, no line breaks; highlighted (`<code>`) or not (`<c>`). */
 export const LITERAL_TAGS: ReadonlySet<string> = new Set(["code", "c"]);
 /** Tags whose text is taken literally (math or code): never `$`-scanned, never walked into. */
@@ -119,4 +139,31 @@ export const BLOCK_TAGS: ReadonlySet<string> = new Set([
   "todo",
   "abstract",
   "interactive",
+  "animation",
 ]);
+
+/**
+ * What happens on an `<animation>` board besides content appearing in document order:
+ * `<pause/>` ends a step, the others act on something already there (`target="id"`).
+ */
+export const ACTION_TAGS: ReadonlySet<string> = new Set([
+  "pause",
+  "together",
+  "morph",
+  "note",
+  "hide",
+  "show",
+  "set",
+]);
+/** The hand-drawn marks a `<note mark="…">` can put on its target. */
+export const NOTE_MARKS: ReadonlySet<string> = new Set([
+  "circle",
+  "box",
+  "underline",
+  "cross",
+  "arrow",
+]);
+/** Where a note's text sits relative to its target. */
+export const NOTE_SIDES: ReadonlySet<string> = new Set(["top", "right", "bottom", "left"]);
+/** How a piece of the board comes in. */
+export const ENTERS: ReadonlySet<string> = new Set(["write", "fade", "none"]);

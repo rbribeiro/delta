@@ -9,9 +9,10 @@ import { numberedName } from "./shared.ts";
 
 /**
  * Lifts a `<delta-caption>` child into a caption row: adds `.video-cap` and a
- * "Video 1.2"-style `.lbl` prefix (localized via `t`). Shared by the media elements.
+ * "Video 1.2"-style `.lbl` prefix (localized via `t`). Shared by the media elements
+ * and by <animation>.
  */
-function mediaCaption(
+export function mediaCaption(
   host: HTMLElement,
   labelKey: string,
   num: string | null,

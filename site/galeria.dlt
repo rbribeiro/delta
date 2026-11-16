@@ -71,6 +71,12 @@
           Capa, slides de transição por seção, revelação por etapas e barra de progresso.
           Fonte: <c>site/exemplos/apresentacao.dlt</c>.
         </item>
+        <item>
+          <link to="exemplos/animacao.html"><b>A fórmula de Bhaskara, na lousa</b></link>.
+          Uma dedução escrita passo a passo: fórmulas traçadas e transformadas umas nas
+          outras, notas à mão e um gráfico que acompanha um parâmetro (veja
+          <ref to="animacoes">Animações</ref>). Fonte: <c>site/exemplos/animacao.dlt</c>.
+        </item>
       </list>
     </subsection>
   </section>
