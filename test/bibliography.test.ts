@@ -1,35 +1,36 @@
 import { describe, expect, it } from "./harness.ts";
-import { elements, type ElementNode } from "../src/compiler/ast.ts";
-import { loadBibliography, resolveCitations } from "../src/compiler/bibliography.ts";
+import { loadBibliography } from "../src/compiler/bibliography.ts";
 import type { CompileContext } from "../src/compiler/context.ts";
-import { compileHtml, parsed, warnings } from "./helpers.ts";
+import { compile as compileAll, compileHtml, parsed, warnings } from "./helpers.ts";
 
 // The document lives in test/, so a `src` resolves relative to test/.
 const FILE = "test/doc.dlt";
 
-/** Parsed, papers loaded and citations numbered: the bibliography passes by hand. */
-function run(src: string) {
+/** Parsed and papers loaded: the loading pass by hand. */
+function load(src: string) {
   const out = parsed(src, FILE);
   loadBibliography(out.doc, out.ctx);
-  resolveCitations(out.doc, out.ctx);
   return out;
 }
 
+/** The whole pipeline: citations numbered, bibliography filled, HTML emitted. */
+const full = (src: string): { html: string; ctx: CompileContext } => compileAll(src, { file: FILE });
 const compile = (src: string): string => compileHtml(src, { file: FILE });
 
-const bibPaperIds = (doc: ElementNode): string[] => {
-  const bib = [...elements(doc)].find((e) => e.tag === "bibliography");
-  return (bib?.children ?? [])
-    .filter((c): c is ElementNode => c.type === "element" && c.tag === "paper")
-    .map((p) => p.attrs.id);
+/** `data-cite-nums` of every emitted `<delta-cite paper…>`, in document order (undefined: inert).
+ *  Attributes required: the runtime's own source mentions a bare `<delta-cite>`. */
+const citeNums = (html: string): (string | undefined)[] =>
+  [...html.matchAll(/<delta-cite\s([^>]*)>/g)].map((m) => /data-cite-nums="([^"]*)"/.exec(m[1])?.[1]);
+/** Ids of the `<delta-paper>`s inside `<delta-bibliography>`, in order (not the pop-over templates). */
+const bibPaperIds = (html: string): string[] => {
+  const bib = /<delta-bibliography[\s>][\s\S]*?<\/delta-bibliography>/.exec(html)?.[0] ?? "";
+  return [...bib.matchAll(/<delta-paper id="([^"]*)"/g)].map((m) => m[1]);
 };
-const cite = (doc: ElementNode): ElementNode | undefined =>
-  [...elements(doc)].find((e) => e.tag === "cite");
 const warned = (ctx: CompileContext, re: RegExp): boolean => warnings(ctx).some((m) => re.test(m));
 
 describe("loadBibliography", () => {
   it("collects inline <paper> entries into ctx.papers", () => {
-    const { ctx } = run(
+    const { ctx } = load(
       `<document><bibliography><paper id="A"><title>T</title></paper></bibliography>
         <cite paper="A" /></document>`,
     );
@@ -38,25 +39,25 @@ describe("loadBibliography", () => {
   });
 
   it("loads + merges papers from a .ref src", () => {
-    const { ctx } = run(
+    const { ctx } = load(
       `<document><bibliography src="fixtures/refs.ref" /><cite paper="ARS10" /></document>`,
     );
     expect([...ctx.papers.keys()].sort()).toEqual(["ARS10", "KL98", "UNCITED"]);
   });
 
   it("warns and skips a missing .ref file", () => {
-    const { ctx } = run(`<document><bibliography src="fixtures/nope.ref" /></document>`);
+    const { ctx } = load(`<document><bibliography src="fixtures/nope.ref" /></document>`);
     expect(ctx.papers.size).toBe(0);
     expect(warned(ctx, /not found/)).toBe(true);
   });
 
   it("warns on a remote src", () => {
-    const { ctx } = run(`<document><bibliography src="https://x.test/a.ref" /></document>`);
+    const { ctx } = load(`<document><bibliography src="https://x.test/a.ref" /></document>`);
     expect(warned(ctx, /not a URL/)).toBe(true);
   });
 
   it("warns on a duplicate paper id and an id-less paper", () => {
-    const { ctx } = run(
+    const { ctx } = load(
       `<document><bibliography>
         <paper id="A"><title>One</title></paper>
         <paper id="A"><title>Two</title></paper>
@@ -68,65 +69,60 @@ describe("loadBibliography", () => {
   });
 });
 
-describe("resolveCitations", () => {
+describe("citations (numberCitations + the bibliography fill)", () => {
   it("numbers citations in first-appearance order", () => {
-    const { doc } = run(
+    const { html } = full(
       `<document><bibliography src="fixtures/refs.ref" />
         first <cite paper="KL98" /> then <cite paper="ARS10" /></document>`,
     );
-    const cites = [...elements(doc)].filter((e) => e.tag === "cite");
-    expect(cites[0].attrs["data-cite-nums"]).toBe("1"); // KL98 cited first
-    expect(cites[1].attrs["data-cite-nums"]).toBe("2");
+    expect(citeNums(html)).toEqual(["1", "2"]); // KL98 cited first
   });
 
   it("reuses a paper's number when cited again", () => {
-    const { doc } = run(
+    const { html } = full(
       `<document><bibliography src="fixtures/refs.ref" />
         <cite paper="ARS10" /> <cite paper="KL98" /> <cite paper="ARS10" /></document>`,
     );
-    const cites = [...elements(doc)].filter((e) => e.tag === "cite");
-    expect(cites.map((c) => c.attrs["data-cite-nums"])).toEqual(["1", "2", "1"]);
+    expect(citeNums(html)).toEqual(["1", "2", "1"]);
   });
 
   it("renders a multi-id citation as a parallel num/id list", () => {
-    const { doc } = run(
+    const { html } = full(
       `<document><bibliography src="fixtures/refs.ref" /><cite papers="ARS10, KL98" /></document>`,
     );
-    const c = cite(doc)!;
-    expect(c.attrs["data-cite-nums"]).toBe("1,2");
-    expect(c.attrs["data-cite-ids"]).toBe("ARS10,KL98");
+    expect(html).toContain('data-cite-nums="1,2" data-cite-ids="ARS10,KL98"');
   });
 
   it("warns on an unknown id and leaves an all-unknown cite inert", () => {
-    const { doc, ctx } = run(
+    const { html, ctx } = full(
       `<document><bibliography src="fixtures/refs.ref" /><cite paper="NOPE" /></document>`,
     );
     expect(warned(ctx, /unknown paper "NOPE"/)).toBe(true);
-    expect(cite(doc)!.attrs["data-cite-nums"]).toBeUndefined();
+    expect(citeNums(html)).toEqual([undefined]);
   });
 
   it("warns on a cite with no paper/papers", () => {
-    const { ctx } = run(`<document><bibliography src="fixtures/refs.ref" /><cite /></document>`);
+    const { ctx } = full(`<document><bibliography src="fixtures/refs.ref" /><cite /></document>`);
     expect(warned(ctx, /without a 'paper'/)).toBe(true);
   });
 
   it("records cited ids in referencedIds (for emit's template snapshot)", () => {
-    const { ctx } = run(
+    const { ctx } = full(
       `<document><bibliography src="fixtures/refs.ref" /><cite paper="ARS10" /></document>`,
     );
     expect(ctx.referencedIds.has("ARS10")).toBe(true);
   });
 
   it("fills the bibliography with only cited papers, in citation order", () => {
-    const { doc } = run(
+    const { html } = full(
       `<document><bibliography src="fixtures/refs.ref" />
         <cite paper="KL98" /> <cite paper="ARS10" /></document>`,
     );
-    expect(bibPaperIds(doc)).toEqual(["KL98", "ARS10"]); // UNCITED dropped
+    expect(bibPaperIds(html)).toEqual(["KL98", "ARS10"]); // UNCITED dropped
   });
 
   it("warns when citations exist but there is no <bibliography>", () => {
-    const { ctx } = run(`<document><cite paper="X" /></document>`);
+    const { ctx } = full(`<document><cite paper="X" /></document>`);
     // X is unknown (no bibliography loaded), so we warn about the unknown paper…
     expect(warned(ctx, /unknown paper/)).toBe(true);
   });

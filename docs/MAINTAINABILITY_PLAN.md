@@ -20,7 +20,7 @@ Decisions taken by the maintainer on 2026-11-16:
 4. **Standard packs are TypeScript, enforced**: the same strict `tsconfig.json` as core, no
    `.js` sources in `packs/`. Local and npm packs stay free-form classic scripts.
 
-**Status.** Nothing here is implemented yet. Progress is tracked in milestone M10 of
+**Status.** Phase 0 WP-S1…S4 implemented on `refactor/mantainability` (2026-11-16); the rest is not. Progress is tracked in milestone M10 of
 [ROADMAP.md](../ROADMAP.md), one checkbox per WP; check an item off in the PR that lands it.
 Line numbers refer to branch `refactor/mantainability` at commit `54df109` (2026-11-16);
 re-locate by symbol name if the code has moved.

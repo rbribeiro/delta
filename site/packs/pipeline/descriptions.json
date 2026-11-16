@@ -28,6 +28,7 @@
     "numberDocument": "Escreve attrs.num em cada tag numerada e registra todo id no registro compartilhado. Os contadores continuam de um arquivo para o outro.",
     "buildIdMaps": "Dois mapas do projeto inteiro: id → nó (para as prévias) e id → arquivo de saída (para os links entre arquivos).",
     "buildGraph": "Resultados e definições viram o grafo da prova (arestas vindas das refs em enunciados e demonstrações), com a confiança propagada. Quem lê é a CLI.",
+    "linkRemoteProofs": "Um resultado cuja prova não está colada à sua caixa ganha data-proof-at=\"<id da prova>\" (e a seção onde ela está), que o runtime mostra como \"Demonstração na Seção 2.3\"; status=\"open\" sem prova ganha data-proof=\"pending\".",
     "stripReviewMarks": "Só com --final: tira status, by, verified-by e against, agora que o grafo já leu a confiança de cada prova.",
     "layoutProofMaps": "<proof-map> vira um SVG com as arestas e caixas posicionadas, com o layout calculado a partir do grafo. Vem primeiro para que as refs e a matemática dos títulos passem pelos passos seguintes.",
     "renderMath": "$…$ e as tags de matemática viram HTML do KaTeX (um RawNode); \\ref{} dentro da fórmula resolve contra o registro. Liga mathUsed.",

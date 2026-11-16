@@ -88,7 +88,7 @@ rely on everything earlier steps did in *every* file. The step name is the funct
 | `load` | `resolvePackages`ᵃ, `readSource`, `parse`, `resolveIncludes`, `applyDocumentDefaults`, `finalizeReview`, `collectTeam`, `expandAnimated`, `expandCover` | **bails** after this phase if any context has an error |
 | `collab` | `resolveCollab`, `linkProofs`, `structureProofs`, `checkUnderstanding`, `summarizeFinal`ᵃ | runs once every file's team is known |
 | `bibliography` | `loadBibliography`, `numberCitations`, `fillProjectBibliography`ᵃ | before numbering, so spliced `<paper>` nodes flow through later passes |
-| `numbering` | `numberDocument`, `buildIdMaps`ᵃ, `buildGraph`ᵃ | one `NumberingState` runs through the files in order |
+| `numbering` | `numberDocument`, `buildIdMaps`ᵃ, `buildGraph`ᵃ, `linkRemoteProofs`ᵃ | one `NumberingState` runs through the files in order; the graph then tells each result where its proof is |
 | `render` | `stripReviewMarks`, `layoutProofMaps`, `renderMath`, `highlightCode`, `buildProjectToc`ᵃ, `buildProjectReview`ᵃ, `resolveReferences`, `annotateCrossFileRefs`, `annotateCrossFileCites`, `inlineFigures`, `resolveTheme`, `resolveImports`, `resolveLineBreaks` | everything that needs the registry, then everything inlined |
 | `emit` | `emit` | one standalone HTML per file |
 
@@ -202,7 +202,9 @@ src/
     address.ts                 the URL hash as the position: a deck's slide number, a ToC click's section
     utils.ts, i18n.ts          the shared popover controller; t(key) and nameOf(tag) from the #delta-i18n island
     island.ts                  readIsland: the JSON islands (#delta-i18n, #delta-toc, #delta-review), parsed once
-    elements/                  one <delta-*> custom element per file (browser chrome)
+    elements/                  the <delta-*> custom elements, one defineX() per file (browser chrome);
+                               shared.ts, status.ts, collab.ts and aid.ts define none: they are
+                               helpers several elements use
   styles/
     base.css                   @layer delta.base — tokens + page grid + primitives
     components/*.css           @layer delta.components — one file per component

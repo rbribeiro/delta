@@ -52,12 +52,15 @@ documented in [BUILDING.md](BUILDING.md).
   annotations, interfaces, `import type`. No `enum`, no `namespace`, no
   `constructor(private x)`; Node would refuse to run them.
 - CSS is namespaced `--delta-*` and lives under [src/styles/](../src/styles/) in
-  three cascade layers (declared once at the top of
-  [base.css](../src/styles/base.css)): `delta.base` (tokens, page grid, shared
-  primitives), `delta.components` (Delta's chrome, one file per feature under
+  six cascade layers, declared once, lowest first, at the top of
+  [base.css](../src/styles/base.css) (which says why each sits where it does):
+  `delta.base` (tokens, page grid, shared primitives), `delta.builtin` (a named theme,
+  `theme="impatech"`, tokens only), `delta.mode` (the `[data-accent]` and `[data-mode]`
+  overlays), `delta.shells` (chrome several components share: the popover shell, the
+  disclosure wedge), `delta.components` (Delta's chrome, one file per feature under
   `components/`), and `delta.theme` (per-document-type token overrides under
   `themes/`, selected by `<document type="…">`). Theming means overriding the
-  `--delta-*` tokens; the theme layer always wins over base and components, so a
+  `--delta-*` tokens; the theme layer always wins over the others, so a
   theme only needs to restate the few variables it changes. New components style
   with **classes** in their own `components/<name>.css`.
 - Diagnostics, not exceptions: report problems with `error(ctx, msg, pos)` /
@@ -191,7 +194,8 @@ label, and toggles a class the CSS responds to. `applyCollapsible(host, label)` 
 exactly this — it moves the label's following siblings into a `.collapse-body` (so even
 loose text folds) and toggles `.is-collapsed`; `DeltaSection`/`DeltaEnvironment` call it
 with their heading / box tag / proof lead. The styles live in
-[components/collapse.css](../src/styles/components/collapse.css) (`@layer delta.components`),
+[components/collapse.css](../src/styles/components/collapse.css) (the shared wedge in
+`@layer delta.shells`, so a component refining it always wins; the rest in `delta.components`),
 and the new element/behavior is registered in `defineComponents`.
 
 Before writing chrome by hand, check [shared.ts](../src/runtime/elements/shared.ts): it
@@ -236,7 +240,10 @@ Tests live in [test/](../test/) and mirror the passes. Patterns to follow:
 - **Architecture tests** live in [test/pipeline.test.ts](../test/pipeline.test.ts): the step
   order, "a single file equals a project of one file", the trace hook and `stopAfter`.
   [test/language.test.ts](../test/language.test.ts) checks that the vocabulary agrees with
-  itself, the strings and the CSS.
+  itself, the strings and the CSS. [test/docs.test.ts](../test/docs.test.ts) fails when a
+  `PIPELINE` step is missing from `ARCHITECTURE.md` or from the explorer's
+  `descriptions.json`, and [test/assets.test.ts](../test/assets.test.ts) when
+  `src/generated/assets.ts` is stale (run `npm run assets`).
 - **Runtime tests** live in [test/runtime/](../test/runtime/) and run in the machine's
   Chromium (through [test/browser.ts](../test/browser.ts); they skip when none can start,
   except in CI, where a missing browser fails the run):

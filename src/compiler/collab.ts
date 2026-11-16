@@ -7,14 +7,15 @@ import { TRUST_OF } from "../language/trust.ts";
 /**
  * The validation pass for the collaboration vocabulary — `<comment>`/`<reply>`, `<todo>`,
  * `<change>`/`<old>`/`<new>`, and the `status`/`by`/`verified-by` attributes any block may
- * carry (plus `<draft>`). It runs right after includes, before numbering, and does three
+ * carry (plus `<draft>`). It runs first in the `collab` phase, once every file's `<team>` is
+ * known (after the whole `load` phase), before numbering, and does three
  * things: writes the defaults the runtime and the `--final` pass key off (`status="open"`
  * on a comment, `kind="replace"` on a change, …), warns on anything outside the small
  * fixed vocabularies (so an agent's typo reads as a diagnostic, not as silently dropped
  * chrome), and checks every `by`/`for`/`verified-by` against `<team>` when one exists.
  *
  * Numbering (C1…Cn) is a row in language/environments.ts; collection into the review island is
- * `buildReview` (review.ts), which runs after numbering so items carry their numbers.
+ * `buildProjectReview` (review.ts), which runs after numbering so items carry their numbers.
  */
 
 const COMMENT_STATUS = new Set(["open", "resolved"]);

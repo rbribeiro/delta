@@ -42,10 +42,12 @@ uses. We measured the payload of a compiled file first:
 |---|---|---|
 | Newsreader fonts (base64, inside `CORE_CSS`) | ~360 KB | ❌ always |
 | KaTeX CSS (base64 fonts) | ~360 KB | ✅ when math is used (`ctx.mathUsed`) |
-| `base.css` + every `components/*.css` | ~88 KB | ❌ always |
-| Runtime IIFE (`RUNTIME_JS`, minified) | ~28 KB | ❌ always |
+| `base.css` + every `components/*.css` | ~165 KB | ❌ always |
+| Runtime IIFE (`RUNTIME_JS`, minified) | ~60 KB | ❌ always |
 
-The runtime + component CSS that per-feature chunking could remove is **~90 KB at most**.
+(Re-measured on 2026-11-16; the CSS and the runtime have doubled since the first measurement,
+the fonts have not moved.) The runtime + component CSS that per-feature chunking could remove
+is **~225 KB at most**.
 The bytes that actually dominate a file are the two **font** blobs: KaTeX (~360 KB) is
 **already** on-demand, and the Newsreader fonts (~360 KB) are universal — every document
 sets type in them. So:
@@ -200,10 +202,11 @@ The implementation lands entirely on existing seams:
   and pushes one `ImportEntry`. `resolveImports` is the thin `<import>` loop over it.
 - [../src/compiler/config.ts](../src/compiler/config.ts) — `loadProjectConfig` parses the
   `packages` string array and records `root` (the toml's dir) as the resolution base.
-- [../src/compiler/project.ts](../src/compiler/project.ts) — resolves `config.packages`
-  once into a `pkgCtx`, then injects `pkgCtx.imports` into every file's `ctx.imports`
-  before `resolveImports`, so each output inlines them and a file's own `<import>` of the
-  same pack dedups.
+- [../src/compiler/pipeline.ts](../src/compiler/pipeline.ts) — the `resolvePackages` step
+  (phase `load`, once per project) resolves `config.packages` into `shared.project.imports`;
+  the `resolveImports` step (phase `render`, per file) pushes those into the file's
+  `ctx.imports` before the file's own `<import>`s, so each output inlines them and a file's
+  own `<import>` of the same pack dedups.
 - [../src/compiler/emit.ts](../src/compiler/emit.ts) — unchanged inlining; only the
   `/* pack: … */` debug marker now reads `ImportEntry.name` (pkg name / folder).
 

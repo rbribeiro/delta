@@ -142,9 +142,9 @@ class DeltaRef extends HTMLElement {
 
 /**
  * Upgrades the in-math \ref markers: the compiler expands `\ref{id}` into a
- * `\htmlData{delta-ref-to=…, delta-ref-num=…, delta-ref-tag=…}` span inside the
- * KaTeX output; this scan makes each one a keyboard-reachable trigger with the
- * same popover/jump as <ref>. Runs once at load — template snapshots are inert
+ * `\htmlData{delta-ref=k}` marker span and, after KaTeX, swaps in its real
+ * `data-delta-ref-to` / `-num` / `-tag` (and `-href` across files) attributes; this
+ * scan makes each one a keyboard-reachable trigger with the same popover/jump as <ref>. Runs once at load — template snapshots are inert
  * fragments (never matched here), so a \ref inside a popover *clone* shows its
  * number but isn't clickable, which is fine for a preview.
  */

@@ -41,8 +41,11 @@ compiles, type-checks or tests. `buildAssets()` writes four constants:
   in `src/styles/fonts/` inlined as `data:` URIs), then `src/styles/base.css`,
   then **every** `src/styles/components/*.css` (read in sorted filename order), concatenated
   into one string. `src/styles/staged/` is not read. The `@layer` declaration at
-  the top of `base.css` fixes the cascade order, so concatenation order beyond "base first"
-  does not matter. Adding a `components/<name>.css` file needs no build wiring -- it is picked
+  the top of `base.css` fixes the order *between* layers, so a rule in a higher layer wins
+  wherever its file sorts. *Inside* one layer the file order does matter: two components that
+  set the same property on the same element, with equal specificity, are decided by the
+  alphabet. That is why chrome several components share sits one layer down, in
+  `delta.shells`. Adding a `components/<name>.css` file needs no build wiring -- it is picked
   up automatically.
 - **`THEMES`** -- a `{ [type]: css }` map built from `src/styles/themes/<type>.css`. The
   emitter selects one by the document's `<document type="...">` (default `article`).
