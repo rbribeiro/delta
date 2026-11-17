@@ -1,4 +1,4 @@
-import type { ElementNode, Position } from "./ast.ts";
+import { walk, type ElementNode, type Position } from "./ast.ts";
 import { warn, type CompileContext } from "./context.ts";
 import { changeParts } from "./paper.ts";
 import { BLOCK_TAGS, COLLAB_PARTS, RAW_TAGS, RESULT_TAGS } from "../language/tags.ts";
@@ -36,11 +36,13 @@ function checkMember(
 }
 
 export function resolveCollab(doc: ElementNode, ctx: CompileContext): void {
-  walk(doc, null, ctx);
+  walk(doc, (el, ancestors) => {
+    if (RAW_TAGS.has(el.tag)) return false;
+    visit(el, ancestors.at(-1) ?? null, ctx);
+  });
 }
 
-function walk(el: ElementNode, parent: ElementNode | null, ctx: CompileContext): void {
-  if (RAW_TAGS.has(el.tag)) return;
+function visit(el: ElementNode, parent: ElementNode | null, ctx: CompileContext): void {
   switch (el.tag) {
     case "comment":
       visitComment(el, parent, ctx);
@@ -61,9 +63,6 @@ function walk(el: ElementNode, parent: ElementNode | null, ctx: CompileContext):
       break;
     default:
       if (!COLLAB_PARTS.has(el.tag)) visitBlock(el, ctx);
-  }
-  for (const child of el.children) {
-    if (child.type === "element") walk(child, el, ctx);
   }
 }
 

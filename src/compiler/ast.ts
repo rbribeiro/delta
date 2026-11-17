@@ -83,8 +83,11 @@ export function textContent(node: Node): string {
  * Generator function that yields all ElementNode instances in a tree structure, starting from the provided root ElementNode. It traverses the tree depth-first, yielding each ElementNode it encounters.
  *
  * @param root - An ElementNode from which to start the traversal
- * @param skip - tags whose descendants are not visited (the element itself is still yielded):
- *   `elements(doc, OPAQUE)` (language/tags.ts) walks the document the way numbering does
+ * @param skip - tags whose descendants are not visited (the element itself is still yielded).
+ *   The skip policies are named once, in language/tags.ts: `RAW_TAGS` (text taken literally:
+ *   math, code) and `OPAQUE` (what a review note quotes: never numbered or counted); a pass
+ *   that needs both checks both. `elements(doc, OPAQUE)` walks the document the way numbering
+ *   does.
  * @returns Generator<ElementNode> - A generator that yields ElementNode instances
  */
 export function* elements(root: ElementNode, skip?: ReadonlySet<string>): Generator<ElementNode> {
