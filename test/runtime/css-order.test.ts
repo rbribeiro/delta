@@ -17,7 +17,8 @@ import { CORE_CSS } from "../../src/generated/assets.ts";
  * document: the probe records every style, swaps the core stylesheet for the reversed one,
  * records again and reports what changed. Transitions and animations are off, or a swap
  * would be caught mid-transition and hide the difference. Every pop-over is opened once
- * first, since a bubble's content is only built when it opens.
+ * first, since a bubble's content is only built when it opens. A third snapshot, back in the
+ * normal order, tells a real difference from layout that was still settling.
  */
 
 const PAGES = [
@@ -58,17 +59,23 @@ const probe = (reversed: string): string => `
     for (const p of cs) out[p] = cs.getPropertyValue(p);
     return out;
   }));
+  // Sorted, reversed, then sorted again. A value counts only when the two sorted snapshots
+  // agree and the reversed one differs: something that moved on its own between snapshots
+  // (layout still settling after load, on a busy machine) is not the file order.
+  const original = core.textContent;
   const sorted = snapshot();
   core.textContent = ${JSON.stringify(reversed)};
   const after = snapshot();
+  core.textContent = original;
+  const again = snapshot();
   const diffs = [];
   let count = 0;
   els.forEach((el, i) => [null, "::before", "::after"].forEach((pseudo, k) => {
-    const a = sorted[i][k], b = after[i][k];
+    const a = sorted[i][k], b = after[i][k], c = again[i][k];
     if (!a && !b) return;
     for (const p of new Set([...Object.keys(a || {}), ...Object.keys(b || {})])) {
-      const va = a ? a[p] : "(no box)", vb = b ? b[p] : "(no box)";
-      if (va === vb) continue;
+      const va = a ? a[p] : "(no box)", vb = b ? b[p] : "(no box)", vc = c ? c[p] : "(no box)";
+      if (va === vb || va !== vc) continue;
       count++;
       if (diffs.length < ${REPORT}) diffs.push(name(el) + (pseudo || "") + " " + p + ": " + va + " → " + vb);
     }
