@@ -122,8 +122,11 @@ class DeltaReview extends HTMLElement {
     controls.append(annotations, seg);
     const syncControls = (): void => {
       annotations.setAttribute("aria-pressed", String(reviewState.annotations));
-      for (const b of modeButtons)
-        b.classList.toggle("is-active", b.dataset.mode === reviewState.changes);
+      for (const b of modeButtons) {
+        const on = b.dataset.mode === reviewState.changes;
+        b.classList.toggle("is-active", on);
+        b.setAttribute("aria-pressed", String(on));
+      }
     };
     syncControls();
     document.addEventListener(REVIEW_EVENT, syncControls);
@@ -147,10 +150,12 @@ class DeltaReview extends HTMLElement {
     ): void => {
       const b = button(`review-filter ${cls}`, content);
       b.dataset[cls === "review-filter-member" ? "member" : "status"] = key;
+      b.setAttribute("aria-pressed", "false");
       b.addEventListener("click", () => {
         if (set.has(key)) set.delete(key);
         else set.add(key);
         b.classList.toggle("is-active", set.has(key));
+        b.setAttribute("aria-pressed", String(set.has(key)));
         render();
       });
       filters.append(b);

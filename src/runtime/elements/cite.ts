@@ -9,7 +9,9 @@
  * A cite whose ids were all unknown stays inert.
  */
 
+import { t } from "../i18n.ts";
 import { popover } from "../popover.ts";
+import { onActivate } from "../fold.ts";
 import { linkJump, templateFor } from "../jump.ts";
 import { formatPaper } from "../paper.ts";
 
@@ -39,6 +41,12 @@ class DeltaCite extends HTMLElement {
       cite.append(a);
     });
     cite.append("]");
+    // A button to the keyboard and to a screen reader ("Citation 1, 3"); Enter/Space reuse
+    // the click, which is the card's trigger.
+    cite.setAttribute("role", "button");
+    cite.tabIndex = 0;
+    cite.setAttribute("aria-label", `${t("citation", "Citation")} ${nums.join(", ")}`);
+    onActivate(cite, () => cite.click());
     this.replaceChildren(cite);
 
     // Hovercard: one .cite-pop-item per cited paper, filled lazily on first open.

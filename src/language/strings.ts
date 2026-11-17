@@ -42,6 +42,7 @@ export const STRINGS: Record<string, Record<string, string>> = {
     audio: "Audio",
     contents: "Contents",
     hint: "Hint",
+    citation: "Citation", // a citation's name to a screen reader: "Citation 1, 3"
     references: "References",
     close: "Close",
     code: "Code",
@@ -183,6 +184,7 @@ export const STRINGS: Record<string, Record<string, string>> = {
     audio: "Áudio",
     contents: "Sumário",
     hint: "Dica",
+    citation: "Citação",
     references: "Referências",
     close: "Fechar",
     code: "Código",

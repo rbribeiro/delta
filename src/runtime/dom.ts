@@ -36,11 +36,13 @@ export function takeTitle(host: Element): { nodes: Node[]; text: string } | unde
 
 /**
  * The text a screen reader should hear for `el`. KaTeX renders each formula three times
- * (MathML, a TeX annotation, the visual HTML); only the MathML reading is kept.
+ * (MathML, a TeX annotation, the visual HTML); only the MathML reading is kept. Anything
+ * marked `aria-hidden="true"` (an icon, a decorative emoji) is left out too.
  */
 export function spokenText(el: Element): string {
   const copy = el.cloneNode(true) as Element;
-  for (const dup of copy.querySelectorAll(".katex-html, annotation")) dup.remove();
+  for (const dup of copy.querySelectorAll('.katex-html, annotation, [aria-hidden="true"]'))
+    dup.remove();
   return copy.textContent?.replace(/\s+/g, " ").trim() ?? "";
 }
 

@@ -377,7 +377,7 @@ Runtime
 - [x] WP-R2. One fold helper, one activation helper; check Space on a focused control in a deck
 - [ ] WP-R4. Shared chrome in `delta.shells`; a test proving CSS file order does not matter
 - [ ] WP-R3. Named helpers for the DOM contracts between elements
-- [ ] WP-R5. Accessibility: keyboard-reachable citations, popover role, `aria-pressed` on toggles
+- [x] WP-R5. Accessibility: keyboard-reachable citations, popover role, `aria-pressed` on toggles
 
 Compiler ↔ runtime contract
 - [ ] WP-K1. One definition of each JSON island (`src/language/islands.ts`)
