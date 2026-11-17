@@ -11,7 +11,7 @@ import { nameOf, t } from "../i18n.ts";
 import { kindOf, renderMeta } from "../dom.ts";
 import { applyCollapsible } from "../fold.ts";
 import { applyStatus } from "../status.ts";
-import { HEADING_LEVEL } from "../../language/tags.ts";
+import { HEADING_LEVEL, RESULT_TAGS } from "../../language/tags.ts";
 
 // tag → the heading class the structure stylesheet targets
 // (h2.section gets a .num pill; h3.sub / h4.subsub are quieter).
@@ -87,12 +87,16 @@ const CHILD: Record<string, string> = {
   subsection: "subsubsection",
 };
 
+/** `delta-a, delta-b` for the tags `a`, `b`. */
+const tagsSelector = (tags: string[]): string => tags.map((t) => `delta-${t}`).join(", ");
+
 /** What a folded section hides, counted by kind; the tags of each kind. */
 const KINDS: [key: string, fallback: string, selector: string][] = [
+  // Every result tag but definition, which has a line of its own just below.
   [
     "countResult",
     "result|results",
-    "delta-theorem, delta-proposition, delta-lemma, delta-corollary, delta-conjecture, delta-claim",
+    tagsSelector([...RESULT_TAGS].filter((t) => t !== "definition")),
   ],
   ["countDefinition", "definition|definitions", "delta-definition"],
   ["countExample", "example|examples", "delta-example, delta-counterexample"],

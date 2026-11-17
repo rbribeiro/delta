@@ -245,6 +245,7 @@ src/
     status.ts                  the status word / verification stamp any block may carry (applyStatus)
     collab.ts                  the #delta-review island, author chips, window.Delta.review
     aid.ts                     the reader-aid folds of a result or a step (buildFolds)
+    contracts.ts               where one element relies on another's chrome: the preview body, a target's label
     elements/                  the <delta-*> custom elements, one defineX() per file (browser chrome);
                                only index.ts (the registration order) is imported from outside
     animation/                 what an <animation> board plays (its element is elements/animation.ts):

@@ -15,6 +15,7 @@
 
 import { t } from "../i18n.ts";
 import { memberChip, memberColor } from "../collab.ts";
+import { headingOf } from "../contracts.ts";
 
 const GLYPH: Record<string, string> = { open: "☐", doing: "◐", done: "☑" }; // ☐ ◐ ☑
 
@@ -93,7 +94,7 @@ class DeltaTodo extends HTMLElement {
     if (on) {
       const target = document.getElementById(on);
       if (target && !target.contains(this)) {
-        const heading = target.querySelector(":scope > h1, :scope > h2, :scope > h3, :scope > h4");
+        const heading = headingOf(target);
         (heading ?? target).after(this);
       }
     }

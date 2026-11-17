@@ -26,6 +26,7 @@ import { button } from "../dom.ts";
 import { mediaCaption } from "./media.ts";
 import { svg } from "../animation/ink.ts";
 import { collect, Player } from "../animation/timeline.ts";
+import { insidePreview } from "../contracts.ts";
 
 const icon = (path: string): string =>
   `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="${path}"/></svg>`;
@@ -68,7 +69,7 @@ export class DeltaAnimation extends HTMLElement {
     if (this.dataset.deltaReady) return;
     this.dataset.deltaReady = "1";
     // A <ref> preview is a still: the stylesheet shows the finished board.
-    if (this.closest(".xref-pop-body")) return;
+    if (insidePreview(this)) return;
 
     const onSlide =
       document.documentElement.dataset.type === "presentation" &&

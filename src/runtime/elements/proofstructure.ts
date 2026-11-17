@@ -23,6 +23,7 @@ import { buildFolds } from "../aid.ts";
 import { button } from "../dom.ts";
 import { asToggle, foldMotion, setFolded } from "../fold.ts";
 import { applyStatus } from "../status.ts";
+import { insidePreview } from "../contracts.ts";
 
 /** The proof, solution or step `el` belongs to: its nearest such ancestor. */
 export const ownerOf = (el: Element): Element | null =>
@@ -53,7 +54,7 @@ class DeltaStep extends HTMLElement {
       this.getAttribute("depth") === "1" &&
       sheet !== null &&
       (sheet.classList.contains("proof-foot") || sheet.classList.contains("proof-sheet")) &&
-      !this.closest(".xref-pop-body");
+      !insidePreview(this);
     if (!pleat) {
       // Flat: the number in front of the claim, the aids under it, the proof below.
       (claim ?? this).prepend(num, " ");

@@ -42,10 +42,12 @@ compiles, type-checks or tests. `buildAssets()` writes six constants:
   then **every** `src/styles/components/*.css` (read in sorted filename order), concatenated
   into one string. `src/styles/staged/` is not read. The `@layer` declaration at
   the top of `base.css` fixes the order *between* layers, so a rule in a higher layer wins
-  wherever its file sorts. *Inside* one layer the file order does matter: two components that
-  set the same property on the same element, with equal specificity, are decided by the
-  alphabet. That is why chrome several components share sits one layer down, in
-  `delta.shells`. Adding a `components/<name>.css` file needs no build wiring -- it is picked
+  wherever its file sorts. *Inside* one layer the order must not matter either, and two tests
+  keep it so: `test/styles.test.ts` fails when two component files style the same selector
+  with the same property (a component restyles another's class only from a more specific
+  selector of its own; chrome several share as equals goes one layer down, in
+  `delta.shells`), and `test/runtime/css-order.test.ts` loads real pages with the component
+  files concatenated in reverse and compares every computed style. Adding a `components/<name>.css` file needs no build wiring -- it is picked
   up automatically.
 - **`HAND_CSS`** -- one `@font-face` rule for Caveat, the handwriting of an `<animation>`'s
   notes (the woff2 in `src/styles/fonts/`, inlined the same way). It is kept out of

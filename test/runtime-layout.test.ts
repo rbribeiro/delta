@@ -44,3 +44,30 @@ describe("runtime layout", () => {
     expect(crossings).toEqual(["index.ts → ./elements/index.ts"]);
   });
 });
+
+describe("the DOM contracts between elements (src/runtime/contracts.ts)", () => {
+  const contracts = readFileSync(join(RUNTIME, "contracts.ts"), "utf8");
+  // The classes contracts.ts selects on, from its code (its comments name them too).
+  const code = contracts.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
+  const relied = [...new Set([...code.matchAll(/\.([a-z][\w-]*)/g)].map((m) => m[1]))].filter(
+    (c) => !["closest", "classList", "contains", "querySelector", "parentElement"].includes(c),
+  );
+  const builders = tsFiles(ELEMENTS)
+    .map((f) => readFileSync(f, "utf8"))
+    .join("\n");
+
+  it("relies on the classes it names", () => {
+    expect(relied.sort()).toEqual(["box-head", "box-sheet", "proof-bar", "proof-lead"]);
+  });
+
+  it.each(["box-head", "box-sheet", "proof-bar", "proof-lead"])(
+    "an element still builds .%s",
+    (cls) => {
+      expect(builders).toContain(`className = "${cls}"`);
+    },
+  );
+
+  it("the preview body is built from the one name", () => {
+    expect(builders).toContain("className = PREVIEW_BODY");
+  });
+});

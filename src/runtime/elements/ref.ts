@@ -20,6 +20,7 @@ import { popover } from "../popover.ts";
 import { button } from "../dom.ts";
 import { jumpTo, templateFor } from "../jump.ts";
 import { onActivate } from "../fold.ts";
+import { PREVIEW_BODY } from "../contracts.ts";
 
 // Small "jump to" arrow for the pop-over's go-to button (sized by reference.css).
 const XREF_GO_ICON =
@@ -79,7 +80,7 @@ export function wireRefPopover(trigger: HTMLElement, { to, num, kind, href }: Re
   go.innerHTML = XREF_GO_ICON;
   head.append(labelEl, go);
   const cardBody = document.createElement("div");
-  cardBody.className = "xref-pop-body";
+  cardBody.className = PREVIEW_BODY;
   card.append(head, cardBody);
 
   let filled = false;
