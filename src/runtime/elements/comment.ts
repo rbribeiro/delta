@@ -57,9 +57,9 @@ class DeltaComment extends HTMLElement {
     if (color) marker.setAttribute("data-accent", color);
     if (status === "resolved") marker.classList.add("is-resolved");
     // The marker may sit inside a collapsible label (a box header / heading): keep its
-    // click and keys from reaching the fold toggle.
+    // click from reaching the fold toggle. (Its keys need nothing: a toggle and the deck
+    // both leave Enter/Space aimed at a control to that control.)
     marker.addEventListener("click", (e) => e.stopPropagation());
-    marker.addEventListener("keydown", (e) => e.stopPropagation());
     this.replaceChildren(marker);
     popover(marker, thread);
 

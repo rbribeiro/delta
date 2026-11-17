@@ -46,6 +46,10 @@ export interface Deck {
   onChange(cb: (index: number, total: number) => void): void;
 }
 
+/** What owns its own Space key: native controls, and elements acting as a button or a link. */
+const CONTROL =
+  'button, a[href], summary, audio, video, iframe, [role="button"], [role="link"], [contenteditable]';
+
 /** The deck, once `setupDeck` has built one; null off-deck. Runtime code asks here, not
  *  `window.Delta`, which is the surface for packs. */
 export function getDeck(): Deck | null {
@@ -173,10 +177,16 @@ export function setupDeck(): Deck | null {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
 
     switch (e.key) {
+      case " ":
+        // Space on a focused control is the control's: a button presses, a fold toggle
+        // folds, a player plays. Only Space with nothing in particular focused turns the page.
+        if (el?.closest(CONTROL)) return;
+        e.preventDefault();
+        next();
+        break;
       case "ArrowRight":
       case "ArrowDown":
       case "PageDown":
-      case " ":
         e.preventDefault();
         next();
         break;

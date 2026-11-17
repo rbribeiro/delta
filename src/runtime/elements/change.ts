@@ -59,7 +59,6 @@ class DeltaChange extends HTMLElement {
     marker.title = label;
     marker.setAttribute("aria-label", label);
     marker.addEventListener("click", (e) => e.stopPropagation());
-    marker.addEventListener("keydown", (e) => e.stopPropagation());
 
     const pop = document.createElement("div");
     pop.className = "chg-pop";

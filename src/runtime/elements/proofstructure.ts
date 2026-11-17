@@ -19,9 +19,9 @@
  */
 
 import { t } from "../i18n.ts";
-import { REFOLD_MS, buildFolds } from "../aid.ts";
+import { buildFolds } from "../aid.ts";
 import { button } from "../dom.ts";
-import { setFolded } from "../fold.ts";
+import { asToggle, foldMotion, setFolded } from "../fold.ts";
 import { applyStatus } from "../status.ts";
 
 /** The proof, solution or step `el` belongs to: its nearest such ancestor. */
@@ -88,45 +88,20 @@ class DeltaStep extends HTMLElement {
     caret.setAttribute("aria-hidden", "true");
     head.append(caret);
     head.classList.add("collapse-toggle");
-    head.setAttribute("role", "button");
-    head.tabIndex = 0;
+    asToggle(head, () => foldStep(this, !this.classList.contains("is-collapsed")));
     setFolded(this, proof.getAttribute("collapsed") !== "false");
-    const flip = (): void => foldStep(this, !this.classList.contains("is-collapsed"));
-    head.addEventListener("click", flip);
-    head.addEventListener("keydown", (e: KeyboardEvent) => {
-      if (e.target !== head || (e.key !== "Enter" && e.key !== " ")) return;
-      e.preventDefault();
-      flip();
-    });
     proof.addEventListener("animationend", (e) => {
       if (e.target === proof) this.classList.remove("is-unfolding");
     });
   }
 }
 
-const timers = new WeakMap<Element, number>();
-
 /** Folds or lays flat a pleated step, the paper moving unless the reader asked for less motion. */
 export function foldStep(step: HTMLElement, folding: boolean): void {
-  clearTimeout(timers.get(step));
-  step.classList.remove("is-unfolding", "is-refolding");
-  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (!folding) {
-    const was = step.classList.contains("is-collapsed");
-    setFolded(step, false);
-    if (was && !still) step.classList.add("is-unfolding");
-    return;
-  }
-  if (step.classList.contains("is-collapsed")) return;
-  if (still) return setFolded(step, true);
-  step.classList.add("is-refolding");
-  timers.set(
-    step,
-    window.setTimeout(() => {
-      step.classList.remove("is-refolding");
-      setFolded(step, true);
-    }, REFOLD_MS),
-  );
+  const shut = step.classList.contains("is-collapsed");
+  if (folding && shut) return;
+  // Unfolding moves the paper only when the step was shut; folding always does.
+  foldMotion(step, !folding, folding || shut, () => setFolded(step, folding));
 }
 
 class DeltaHyp extends HTMLElement {
@@ -187,7 +162,6 @@ export function stepsControl(proof: HTMLElement): HTMLElement {
       e.stopPropagation();
       for (const s of steps()) foldStep(s, folding);
     });
-    b.addEventListener("keydown", (e) => e.stopPropagation());
     box.append(b);
   }
   // The steps upgrade after the sheet: watch them once they have.
