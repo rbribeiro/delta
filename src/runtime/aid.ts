@@ -21,6 +21,7 @@ import { t } from "./i18n.ts";
 import { AID_TAGS } from "../language/tags.ts";
 import { button, kindOf } from "./dom.ts";
 import { foldMotion } from "./fold.ts";
+import { insidePreview } from "./contracts.ts";
 
 /** The aids in display order: intuition, strategy, obstacle. */
 const AIDS = [...AID_TAGS];
@@ -39,7 +40,7 @@ export function buildFolds(host: HTMLElement, { named = false } = {}): HTMLEleme
 
   const folds = document.createElement("div");
   folds.className = "folds";
-  const inPreview = host.closest(".xref-pop-body") !== null;
+  const inPreview = insidePreview(host);
   for (const aid of aids) {
     const f = fold(aid, !inPreview && aid.getAttribute("collapsed") === "false");
     if (named) f.dataset.named = "true";

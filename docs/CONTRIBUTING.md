@@ -231,6 +231,12 @@ way.
 | `memberChip(id)` | `collab.ts` | the author chip of a team member |
 | `popover(trigger, content)` | `popover.ts` | the shared pop-over (also `window.Delta.popover`) |
 | `getDeck()` | `deck.ts` | the presentation deck, or null (runtime code asks here, not `window.Delta`) |
+| `insidePreview(el)`, `isPreviewRoot(el)` | `contracts.ts` | is this element shown inside a reference preview (draw less there)? |
+| `labelSlot(target)`, `headingOf(target)` | `contracts.ts` | where a mark anchored with `on="id"` goes: the target's label, or its heading |
+
+When your element relies on chrome another element builds (a class, a child it creates),
+name it in [contracts.ts](../src/runtime/contracts.ts) instead of writing the selector in
+place; `test/runtime-layout.test.ts` checks that the element named there still builds it.
 
 Localized text goes through `t(key, fallback)` or `nameOf(tag)` from
 [i18n.ts](../src/runtime/i18n.ts), never a literal; JSON islands are read with

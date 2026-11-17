@@ -17,6 +17,7 @@ import { applyCollapsible } from "../fold.ts";
 import { applyStatus } from "../status.ts";
 import { buildFolds } from "../aid.ts";
 import { ownerOf, stepsControl } from "./proofstructure.ts";
+import { insidePreview } from "../contracts.ts";
 
 /** Does `el` carry any status mark (status, by, verified-by)? */
 const marked = (el: Element): boolean =>
@@ -184,7 +185,7 @@ class DeltaEnvironment extends HTMLElement {
 
   /** "Proof in Section 2.3" (a ref to the proof), "Proof pending", or nothing. */
   private footNote(): HTMLElement | null {
-    if (this.closest(".xref-pop-body")) return null; // a preview is the statement only
+    if (insidePreview(this)) return null; // a preview is the statement only
     const foot = document.createElement("div");
     foot.className = "box-foot";
     const at = this.getAttribute("data-proof-at");

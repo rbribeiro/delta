@@ -20,6 +20,7 @@ import { t } from "../i18n.ts";
 import { popover } from "../popover.ts";
 import { memberChip, memberColor } from "../collab.ts";
 import { button } from "../dom.ts";
+import { isPreviewRoot, labelSlot } from "../contracts.ts";
 
 class DeltaComment extends HTMLElement {
   connectedCallback(): void {
@@ -41,7 +42,7 @@ class DeltaComment extends HTMLElement {
     // target's own thread shows statically; a comment nested inside a snapshotted
     // theorem hides (its marker would be inert). Never relocate from in here.
     if (this.closest(".delta-pop")) {
-      if (this.parentElement?.classList.contains("xref-pop-body")) {
+      if (isPreviewRoot(this)) {
         thread.classList.add("note-static");
         this.replaceChildren(thread);
       } else {
@@ -70,9 +71,7 @@ class DeltaComment extends HTMLElement {
     if (on) {
       const target = document.getElementById(on);
       if (target && !target.contains(this)) {
-        const slot = target.querySelector(
-          ":scope > .box-sheet > .box-head, :scope > h1, :scope > h2, :scope > h3, :scope > h4, :scope > .proof-lead, :scope > .proof-bar",
-        );
+        const slot = labelSlot(target);
         // Before the status mark, which keeps the far end of the label.
         const mark = slot?.querySelector(":scope > .status-mark");
         if (mark) mark.before(this, " ");
