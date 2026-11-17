@@ -121,6 +121,30 @@ describe("a single file is a project of one file", () => {
       expect(project.outputs[0].html).toBe(single.html);
       const messages = (ds: { message: string }[]) => ds.map((d) => d.message).sort();
       expect(messages(project.diagnostics)).toEqual(messages(single.diagnostics));
+      expect(project.review).toEqual(single.review);
+    });
+  }
+
+  // The same failure rule: an error anywhere, in any phase, means no output. A malformed
+  // document fails in `load`; a reader aid outside a result fails later (collab phase), where
+  // a project used to write the page anyway.
+  const failing: [string, string][] = [
+    ["a document that does not parse", `<document><p>unclosed</document>`],
+    [
+      "an error after the load phase",
+      `<document><title>T</title><section id="s"><title>S</title><intuition>Loose.</intuition></section></document>`,
+    ],
+  ];
+  for (const [label, src] of failing) {
+    it(`compileFile and compileProject both fail on ${label}`, () => {
+      const { dir, paths } = scratch({ "doc.dlt": src });
+      const single = compileFile(paths[0]);
+      const project = compileProject({ inputs: paths, outDir: dir });
+      expect(single.diagnostics.some((d) => d.severity === "error")).toBe(true);
+      expect(single.html).toBeUndefined();
+      expect(project.outputs).toEqual([]);
+      const messages = (ds: { message: string }[]) => ds.map((d) => d.message).sort();
+      expect(messages(project.diagnostics)).toEqual(messages(single.diagnostics));
     });
   }
 });

@@ -4,6 +4,7 @@ import {
   type CompileContext,
   type Diagnostic,
   type ReviewData,
+  type ReviewItem,
 } from "./context.ts";
 import type { ProofGraph } from "./graph.ts";
 import {
@@ -35,6 +36,7 @@ export interface CompileResult {
 /**
  * Compiles a source string in the Delta XML dialect to HTML, using (and filling) the given
  * context. Returns the HTML, or undefined when compilation failed (`hasErrors(ctx)` is then true).
+ * `--final` comes from `options.final`, as for `compileFile` and `compileProject`.
  */
 export function compileSource(
   source: string,
@@ -47,30 +49,42 @@ export function compileSource(
 /** Reads a `.dlt` file, compiles it, and returns the HTML along with diagnostics, deps and the review state. */
 export function compileFile(path: string, options: CompileOptions = {}): CompileResult {
   const ctx = createContext(path);
-  ctx.final = options.final ?? false;
-  const { html, graph } = runOne({ ctx, outName: outNameFor(path), doc: null }, options);
+  const { html, graph, reviewItems } = runOne(
+    { ctx, outName: outNameFor(path), doc: null },
+    options,
+  );
   return {
     html,
     graph,
     diagnostics: ctx.diagnostics,
     deps: [...ctx.deps],
-    review: { team: [...ctx.team.values()], items: ctx.review },
+    // The project's list, so an item carries its home output (`file`) here as in a project.
+    review: { team: [...ctx.team.values()], items: reviewItems },
   };
 }
 
 /** Runs the pipeline for one file whose context lends its own maps as the shared state. */
-function runOne(unit: FileUnit, options: CompileOptions): { html?: string; graph?: ProofGraph } {
+function runOne(
+  unit: FileUnit,
+  options: CompileOptions,
+): { html?: string; graph?: ProofGraph; reviewItems: ReviewItem[] } {
   const { ctx } = unit;
   const shared = createShared({
     registry: ctx.registry,
     papers: ctx.papers,
     citedPapers: ctx.citedPapers,
     team: ctx.team,
-    final: ctx.final,
+    // From the options, as in a project; the pipeline then sets every file's ctx.final.
+    final: options.final ?? false,
     project: createContext(ctx.file),
   });
   const ok = runPipeline([unit], shared, options);
   ctx.diagnostics.push(...shared.project.diagnostics); // the --final summary lands on the caller's ctx
-  // An error in a later phase fails the file too, as it fails a project.
-  return { html: ok && !hasErrors(ctx) ? unit.html : undefined, graph: shared.graph };
+  // The rule shared with a project: an error anywhere, in any phase, means no output.
+  const failed = !ok || hasErrors(ctx);
+  return {
+    html: failed ? undefined : unit.html,
+    graph: shared.graph,
+    reviewItems: shared.reviewItems,
+  };
 }

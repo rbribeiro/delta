@@ -85,7 +85,11 @@ adding an environment is one row here, its tag in `RESULT_TAGS` or `BOX_TAGS`
 table, a list of phases, each a list of steps. A compilation is a list of `FileUnit`s that
 share one `Shared` state, run by `runPipeline`. **A single file is a project of one file**:
 `compileSource`, `compileFile` ([index.ts](../src/compiler/index.ts)) and `compileProject`
-([project.ts](../src/compiler/project.ts)) only build that list and call the runner.
+([project.ts](../src/compiler/project.ts)) only build that list and call the runner. They
+share the rest too: `--final` comes from `options.final`; an error anywhere, in any phase and
+in any file, means no output at all; and the review items are the project's list, each with
+its home output (`file`). `test/pipeline.test.ts` checks that a file and a project of that
+one file agree, on successful and on failing builds.
 
 A step is either `each` (runs on every file, in input order, before the next step starts on
 any file) or `all` (runs once, project-wide). Pass-major order is what lets a per-file step

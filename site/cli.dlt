@@ -50,7 +50,8 @@ delta --help
 
       Os diagnósticos da compilação vão sempre para a saída de erro (stderr), uma
       linha por problema, no formato <c>severidade: mensagem (arquivo:linha:coluna)</c>.
-      Um <c>error</c> impede a escrita da saída; um <c>warning</c> não. A saída padrão
+      Um <c>error</c> impede a escrita da saída; um <c>warning</c> não. Num projeto, um
+      <c>error</c> em qualquer arquivo impede a escrita de todos: nada sai pela metade. A saída padrão
       (stdout) fica reservada ao que é resultado, como o relatório de
       <c>delta review</c>.
 
