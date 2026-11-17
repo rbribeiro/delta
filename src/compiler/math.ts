@@ -154,7 +154,7 @@ function expandMathRefs(
   return latex.replace(MATH_REF, (_match, cmd: string, id: string) => {
     const entry = ctx.registry.get(id);
     if (!entry) {
-      warn(ctx, `Unresolved reference ${id}`, pos);
+      warn(ctx, `Unresolved reference ${id}`, pos, "unresolved-ref");
       return "\\text{??}";
     }
     const label = cmd === "eqref" ? `(${entry.num})` : entry.num;

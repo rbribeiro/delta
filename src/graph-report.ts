@@ -489,7 +489,7 @@ export function lintFindings(graph: ProofGraph, diagnostics: Diagnostic[], rel: 
     }
   }
   for (const d of diagnostics) {
-    if (d.message.startsWith("Unresolved reference")) continue;
+    if (d.code === "unresolved-ref") continue; // reported above, as a dangling reference
     out.push({
       severity: d.severity,
       kind: "compile",

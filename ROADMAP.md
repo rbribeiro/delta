@@ -388,7 +388,7 @@ Compiler hygiene
 - [x] WP-C2. One tree walker with named skip policies
 - [x] WP-C3. Local tag sets and vocabularies back in `src/language/`
 - [x] WP-C4. Same API and failure rule for one file and for a project
-- [ ] WP-C5. Diagnostics carry a code
+- [x] WP-C5. Diagnostics carry a code
 - [ ] WP-C6. `graph.ts`, `graph-report.ts`, `commands.ts` split along their seams; one `lineOf`
 - [ ] WP-C7. Pass tests use the production front end (`parseSource`)
 

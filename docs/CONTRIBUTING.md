@@ -73,7 +73,9 @@ documented in [BUILDING.md](BUILDING.md).
   `@layer delta.shells`. `test/styles.test.ts` and `test/runtime/css-order.test.ts` check it.
 - Diagnostics, not exceptions: report problems with `error(ctx, msg, pos)` /
   `warn(ctx, msg, pos)` so the CLI can print them with source positions. Reserve
-  thrown errors for genuinely unexpected states.
+  thrown errors for genuinely unexpected states. When a tool must recognise a kind of
+  problem, give it a code (`warn(ctx, msg, pos, "unresolved-ref")`, listed in
+  `DiagnosticCode` in context.ts) and test the code, never the wording of the message.
 - Every pass is `(doc, ctx) => void` in its own file under `src/compiler/`, registered as one
   row of the `PIPELINE` table. A pass that reads one of the author's files goes through
   `readUserFile` (records the dependency for `--watch`) and refuses URLs with `isRemote`.
