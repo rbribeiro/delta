@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "./harness.ts";
 import { ancestors, descendants, type ProofGraph } from "../src/compiler/graph.ts";
-import { frontier, overclaimed } from "../src/graph-report.ts";
+import { frontier, overclaimed } from "../src/graph-analysis.ts";
 import { compileProject, type ProjectResult } from "../src/compiler/project.ts";
 
 /** Writes the files into a fresh dir and compiles the `.dlt` ones (in order) as one project. */

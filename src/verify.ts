@@ -3,6 +3,7 @@ import type { SourceSpan } from "./compiler/ast.ts";
 import type { ProofGraph } from "./compiler/graph.ts";
 import { escapeAttr } from "./compiler/preprocess.ts";
 import { trustRank } from "./language/trust.ts";
+import { lineOf } from "./compiler/lines.ts";
 
 /**
  * `delta verify`: sign a result's proof as checked. Its one edit sets attributes on the
@@ -95,7 +96,7 @@ export function verify(
   const text = readFileSync(file, "utf8");
   writeFileSync(file, setAttributes(text, proof.src, attrs));
   // The edit is inside the opening tag, so the lines before it are unchanged.
-  const line = text.slice(0, start).split("\n").length;
+  const line = lineOf(text, start);
   return { id, against: node.hash, ...(by ? { verifiedBy: by } : {}), file, line, warnings };
 }
 

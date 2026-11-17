@@ -3,7 +3,6 @@ import { describe, expect, it } from "./harness.ts";
 import { AID_TAGS } from "../src/language/tags.ts";
 import {
   frontierText,
-  lintFindings,
   lintText,
   outlineJson,
   outlineText,
@@ -12,6 +11,7 @@ import {
   sliceOf,
   usesText,
 } from "../src/graph-report.ts";
+import { lintFindings } from "../src/graph-analysis.ts";
 import { compileFiles } from "./helpers.ts";
 
 const rel = (f: string) => basename(f);

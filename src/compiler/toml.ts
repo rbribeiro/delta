@@ -1,3 +1,5 @@
+import { lineIndex } from "./lines.ts";
+
 /**
  * The subset of TOML a `project.toml` needs, parsed by hand so Delta depends on nothing for
  * it: comments, `key = value`, strings, integers, booleans, arrays (over several lines, with a
@@ -282,9 +284,7 @@ class Parser {
   }
 
   private fail(message: string, at = this.i): never {
-    const before = this.text.slice(0, at);
-    const line = (before.match(/\n/g)?.length ?? 0) + 1;
-    const column = at - before.lastIndexOf("\n");
-    throw new TomlError(message, line, column);
+    const lines = lineIndex(this.text);
+    throw new TomlError(message, lines.lineOf(at), at - lines.startOf(at) + 1);
   }
 }

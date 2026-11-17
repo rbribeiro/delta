@@ -198,9 +198,11 @@ its public `length` / `pos` / `seek()`.
 src/
   cli.ts                       the executable: runs `main(process.argv)` from commands.ts
   commands.ts                  every `delta` command: parseArgs, resolveInputs, compileInputs (stopAfter), print/write
+  watch.ts                     `--watch`: rebuild when a dependency changes
   verify.ts                    `delta verify`: checks, then signs a proof in place (setAttributes)
   review-report.ts             `delta review` text/JSON formatting (pure)
-  graph-report.ts              outline/show/uses/graph/lint as text or JSON, plus frontier/overclaimed (pure)
+  graph-analysis.ts            what the graph commands work out: frontier, overclaimed, lint findings (pure)
+  graph-report.ts              outline/show/uses/graph/lint as text or JSON (pure)
   agent-guide.ts               the text `delta agent-guide` prints
   scaffold.ts, install.ts      `delta create`, `delta install`
   language/                    the vocabulary, pure data, imported by compiler AND runtime
@@ -236,7 +238,9 @@ src/
     bibliography.ts            load .ref papers; number <cite>; fill the (first) <bibliography>
     numbering.ts               assigns num attrs, fills the registry; NumberingState
     crossfile.ts               buildIdMaps (globalById/idToFile); cross-file href annotations
-    graph.ts                   the proof graph: nodes, edges, trust propagation, cycles; annotateHypotheses, markStale
+    graph.ts                   the proof graph: nodes, edges, trust propagation, cycles (buildGraph)
+    graph-marks.ts             what the graph writes into the tree: annotateHypotheses, markStale
+    lines.ts                   line numbers by offset (lineIndex, lineOf), for every report
     graph-hash.ts              the hash a verification is pinned to (what counts as changing a proof)
     proof-links.ts             linkRemoteProofs: where a result's proof is ("Proof in Section 2.3"), or that it is pending
     proofmap.ts                <proof-map> → a laid-out SVG of the graph (layered layout, at compile time)

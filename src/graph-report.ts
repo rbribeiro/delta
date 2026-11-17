@@ -1,7 +1,5 @@
 import type { ElementNode } from "./compiler/ast.ts";
-import type { Diagnostic } from "./compiler/context.ts";
 import {
-  ancestors,
   descendants,
   type GraphNode,
   type Loc,
@@ -9,19 +7,18 @@ import {
   type ProofGraph,
 } from "./compiler/graph.ts";
 import { AID_TAGS, PROOF_TAGS } from "./language/tags.ts";
+import { frontier, type Finding, type Rel } from "./graph-analysis.ts";
+import { lineIndex } from "./compiler/lines.ts";
 
 /** A parent's statement as `--context` shows it: no aids, no proof nested in it. */
 const NOT_STATEMENT: ReadonlySet<string> = new Set([...AID_TAGS, ...PROOF_TAGS]);
-import { trustRank } from "./language/trust.ts";
 
 /**
  * The agent-facing views of the proof graph: `delta outline`, `show`, `uses`, `graph` and
- * `lint`, each as text or JSON. Pure functions (no I/O) over the graph the compiler built,
+ * `lint`, each as text or JSON. What they report is worked out in graph-analysis.ts. Pure functions (no I/O) over the graph the compiler built,
  * so the CLI is a thin shell and tests need no process. Paths go through `rel`, so the CLI
  * prints them relative to where the agent stands.
  */
-
-export type Rel = (file: string) => string;
 
 const where = (loc: Loc, rel: Rel): string => `${rel(loc.file)}:${loc.line}`;
 const label = (n: GraphNode): string => `${n.tag}${n.num ? ` ${n.num}` : ""}`;
@@ -140,15 +137,20 @@ export function sliceOf(
   body += text.slice(at, span.end);
 
   // Dedent by the indentation of the line the element opens on.
-  const lineStart = text.lastIndexOf("\n", span.start - 1) + 1;
+  const lines = lineIndex(text);
+  const lineStart = lines.startOf(span.start);
   const indent = /^[ \t]*/.exec(text.slice(lineStart, span.start))![0].length;
   const source = body
     .split("\n")
     .map((l, i) => (i === 0 ? l : l.replace(new RegExp(`^[ \\t]{0,${indent}}`), "")))
     .join("\n");
 
-  const lineOf = (offset: number): number => text.slice(0, offset).split("\n").length;
-  return { file: rel(span.file), line: lineOf(span.start), endLine: lineOf(span.end), source };
+  return {
+    file: rel(span.file),
+    line: lines.lineOf(span.start),
+    endLine: lines.lineOf(span.end),
+    source,
+  };
 }
 
 export interface ShowData {
@@ -301,18 +303,6 @@ export function graphJson(graph: ProofGraph, rel: Rel): unknown {
   };
 }
 
-/** Work available now: own trust below verified, every parent at least a sketch. */
-export function frontier(graph: ProofGraph): GraphNode[] {
-  const sketch = trustRank("sketch");
-  return [...graph.nodes.values()].filter(
-    (n) =>
-      n.tag !== "definition" &&
-      !n.cyclic &&
-      trustRank(n.own) <= sketch &&
-      n.parents.every((p) => trustRank(graph.nodes.get(p)!.eff) >= sketch),
-  );
-}
-
 export function frontierText(graph: ProofGraph, rel: Rel): string {
   const work = frontier(graph);
   if (work.length === 0)
@@ -330,176 +320,6 @@ export function frontierJson(graph: ProofGraph, rel: Rel): unknown {
 }
 
 // -- lint --------------------------------------------------------------------
-
-export interface Finding {
-  severity: "error" | "warning";
-  kind: string;
-  message: string;
-  file: string;
-  line?: number;
-  /** The results involved (the cycle's path, the ancestors to blame, …). */
-  ids?: string[];
-}
-
-/**
- * Results whose own proof is marked verified (or formalized) but whose effective trust is
- * lower, each with the ancestors to blame: those whose own trust is below verified, or
- * that sit on a cycle.
- */
-export function overclaimed(graph: ProofGraph): { node: GraphNode; blame: string[] }[] {
-  const verified = trustRank("verified");
-  return [...graph.nodes.values()]
-    .filter(
-      (n) => n.tag !== "definition" && trustRank(n.own) >= verified && trustRank(n.eff) < verified,
-    )
-    .map((node) => ({
-      node,
-      blame: ancestors(graph, node.id).filter((a) => {
-        const up = graph.nodes.get(a)!;
-        return up.cyclic || trustRank(up.own) < verified;
-      }),
-    }));
-}
-
-/**
- * Everything wrong with the proof's structure: circular reasoning, dangling refs, results
- * marked verified that rest on something weaker, proofs of nothing, several proofs of one
- * result, and every compile diagnostic (misplaced elements among them). Compile warnings
- * that restate a dangling ref are dropped: the graph reports those with better context.
- */
-export function lintFindings(graph: ProofGraph, diagnostics: Diagnostic[], rel: Rel): Finding[] {
-  const out: Finding[] = [];
-  const at = (loc: Loc) => ({ file: rel(loc.file), line: loc.line });
-
-  for (const cycle of graph.cycles) {
-    const first = graph.nodes.get(cycle[0])!;
-    out.push({
-      severity: "error",
-      kind: "cycle",
-      message: `circular reasoning: ${cycle.join(" → ")}`,
-      ...at(first.loc),
-      ids: cycle,
-    });
-  }
-  for (const d of graph.dangling) {
-    out.push({
-      severity: "error",
-      kind: "dangling-ref",
-      message: `ref to "${d.to}", which no element defines`,
-      ...at(d.loc),
-      ids: [d.to],
-    });
-  }
-  for (const { node, blame } of overclaimed(graph)) {
-    const why = blame
-      .map((b) => {
-        const up = graph.nodes.get(b)!;
-        return `${b} (${up.own}${up.cyclic ? ", on a cycle" : ""})`;
-      })
-      .join(", ");
-    out.push({
-      severity: "error",
-      kind: "overclaimed",
-      message: `${node.id} is marked ${node.own} but rests on ${why}: effective status is ${node.eff}`,
-      ...at(node.loc),
-      ids: [node.id, ...blame],
-    });
-  }
-  for (const n of graph.nodes.values()) {
-    const against = n.proofs[0]?.attrs.against;
-    if (n.stale) {
-      out.push({
-        severity: "error",
-        kind: "stale",
-        message: `${n.id}'s verification is stale: its statement, its proof, or a statement it uses changed since it was checked (against ${against}, now ${n.hash}); check it again and run delta verify ${n.id}`,
-        ...at(n.loc),
-        ids: [n.id],
-      });
-    } else if (
-      n.tag !== "definition" &&
-      against === undefined &&
-      ["verified", "formalized"].includes(n.proofs[0]?.attrs.status ?? "")
-    ) {
-      out.push({
-        severity: "warning",
-        kind: "unpinned",
-        message: `${n.id} is marked ${n.proofs[0].attrs.status} by hand, with no against= hash, so a later edit cannot be detected; run delta verify ${n.id}`,
-        ...at(n.loc),
-        ids: [n.id],
-      });
-    }
-  }
-  for (const h of graph.hypotheses.values()) {
-    const owner = graph.nodes.get(h.owner);
-    if (owner && owner.proofs.length > 0 && h.uses.length === 0) {
-      out.push({
-        severity: "warning",
-        kind: "unused-hypothesis",
-        message: `(${h.num}) ${h.id} of ${h.owner} is never used in its proof: either a step is missing, or the result holds without it`,
-        ...at(h.loc),
-        ids: [h.id, h.owner],
-      });
-    }
-  }
-  for (const b of graph.badBreaks) {
-    out.push({
-      severity: "error",
-      kind: "bad-counterexample",
-      message: `<counterexample breaks="${b.breaks}">: no hypothesis has that id`,
-      ...at(b.loc),
-      ids: [b.breaks],
-    });
-  }
-  for (const s of graph.unprovedSteps) {
-    out.push({
-      severity: "warning",
-      kind: "unproved-step",
-      message: `step ${s.num}${s.owner ? ` of ${s.owner}` : ""} has a claim but no proof`,
-      ...at(s.loc),
-      ...(s.id ? { ids: [s.id] } : {}),
-    });
-  }
-  for (const s of graph.strayProofs) {
-    out.push({
-      severity: "warning",
-      kind: "stray-proof",
-      message: `<proof of="${s.of}"> does not prove a result in the graph`,
-      ...at(s.loc),
-      ids: [s.of],
-    });
-  }
-  for (const n of graph.nodes.values()) {
-    if (n.proofs.length > 1) {
-      out.push({
-        severity: "warning",
-        kind: "several-proofs",
-        message: `${n.id} has ${n.proofs.length} proofs; the first sets its status`,
-        ...at(n.loc),
-        ids: [n.id],
-      });
-    }
-    if (n.el.attrs.status === "open" && n.proofs.length > 0) {
-      out.push({
-        severity: "warning",
-        kind: "open-with-proof",
-        message: `${n.id} is status="open" but has a proof; drop the status`,
-        ...at(n.loc),
-        ids: [n.id],
-      });
-    }
-  }
-  for (const d of diagnostics) {
-    if (d.code === "unresolved-ref") continue; // reported above, as a dangling reference
-    out.push({
-      severity: d.severity,
-      kind: "compile",
-      message: d.message,
-      file: rel(d.file),
-      ...(d.pos ? { line: d.pos.line } : {}),
-    });
-  }
-  return out;
-}
 
 export function lintText(findings: Finding[]): string {
   if (findings.length === 0) return "no problems found\n";

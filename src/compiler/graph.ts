@@ -1,4 +1,4 @@
-import { element as el, textContent, titleOf, type ElementNode } from "./ast.ts";
+import { textContent, titleOf, type ElementNode } from "./ast.ts";
 import type { LabelEntry } from "./context.ts";
 import {
   AID_TAGS,
@@ -8,9 +8,11 @@ import {
   OPAQUE,
   RESULT_TAGS,
 } from "../language/tags.ts";
-import { STALE_STATUS, TRUST_OF, trustRank, weaker, type Trust } from "../language/trust.ts";
+import { TRUST_OF, trustRank, weaker, type Trust } from "../language/trust.ts";
 import { checkedHash } from "./graph-hash.ts";
+import { annotateHypotheses, markStale } from "./graph-marks.ts";
 import { collapseSpace, flow, proofTarget } from "./paper.ts";
+import { lineIndex, type LineIndex } from "./lines.ts";
 
 /**
  * The proof graph: which results a result's statement or proof leans on, and how much
@@ -367,51 +369,6 @@ function pinVerifications(graph: ProofGraph): void {
   }
 }
 
-/**
- * Gives each hypothesis the facts its ref preview shows: where the proof uses it (a ref
- * per step, or "the proof"), or that it does not; and the counterexamples showing it is
- * needed. They go in as a `<hyp-uses>` child, hidden in the page and shown only when the
- * hypothesis is the target of a preview (proofmap.css / hyp CSS). Runs before the ref pass,
- * so the refs in it resolve like any other.
- */
-export function annotateHypotheses(graph: ProofGraph): void {
-  for (const h of graph.hypotheses.values()) {
-    const parts: ElementNode[] = [];
-    const proved = (graph.nodes.get(h.owner)?.proofs.length ?? 0) > 0;
-    if (h.uses.length) {
-      parts.push(
-        el(
-          "hyp-used",
-          {},
-          h.uses.map((w) =>
-            w.tag === "step" && w.attrs.id ? el("ref", { to: w.attrs.id }) : el("hyp-in-proof"),
-          ),
-        ),
-      );
-    } else if (proved) {
-      parts.push(el("hyp-unused"));
-    }
-    const ces = h.counterexamples.filter((c) => c.attrs.id);
-    if (ces.length)
-      parts.push(
-        el(
-          "hyp-needed",
-          {},
-          ces.map((c) => el("ref", { to: c.attrs.id })),
-        ),
-      );
-    if (parts.length) h.el.children.push(el("hyp-uses", {}, parts));
-  }
-}
-
-/**
- * Shows a stale verification for what it is: the proof's `status` becomes `stale` (the
- * pill reads "Stale", `delta review` lists it). Its `against` stays for `delta verify`.
- */
-export function markStale(graph: ProofGraph): void {
-  for (const n of graph.nodes.values()) if (n.stale) n.proofs[0].attrs.status = STALE_STATUS;
-}
-
 /** Tarjan's SCCs; each non-trivial one is reported once, as one closed path through it. */
 function markCycles(graph: ProofGraph): void {
   const index = new Map<string, number>();
@@ -520,24 +477,13 @@ function titleText(el: ElementNode): string {
 
 /** `el` → its file and the line of its opening `<` (from the source span when there is one). */
 function locator(sources: Map<string, string>): (el: ElementNode, fallback: string) => Loc {
-  const newlines = new Map<string, number[]>();
+  const indexes = new Map<string, LineIndex>();
   const lineAt = (file: string, offset: number): number | undefined => {
     const text = sources.get(file);
     if (text === undefined) return undefined;
-    let nl = newlines.get(file);
-    if (!nl) {
-      nl = [];
-      for (let i = text.indexOf("\n"); i !== -1; i = text.indexOf("\n", i + 1)) nl.push(i);
-      newlines.set(file, nl);
-    }
-    let lo = 0;
-    let hi = nl.length;
-    while (lo < hi) {
-      const mid = (lo + hi) >> 1;
-      if (nl[mid] < offset) lo = mid + 1;
-      else hi = mid;
-    }
-    return lo + 1;
+    let index = indexes.get(file);
+    if (!index) indexes.set(file, (index = lineIndex(text)));
+    return index.lineOf(offset);
   };
   return (el, fallback) => {
     const file = el.src?.file ?? el.pos?.file ?? fallback;

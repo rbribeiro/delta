@@ -1,6 +1,7 @@
 import { basename } from "node:path";
 import { describe, expect, it } from "./harness.ts";
-import { lintFindings, showData, showText } from "../src/graph-report.ts";
+import { lintFindings } from "../src/graph-analysis.ts";
+import { showData, showText } from "../src/graph-report.ts";
 import { compileFiles } from "./helpers.ts";
 
 function build(src: string) {

@@ -2,6 +2,7 @@ import { elements, type ElementNode, type Position } from "./ast.ts";
 import { error, type CompileContext } from "./context.ts";
 import { preprocessMapped } from "./preprocess.ts";
 import { parseXml } from "./xml.ts";
+import { lineIndex } from "./lines.ts";
 
 /**
  * The front end, and the pipeline's `parse` step: preprocesses and parses the author's text, recording it in `ctx.sources` under `ctx.file`
@@ -60,18 +61,11 @@ function locator(
   orig: (at: number) => number,
   file: string,
 ): (at: number) => Position {
-  const newlines: number[] = [];
-  for (let i = text.indexOf("\n"); i !== -1; i = text.indexOf("\n", i + 1)) newlines.push(i);
+  const lines = lineIndex(text);
   return (at) => {
-    // How many newlines come before `at`: binary search, so a long file costs nothing.
-    let lo = 0;
-    let hi = newlines.length;
-    while (lo < hi) {
-      const mid = (lo + hi) >> 1;
-      if (newlines[mid] < at) lo = mid + 1;
-      else hi = mid;
-    }
-    const lineStart = lo === 0 ? 0 : orig(newlines[lo - 1]) + 1;
-    return { line: lo + 1, column: orig(at) - lineStart + 1, file };
+    const line = lines.lineOf(at);
+    // The column is counted in the author's text: map the newline ending the previous line.
+    const lineStart = line === 1 ? 0 : orig(lines.startOf(at) - 1) + 1;
+    return { line, column: orig(at) - lineStart + 1, file };
   };
 }

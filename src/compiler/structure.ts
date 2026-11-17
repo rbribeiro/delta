@@ -43,7 +43,7 @@ import { flow, paperParent, proofTarget } from "./paper.ts";
  *
  * Runs in the collab phase, before numbering: the numbers are written into `num`, which
  * numbering registers like any other. Who uses which hypothesis needs the whole project,
- * so that is the graph's job (graph.ts, `annotateHypotheses`).
+ * so that is the graph's job (graph-marks.ts, `annotateHypotheses`).
  */
 
 /**

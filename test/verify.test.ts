@@ -5,7 +5,7 @@ import { describe, expect, it } from "./harness.ts";
 import type { SourceSpan } from "../src/compiler/ast.ts";
 import type { ProofGraph } from "../src/compiler/graph.ts";
 import { compileProject } from "../src/compiler/project.ts";
-import { lintFindings } from "../src/graph-report.ts";
+import { lintFindings } from "../src/graph-analysis.ts";
 import { setAttributes } from "../src/verify.ts";
 
 function graphOf(src: string): {
