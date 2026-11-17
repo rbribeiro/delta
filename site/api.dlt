@@ -185,7 +185,10 @@ const pop = Delta.popover(trigger, content, options);
         classe <c>delta-pop</c> ao conteúdo (é ela que dá o fundo, a borda, a sombra
         e a seta); <b>move o conteúdo para o fim do <c><body></c></b>, porque a
         posição é relativa à janela; marca o gatilho com <c>aria-haspopup="dialog"</c>
-        e, com <c>triggerClick</c>, mantém o <c>aria-expanded</c> dele. A consequência
+        e, com <c>triggerClick</c>, mantém o <c>aria-expanded</c> dele; e dá ao balão
+        <c>role="dialog"</c> e um <c>aria-label</c> tirado do gatilho (o
+        <c>aria-label</c> dele, ou o texto que um leitor de tela ouviria), a menos que
+        você já tenha posto os seus. A consequência
         prática: um seletor como <c>delta-termo .termo-pop</c> nunca casa, porque o
         balão não é mais descendente da sua tag. Estilize-o por uma classe com o
         prefixo do seu pacote.

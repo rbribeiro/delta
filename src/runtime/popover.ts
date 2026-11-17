@@ -17,6 +17,8 @@
  * `styles/components/popover.css` (`.delta-pop`).
  */
 
+import { spokenText } from "./dom.ts";
+
 export interface PopoverOptions {
   /** Runs just before the bubble is shown — build or refresh `content` here. */
   onOpen?: (content: HTMLElement, trigger: HTMLElement) => void;
@@ -71,6 +73,13 @@ export function popover(
   // <body> so no transformed ancestor (e.g. the tweaks panel) distorts it.
   if (content.parentElement !== document.body) document.body.appendChild(content);
   trigger.setAttribute("aria-haspopup", "dialog");
+  // What the trigger promises, the bubble is: a dialog, named after its trigger ("Theorem
+  // 1.1", "Comment 2"). A caller (or a pack) that sets its own role or name keeps it.
+  if (!content.hasAttribute("role")) content.setAttribute("role", "dialog");
+  if (!content.hasAttribute("aria-label") && !content.hasAttribute("aria-labelledby")) {
+    const name = trigger.getAttribute("aria-label") || spokenText(trigger);
+    if (name) content.setAttribute("aria-label", name);
+  }
 
   let isOpen = false;
 

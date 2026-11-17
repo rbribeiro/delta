@@ -299,6 +299,7 @@ matching file in `test/runtime/`:
 | `animation.ts` | `animation.test.ts` |
 | `document.ts`, the address bar (`address.ts`) | `address.test.ts` (a phone's width: `test/overflow.test.ts`) |
 | the deck's keys and the controls on a slide (`deck.ts`, `fold.ts`) | `deck.test.ts` |
+| keyboard and screen-reader access across elements: triggers, bubbles, toggles | `a11y.test.ts` |
 | a standard pack, `packs/<name>/` | `test/packs/<name>.test.ts` |
 
 ## The roadmap

@@ -21,7 +21,7 @@ Decisions taken by the maintainer on 2026-11-16:
    `.js` sources in `packs/`. Local and npm packs stay free-form classic scripts.
 
 **Status.** Phases 0 and 1 (WP-S1…S5, WP-P1…P4) implemented on `refactor/mantainability`
-(2026-11-16), and Phase 2 WP-R1, WP-R6, WP-R2 (merged or on `refactor/fold-activate`); the rest is not. The student packs can now be ported (§3.6). Progress is tracked in milestone M10 of
+(2026-11-16), and Phase 2 WP-R1, WP-R6, WP-R2, WP-R5 (merged or on `refactor/a11y`); the rest is not. The student packs can now be ported (§3.6). Progress is tracked in milestone M10 of
 [ROADMAP.md](../ROADMAP.md), one checkbox per WP; check an item off in the PR that lands it.
 Line numbers refer to branch `refactor/mantainability` at commit `54df109` (2026-11-16);
 re-locate by symbol name if the code has moved.

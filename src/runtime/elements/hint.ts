@@ -29,6 +29,7 @@ class DeltaHint extends HTMLElement {
     if (showIcon) {
       const marker = document.createElement("span");
       marker.className = "hint-marker";
+      marker.setAttribute("aria-hidden", "true"); // decoration: the trigger says "Hint"
       marker.textContent = "💡 ";
       trigger.append(marker);
     }
