@@ -381,7 +381,7 @@ Runtime
 
 Compiler ↔ runtime contract
 - [x] WP-K1. One definition of each JSON island (`src/language/islands.ts`)
-- [ ] WP-K2. A table of compiler-written attributes, kept honest by a test
+- [x] WP-K2. A table of compiler-written attributes, kept honest by a test
 
 Compiler hygiene
 - [ ] WP-C1. Pipeline table: every step calls a function of its own name

@@ -198,6 +198,13 @@ compiler already passes `collapsible="true"` and `collapsed="true"` along — an
 is the canonical example of the shape, now shipped. The Portuguese tutorial for this shape
 is [TUTORIAL_COMPONENTES.md](TUTORIAL_COMPONENTES.md).
 
+**What your element receives** from the compiler, beyond the author's own attributes, is
+listed in [src/language/contract.ts](../src/language/contract.ts): every attribute a pass
+writes (`num`, `data-target-num`, `data-proof-at`, …), the pass that writes it, the element
+that reads it and what it means. A pass that writes a new `data-*` attribute adds a row
+there, or `test/contract.test.ts` fails. The JSON islands (`#delta-i18n`, `#delta-toc`,
+`#delta-review`) have their shapes in [src/language/islands.ts](../src/language/islands.ts).
+
 The pattern: a small helper in [fold.ts](../src/runtime/fold.ts) reads
 `getAttribute("collapsible")`, wires a click/keydown handler on the element's existing
 label, and toggles a class the CSS responds to. `applyCollapsible(host, label)` does
