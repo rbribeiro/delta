@@ -17,7 +17,8 @@
 
 import { t } from "./i18n.ts";
 import { popover } from "./popover.ts";
-import { member, type ReviewMember } from "./collab.ts";
+import { member } from "./collab.ts";
+import type { ReviewMember } from "../language/islands.ts";
 import { button } from "./dom.ts";
 
 /** The states a stamp stands for; every other state is a word. */

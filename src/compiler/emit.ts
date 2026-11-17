@@ -6,6 +6,7 @@ import { escapeAttr, escapeHtml } from "./preprocess.ts";
 import { katexCss } from "./katex-css.ts";
 import { plainText } from "./paper.ts";
 import { stringsFor } from "../language/strings.ts";
+import type { IslandId, IslandPayload, ReviewIslandData } from "../language/islands.ts";
 import { HEADING_TAGS, PROOF_TAGS } from "../language/tags.ts";
 import { CORE_CSS, HAND_CSS, RUNTIME_JS, THEMES } from "../generated/assets.ts";
 
@@ -179,15 +180,17 @@ function renderTocIsland(ctx: CompileContext, used: Set<string>): string {
   if (ctx.toc.length === 0) return "";
   // A project-wide ToC may carry heading math rendered in another file.
   ctx.mathUsed ||= ctx.toc.some((e) => containsMath(e.title));
-  const data = ctx.toc.map((e) => ({
-    level: e.level,
-    id: e.id,
-    num: e.num,
-    title: e.title.map((n) => serialize(n, used)).join(""),
-    // Present only for a project-wide entry whose section lives in another output.
-    ...(e.file ? { file: e.file } : {}),
-  }));
-  return jsonIsland("delta-toc", data);
+  return jsonIsland(
+    "delta-toc",
+    ctx.toc.map((e) => ({
+      level: e.level,
+      id: e.id,
+      num: e.num,
+      title: e.title.map((n) => serialize(n, used)).join(""),
+      // Present only for a project-wide entry whose section lives in another output.
+      ...(e.file ? { file: e.file } : {}),
+    })),
+  );
 }
 
 /**
@@ -204,7 +207,7 @@ function renderReviewIsland(doc: ElementNode, ctx: CompileContext, used: Set<str
   if (!hasPanel && !(ctx.team.size > 0 && ownItems)) return "";
 
   const ser = (nodes: Node[]): string => nodes.map((n) => serialize(n, used)).join("");
-  const data: Record<string, unknown> = { team: [...ctx.team.values()] };
+  const data: ReviewIslandData = { team: [...ctx.team.values()] };
   if (hasPanel) {
     // A project-wide panel may carry bodies/titles with math rendered in another file.
     ctx.mathUsed ||= ctx.review.some(
@@ -264,19 +267,19 @@ function packStringsFor(packs: ImportEntry[], lang: string): Record<string, stri
 
 /**
  * An inert `<script type="application/json" id="…">` data island the runtime reads. `<` is
- * escaped so no string in the data can close the `</script>`.
+ * escaped so no string in the data can close the `</script>`. `data` must have the island's
+ * shape (src/language/islands.ts), the one the runtime reads it back as.
  */
-function jsonIsland(id: string, data: unknown): string {
+function jsonIsland<K extends IslandId>(id: K, data: IslandPayload[K]): string {
   const json = JSON.stringify(data).replace(/</g, "\\u003c");
   return `<script type="application/json" id="${id}">${json}</script>\n`;
 }
 
-/** Drops undefined-valued keys so the island JSON stays small. */
-function compact<T extends Record<string, unknown>>(obj: T): Partial<T> {
-  const out: Partial<T> = {};
-  for (const [k, v] of Object.entries(obj))
-    if (v !== undefined) (out as Record<string, unknown>)[k] = v;
-  return out;
+/** Drops undefined-valued keys so the island JSON stays small (an absent key reads the same). */
+function compact<T extends object>(obj: T): T {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(obj)) if (v !== undefined) out[k] = v;
+  return out as T;
 }
 
 /** True when any node in the tree is pre-rendered math (a RawNode stamped by renderMath). */

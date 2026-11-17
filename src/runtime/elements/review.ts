@@ -21,14 +21,8 @@
 import { t } from "../i18n.ts";
 import { button, copyButton, takeTitle } from "../dom.ts";
 import { linkJump } from "../jump.ts";
-import {
-  memberChip,
-  readReview,
-  reviewState,
-  REVIEW_EVENT,
-  type ChangesMode,
-  type ReviewItemData,
-} from "../collab.ts";
+import { memberChip, readReview, reviewState, REVIEW_EVENT, type ChangesMode } from "../collab.ts";
+import type { ReviewItemData } from "../../language/islands.ts";
 
 const KINDS = ["comment", "todo", "change", "status"] as const;
 type Kind = (typeof KINDS)[number];

@@ -13,60 +13,14 @@
 
 import { t } from "./i18n.ts";
 import { readIsland } from "./island.ts";
+import type { ReviewIslandData, ReviewMember } from "../language/islands.ts";
 
-export interface ReviewMember {
-  id: string;
-  name: string;
-  kind: "human" | "agent";
-  /** A base.css accent palette name. */
-  color: string;
-}
-
-export interface ReviewReplyData {
-  by?: string;
-  date?: string;
-  text: string;
-  html: string;
-}
-
-export interface ReviewHeadingData {
-  level: number;
-  num: string;
-  id: string;
-  title: string;
-}
-
-export interface ReviewItemData {
-  kind: "comment" | "todo" | "change" | "status";
-  id: string;
-  tag: string;
-  num?: string;
-  status: string;
-  by?: string;
-  for?: string;
-  verifiedBy?: string;
-  date?: string;
-  due?: string;
-  priority?: string;
-  changeKind?: string;
-  note?: string;
-  on?: string;
-  text: string;
-  html: string;
-  replies?: ReviewReplyData[];
-  heading?: ReviewHeadingData;
-  /** Set on a project item that lives in another output file. */
-  file?: string;
-}
-
-export interface ReviewData {
-  team: ReviewMember[];
-  items: ReviewItemData[];
-}
+/** The island with both lists present (empty when the page ships none). */
+export type ReviewData = Required<ReviewIslandData>;
 
 /** The `#delta-review` island (team + items); both lists empty when the page has none. */
 export function readReview(): ReviewData {
-  const raw = readIsland<Partial<ReviewData>>("delta-review", {});
+  const raw = readIsland("delta-review", { team: [] });
   return { team: raw.team ?? [], items: raw.items ?? [] };
 }
 

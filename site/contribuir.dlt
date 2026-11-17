@@ -91,7 +91,10 @@ node --test --test-name-pattern "resets across" test/
       navegador, aberto de <c>file://</c>, não consegue ler outros arquivos. Tudo o que é local
       é runtime. Qualquer atributo que você escreva numa tag atravessa o compilador intacto
       até a tag <c>delta-*</c>, então um comportamento novo muitas vezes é só o runtime lendo
-      um atributo que já chega lá.
+      um atributo que já chega lá. O que o compilador acrescenta por conta própria (o
+      <c>num</c>, o <c>data-target-num</c> de uma referência, o <c>data-proof-at</c> de um
+      resultado…) está numa tabela só, <c>src/language/contract.ts</c>: quem escreve, quem lê
+      e o que significa.
     </subsection>
 
     <subsection id="passo-anatomia-de-um-passo">

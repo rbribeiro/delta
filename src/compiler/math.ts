@@ -160,13 +160,14 @@ function expandMathRefs(
     const label = cmd === "eqref" ? `(${entry.num})` : entry.num;
     ctx.referencedIds.add(id); // emit snapshots the target into a <template>
     const home = idToFile?.get(id);
+    // Spelled out, not built from a template, so grep (and test/contract.test.ts) finds them.
     const attrs: [string, string][] = [
-      ["to", id],
-      ["num", entry.num],
-      ["tag", entry.tag],
+      ["data-delta-ref-to", id],
+      ["data-delta-ref-num", entry.num],
+      ["data-delta-ref-tag", entry.tag],
     ];
-    if (home && home !== ctx.outName) attrs.push(["href", `${home}#${id}`]);
-    refs.push(attrs.map(([k, v]) => `data-delta-ref-${k}="${escapeAttr(v)}"`).join(" "));
+    if (home && home !== ctx.outName) attrs.push(["data-delta-ref-href", `${home}#${id}`]);
+    refs.push(attrs.map(([k, v]) => `${k}="${escapeAttr(v)}"`).join(" "));
     return `\\htmlData{delta-ref=${refs.length - 1}}{\\text{${label}}}`;
   });
 }

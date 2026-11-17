@@ -5,6 +5,7 @@
 
 import { resolve } from "node:path";
 import type { ElementNode, Node, Position } from "./ast.ts";
+import type { ReviewMember } from "../language/islands.ts";
 
 export interface Diagnostic {
   severity: "error" | "warning";
@@ -58,14 +59,9 @@ export interface ImportEntry {
   strings?: PackStrings;
 }
 
-/** One collaborator declared in `<team>`; the runtime colors/badges `by`/`for` chips from it. */
-export interface TeamMember {
-  id: string;
-  name: string;
-  kind: "human" | "agent";
-  /** A base.css accent palette name (`blue`, `purple`, …), explicit or round-robin assigned. */
-  color: string;
-}
+/** One collaborator declared in `<team>`; the runtime colors/badges `by`/`for` chips from it.
+ *  The same shape ships in the #delta-review island (src/language/islands.ts). */
+export type TeamMember = ReviewMember;
 
 /** The nearest enclosing heading of a review item ("where is this?" in the panel / CLI). */
 export interface ReviewHeading {

@@ -53,8 +53,13 @@ environments, aids, math, literal code, collaboration marks
 ([environments.ts](../src/language/environments.ts)); the UI strings
 ([strings.ts](../src/language/strings.ts)); the trust order
 ([trust.ts](../src/language/trust.ts)); the accent palette names
-([palette.ts](../src/language/palette.ts)). These files import nothing, so the runtime bundle
-can use them too. A pass that needs "the headings" imports the set from here, never from
+([palette.ts](../src/language/palette.ts)). Two files state the contract between the halves:
+the JSON islands emit ships and their shapes ([islands.ts](../src/language/islands.ts):
+`jsonIsland` and `readIsland` both take their types from it, so a field changed on one side
+fails `tsc` on the other), and every attribute the compiler writes for the runtime, with its
+writer and reader ([contract.ts](../src/language/contract.ts), kept honest by
+[test/contract.test.ts](../test/contract.test.ts)). These files import nothing, so the runtime
+bundle can use them too. A pass that needs "the headings" imports the set from here, never from
 another pass, and the runtime derives its element lists from the same sets.
 [test/language.test.ts](../test/language.test.ts) checks that the lists agree with each other,
 with every language block and with `theorems.css`.
@@ -188,6 +193,8 @@ src/
     strings.ts                 i18n table (en, pt, …) + lang resolvers
     trust.ts                   the trust order (TRUST, TRUST_OF, trustRank, weaker)
     palette.ts                 the accent palette names (box colors, team members)
+    islands.ts                 the JSON islands (#delta-i18n, #delta-toc, #delta-review): ids and payload types
+    contract.ts                every attribute the compiler writes for the runtime, its writer and its reader
   compiler/
     pipeline.ts                THE pipeline: phases/steps table, runPipeline, Shared, the trace hook — start here
     index.ts, project.ts       the entry points (compileSource/compileFile; compileProject), both thin

@@ -380,8 +380,8 @@ Runtime
 - [x] WP-R5. Accessibility: keyboard-reachable citations, popover role, `aria-pressed` on toggles
 
 Compiler ↔ runtime contract
-- [ ] WP-K1. One definition of each JSON island (`src/language/islands.ts`)
-- [ ] WP-K2. A table of compiler-written attributes, kept honest by a test
+- [x] WP-K1. One definition of each JSON island (`src/language/islands.ts`)
+- [x] WP-K2. A table of compiler-written attributes, kept honest by a test
 
 Compiler hygiene
 - [ ] WP-C1. Pipeline table: every step calls a function of its own name
