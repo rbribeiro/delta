@@ -3,10 +3,7 @@ import { element, findElementById, type ElementNode, type Node } from "./ast.ts"
 import { error, type CompileContext } from "./context.ts";
 import { isRemote, readUserFile, withFile } from "./files.ts";
 import { parse } from "./parse.ts";
-
-// Tags whose relative `src` is written from the included file's folder, so it is rewritten to be
-// relative to the master document (which resolves it later).
-const ASSET_TAGS = new Set(["figure", "video", "audio", "bibliography", "import"]);
+import { ASSET_TAGS } from "../language/tags.ts";
 
 /**
  * Resolves `<include>` nodes in `doc` by reading the referenced files, parsing them, and splicing their children in place of the `<include>`. Relative asset paths are rewritten relative to the master document. Cycles are detected and reported as errors.

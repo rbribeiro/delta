@@ -1,6 +1,14 @@
 import { walk, type ElementNode } from "./ast.ts";
 import { error, warn, type CompileContext } from "./context.ts";
-import { AID_TAGS, OPAQUE, PROOF_TAGS, PROVES, RAW_TAGS, RESULT_TAGS } from "../language/tags.ts";
+import {
+  AID_TAGS,
+  NOTE_TAGS,
+  OPAQUE,
+  PROOF_TAGS,
+  PROVES,
+  RAW_TAGS,
+  RESULT_TAGS,
+} from "../language/tags.ts";
 import { flow, paperParent, proofTarget } from "./paper.ts";
 
 /**
@@ -37,12 +45,6 @@ import { flow, paperParent, proofTarget } from "./paper.ts";
  * numbering registers like any other. Who uses which hypothesis needs the whole project,
  * so that is the graph's job (graph.ts, `annotateHypotheses`).
  */
-
-/** Where a step may sit: directly in a proof (a step's own proof included). */
-const STEP_PARENTS = new Set(["proof", "solution"]);
-
-/** Review notes, which sit between a box and its proof without parting them. */
-const NOTES = new Set(["comment", "todo"]);
 
 /**
  * Links each proof to what it proves, and joins the ones the reader sees with it.
@@ -96,7 +98,7 @@ function joinProofs(parent: ElementNode, collapsed: string): void {
       if (c.type !== "text" || /\S/.test(c.text)) prev = undefined;
       continue;
     }
-    if (NOTES.has(c.tag)) continue;
+    if (NOTE_TAGS.has(c.tag)) continue;
     const proves = PROVES[c.tag];
     const target = proofTarget(c);
     // Without an id to link by, a proof still joins the box it sits in or right after.
@@ -156,7 +158,8 @@ function visit(
     numberSteps(el, "", k === 1 ? owner : `${owner}-solution${k}`, ctx);
   }
   if (RESULT_TAGS.has(el.tag)) numberHypotheses(el, ctx);
-  if (el.tag === "step" && !(parent && STEP_PARENTS.has(parent.tag))) {
+  // A step sits directly in a proof (a step's own proof included).
+  if (el.tag === "step" && !(parent && PROOF_TAGS.has(parent.tag))) {
     error(
       ctx,
       `<step> must be directly inside a <proof> or <solution> (a step's own <proof> included); found inside <${parent?.tag ?? "document"}>`,

@@ -51,8 +51,9 @@ Delta's vocabulary is data both halves read: which tags are headings, results, b
 environments, aids, math, literal code, collaboration marks
 ([tags.ts](../src/language/tags.ts)); the numbering table
 ([environments.ts](../src/language/environments.ts)); the UI strings
-([strings.ts](../src/language/strings.ts)); the trust order
-([trust.ts](../src/language/trust.ts)); the accent palette names
+([strings.ts](../src/language/strings.ts)); the trust order and the compiler's own `stale`
+status ([trust.ts](../src/language/trust.ts)); the values the collaboration attributes
+accept ([collaboration.ts](../src/language/collaboration.ts)); the accent palette names
 ([palette.ts](../src/language/palette.ts)). Two files state the contract between the halves:
 the JSON islands emit ships and their shapes ([islands.ts](../src/language/islands.ts):
 `jsonIsland` and `readIsland` both take their types from it, so a field changed on one side
@@ -60,7 +61,9 @@ fails `tsc` on the other), and every attribute the compiler writes for the runti
 writer and reader ([contract.ts](../src/language/contract.ts), kept honest by
 [test/contract.test.ts](../test/contract.test.ts)). These files import nothing, so the runtime
 bundle can use them too. A pass that needs "the headings" imports the set from here, never from
-another pass, and the runtime derives its element lists from the same sets.
+another pass or a set of its own, and the runtime derives its element lists from the same
+sets. `tags.ts` also lists the tags the compiler synthesizes and an author never writes
+(`step-claim`, `hyp-*`, `pm-*`).
 [test/language.test.ts](../test/language.test.ts) checks that the lists agree with each other,
 with every language block and with `theorems.css`.
 
@@ -200,7 +203,8 @@ src/
     tags.ts                    tag families (HEADING_LEVEL, RESULT_TAGS, BOX_TAGS, RAW_TAGS, OPAQUE, …)
     environments.ts            the numbering data table (ENVIRONMENTS, COUNTER_RESETS)
     strings.ts                 i18n table (en, pt, …) + lang resolvers
-    trust.ts                   the trust order (TRUST, TRUST_OF, trustRank, weaker)
+    trust.ts                   the trust order (TRUST, TRUST_OF, trustRank, weaker) and STALE_STATUS
+    collaboration.ts           comment/todo status, priority and member kind values
     palette.ts                 the accent palette names (box colors, team members)
     islands.ts                 the JSON islands (#delta-i18n, #delta-toc, #delta-review): ids and payload types
     contract.ts                every attribute the compiler writes for the runtime, its writer and its reader

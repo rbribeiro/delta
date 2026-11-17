@@ -20,9 +20,10 @@ import { popover } from "./popover.ts";
 import { member } from "./collab.ts";
 import type { ReviewMember } from "../language/islands.ts";
 import { button } from "./dom.ts";
+import { STALE_STATUS } from "../language/trust.ts";
 
 /** The states a stamp stands for; every other state is a word. */
-const STAMPED = new Set(["verified", "formalized", "stale"]);
+const STAMPED = new Set(["verified", "formalized", STALE_STATUS]);
 
 /**
  * Puts the status mark of `from` (the host itself, or the proof whose status a box shows
@@ -66,7 +67,7 @@ function statusMark(from: Element): HTMLElement {
     if (checker) trigger.dataset.accent = checker.color;
     const word = document.createElement("span");
     word.className = "stamp-word";
-    word.textContent = `${status === "formalized" ? "∎" : "✓"} ${t(status === "stale" ? "verified" : status, status)}`;
+    word.textContent = `${status === "formalized" ? "∎" : "✓"} ${t(status === STALE_STATUS ? "verified" : status, status)}`;
     trigger.append(word);
     const sub = [checkerName ? shortName(checkerName) : "", on ? stampDate(on) : ""]
       .filter(Boolean)
@@ -137,7 +138,7 @@ function history(
     if (on) row.querySelector(".status-history-text")!.append(`, ${longDate(on)}`);
     box.append(row);
   }
-  if (status === "stale") {
+  if (status === STALE_STATUS) {
     const note = document.createElement("div");
     note.className = "status-history-note";
     note.textContent = t("staleNote", "It changed after it was checked.");

@@ -1,6 +1,7 @@
 import { elements, type ElementNode, type Node, type Position } from "./ast.ts";
 import { warn, type CompileContext, type TeamMember } from "./context.ts";
 import { PALETTE } from "../language/palette.ts";
+import { MEMBER_KINDS } from "../language/collaboration.ts";
 
 /**
  * `<team>` — the collaborators registry, a direct child of `<document>`:
@@ -20,8 +21,6 @@ import { PALETTE } from "../language/palette.ts";
  * On the project path the map is shared across files and a second, identical
  * declaration is silently accepted (each `.dlt` stays independently compilable).
  */
-
-const KINDS = new Set(["human", "agent"]);
 
 export function collectTeam(doc: ElementNode, ctx: CompileContext): void {
   const teams: ElementNode[] = [];
@@ -79,7 +78,7 @@ function readMember(m: Node, ctx: CompileContext): MemberDecl | undefined {
     return undefined;
   }
   let kind = m.attrs.kind ?? "human";
-  if (!KINDS.has(kind)) {
+  if (!MEMBER_KINDS.has(kind)) {
     warn(
       ctx,
       `<member id="${id}"> has unknown kind "${kind}" (expected human or agent); using human`,

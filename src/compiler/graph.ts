@@ -8,7 +8,7 @@ import {
   OPAQUE,
   RESULT_TAGS,
 } from "../language/tags.ts";
-import { TRUST_OF, trustRank, weaker, type Trust } from "../language/trust.ts";
+import { STALE_STATUS, TRUST_OF, trustRank, weaker, type Trust } from "../language/trust.ts";
 import { checkedHash } from "./graph-hash.ts";
 import { collapseSpace, flow, proofTarget } from "./paper.ts";
 
@@ -409,7 +409,7 @@ export function annotateHypotheses(graph: ProofGraph): void {
  * pill reads "Stale", `delta review` lists it). Its `against` stays for `delta verify`.
  */
 export function markStale(graph: ProofGraph): void {
-  for (const n of graph.nodes.values()) if (n.stale) n.proofs[0].attrs.status = "stale";
+  for (const n of graph.nodes.values()) if (n.stale) n.proofs[0].attrs.status = STALE_STATUS;
 }
 
 /** Tarjan's SCCs; each non-trivial one is reported once, as one closed path through it. */

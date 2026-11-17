@@ -1,7 +1,7 @@
 import { walk, type ElementNode } from "./ast.ts";
 import { paperParent } from "./paper.ts";
 import { error, warn, type CompileContext } from "./context.ts";
-import { AID_TAGS, RAW_TAGS, RESULT_TAGS } from "../language/tags.ts";
+import { AID_TAGS, isAidOwner, RAW_TAGS, RESULT_TAGS } from "../language/tags.ts";
 
 /**
  * The reader aids of a result — `<intuition>` (why it is true), `<strategy>` (how the
@@ -15,19 +15,16 @@ import { AID_TAGS, RAW_TAGS, RESULT_TAGS } from "../language/tags.ts";
  * author's own `collapsed="false"` wins. Runs in the collab phase, after includes and before numbering.
  */
 
-/** What an aid may hang on: a result, or one step of a structured proof. */
-const AID_OWNERS = new Set([...RESULT_TAGS, "step"]);
-
 export function checkUnderstanding(doc: ElementNode, ctx: CompileContext): void {
   walk(doc, (el, ancestors) => {
     if (RAW_TAGS.has(el.tag)) return false;
     if (AID_TAGS.has(el.tag)) visitAid(el, paperParent(ancestors), ctx);
-    if (AID_OWNERS.has(el.tag)) checkDuplicates(el, ctx);
+    if (isAidOwner(el.tag)) checkDuplicates(el, ctx);
   });
 }
 
 function visitAid(el: ElementNode, owner: ElementNode | undefined, ctx: CompileContext): void {
-  if (!owner || !AID_OWNERS.has(owner.tag)) {
+  if (!owner || !isAidOwner(owner.tag)) {
     const where = owner ? `<${owner.tag}>` : "the document root";
     error(
       ctx,

@@ -1,5 +1,6 @@
 import { elements, type ElementNode } from "./ast.ts";
 import type { CompileContext } from "./context.ts";
+import { NEVER_REVEAL } from "../language/tags.ts";
 
 /**
  * `animated="true"` is authoring sugar for the reveal fragment system: it marks
@@ -17,7 +18,6 @@ import type { CompileContext } from "./context.ts";
  * - An explicit `reveal` on a child wins, so `reveal="false"` opts a child out and a
  *   hand-set `reveal-order` is preserved.
  */
-const NEVER_REVEAL = new Set(["title", "slide"]);
 
 export function expandAnimated(doc: ElementNode, _ctx: CompileContext): void {
   if (doc.attrs.type !== "presentation") return;

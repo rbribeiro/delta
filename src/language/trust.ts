@@ -24,6 +24,14 @@ export const TRUST_OF: Readonly<Record<string, Trust>> = {
   formalized: "formalized",
 };
 
+/**
+ * The `status` the compiler itself writes on a proof whose verification no longer holds: the
+ * mathematics changed since it was checked (graph.ts, `markStale`). It reads as a sketch, and
+ * the page shows the verification stamp struck through (runtime/status.ts). Not an author
+ * value, so it is not in TRUST_OF.
+ */
+export const STALE_STATUS = "stale";
+
 /** True for a `status` that says someone checked the block (`verified` or `formalized`). */
 export function isChecked(status: string | undefined): boolean {
   const trust = status === undefined ? undefined : TRUST_OF[status];

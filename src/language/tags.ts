@@ -114,6 +114,57 @@ export const COLLAB_PARTS: ReadonlySet<string> = new Set([
  */
 export const OPAQUE: ReadonlySet<string> = new Set(["comment", "todo", "old"]);
 
+/** Review notes: they sit between a box and its proof without parting them (structure.ts). */
+export const NOTE_TAGS: ReadonlySet<string> = new Set(["comment", "todo"]);
+
+/**
+ * Not mathematics, so never part of a proof's hash (graph-hash.ts): the reader aids, a
+ * result's display title, and review notes (a comment on a verified proof must not unverify
+ * it). A function, not a set built from the others, so the runtime bundle can drop it.
+ */
+export function isUnchecked(tag: string): boolean {
+  return AID_TAGS.has(tag) || tag === "title" || NOTE_TAGS.has(tag);
+}
+
+/** What a reader aid may hang on: a result, or one step of a structured proof. */
+export function isAidOwner(tag: string): boolean {
+  return RESULT_TAGS.has(tag) || tag === "step";
+}
+
+/**
+ * Tags whose `src` names a file relative to the document. An <include>d file's are rewritten
+ * to be relative to the master document, which resolves them later (include.ts).
+ */
+export const ASSET_TAGS: ReadonlySet<string> = new Set([
+  "figure",
+  "video",
+  "audio",
+  "bibliography",
+  "import",
+]);
+
+/** Children an `animated="true"` slide never turns into fragments: its title, and a slide. */
+export const NEVER_REVEAL: ReadonlySet<string> = new Set(["title", "slide"]);
+
+/**
+ * Tags the compiler creates and an author never writes: a step's claim, the parts of a
+ * hypothesis's preview (graph.ts) and of a proof map (proofmap.ts). Listed so that grep
+ * finds them, and so a runtime element knows they come only from the compiler.
+ */
+export const SYNTHESIZED_TAGS: ReadonlySet<string> = new Set([
+  "step-claim",
+  "hyp-uses",
+  "hyp-used",
+  "hyp-needed",
+  "hyp-unused",
+  "hyp-in-proof",
+  "pm-canvas",
+  "pm-node",
+  "pm-title",
+  "pm-key",
+  "pm-legend",
+]);
+
 /** Collaboration wrappers that structural checks look through (`<change><new><intuition>`). */
 export const TRANSPARENT: ReadonlySet<string> = new Set(["change", "new", "old", "draft"]);
 
