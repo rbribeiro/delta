@@ -15,10 +15,10 @@
  * the attributes is present, so a document without them renders exactly as before.
  */
 
-import { t } from "../i18n.ts";
-import { popover } from "../utils.ts";
+import { t } from "./i18n.ts";
+import { popover } from "./popover.ts";
 import { member, type ReviewMember } from "./collab.ts";
-import { button } from "./shared.ts";
+import { button } from "./dom.ts";
 
 /** The states a stamp stands for; every other state is a word. */
 const STAMPED = new Set(["verified", "formalized", "stale"]);

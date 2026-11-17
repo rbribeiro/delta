@@ -19,7 +19,7 @@
  */
 
 import { t } from "../i18n.ts";
-import { kindOf } from "./shared.ts";
+import { kindOf } from "../dom.ts";
 
 // tag (sans `delta-`) → English fallback label. The i18n island supplies the
 // localized text via t(); the fallback only matters if a key is missing.

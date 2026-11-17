@@ -695,8 +695,8 @@ Para ir ao **core**, raro: o código vai para `src/runtime/elements/quote.ts`, c
 `defineQuote()` chamada em [`elements/index.ts`](../src/runtime/elements/index.ts), o CSS para
 `src/styles/components/quote.css`, e o texto para todos os blocos de
 [`src/language/strings.ts`](../src/language/strings.ts). Lá você usa os auxiliares de
-[`shared.ts`](../src/runtime/elements/shared.ts) (`button`, `takeTitle`, `numberedName`,
-`jumpTo`…), e o teste vai para `test/runtime/`.
+[`src/runtime/`](../src/runtime/) (`button`, `takeTitle`, `numberedName` em `dom.ts`,
+`jumpTo` em `jump.ts`, `applyCollapsible` em `fold.ts`…), e o teste vai para `test/runtime/`.
 
 **O que um pacote não pode fazer:** pacotes são exclusivamente de runtime. Não rodam nenhum
 código no compilador, então não conseguem numerar ambientes, registrar um tipo de `<ref>`, ler

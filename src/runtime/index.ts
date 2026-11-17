@@ -1,10 +1,9 @@
-import { defineComponents } from "./elements/index.ts";
-import { wireMathRefs } from "./elements/ref.ts";
+import { defineComponents, wireMathRefs } from "./elements/index.ts";
 import { setupDeck } from "./deck.ts";
 import { followAddress } from "./address.ts";
-import { popover } from "./utils.ts";
+import { popover } from "./popover.ts";
 import { t } from "./i18n.ts";
-import { reviewState } from "./elements/collab.ts";
+import { reviewState } from "./collab.ts";
 
 // The type of window.Delta, the contract every pack builds against, is declared in ./api.ts.
 

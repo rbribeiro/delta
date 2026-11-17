@@ -6,7 +6,8 @@
  */
 
 import { t } from "../i18n.ts";
-import { applyCollapsible, copyButton, numberedName } from "./shared.ts";
+import { copyButton, numberedName } from "../dom.ts";
+import { applyCollapsible } from "../fold.ts";
 
 class DeltaCode extends HTMLElement {
   connectedCallback(): void {

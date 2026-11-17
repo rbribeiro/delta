@@ -14,7 +14,8 @@
 
 import { t } from "../i18n.ts";
 import { readIsland } from "../island.ts";
-import { linkJump, takeTitle } from "./shared.ts";
+import { takeTitle } from "../dom.ts";
+import { linkJump } from "../jump.ts";
 
 interface TocItem {
   level: number;

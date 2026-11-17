@@ -12,9 +12,10 @@
 
 import { nameOf, t } from "../i18n.ts";
 import { BOX_TAGS, ENVIRONMENT_TAGS, PROOF_TAGS } from "../../language/tags.ts";
-import { applyCollapsible, kindOf, numberedName, renderMeta, takeTitle } from "./shared.ts";
-import { applyStatus } from "./status.ts";
-import { buildFolds } from "./aid.ts";
+import { kindOf, numberedName, renderMeta, takeTitle } from "../dom.ts";
+import { applyCollapsible } from "../fold.ts";
+import { applyStatus } from "../status.ts";
+import { buildFolds } from "../aid.ts";
 import { ownerOf, stepsControl } from "./proofstructure.ts";
 
 /** Does `el` carry any status mark (status, by, verified-by)? */

@@ -6,7 +6,7 @@
  *   fragment count rides along in `history.state`, which a reload keeps but a shared link
  *   does not. Arriving on `#5` pages to slide 5; arriving on `#some-id` pages to the slide
  *   that holds it.
- * - A paper or book writes a section's id when a ToC entry is clicked (`rememberAddress`).
+ * - A paper or book writes a section's id when a ToC entry is clicked (`rememberAddress`, in jump.ts).
  *   Arriving on `#id` unfolds, scrolls to and flashes it; a reload skips that, since the
  *   browser already restores the scroll position.
  *
@@ -14,7 +14,7 @@
  */
 
 import type { Deck } from "./deck.ts";
-import { flashTarget } from "./elements/shared.ts";
+import { flashTarget } from "./jump.ts";
 
 /** The id in the URL hash, decoded ("" when there is none). */
 const hashId = (): string => decodeURIComponent(location.hash.slice(1));
@@ -22,12 +22,6 @@ const hashId = (): string => decodeURIComponent(location.hash.slice(1));
 export function followAddress(deck: Deck | null): void {
   if (deck) followDeck(deck);
   else followPage();
-}
-
-/** Puts `#id` in the address bar after an in-page jump (a deck keeps its slide number). */
-export function rememberAddress(id: string): void {
-  if (window.Delta?.deck) return;
-  history.replaceState(history.state, "", `#${id}`);
 }
 
 function followDeck(deck: Deck): void {

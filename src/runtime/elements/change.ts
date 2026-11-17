@@ -22,9 +22,9 @@
  */
 
 import { t } from "../i18n.ts";
-import { popover } from "../utils.ts";
-import { memberChip, memberColor } from "./collab.ts";
-import { button } from "./shared.ts";
+import { popover } from "../popover.ts";
+import { memberChip, memberColor } from "../collab.ts";
+import { button } from "../dom.ts";
 
 class DeltaChange extends HTMLElement {
   connectedCallback(): void {

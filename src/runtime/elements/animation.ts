@@ -22,7 +22,7 @@
  */
 
 import { t } from "../i18n.ts";
-import { button } from "./shared.ts";
+import { button } from "../dom.ts";
 import { mediaCaption } from "./media.ts";
 import { svg } from "../animation/ink.ts";
 import { collect, Player } from "../animation/timeline.ts";

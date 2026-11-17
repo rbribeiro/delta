@@ -1,5 +1,5 @@
 /* status.css — the maturity / authorship mark any block may carry (applyStatus in
-   runtime/elements/status.ts): `status`, `by`, `verified-by`, `verified-on`. The
+   runtime/status.ts): `status`, `by`, `verified-by`, `verified-on`. The
    `.status-mark` sits at the end of the block's header (box header, proof bar or lead,
    heading) or, for <draft>, in a `.status-bar` row on top.
 

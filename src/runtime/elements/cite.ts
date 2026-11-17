@@ -9,8 +9,9 @@
  * A cite whose ids were all unknown stays inert.
  */
 
-import { popover } from "../utils.ts";
-import { formatPaper, linkJump, templateFor } from "./shared.ts";
+import { popover } from "../popover.ts";
+import { linkJump, templateFor } from "../jump.ts";
+import { formatPaper } from "../paper.ts";
 
 class DeltaCite extends HTMLElement {
   connectedCallback(): void {

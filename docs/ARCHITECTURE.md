@@ -228,16 +228,25 @@ src/
     linebreaks.ts              blank lines in prose → <br><br>
     emit.ts                    AST → standalone HTML (+ templates and the JSON islands)
     katex-css.ts               KaTeX CSS with data: fonts (offline math)
-  runtime/
-    index.ts                   registers the custom elements; window.Delta
+  runtime/                     rule: elements/ holds the files that register tags; everything
+                               else here is shared library that elements import
+    index.ts                   the entry: registers the custom elements, wires math refs, sets window.Delta
     api.ts                     the type of window.Delta: the one contract every pack builds against
-    deck.ts                    the presentation controller (steps a slide's fragments and its <animation> boards)
+    deck.ts                    the presentation controller (steps a slide's fragments and its <animation> boards);
+                               getDeck() for runtime code
     address.ts                 the URL hash as the position: a deck's slide number, a ToC click's section
-    utils.ts, i18n.ts          the shared popover controller; t(key) and nameOf(tag) from the #delta-i18n island
+    popover.ts                 the shared pop-over controller (window.Delta.popover)
+    i18n.ts                    t(key) and nameOf(tag) from the #delta-i18n island
     island.ts                  readIsland: the JSON islands (#delta-i18n, #delta-toc, #delta-review), parsed once
+    dom.ts                     small builders and readers: kindOf, button, takeTitle, numberedName, renderMeta, copyButton
+    jump.ts                    going to a target: jumpTo, linkJump, flashTarget, rememberAddress, templateFor
+    fold.ts                    folding: applyCollapsible, setFolded, unfoldAncestors
+    paper.ts                   formatPaper: a <paper> as an inline reference (bibliography, citation card)
+    status.ts                  the status word / verification stamp any block may carry (applyStatus)
+    collab.ts                  the #delta-review island, author chips, window.Delta.review
+    aid.ts                     the reader-aid folds of a result or a step (buildFolds)
     elements/                  the <delta-*> custom elements, one defineX() per file (browser chrome);
-                               shared.ts, status.ts, collab.ts and aid.ts define none: they are
-                               helpers several elements use
+                               only index.ts (the registration order) is imported from outside
     animation/                 what an <animation> board plays (its element is elements/animation.ts):
       timeline.ts              the board read into steps; State, fold/paint, seek, play-all
       ink.ts                   glyph proxies: measuring, writing, morphing

@@ -16,8 +16,8 @@
  */
 
 import { t } from "../i18n.ts";
-import { popover } from "../utils.ts";
-import { button, takeTitle } from "./shared.ts";
+import { popover } from "../popover.ts";
+import { button, takeTitle } from "../dom.ts";
 
 class DeltaFloating extends HTMLElement {
   connectedCallback(): void {

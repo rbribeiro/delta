@@ -8,8 +8,9 @@
  */
 
 import { nameOf, t } from "../i18n.ts";
-import { applyCollapsible, kindOf, renderMeta } from "./shared.ts";
-import { applyStatus } from "./status.ts";
+import { kindOf, renderMeta } from "../dom.ts";
+import { applyCollapsible } from "../fold.ts";
+import { applyStatus } from "../status.ts";
 import { HEADING_LEVEL } from "../../language/tags.ts";
 
 // tag → the heading class the structure stylesheet targets

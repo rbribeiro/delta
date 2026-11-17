@@ -194,7 +194,7 @@ compiler already passes `collapsible="true"` and `collapsed="true"` along — an
 is the canonical example of the shape, now shipped. The Portuguese tutorial for this shape
 is [TUTORIAL_COMPONENTES.md](TUTORIAL_COMPONENTES.md).
 
-The pattern: a small helper in [shared.ts](../src/runtime/elements/shared.ts) reads
+The pattern: a small helper in [fold.ts](../src/runtime/fold.ts) reads
 `getAttribute("collapsible")`, wires a click/keydown handler on the element's existing
 label, and toggles a class the CSS responds to. `applyCollapsible(host, label)` does
 exactly this — it moves the label's following siblings into a `.collapse-body` (so even
@@ -204,21 +204,27 @@ with their heading / box tag / proof lead. The styles live in
 `@layer delta.shells`, so a component refining it always wins; the rest in `delta.components`),
 and the new element/behavior is registered in `defineComponents`.
 
-Before writing chrome by hand, check [shared.ts](../src/runtime/elements/shared.ts): it
-already has the pieces most elements need, and using them keeps every element behaving
-the same way.
+Before writing chrome by hand, check the shared library in [src/runtime/](../src/runtime/).
+The rule: `elements/` holds the files that register tags; every other file there is a helper
+elements import, named after what it does. Using them keeps every element behaving the same
+way.
 
-| Helper | What it does |
-|---|---|
-| `kindOf(el)` | `delta-theorem` → `theorem` |
-| `button(cls, …content)` | a `<button type="button">` |
-| `takeTitle(host)` | removes the `<delta-title>`, returns its nodes (math intact) and its spoken text |
-| `numberedName(kind, num)` | "Figure 1.2", "Teorema 3" (localized) |
-| `renderMeta(host)` | the `<meta>` key/value row |
-| `jumpTo(id)`, `linkJump(a, id, file)` | go to a target the Delta way: deck page, unfold, scroll, flash; cross-file navigates |
-| `templateFor(id)` | the pop-over snapshot the compiler shipped for `id` |
-| `copyButton(cls, label, text)` | a Copy button with the "Copied" feedback |
-| `applyCollapsible` | folding (the status word/stamp is `applyStatus` in `status.ts`) |
+| Helper | In | What it does |
+|---|---|---|
+| `kindOf(el)` | `dom.ts` | `delta-theorem` → `theorem` |
+| `button(cls, …content)` | `dom.ts` | a `<button type="button">` |
+| `takeTitle(host)` | `dom.ts` | removes the `<delta-title>`, returns its nodes (math intact) and its spoken text |
+| `numberedName(kind, num)` | `dom.ts` | "Figure 1.2", "Teorema 3" (localized) |
+| `renderMeta(host)` | `dom.ts` | the `<meta>` key/value row |
+| `copyButton(cls, label, text)` | `dom.ts` | a Copy button with the "Copied" feedback |
+| `jumpTo(id)`, `linkJump(a, id, file)` | `jump.ts` | go to a target the Delta way: deck page, unfold, scroll, flash; cross-file navigates |
+| `templateFor(id)` | `jump.ts` | the pop-over snapshot the compiler shipped for `id` |
+| `applyCollapsible`, `setFolded` | `fold.ts` | folding a host from its label |
+| `formatPaper(paper)` | `paper.ts` | a `<paper>` as an inline reference |
+| `applyStatus` | `status.ts` | the status word / verification stamp |
+| `memberChip(id)` | `collab.ts` | the author chip of a team member |
+| `popover(trigger, content)` | `popover.ts` | the shared pop-over (also `window.Delta.popover`) |
+| `getDeck()` | `deck.ts` | the presentation deck, or null (runtime code asks here, not `window.Delta`) |
 
 Localized text goes through `t(key, fallback)` or `nameOf(tag)` from
 [i18n.ts](../src/runtime/i18n.ts), never a literal; JSON islands are read with

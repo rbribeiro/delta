@@ -6,7 +6,8 @@
  */
 
 import { t } from "../i18n.ts";
-import { formatPaper, takeTitle } from "./shared.ts";
+import { takeTitle } from "../dom.ts";
+import { formatPaper } from "../paper.ts";
 
 class DeltaBibliography extends HTMLElement {
   connectedCallback(): void {
