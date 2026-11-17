@@ -19,9 +19,10 @@
  */
 
 import { t } from "../i18n.ts";
-import { REFOLD_MS, buildFolds } from "./aid.ts";
-import { button, setFolded } from "./shared.ts";
-import { applyStatus } from "./status.ts";
+import { REFOLD_MS, buildFolds } from "../aid.ts";
+import { button } from "../dom.ts";
+import { setFolded } from "../fold.ts";
+import { applyStatus } from "../status.ts";
 
 /** The proof, solution or step `el` belongs to: its nearest such ancestor. */
 export const ownerOf = (el: Element): Element | null =>

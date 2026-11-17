@@ -17,9 +17,9 @@
  * author opened it).
  */
 
-import { t } from "../i18n.ts";
-import { AID_TAGS } from "../../language/tags.ts";
-import { button, kindOf } from "./shared.ts";
+import { t } from "./i18n.ts";
+import { AID_TAGS } from "../language/tags.ts";
+import { button, kindOf } from "./dom.ts";
 
 /** The aids in display order: intuition, strategy, obstacle. */
 const AIDS = [...AID_TAGS];

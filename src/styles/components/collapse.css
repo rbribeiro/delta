@@ -1,5 +1,5 @@
 /* collapse.css — collapsible sections & environments (`collapsible`/`collapsed`).
-   The runtime (applyCollapsible in runtime/elements/shared.ts) turns the label — a
+   The runtime (applyCollapsible in runtime/fold.ts) turns the label — a
    section heading, a box's `.box-head`, a proof `.proof-lead` or a joined proof's
    `.proof-bar` — into a `.collapse-toggle`
    and moves the body into a `.collapse-body`; folding sets `.is-collapsed` on the

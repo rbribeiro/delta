@@ -111,7 +111,7 @@ Pipeline (both `compileSource` and `compileProject`): `… → resolveIncludes �
 
 ## What the runtime does
 
-- `elements/collab.ts`: island reader, `memberChip(id)` (dot + name + "agent" badge, in the
+- `collab.ts` (in `src/runtime/`): island reader, `memberChip(id)` (dot + name + "agent" badge, in the
   member's `data-accent`), and `window.Delta.review` — the two document-wide switches:
   `setAnnotations(on)` → `html[data-review="off"]` hides every annotation;
   `setChanges("markup"|"final"|"original")` → `html[data-changes]` picks the change view.

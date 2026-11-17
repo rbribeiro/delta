@@ -314,3 +314,184 @@ describe.skipIf(!BROWSER)("a closed bubble", () => {
     expect(r).toEqual({ status: [true, false], ref: [true, false] });
   });
 });
+
+// What the reader sees of the collaboration marks, checked in pixels-adjacent terms (computed
+// display, text decoration, the member's colour), on one document with every kind of mark.
+// Moved here from test/hittest.test.ts, where it ran as eight separate page loads.
+const MARKS_DOC = `<document lang="en">
+  <title>T</title>
+  <team>
+    <member id="rb" name="Rodrigo" color="blue"/>
+    <member id="ai" name="Claude" kind="agent" color="purple"/>
+  </team>
+  <review/><section id="s"><title>S</title>
+    Some prose.<comment id="c-inline" by="ai" date="2026-09-12">Inline note with $x$.
+      <reply by="rb">Reply.</reply></comment>
+    <theorem id="thm" status="review" by="ai"><title>Main</title>body</theorem>
+    <comment id="c-on" on="thm" by="rb" status="resolved">Anchored note.</comment>
+    <proof of="thm" status="sketch" by="ai">sketchy</proof>
+    <todo id="t1" for="ai" priority="high">Finish the proof.</todo>
+    <draft by="ai" note="loose">Loose prose.</draft>
+    Then <change id="ch1" by="ai" date="2026-09-12" note="sign"><old>$x < 0$</old><new>$x > 0$</new></change> holds.
+    <change id="ch2" by="rb"><lemma id="new-lemma">Inserted lemma.</lemma></change>
+  </section>
+</document>`;
+
+/** What the probe below returns: the facts at rest, then after each interaction. */
+type Marks = {
+  rest: Record<string, unknown>;
+  thread: Record<string, unknown>;
+  annotations: Record<string, boolean>;
+  changes: Record<string, boolean>;
+  panel: Record<string, unknown>;
+};
+
+describe.skipIf(!BROWSER)("what the reader sees of the marks", () => {
+  const facts = lazy(() =>
+    inspect<Marks>(
+      MARKS_DOC,
+      `const vis = (el) => getComputedStyle(el).display !== "none";
+       const deco = (el) => getComputedStyle(el).textDecorationLine;
+       const html = document.documentElement;
+
+       // At rest.
+       const onComment = $("#c-on");
+       const task = $("#t1");
+       const panel = $("delta-review .review");
+       const rest = {
+         onInTag: onComment.parentElement.classList.contains("box-head"),
+         onResolved: $(".note-marker", onComment).classList.contains("is-resolved"),
+         thmMark: $("#thm .box-head .status-mark")?.dataset.status ?? null,
+         proofMark: $('#thm delta-proof[status="sketch"] .proof-bar .status-mark')?.dataset.status ?? null,
+         taskState: text(".todo-state", task),
+         taskNum: text(".todo-num", task),
+         taskFor: $(".todo-for .who", task)?.dataset.accent ?? null,
+         taskPriority: task.dataset.priority,
+         stats: $$(".review-stat", panel).map((s) => s.textContent.trim()),
+         groups: $$(".review-group-title", panel).map((g) => g.textContent),
+         items: $$(".review-item", panel).length,
+         firstHref: $('.review-item[data-kind="comment"] .review-jump', panel).getAttribute("href"),
+       };
+
+       // A comment's thread, opened from its marker.
+       click("#c-inline .note-marker");
+       const pop = $$(".note-pop").find(vis) ?? null;
+       const thread = {
+         open: pop !== null,
+         accent: pop && $(".who", pop)?.dataset.accent,
+         agentBadge: !!(pop && $(".who-badge", pop)),
+         replies: pop ? $$(".note-reply", pop).length : 0,
+         math: !!(pop && $(".katex", pop)),
+       };
+
+       // The annotations switch, through the API.
+       const marks = [$("#c-inline"), task, $("#thm .status-mark"), $("delta-draft .status-bar")];
+       const annotations = { before: marks.every(vis) };
+       window.Delta.review.setAnnotations(false);
+       annotations.off = html.dataset.review === "off" && !marks.some(vis);
+       window.Delta.review.setAnnotations(true);
+       annotations.back = html.dataset.review === undefined && marks.every(vis);
+
+       // The three views of a change.
+       const ch = $("#ch1");
+       const del = $(".chg-del", ch), ins = $(".chg-ins", ch), mk = $(".chg-marker", ch);
+       const changes = {
+         markup: vis(del) && vis(ins) && vis(mk) && deco(ins).includes("underline") && deco(del).includes("line-through"),
+       };
+       window.Delta.review.setChanges("final");
+       changes.final = !vis(del) && vis(ins) && !vis(mk) && deco(ins) === "none";
+       window.Delta.review.setChanges("original");
+       changes.original = vis(del) && !vis(ins) && deco(del) === "none";
+       window.Delta.review.setChanges("markup");
+       changes.back = html.dataset.changes === undefined && vis(del) && vis(ins);
+       changes.block = $("#ch2").classList.contains("chg-block") && getComputedStyle($("#ch2")).display === "block";
+
+       // The panel's own controls.
+       const sw = $(".review-switch", panel);
+       sw.click();
+       const panelOff = html.dataset.review === "off" && sw.getAttribute("aria-pressed") === "false";
+       sw.click();
+       const panelOn = html.dataset.review === undefined && sw.getAttribute("aria-pressed") === "true";
+       click('delta-review .review-seg [data-mode="final"]');
+       const panelFinal = html.dataset.changes === "final" && $('.review-seg [data-mode="final"]', panel).classList.contains("is-active");
+       click('delta-review .review-filter[data-member="rb"]');
+       const onlyRb = $$(".review-item", panel).length;
+       click('delta-review .review-filter[data-member="rb"]');
+       const all = $$(".review-item", panel).length;
+       click('delta-review .review-item[data-kind="todo"] .review-jump');
+       const jumped = task.classList.contains("is-xref-target");
+
+       return { rest, thread, annotations, changes,
+                panel: { off: panelOff, on: panelOn, final: panelFinal, onlyRb, all, jumped } };`,
+    ),
+  );
+
+  it('moves an on="id" comment into its target\'s label, and marks a resolved one', () => {
+    expect(facts().rest.onInTag).toBe(true);
+    expect(facts().rest.onResolved).toBe(true);
+  });
+
+  it("shows a result's status and its joined proof's status, each in its own header", () => {
+    expect(facts().rest.thmMark).toBe("review");
+    expect(facts().rest.proofMark).toBe("sketch");
+  });
+
+  it("renders a task row with its state, number, assignee colour and priority", () => {
+    expect(facts().rest).toMatchObject({
+      taskState: "☐",
+      taskNum: "Task 1",
+      taskFor: "purple",
+      taskPriority: "high",
+    });
+  });
+
+  it("opens a comment's thread with the author chip in the member's colour, replies and math", () => {
+    expect(facts().thread).toEqual({
+      open: true,
+      accent: "purple",
+      agentBadge: true,
+      replies: 1,
+      math: true,
+    });
+  });
+
+  it("hides every annotation under the review switch, and shows them again", () => {
+    expect(facts().annotations).toEqual({ before: true, off: true, back: true });
+  });
+
+  it("paints a change struck through and underlined, then final, then original", () => {
+    expect(facts().changes).toEqual({
+      markup: true,
+      final: true,
+      original: true,
+      back: true,
+      block: true,
+    });
+  });
+
+  it("summarizes the work in the panel, grouped, with links", () => {
+    expect(facts().rest.stats).toEqual([
+      "1 open comments",
+      "1 open tasks",
+      "2 pending changes",
+      "1 In review",
+      "1 Sketch",
+      "1 Draft",
+    ]);
+    expect(facts().rest.groups).toEqual(["Annotations", "Tasks", "Changes", "Blocks"]);
+    expect(facts().rest.items).toBe(8);
+    expect(facts().rest.firstHref).toBe("#c-inline");
+  });
+
+  it("drives the switches and filters from the panel, and jumps to an item", () => {
+    // rb wrote c-on and ch2, and replied on c-inline (a reply is not an item): 2 items.
+    expect(facts().panel).toEqual({
+      off: true,
+      on: true,
+      final: true,
+      onlyRb: 2,
+      all: 8,
+      jumped: true,
+    });
+  });
+});

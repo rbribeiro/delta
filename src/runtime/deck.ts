@@ -13,8 +13,17 @@
  */
 
 import { t } from "./i18n.ts";
-import { button } from "./elements/shared.ts";
-import type { DeltaAnimation } from "./elements/animation.ts";
+import { button } from "./dom.ts";
+
+/** What the deck needs from an `<animation>` board (elements/animation.ts provides it). */
+interface Board extends HTMLElement {
+  /** Steps on the board. */
+  readonly length: number;
+  /** True when the board's first step is empty, so a slide shows it blank before step 1. */
+  readonly startsBlank: boolean;
+  /** Shows step `pos`, animating the change when `animate`. */
+  seek(pos: number, animate?: boolean): Promise<void>;
+}
 
 /** Public handle exposed as `window.Delta.deck` (null when not a deck). Lets
  *  add-ons (e.g. the upcoming progress bar) read position and drive navigation. */
@@ -36,6 +45,13 @@ export interface Deck {
    *  with the current position. */
   onChange(cb: (index: number, total: number) => void): void;
 }
+
+/** The deck, once `setupDeck` has built one; null off-deck. Runtime code asks here, not
+ *  `window.Delta`, which is the surface for packs. */
+export function getDeck(): Deck | null {
+  return current;
+}
+let current: Deck | null = null;
 
 export function setupDeck(): Deck | null {
   const root = document.documentElement;
@@ -59,10 +75,10 @@ export function setupDeck(): Deck | null {
   const clamp = (i: number): number => Math.max(0, Math.min(slides.length - 1, i));
 
   // An <animation> board on a slide steps with the deck: each of its steps is one advance.
-  const isBoard = (el: Element): el is DeltaAnimation => el.localName === "delta-animation";
+  const isBoard = (el: Element): el is Board => el.localName === "delta-animation";
   // Steps a board shows without an advance: its first one comes with the slide, unless the
   // board is itself a fragment (its reveal then plays that step) or opens with a <pause/>.
-  const given = (board: DeltaAnimation): number =>
+  const given = (board: Board): number =>
     board.matches('[reveal="true"]') || board.startsBlank ? 0 : Math.min(1, board.length);
 
   // Per-slide ordered fragment lists (elements the author marked reveal="true", and
@@ -84,8 +100,8 @@ export function setupDeck(): Deck | null {
 
   // `animate`: the reader advanced, so a board plays the step it gains instead of jumping.
   const showFragments = (i: number, count: number, animate = false): void => {
-    const steps = new Map<DeltaAnimation, number>();
-    for (const board of slides[i].querySelectorAll<DeltaAnimation>("delta-animation")) {
+    const steps = new Map<Board, number>();
+    for (const board of slides[i].querySelectorAll<Board>("delta-animation")) {
       steps.set(board, given(board));
     }
     frags[i].forEach((el, k) => {
@@ -129,7 +145,7 @@ export function setupDeck(): Deck | null {
     setProgress();
     slides[index].classList.add("is-active");
     if (animate) {
-      for (const board of slides[index].querySelectorAll<DeltaAnimation>("delta-animation")) {
+      for (const board of slides[index].querySelectorAll<Board>("delta-animation")) {
         void board.seek(0);
       }
     }
@@ -259,7 +275,7 @@ export function setupDeck(): Deck | null {
   // address (address.ts) may page elsewhere right after.
   enter(0, 0);
 
-  return {
+  current = {
     get index() {
       return index;
     },
@@ -289,4 +305,5 @@ export function setupDeck(): Deck | null {
       cb(index, slides.length);
     },
   };
+  return current;
 }

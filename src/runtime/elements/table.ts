@@ -26,7 +26,7 @@
  * childNodes, so inline math/links/emphasis survive.
  */
 
-import { numberedName } from "./shared.ts";
+import { numberedName } from "../dom.ts";
 
 /** Applies a cell's alignment / mono style, reusing the base `.num` and `.mono`
  *  helpers. Header columns seed `aligns[i]`; body cells fall back to it. */

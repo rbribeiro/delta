@@ -1,5 +1,5 @@
 /* collab.css — shared chrome for the collaboration components (<comment>, <todo>,
-   <change>, status marks, <review>; runtime/elements/collab.ts). Here: the author chip
+   <change>, status marks, <review>; runtime/collab.ts). Here: the author chip
    `.who` that memberChip() builds for every `by`/`for`, the document-wide
    `html[data-review="off"]` switch (the <review> panel's "annotations" toggle) that hides
    every annotation for a clean read, and the print rule — paper never prints its review

@@ -14,7 +14,7 @@
  */
 
 import { t } from "../i18n.ts";
-import { memberChip, memberColor } from "./collab.ts";
+import { memberChip, memberColor } from "../collab.ts";
 
 const GLYPH: Record<string, string> = { open: "☐", doing: "◐", done: "☑" }; // ☐ ◐ ☑
 

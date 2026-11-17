@@ -5,7 +5,7 @@
  */
 
 import { t } from "../i18n.ts";
-import { numberedName } from "./shared.ts";
+import { numberedName } from "../dom.ts";
 
 /**
  * Lifts a `<delta-caption>` child into a caption row: adds `.video-cap` and a

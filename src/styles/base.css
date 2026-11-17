@@ -687,7 +687,7 @@ delta-document {
 }
 
 /* The anchored popover shell (.delta-pop) moved to components/popover.css,
-   next to its controller (src/runtime/utils.ts). */
+   next to its controller (src/runtime/popover.ts). */
 
 
 /* --- 6. TABLES & CODE ------------------------------------------- */

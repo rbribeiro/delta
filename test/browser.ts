@@ -81,8 +81,31 @@ if (process.env.CI && !BROWSER) {
 }
 
 /**
+ * First thing in `<head>`: records every uncaught error and unhandled rejection on the page
+ * (the runtime's, a pack's, the probe's own timers) in `<html data-delta-errors>`, which the
+ * dumped DOM carries back. A resource that fails to load (a missing image) is not an error
+ * here: it does not reach a bubbling `error` listener on `window`.
+ */
+const ERROR_TRAP = `<script>(() => {
+  const errors = [];
+  const keep = (text) => {
+    errors.push(text);
+    document.documentElement.setAttribute("data-delta-errors", encodeURIComponent(JSON.stringify(errors)));
+  };
+  addEventListener("error", (e) => keep(e.error && e.error.stack ? String(e.error.stack) : String(e.message)));
+  addEventListener("unhandledrejection", (e) => keep("unhandled rejection: " + String(e.reason && e.reason.stack || e.reason)));
+})();</script>`;
+
+/** The errors `ERROR_TRAP` recorded in a dumped DOM. */
+function pageErrors(dom: string): string[] {
+  const attr = /<html\b[^>]*\sdata-delta-errors="([^"]*)"/.exec(dom)?.[1];
+  return attr ? (JSON.parse(decodeURIComponent(attr)) as string[]) : [];
+}
+
+/**
  * Renders `html` at `width` px with `probe` appended, and returns what the probe writes
  * after "RESULT::" into the document (the tests put it in document.title or the body).
+ * Throws when the page had an uncaught error, so no browser test passes over a broken page.
  */
 export function evaluate(html: string, probe: string, width = 1200): string {
   const dir = mkdtempSync(join(tmpdir(), "delta-hittest-"));
@@ -91,11 +114,13 @@ export function evaluate(html: string, probe: string, width = 1200): string {
   // substitutions, which would silently rewrite a probe that uses them.
   writeFileSync(
     file,
-    html.replace(
-      "</body>",
-      () =>
-        `<script>window.addEventListener("load",()=>{setTimeout(()=>{${probe}},350);});</script></body>`,
-    ),
+    html
+      .replace("<head>", () => `<head>\n${ERROR_TRAP}`)
+      .replace(
+        "</body>",
+        () =>
+          `<script>window.addEventListener("load",()=>{setTimeout(()=>{${probe}},350);});</script></body>`,
+      ),
   );
   let dom: string;
   try {
@@ -115,7 +140,12 @@ export function evaluate(html: string, probe: string, width = 1200): string {
     const stderr = (e as { stderr?: string }).stderr ?? "";
     throw new Error(`${BROWSER} failed on ${file}:\n${stderr}`, { cause: e });
   }
-  // Kept when the browser failed (the error names it); otherwise ~1 MB per probe piles up in /tmp.
+  const errors = pageErrors(dom);
+  if (errors.length > 0) {
+    throw new Error(`the page threw (kept at ${file}):\n${errors.join("\n")}`);
+  }
+  // Kept when the browser or the page failed (the error names it); otherwise ~1 MB per probe
+  // piles up in /tmp.
   rmSync(dir, { recursive: true, force: true });
   return dom.match(/RESULT::([^<]*)/)?.[1] ?? "";
 }

@@ -10,10 +10,10 @@
  * (site/api.dlt).
  */
 
-import type { popover } from "./utils.ts";
+import type { popover } from "./popover.ts";
 import type { t } from "./i18n.ts";
 import type { Deck } from "./deck.ts";
-import type { reviewState } from "./elements/collab.ts";
+import type { reviewState } from "./collab.ts";
 
 declare global {
   interface Window {

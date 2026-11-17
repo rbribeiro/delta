@@ -16,8 +16,9 @@
  */
 
 import { nameOf } from "../i18n.ts";
-import { popover } from "../utils.ts";
-import { button, jumpTo, templateFor } from "./shared.ts";
+import { popover } from "../popover.ts";
+import { button } from "../dom.ts";
+import { jumpTo, templateFor } from "../jump.ts";
 
 // Small "jump to" arrow for the pop-over's go-to button (sized by reference.css).
 const XREF_GO_ICON =

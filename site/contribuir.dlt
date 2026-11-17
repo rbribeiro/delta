@@ -328,7 +328,10 @@ describe("countWords", () => {
       que o leitor veria e faz o que ele faria: <c>text(".box-tag")</c>,
       <c>click(".collapse-toggle")</c>, <c>key("Escape")</c>, e devolve o que o teste confere.
       Cada abertura do navegador custa um segundo, então cada conjunto de testes abre um
-      documento uma vez e os <c>it</c>s leem campos do mesmo resultado. O que depende de
+      documento uma vez e os <c>it</c>s leem campos do mesmo resultado. Um erro não tratado na
+      página reprova o teste, seja qual for a conferência: um elemento quebrado não passa
+      por acaso. A tabela de que arquivo de teste cobre cada elemento está em
+      <c>docs/CONTRIBUTING.md</c>. O que depende de
       layout de verdade (o que está sob o mouse, o que transborda num celular) fica em
       <c>test/hittest.test.ts</c>, com o mesmo navegador.
     </subsection>

@@ -51,6 +51,10 @@ import { defineDraft } from "./draft.ts";
 import { defineChange } from "./change.ts";
 import { defineReview } from "./review.ts";
 
+// The in-math \ref markers are not an element, but they share <ref>'s pop-over and jump, so
+// they live in ref.ts. Re-exported so the entry point reaches elements/ through this file only.
+export { wireMathRefs } from "./ref.ts";
+
 export function defineComponents(): void {
   defineDocument();
   defineSections();

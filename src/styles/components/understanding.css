@@ -1,5 +1,5 @@
 /* understanding.css — reader aids on a result or a proof step (<intuition>, <strategy>,
-   <obstacle>). LIVE: buildFolds (runtime/elements/aid.ts) turns each aid into a .fold
+   <obstacle>). LIVE: buildFolds (runtime/aid.ts) turns each aid into a .fold
    under the box's sheet (or under a step's claim): closed, a .fold-strip of creased paper
    (a valley and a mountain, its name on hover); open, a .fold-panel that unfolds in place
    with the aid's name in its .fold-head, which folds it back. A named fold (a step's aid,
