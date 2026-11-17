@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -11,7 +11,18 @@ import { join } from "node:path";
  * skipped runtime suite would let a broken element through.
  */
 
-const FLAGS = ["--headless=new", "--no-sandbox", "--disable-gpu"];
+// --disable-component-update: no downloads in tests. Without it a run longer than a moment
+// fetches and unpacks Chromium components (~18 MB each, left in a scoped_dir in TMPDIR).
+const FLAGS = ["--headless=new", "--no-sandbox", "--disable-gpu", "--disable-component-update"];
+
+/**
+ * The environment for one browser start: its scratch files (profile, fetcher folders) go to
+ * `scratch`, which the caller deletes, instead of piling up in the system's TMPDIR.
+ */
+function browserEnv(scratch: string): NodeJS.ProcessEnv {
+  mkdirSync(scratch, { recursive: true });
+  return { ...process.env, TMPDIR: scratch };
+}
 
 function findBrowser(): string | undefined {
   if (process.env.CHROME_PATH) return process.env.CHROME_PATH;
@@ -46,10 +57,12 @@ let launchFailure = "";
  */
 function canLaunch(browser: string): boolean {
   for (let attempt = 1; attempt <= 2; attempt++) {
+    const scratch = mkdtempSync(join(tmpdir(), "delta-chromium-"));
     try {
       execFileSync(browser, [...FLAGS, "--dump-dom", "about:blank"], {
         stdio: ["ignore", "ignore", "pipe"],
         timeout: LAUNCH_TIMEOUT_MS,
+        env: browserEnv(scratch),
       });
       return true;
     } catch (e) {
@@ -59,6 +72,8 @@ function canLaunch(browser: string): boolean {
         err.code === "ETIMEDOUT"
           ? `no page after ${LAUNCH_TIMEOUT_MS / 1000} s`
           : stderr || err.message;
+    } finally {
+      rmSync(scratch, { recursive: true, force: true });
     }
   }
   console.warn(
@@ -133,7 +148,13 @@ export function evaluate(html: string, probe: string, width = 1200): string {
         "--dump-dom",
         `file://${file}`,
       ],
-      { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], maxBuffer: 64 * 1024 * 1024 },
+      {
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "pipe"],
+        maxBuffer: 64 * 1024 * 1024,
+        // Inside the page's folder, so it goes (or stays, for a failure) with the page.
+        env: browserEnv(join(dir, "chromium")),
+      },
     );
   } catch (e) {
     // Chromium's own stderr says why it failed; without it the test only reports "no RESULT".
@@ -144,8 +165,8 @@ export function evaluate(html: string, probe: string, width = 1200): string {
   if (errors.length > 0) {
     throw new Error(`the page threw (kept at ${file}):\n${errors.join("\n")}`);
   }
-  // Kept when the browser or the page failed (the error names it); otherwise ~1 MB per probe
-  // piles up in /tmp.
+  // Kept when the browser or the page failed (the error names it); otherwise ~1 MB per probe,
+  // plus Chromium's scratch, piles up in /tmp.
   rmSync(dir, { recursive: true, force: true });
   return dom.match(/RESULT::([^<]*)/)?.[1] ?? "";
 }
