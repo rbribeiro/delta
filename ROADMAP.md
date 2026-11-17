@@ -373,7 +373,7 @@ Packs upstream (standard packs: `packs/<name>/`, TypeScript, shipped in the CLI,
 Runtime
 - [x] WP-R1. Folder layout: `elements/` registers tags, the rest of `src/runtime/` is shared library
        (`feature/animation`, M11, is merged: unblocked)
-- [ ] WP-R6. Runtime tests: page errors fail `inspect()`, one test style, smoke tests for untested tags
+- [x] WP-R6. Runtime tests: page errors fail `inspect()`, one test style, smoke tests for untested tags
 - [ ] WP-R2. One fold helper, one activation helper; check Space on a focused control in a deck
 - [ ] WP-R4. Shared chrome in `delta.shells`; a test proving CSS file order does not matter
 - [ ] WP-R3. Named helpers for the DOM contracts between elements

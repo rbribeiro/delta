@@ -407,3 +407,60 @@ describe.skipIf(!BROWSER)("a folded section", () => {
     });
   });
 });
+
+describe.skipIf(!BROWSER)("hypotheses", () => {
+  // A step uses H1 by a ref; nothing uses H2, and a counterexample shows it is needed.
+  const HYP_DOC = `<document lang="en"><title>T</title>
+    <section id="s"><title>S</title>
+      <theorem id="thm">Suppose <hyp id="h-pos">$x \\gt 0$</hyp> and <hyp id="h-int">$x$ integer</hyp>.
+        Then $x \\ge 1$.</theorem>
+      <proof of="thm"><step id="st"><claim>$x \\ne 0$.</claim>By <ref to="h-pos"/>.</step></proof>
+      <counterexample id="ce" breaks="h-int">$x = 1/2$.</counterexample>
+      <p>See <ref to="h-pos"/> and <ref to="h-int"/>.</p>
+    </section></document>`;
+  const facts = lazy(() =>
+    inspect(
+      HYP_DOC,
+      `const shown = (el) => !!el && getComputedStyle(el).display !== "none";
+       const preview = (i) => {
+         $$("delta-p delta-ref .xref")[i].click();
+         const card = openPopover();
+         const out = {
+           used: shown($("delta-hyp-used", card)) ? text("delta-hyp-used .hyp-uses-label", card) : null,
+           unused: shown($("delta-hyp-unused", card)) ? text("delta-hyp-unused", card) : null,
+           needed: shown($("delta-hyp-needed", card)) ? text("delta-hyp-needed .hyp-uses-label", card) : null,
+         };
+         key("Escape");
+         return out;
+       };
+       return {
+         labels: $$("delta-theorem delta-hyp .hyp-num").map((l) => l.textContent),
+         usesHiddenInPage: $$("delta-theorem delta-hyp-uses").every((u) => !shown(u)),
+         refs: $$("delta-p delta-ref .xref").map((r) => r.textContent),
+         pos: preview(0),
+         int: preview(1),
+       };`,
+    ),
+  );
+
+  it("numbers the hypotheses of a statement, and a ref names one by its number", () => {
+    expect(facts().labels).toEqual(["(H1)", "(H2)"]);
+    expect(facts().refs).toEqual(["(H1)", "(H2)"]);
+  });
+
+  it("keeps where a hypothesis is used out of the page", () => {
+    expect(facts().usesHiddenInPage).toBe(true);
+  });
+
+  it("previews where the proof uses a hypothesis", () => {
+    expect(facts().pos).toEqual({ used: "Used in: ", unused: null, needed: null });
+  });
+
+  it("previews an unused hypothesis, with the counterexample showing it is needed", () => {
+    expect(facts().int).toEqual({
+      used: null,
+      unused: "Not used in the proof",
+      needed: "Needed, see: ",
+    });
+  });
+});

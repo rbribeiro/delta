@@ -265,6 +265,9 @@ Tests live in [test/](../test/) and mirror the passes. Patterns to follow:
   `click(".collapse-toggle")`, `key("Escape")`, `openPopover()`. A launch costs about a
   second, so a suite runs one script per document and its `it`s assert on fields of the
   result (`lazy()`). See [test/runtime/references.test.ts](../test/runtime/references.test.ts).
+  **An uncaught error on the page fails the test**, whatever it asserts: `test/browser.ts`
+  records page errors and unhandled rejections before the runtime runs, so a broken element
+  cannot pass by accident ([test/runtime/inspect.test.ts](../test/runtime/inspect.test.ts)).
   [test/hittest.test.ts](../test/hittest.test.ts) and `overflow.test.ts` use the same browser
   for what only a layout engine can tell (what is under the mouse, what overflows on a phone).
 - **Motion is never waited for.** Headless Chromium draws no frames between two lines of a
@@ -281,7 +284,19 @@ A PR is ready to review when it is green.
 
 When you add a pass, add a matching test file. When you add a numbered environment,
 add a numbering case. When you add or change a runtime element, add a case to the
-matching file in `test/runtime/`.
+matching file in `test/runtime/`:
+
+| Element file (`src/runtime/elements/`) | Browser test (`test/runtime/`) |
+|---|---|
+| `environment.ts`, `proofstructure.ts` (steps, `hyp-*`), `section.ts` | `environment.test.ts` |
+| `ref.ts`, `toc.ts`, `cite.ts`, `bibliography.ts`, `hint.ts` | `references.test.ts` (in-math `\ref` clicks: `test/hittest.test.ts`) |
+| `comment.ts`, `todo.ts`, `change.ts`, `draft.ts`, `review.ts` (and `status.ts`, `collab.ts`) | `collaboration.test.ts` |
+| `box.ts`, `code.ts`, `table.ts`, `media.ts` (`<figure>`), `slide.ts` | `blocks.test.ts` |
+| `media.ts` (`<video>`, `<audio>`, `<youtube>`, `<interactive>`) | `media.test.ts` |
+| `columns.ts`, `list.ts`, `link.ts`, `sidenote.ts`, `floating.ts`, `frontmatter.ts` | `layout.test.ts` |
+| `animation.ts` | `animation.test.ts` |
+| `document.ts`, the deck and the address bar (`deck.ts`, `address.ts`) | `address.test.ts` (a phone's width: `test/overflow.test.ts`) |
+| a standard pack, `packs/<name>/` | `test/packs/<name>.test.ts` |
 
 ## The roadmap
 
