@@ -66,7 +66,11 @@ documented in [BUILDING.md](BUILDING.md).
   `themes/`, selected by `<document type="…">`). Theming means overriding the
   `--delta-*` tokens; the theme layer always wins over the others, so a
   theme only needs to restate the few variables it changes. New components style
-  with **classes** in their own `components/<name>.css`.
+  with **classes** in their own `components/<name>.css`. The files are concatenated in
+  name order, so **never style the same selector as another component file with the same
+  property**: restyle another component's class only from a context of your own
+  (`.xref-pop-body .box`), and put chrome that several components share as equals in
+  `@layer delta.shells`. `test/styles.test.ts` and `test/runtime/css-order.test.ts` check it.
 - Diagnostics, not exceptions: report problems with `error(ctx, msg, pos)` /
   `warn(ctx, msg, pos)` so the CLI can print them with source positions. Reserve
   thrown errors for genuinely unexpected states.

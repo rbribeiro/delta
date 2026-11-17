@@ -42,6 +42,11 @@
                  the disclosure wedge (collapse.css). Components are bundled in file-name
                  order, so a shell in the same layer as the component refining it would
                  win or lose by the alphabet; one layer down, the component always wins.
+                 The rule that keeps the alphabet out of it: no two component files style
+                 the same selector with the same property. A component restyles another's
+                 class only from a context of its own (`.xref-pop-body .box`); what several
+                 share as equals is a shell. test/styles.test.ts checks the rule, and
+                 test/runtime/css-order.test.ts proves real pages look the same reversed.
      components  Delta's chrome, one file per feature
      theme       per-document-type tokens (themes/<type>.css), selected by `type`
 

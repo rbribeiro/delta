@@ -45,12 +45,14 @@ function handCss(): string {
 /** Inlined @font-face + base.css + every components/*.css, concatenated (fonts
  *  and base first; the @layer declaration at the top of base.css fixes cascade
  *  order document-wide — @font-face is unlayered and unaffected). */
-function coreCss(): string {
+export function coreCss(order: "sorted" | "reversed" = "sorted"): string {
   const base = readFileSync(join(STYLES, "base.css"), "utf8");
-  const components = readdirSync(join(STYLES, "components"))
+  const files = readdirSync(join(STYLES, "components"))
     .filter((f) => f.endsWith(".css"))
-    .sort()
-    .map((f) => readFileSync(join(STYLES, "components", f), "utf8"));
+    .sort();
+  // `reversed` exists for test/runtime/css-order.test.ts, which proves the order is irrelevant.
+  if (order === "reversed") files.reverse();
+  const components = files.map((f) => readFileSync(join(STYLES, "components", f), "utf8"));
   return [fontFaces(), base, ...components].join("\n");
 }
 
