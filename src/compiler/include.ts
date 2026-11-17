@@ -2,7 +2,7 @@ import { dirname, relative, resolve, sep } from "node:path";
 import { element, findElementById, type ElementNode, type Node } from "./ast.ts";
 import { error, type CompileContext } from "./context.ts";
 import { isRemote, readUserFile, withFile } from "./files.ts";
-import { parseSource } from "./parse.ts";
+import { parse } from "./parse.ts";
 
 // Tags whose relative `src` is written from the included file's folder, so it is rewritten to be
 // relative to the master document (which resolves it later).
@@ -73,7 +73,7 @@ function expand(
 
   // Diagnostics raised while parsing and walking the included file point at that file.
   return withFile(ctx, abs, (): Node[] => {
-    const root = parseSource(text, ctx);
+    const root = parse(text, ctx);
     if (!root) return [];
     // `target-id` includes only the element with that id, not the whole file.
     if (targetId) {

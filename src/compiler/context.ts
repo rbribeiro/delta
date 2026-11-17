@@ -41,6 +41,14 @@ export interface TocEntry {
 /** A pack's localized strings by language: `{ "en": { "plot.zoom": "Zoom" }, "pt": {…} }`. */
 export type PackStrings = Record<string, Record<string, string>>;
 
+/** One input file once it has a tree: what a project-wide pass receives, in input order. */
+export interface Parsed {
+  ctx: CompileContext;
+  doc: ElementNode;
+  /** Output basename, `chapter1.html`. */
+  outName: string;
+}
+
 /** One resolved package (a `<import>` pack or a `project.toml` package); inlined by emit. */
 export interface ImportEntry {
   /** Absolute path to the pack's entry script (the dedup key across all channels);
@@ -122,7 +130,7 @@ export interface ReviewData {
 
 export interface CompileContext {
   file: string;
-  /** file → its original text, for every file `parseSource` read (the master and its includes). */
+  /** file → its original text, for every file `parse` read (the master and its includes). */
   sources: Map<string, string>;
   /** Output basename for this file (e.g. "chapter1.html"), set by the pipeline runner for every build. */
   outName?: string;

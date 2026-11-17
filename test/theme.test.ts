@@ -1,7 +1,7 @@
 import { describe, expect, it } from "./harness.ts";
 import type { ElementNode } from "../src/compiler/ast.ts";
 import { createContext, type CompileContext } from "../src/compiler/context.ts";
-import { parse } from "../src/compiler/parse.ts";
+import { parsePreprocessed } from "../src/compiler/parse.ts";
 import { preprocess } from "../src/compiler/preprocess.ts";
 import { isBuiltinThemeName, resolveTheme } from "../src/compiler/theme.ts";
 import { BUILTIN_THEMES, CORE_CSS, THEMES } from "../src/generated/assets.ts";
@@ -77,7 +77,7 @@ describe("built-in themes", () => {
     // test/fixtures/impatek is a real, extension-less CSS file sitting right where
     // a path lookup would find it. Resolution must not depend on the filesystem.
     const ctx = createContext("test/fixtures/doc.dlt");
-    const doc = parse(preprocess(`<document theme="impatek"></document>`), ctx);
+    const doc = parsePreprocessed(preprocess(`<document theme="impatek"></document>`), ctx);
     resolveTheme(doc!, ctx);
     expect(ctx.userCss).toBeUndefined();
     expect(ctx.builtinCss).toBeUndefined();

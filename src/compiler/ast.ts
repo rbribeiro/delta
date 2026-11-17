@@ -45,7 +45,7 @@ export interface ElementNode {
   attrs: Record<string, string>;
   children: Node[];
   pos?: Position;
-  /** Set by `parseSource`; absent on nodes a pass synthesizes. */
+  /** Set by `parse`; absent on nodes a pass synthesizes. */
   src?: SourceSpan;
 }
 

@@ -1,5 +1,5 @@
 import { elements, hasTag, textContent, titleOf, type ElementNode } from "./ast.ts";
-import type { CompileContext, TocEntry } from "./context.ts";
+import type { CompileContext, TocEntry, Parsed } from "./context.ts";
 import { HEADING_LEVEL, OPAQUE } from "../language/tags.ts";
 
 /**
@@ -57,9 +57,7 @@ export function buildToc(doc: ElementNode, ctx: CompileContext): void {
  * `ctx.toc` on each file that has any `<toc>`. Otherwise (plain tocs only) it falls
  * back to per-file `buildToc`, i.e. today's behavior with no foreign slugging.
  */
-export function buildProjectToc(
-  files: { ctx: CompileContext; doc: ElementNode; outName: string }[],
-): void {
+export function buildProjectToc(files: Parsed[]): void {
   if (!files.some((f) => hasTag(f.doc, "toc", { scope: "project" }))) {
     for (const f of files) buildToc(f.doc, f.ctx);
     return;

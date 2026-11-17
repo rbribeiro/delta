@@ -1,9 +1,9 @@
 import { dirname, resolve } from "node:path";
 import { elements, hasTag, titleOf, type ElementNode } from "./ast.ts";
-import { warn, type CompileContext } from "./context.ts";
+import { warn, type CompileContext, type Parsed } from "./context.ts";
 import { isRemote, readUserFile, withFile } from "./files.ts";
 import { OPAQUE } from "../language/tags.ts";
-import { parseSource } from "./parse.ts";
+import { parse } from "./parse.ts";
 
 /**
  * Loads the bibliography from the given document (or children `<paper>` elements) and registers the papers in the compiler context.
@@ -90,9 +90,7 @@ function fillBibliography(doc: ElementNode, ctx: CompileContext): void {
  * bibliography anywhere warn once. Returns the output name of the file that renders the list,
  * so cites in other files can link to it. With a single file this is exactly `fillBibliography`.
  */
-export function fillProjectBibliography(
-  files: { ctx: CompileContext; doc: ElementNode; outName: string }[],
-): string | undefined {
+export function fillProjectBibliography(files: Parsed[]): string | undefined {
   const bibFiles = files.filter((f) => hasTag(f.doc, "bibliography"));
   const bibFile = bibFiles[0];
   if (bibFile) {
@@ -142,7 +140,7 @@ function loadRefFile(src: string, ctx: CompileContext, bib: ElementNode): void {
   }
   // Diagnostics from the .ref point at the .ref.
   withFile(ctx, abs, () => {
-    const root = parseSource(text, ctx);
+    const root = parse(text, ctx);
     if (!root) return;
     for (const el of elements(root)) {
       if (el.tag === "paper") addPaper(el, ctx);

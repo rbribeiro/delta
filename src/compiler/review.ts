@@ -5,6 +5,7 @@ import {
   type ReviewHeading,
   type ReviewItem,
   type ReviewReply,
+  type Parsed,
 } from "./context.ts";
 import { stringsFor } from "../language/strings.ts";
 import { HEADING_LEVEL, HEADING_TAGS, OPAQUE, RAW_TAGS } from "../language/tags.ts";
@@ -33,9 +34,7 @@ function buildReview(doc: ElementNode, ctx: CompileContext): void {
   ctx.review = collectReview(doc, ctx, usedIds(doc, ctx), { auto: 0 });
 }
 
-export function buildProjectReview(
-  files: { ctx: CompileContext; doc: ElementNode; outName: string }[],
-): ReviewItem[] {
+export function buildProjectReview(files: Parsed[]): ReviewItem[] {
   if (!files.some((f) => hasTag(f.doc, "review", { scope: "project" }))) {
     for (const f of files) buildReview(f.doc, f.ctx);
     return files.flatMap((f) => f.ctx.review.map((i) => ({ ...i, file: f.outName })));

@@ -5,7 +5,7 @@ import { describe, expect, it } from "./harness.ts";
 import type { ElementNode } from "../src/compiler/ast.ts";
 import { createContext, type CompileContext } from "../src/compiler/context.ts";
 import { resolveImports, standardPacksFor } from "../src/compiler/imports.ts";
-import { parse } from "../src/compiler/parse.ts";
+import { parsePreprocessed } from "../src/compiler/parse.ts";
 import { preprocess } from "../src/compiler/preprocess.ts";
 import { THEMES } from "../src/generated/assets.ts";
 import { compileFiles, compileHtml, parsed } from "./helpers.ts";
@@ -114,7 +114,10 @@ describe("resolveImports", () => {
     );
 
     const ctx = createContext(join(root, "doc.dlt"));
-    const doc = parse(preprocess(`<document><import src="delta-temp-pack" /></document>`), ctx);
+    const doc = parsePreprocessed(
+      preprocess(`<document><import src="delta-temp-pack" /></document>`),
+      ctx,
+    );
     if (!doc) throw new Error("parse failed");
     resolveImports(doc, ctx);
     expect(ctx.diagnostics).toHaveLength(0);

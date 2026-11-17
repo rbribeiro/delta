@@ -1,5 +1,5 @@
 import type { ElementNode } from "./ast.ts";
-import type { CompileContext } from "./context.ts";
+import type { CompileContext, Parsed } from "./context.ts";
 import type { ProofGraph } from "./graph.ts";
 import { HEADING_TAGS, OPAQUE, RAW_TAGS } from "../language/tags.ts";
 
@@ -18,7 +18,7 @@ import { HEADING_TAGS, OPAQUE, RAW_TAGS } from "../language/tags.ts";
  * the graph, which knows every result's proofs across the project.
  */
 export function linkRemoteProofs(
-  files: { doc: ElementNode; ctx: CompileContext; outName: string }[],
+  files: Parsed[],
   graph: ProofGraph,
   idToFile: Map<string, string>,
   final: boolean,

@@ -122,6 +122,12 @@ export interface GraphInput {
 /** `el` → where it is: its file and the line of its opening `<`. */
 type Locate = (el: ElementNode, fallback: string) => Loc;
 
+/**
+ * The `buildGraph` step: results and definitions become the proof graph (edges from the refs
+ * in statements and proofs), trust propagated. Then the two marks the graph decides are
+ * written into the tree: a stale verification (`markStale`) and, on each hypothesis, where
+ * it is used (`annotateHypotheses`).
+ */
 export function buildGraph(files: GraphInput[], registry: Map<string, LabelEntry>): ProofGraph {
   const graph: ProofGraph = {
     nodes: new Map(),
@@ -145,6 +151,8 @@ export function buildGraph(files: GraphInput[], registry: Map<string, LabelEntry
   pinVerifications(graph);
   markCycles(graph);
   propagate(graph);
+  markStale(graph);
+  annotateHypotheses(graph);
   return graph;
 }
 

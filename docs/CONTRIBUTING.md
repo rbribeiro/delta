@@ -157,7 +157,9 @@ The flow is always: **extend `ctx` → write the pass → wire it into the orche
    { name: "resolveReferences", what: "<ref to> → data-target-num/tag from the registry", each: perFile(resolveReferences) },
    ```
    A step that needs project-wide state gets it as a third argument
-   (`perFile((doc, ctx, shared) => …)`); one that runs once over all files uses `all`.
+   (`perFile((doc, ctx, shared) => …)`); one that runs once over all files uses `all` and
+   receives `parsed(files)`, a `Parsed[]`. Keep the step's body to that adapting: if it needs
+   a condition or several calls, put them in the function the step is named after.
    `test/pipeline.test.ts` lists the steps literally, so update that list too — the order is
    a decision, and that list is where it is recorded.
 

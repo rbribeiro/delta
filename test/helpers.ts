@@ -5,7 +5,7 @@ import { type ElementNode } from "../src/compiler/ast.ts";
 import { createContext, type CompileContext } from "../src/compiler/context.ts";
 import { compileSource, type CompileOptions } from "../src/compiler/index.ts";
 import { numberDocument } from "../src/compiler/numbering.ts";
-import { parse } from "../src/compiler/parse.ts";
+import { parsePreprocessed } from "../src/compiler/parse.ts";
 import { preprocess } from "../src/compiler/preprocess.ts";
 import { compileProject, type ProjectResult } from "../src/compiler/project.ts";
 
@@ -37,7 +37,7 @@ export function compileHtml(src: string, options: CompileOptions & { file?: stri
 /** Just the front end: preprocess + parse into a fresh context, so a pass can be run by hand. */
 export function parsed(src: string, file = "test.dlt"): { doc: ElementNode; ctx: CompileContext } {
   const ctx = createContext(file);
-  const doc = parse(preprocess(src), ctx);
+  const doc = parsePreprocessed(preprocess(src), ctx);
   if (!doc) throw new Error("parse failed: " + JSON.stringify(ctx.diagnostics));
   return { doc, ctx };
 }

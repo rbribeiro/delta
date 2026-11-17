@@ -101,8 +101,17 @@ rely on everything earlier steps did in *every* file. The step name is the funct
 literally, asserts that a single-file build and a project-of-one build produce identical
 HTML, and exercises the trace hook.
 
-Each step has a one-line `what`. A `(doc, ctx)` pass becomes a step through the `perFile`
-adapter; a step that needs project state receives `shared` as a third argument.
+Each step has a one-line `what`, and its name is the function it calls. A step's body only
+adapts arguments and stores a result; a condition, a loop or a sequence of calls belongs in
+that function. Three shapes cover every step:
+
+| Shape | Example |
+|---|---|
+| a `(doc, ctx)` pass, per file | `each: perFile(resolveCollab)` |
+| a pass that needs project state, per file | `each: perFile((doc, ctx, s) => renderMath(doc, ctx, s.idToFile))` |
+| a project-wide pass over every parsed file, its result kept in `shared` | `all: (files, s) => { s.graph = buildGraph(parsed(files), s.registry); }` |
+
+The project-wide passes take `Parsed[]` (a file's `ctx`, `doc` and `outName`; context.ts).
 
 **The trace hook.** `CompileOptions.trace` is called after every file of an `each` step
 (with `file`) and after every step, with the *live* `files` and `shared`. It costs nothing

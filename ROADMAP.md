@@ -384,7 +384,7 @@ Compiler ↔ runtime contract
 - [x] WP-K2. A table of compiler-written attributes, kept honest by a test
 
 Compiler hygiene
-- [ ] WP-C1. Pipeline table: every step calls a function of its own name
+- [x] WP-C1. Pipeline table: every step calls a function of its own name
 - [ ] WP-C2. One tree walker with named skip policies
 - [ ] WP-C3. Local tag sets and vocabularies back in `src/language/`
 - [ ] WP-C4. Same API and failure rule for one file and for a project

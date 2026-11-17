@@ -8,7 +8,7 @@ import { createContext, type CompileContext } from "../src/compiler/context.ts";
 import { resolveIncludes } from "../src/compiler/include.ts";
 import { compileSource } from "../src/compiler/index.ts";
 import { numberDocument } from "../src/compiler/numbering.ts";
-import { parse } from "../src/compiler/parse.ts";
+import { parsePreprocessed } from "../src/compiler/parse.ts";
 import { preprocess } from "../src/compiler/preprocess.ts";
 
 // The master file lives in test/fixtures/include/, so `<include src>` resolves there.
@@ -16,7 +16,7 @@ const MASTER = "test/fixtures/include/main.dlt";
 
 function merged(src: string): { doc: ElementNode; ctx: CompileContext } {
   const ctx = createContext(MASTER);
-  const doc = parse(preprocess(src), ctx);
+  const doc = parsePreprocessed(preprocess(src), ctx);
   if (!doc) throw new Error("parse failed: " + JSON.stringify(ctx.diagnostics));
   resolveIncludes(doc, ctx);
   return { doc, ctx };

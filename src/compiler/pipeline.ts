@@ -1,26 +1,19 @@
-import { basename, dirname } from "node:path";
+import { basename } from "node:path";
 import type { ElementNode } from "./ast.ts";
 import type { ProjectConfig } from "./config.ts";
 import {
-  error,
   hasErrors,
-  warn,
   type CompileContext,
   type LabelEntry,
+  type Parsed,
   type ReviewItem,
   type TeamMember,
 } from "./context.ts";
-import { readUserFile } from "./files.ts";
-import { parseSource } from "./parse.ts";
+import { readSource } from "./files.ts";
+import { parse } from "./parse.ts";
 import { resolveIncludes } from "./include.ts";
 import { applyDocumentDefaults } from "./document.ts";
-import {
-  describeFinal,
-  finalizeReview,
-  stripReviewMarks,
-  sumFinal,
-  type FinalStats,
-} from "./final.ts";
+import { finalizeReview, stripReviewMarks, summarizeFinal, type FinalStats } from "./final.ts";
 import { collectTeam } from "./team.ts";
 import { expandAnimated } from "./animated.ts";
 import { expandCover } from "./cover.ts";
@@ -39,10 +32,10 @@ import { buildProjectReview } from "./review.ts";
 import { resolveReferences } from "./references.ts";
 import { inlineFigures } from "./figures.ts";
 import { resolveTheme } from "./theme.ts";
-import { resolveImports, resolvePack } from "./imports.ts";
+import { resolveImports, resolvePackages } from "./imports.ts";
 import { resolveLineBreaks } from "./linebreaks.ts";
 import { emit } from "./emit.ts";
-import { annotateHypotheses, buildGraph, markStale, type ProofGraph } from "./graph.ts";
+import { buildGraph, type ProofGraph } from "./graph.ts";
 import { layoutProofMaps } from "./proofmap.ts";
 
 /**
@@ -151,8 +144,6 @@ function perFile(pass: Pass): Step["each"] {
   };
 }
 
-type Parsed = { ctx: CompileContext; doc: ElementNode; outName: string };
-
 /** The files that have a tree — all of them once phase `load` has passed. */
 function parsed(files: FileUnit[]): Parsed[] {
   return files.filter((f): f is FileUnit & { doc: ElementNode } => f.doc !== null);
@@ -167,31 +158,18 @@ export const PIPELINE: Phase[] = [
       {
         name: "resolvePackages",
         what: "project.toml `packages` → the project's imports, inlined into every output.",
-        all: (_files, s) => {
-          const config = s.config;
-          if (!config?.packages?.length) return;
-          const base = config.root ?? dirname(config.inputs[0] ?? config.outDir);
-          const seen = new Set<string>();
-          for (const spec of config.packages) resolvePack(spec, base, s.project, seen);
-        },
+        all: (_files, s) => resolvePackages(s.config, s.project),
       },
       {
         name: "readSource",
         what: "Read the .dlt from disk (unless the caller handed over the text) and record it for --watch.",
-        each: (f) => {
-          if (f.source !== undefined) return;
-          try {
-            f.source = readUserFile(f.ctx, f.ctx.file);
-          } catch (e) {
-            error(f.ctx, e instanceof Error ? e.message : String(e));
-          }
-        },
+        each: readSource,
       },
       {
         name: "parse",
         what: "preprocess (escape < > & inside math and raw tags), then strict XML → the generic AST.",
         each: (f) => {
-          if (f.source !== undefined) f.doc = parseSource(f.source, f.ctx);
+          if (f.source !== undefined) f.doc = parse(f.source, f.ctx);
         },
       },
       {
@@ -260,11 +238,7 @@ export const PIPELINE: Phase[] = [
       {
         name: "summarizeFinal",
         what: "--final only: one warning with what the final build left behind (open comments, tasks, unverified blocks).",
-        all: (_files, s) => {
-          if (!s.final) return;
-          const msg = describeFinal(sumFinal(s.finalStats));
-          if (msg) warn(s.project, msg);
-        },
+        all: (_files, s) => summarizeFinal(s.finalStats, s.final, s.project),
       },
     ],
   },
@@ -312,8 +286,6 @@ export const PIPELINE: Phase[] = [
         what: "Results + definitions → the proof graph (edges from refs in statements and proofs), trust propagated, stale verifications marked, each <hyp> told where it is used. Read by the CLI.",
         all: (files, s) => {
           s.graph = buildGraph(parsed(files), s.registry);
-          markStale(s.graph);
-          annotateHypotheses(s.graph);
         },
       },
       {
@@ -372,9 +344,7 @@ export const PIPELINE: Phase[] = [
       {
         name: "annotateCrossFileCites",
         what: "A resolved <cite> in a file other than the one rendering the references list gets data-cite-file.",
-        each: perFile((doc, _ctx, s, f) => {
-          if (s.bibOut && s.bibOut !== f.outName) annotateCrossFileCites(doc, s.bibOut);
-        }),
+        each: perFile((doc, _ctx, s, f) => annotateCrossFileCites(doc, f.outName, s.bibOut)),
       },
       {
         name: "inlineFigures",
@@ -389,10 +359,7 @@ export const PIPELINE: Phase[] = [
       {
         name: "resolveImports",
         what: "Project packages first, then this file's <import> packs → ctx.imports (JS after the runtime, CSS before the author theme).",
-        each: perFile((doc, ctx, s) => {
-          ctx.imports.push(...s.project.imports);
-          resolveImports(doc, ctx);
-        }),
+        each: perFile((doc, ctx, s) => resolveImports(doc, ctx, s.project.imports)),
       },
       {
         name: "resolveLineBreaks",
