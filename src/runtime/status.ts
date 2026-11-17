@@ -185,9 +185,4 @@ function wireHistory(trigger: HTMLElement, build: () => HTMLElement): void {
       content.append(build()); // inside the bubble: the bubble's own display stays the pop-over's
     },
   });
-  // Enter/Space must reach the button, not a folding header around it (Escape must not:
-  // the bubble closes on it).
-  trigger.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === " ") e.stopPropagation();
-  });
 }

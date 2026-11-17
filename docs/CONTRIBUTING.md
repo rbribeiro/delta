@@ -220,6 +220,8 @@ way.
 | `jumpTo(id)`, `linkJump(a, id, file)` | `jump.ts` | go to a target the Delta way: deck page, unfold, scroll, flash; cross-file navigates |
 | `templateFor(id)` | `jump.ts` | the pop-over snapshot the compiler shipped for `id` |
 | `applyCollapsible`, `setFolded` | `fold.ts` | folding a host from its label |
+| `asToggle(el, flip)`, `onActivate(el, fn)` | `fold.ts` | an element that acts as a button: role, Tab, click, and Enter/Space aimed at it (a control inside it keeps its own keys) |
+| `foldMotion(el, opening, animate, done)` | `fold.ts` | the paper's unfold / refold motion, timed, skipped for reduced motion |
 | `formatPaper(paper)` | `paper.ts` | a `<paper>` as an inline reference |
 | `applyStatus` | `status.ts` | the status word / verification stamp |
 | `memberChip(id)` | `collab.ts` | the author chip of a team member |
@@ -295,7 +297,8 @@ matching file in `test/runtime/`:
 | `media.ts` (`<video>`, `<audio>`, `<youtube>`, `<interactive>`) | `media.test.ts` |
 | `columns.ts`, `list.ts`, `link.ts`, `sidenote.ts`, `floating.ts`, `frontmatter.ts` | `layout.test.ts` |
 | `animation.ts` | `animation.test.ts` |
-| `document.ts`, the deck and the address bar (`deck.ts`, `address.ts`) | `address.test.ts` (a phone's width: `test/overflow.test.ts`) |
+| `document.ts`, the address bar (`address.ts`) | `address.test.ts` (a phone's width: `test/overflow.test.ts`) |
+| the deck's keys and the controls on a slide (`deck.ts`, `fold.ts`) | `deck.test.ts` |
 | a standard pack, `packs/<name>/` | `test/packs/<name>.test.ts` |
 
 ## The roadmap

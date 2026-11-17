@@ -19,6 +19,7 @@ import { nameOf } from "../i18n.ts";
 import { popover } from "../popover.ts";
 import { button } from "../dom.ts";
 import { jumpTo, templateFor } from "../jump.ts";
+import { onActivate } from "../fold.ts";
 
 // Small "jump to" arrow for the pop-over's go-to button (sized by reference.css).
 const XREF_GO_ICON =
@@ -161,12 +162,8 @@ export function wireMathRefs(): void {
     span.classList.add("math-xref");
     span.setAttribute("role", "link");
     span.tabIndex = 0;
-    span.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        span.click();
-      }
-    });
+    // A click is the pop-over's own trigger (wireRefPopover); the keys reuse it.
+    onActivate(span, () => span.click());
     wireRefPopover(span, { to, num, kind, href });
   }
 }

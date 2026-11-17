@@ -1,7 +1,32 @@
 /**
  * Folding: a host made collapsible by `collapsible`/`collapsed`, its toggle kept in step, and
- * the ancestors a jump has to open. The caret and the hiding live in collapse.css.
+ * the ancestors a jump has to open. The caret and the hiding live in collapse.css. Also the
+ * one rule for an element that acts like a button without being one (`asToggle`).
  */
+
+/**
+ * Runs `activate` on Enter or Space **aimed at `el` itself**, and cancels the key so the page
+ * does not scroll. A key pressed on a control inside `el` (a comment marker in a heading, a
+ * button in a proof's bar) belongs to that control, so it is left alone.
+ */
+export function onActivate(el: HTMLElement, activate: () => void): void {
+  el.addEventListener("keydown", (e: KeyboardEvent) => {
+    if (e.target !== el || (e.key !== "Enter" && e.key !== " ")) return;
+    e.preventDefault();
+    activate();
+  });
+}
+
+/**
+ * Makes `el` (a heading, a box tag, a step's head) work as a toggle button: announced as a
+ * button, reachable with Tab, run by a click or by Enter/Space (`onActivate`).
+ */
+export function asToggle(el: HTMLElement, flip: () => void): void {
+  el.setAttribute("role", "button");
+  el.tabIndex = 0;
+  el.addEventListener("click", flip);
+  onActivate(el, flip);
+}
 
 /**
  * Folds or unfolds a host `applyCollapsible` wired, keeping its toggle's `aria-expanded` in
@@ -41,18 +66,47 @@ export function applyCollapsible(host: HTMLElement, label: HTMLElement): void {
   (label.parentElement ?? host).append(body);
 
   label.classList.add("collapse-toggle");
-  label.setAttribute("role", "button");
-  label.tabIndex = 0;
-
   const apply = (c: boolean): void => setFolded(host, c);
+  asToggle(label, () => apply(!host.classList.contains("is-collapsed")));
   apply(collapsed);
+}
 
-  const flip = (): void => apply(!host.classList.contains("is-collapsed"));
-  label.addEventListener("click", flip);
-  label.addEventListener("keydown", (e: KeyboardEvent) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      flip();
-    }
-  });
+/** How long the paper takes to fold back (the `*-refold` animations in the CSS) before it shuts. */
+export const REFOLD_MS = 380;
+const refolds = new WeakMap<Element, number>();
+
+/**
+ * The paper's fold motion on `el`, shared by the reader aids and the proof steps. `done`
+ * opens or shuts the fold itself:
+ *
+ *   opening   `done` runs at once, and `is-unfolding` plays (the caller removes it when the
+ *             animation ends: only it knows which element animates);
+ *   closing   `is-refolding` plays for REFOLD_MS, then `done` shuts the fold.
+ *
+ * Without `animate`, or when the reader asked for less motion, `done` runs at once and no
+ * class is added. A new call cancels a refold still under way.
+ */
+export function foldMotion(
+  el: HTMLElement,
+  opening: boolean,
+  animate: boolean,
+  done: () => void,
+): void {
+  clearTimeout(refolds.get(el));
+  el.classList.remove("is-unfolding", "is-refolding");
+  const moving = animate && !matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (opening) {
+    done();
+    if (moving) el.classList.add("is-unfolding");
+    return;
+  }
+  if (!moving) return done();
+  el.classList.add("is-refolding");
+  refolds.set(
+    el,
+    window.setTimeout(() => {
+      el.classList.remove("is-refolding");
+      done();
+    }, REFOLD_MS),
+  );
 }

@@ -28,7 +28,9 @@
       </code>
 
       A partir daí cada <c><slide></c> vira uma página da apresentação, e as setas
-      do teclado navegam. Uma barra no rodapé traz os controles, para quem estiver
+      do teclado navegam, assim como a barra de espaço. Com um botão do slide em foco
+      (o de copiar um código, o título de uma caixa que dobra), o espaço aperta o botão
+      e o slide fica. Uma barra no rodapé traz os controles, para quem estiver
       no celular.
 
       O endereço acompanha o slide: no quinto, ele termina em <c>#5</c>. Um link com

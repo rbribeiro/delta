@@ -20,13 +20,11 @@
 import { t } from "./i18n.ts";
 import { AID_TAGS } from "../language/tags.ts";
 import { button, kindOf } from "./dom.ts";
+import { foldMotion } from "./fold.ts";
 
 /** The aids in display order: intuition, strategy, obstacle. */
 const AIDS = [...AID_TAGS];
 const SELECTOR = AIDS.map((a) => `:scope > delta-${a}`).join(", ");
-
-/** How long the paper takes to fold back (the `fold-refold` animation in understanding.css). */
-export const REFOLD_MS = 380;
 
 /**
  * Moves `host`'s direct aid children into folds and returns them in a `.folds` block, or
@@ -91,30 +89,16 @@ function fold(aid: HTMLElement, open: boolean): HTMLElement {
   panel.append(head, aid, crease);
   el.append(strip, panel);
 
-  let timer: number | undefined;
   /** Opens or closes the fold; `focus` takes the keyboard once it is showing. */
   const set = (opening: boolean, animate: boolean, focus?: HTMLElement): void => {
-    clearTimeout(timer);
     el.classList.toggle("is-open", opening);
     strip.setAttribute("aria-expanded", String(opening));
     head.setAttribute("aria-expanded", String(opening));
-    el.classList.remove("is-unfolding", "is-refolding");
-    if (opening) {
-      strip.hidden = true;
-      panel.hidden = false;
-      if (animate) el.classList.add("is-unfolding");
+    foldMotion(el, opening, animate, () => {
+      strip.hidden = opening;
+      panel.hidden = !opening;
       focus?.focus({ preventScroll: true });
-      return;
-    }
-    const close = (): void => {
-      el.classList.remove("is-refolding");
-      panel.hidden = true;
-      strip.hidden = false;
-      focus?.focus({ preventScroll: true });
-    };
-    if (!animate || matchMedia("(prefers-reduced-motion: reduce)").matches) return close();
-    el.classList.add("is-refolding");
-    timer = window.setTimeout(close, REFOLD_MS);
+    });
   };
   strip.addEventListener("click", () => set(true, true, head));
   head.addEventListener("click", () => set(false, true, strip));
