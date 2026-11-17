@@ -17,15 +17,6 @@ import { readIsland } from "../island.ts";
 import { takeTitle } from "../dom.ts";
 import { linkJump } from "../jump.ts";
 
-interface TocItem {
-  level: number;
-  id: string;
-  num: string;
-  title: string;
-  /** Set on a project entry whose section lives in another output file. */
-  file?: string;
-}
-
 class DeltaToc extends HTMLElement {
   connectedCallback(): void {
     if (this.dataset.deltaReady) return;
@@ -35,7 +26,7 @@ class DeltaToc extends HTMLElement {
     // scope="project" lists the whole book; the default lists only this file's own
     // entries (those the compiler left without a `file` tag).
     const projectScope = this.getAttribute("scope") === "project";
-    const entries = readIsland<TocItem[]>("delta-toc", []).filter(
+    const entries = readIsland("delta-toc", []).filter(
       (e) => e.level - 1 <= depth && (projectScope || !e.file),
     );
     if (entries.length === 0) return;

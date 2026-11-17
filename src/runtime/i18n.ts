@@ -9,7 +9,7 @@ import { readIsland } from "./island.ts";
 
 /** Localized string for `key`, falling back to `fallback` (or the key itself). */
 export function t(key: string, fallback?: string): string {
-  return readIsland<Record<string, string>>("delta-i18n", {})[key] ?? fallback ?? key;
+  return readIsland("delta-i18n", {})[key] ?? fallback ?? key;
 }
 
 /** The localized name of a tag ("Teorema" for `theorem`); the capitalized tag when no language has it. */
