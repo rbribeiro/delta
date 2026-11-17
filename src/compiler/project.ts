@@ -61,11 +61,15 @@ export function compileProject(config: ProjectConfig, options: CompileOptions = 
   const ctxs = [project, ...files.map((f) => f.ctx)];
   const diagnostics = ctxs.flatMap((c) => c.diagnostics);
   const deps = [...new Set(ctxs.flatMap((c) => [...c.deps]))];
-  if (!ok) return { outputs: [], diagnostics, deps, graph: shared.graph };
+  // The rule shared with a single file: an error anywhere, in any phase and in any file,
+  // means no output at all (a half-written project is worse than none).
+  const failed = !ok || ctxs.some(hasErrors);
   return {
-    outputs: files.flatMap((f) =>
-      f.html === undefined ? [] : [{ path: join(config.outDir, f.outName), html: f.html }],
-    ),
+    outputs: failed
+      ? []
+      : files.flatMap((f) =>
+          f.html === undefined ? [] : [{ path: join(config.outDir, f.outName), html: f.html }],
+        ),
     diagnostics,
     deps,
     review: { team: [...shared.team.values()], items: shared.reviewItems },

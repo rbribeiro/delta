@@ -1,8 +1,9 @@
-import type { ElementNode, Position } from "./ast.ts";
+import { walk, type ElementNode, type Position } from "./ast.ts";
 import { warn, type CompileContext } from "./context.ts";
 import { changeParts } from "./paper.ts";
 import { BLOCK_TAGS, COLLAB_PARTS, RAW_TAGS, RESULT_TAGS } from "../language/tags.ts";
 import { TRUST_OF } from "../language/trust.ts";
+import { COMMENT_STATUS, PRIORITY, TODO_STATUS } from "../language/collaboration.ts";
 
 /**
  * The validation pass for the collaboration vocabulary — `<comment>`/`<reply>`, `<todo>`,
@@ -18,9 +19,6 @@ import { TRUST_OF } from "../language/trust.ts";
  * `buildProjectReview` (review.ts), which runs after numbering so items carry their numbers.
  */
 
-const COMMENT_STATUS = new Set(["open", "resolved"]);
-const TODO_STATUS = new Set(["open", "doing", "done"]);
-const PRIORITY = new Set(["high", "normal", "low"]);
 /** A block's `status`: the trust vocabulary (language/trust.ts), so the proof graph reads every value. */
 const BLOCK_STATUS = new Set(Object.keys(TRUST_OF));
 
@@ -36,11 +34,13 @@ function checkMember(
 }
 
 export function resolveCollab(doc: ElementNode, ctx: CompileContext): void {
-  walk(doc, null, ctx);
+  walk(doc, (el, ancestors) => {
+    if (RAW_TAGS.has(el.tag)) return false;
+    visit(el, ancestors.at(-1) ?? null, ctx);
+  });
 }
 
-function walk(el: ElementNode, parent: ElementNode | null, ctx: CompileContext): void {
-  if (RAW_TAGS.has(el.tag)) return;
+function visit(el: ElementNode, parent: ElementNode | null, ctx: CompileContext): void {
   switch (el.tag) {
     case "comment":
       visitComment(el, parent, ctx);
@@ -61,9 +61,6 @@ function walk(el: ElementNode, parent: ElementNode | null, ctx: CompileContext):
       break;
     default:
       if (!COLLAB_PARTS.has(el.tag)) visitBlock(el, ctx);
-  }
-  for (const child of el.children) {
-    if (child.type === "element") walk(child, el, ctx);
   }
 }
 

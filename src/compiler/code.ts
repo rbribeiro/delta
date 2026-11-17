@@ -1,4 +1,4 @@
-import { textContent, type ElementNode, type Node, type Position } from "./ast.ts";
+import { elements, textContent, type ElementNode, type Node, type Position } from "./ast.ts";
 import { warn, type CompileContext } from "./context.ts";
 import { RAW_TAGS } from "../language/tags.ts";
 import { highlight } from "./highlight.ts";
@@ -31,19 +31,11 @@ function dedent(source: string): string {
  * @param ctx - the compilation context for warnings
  */
 export function highlightCode(doc: ElementNode, ctx: CompileContext): void {
-  walk(doc);
-
-  // Recursively walks through the element tree, highlighting `<code>` blocks and skipping raw tags.
-  function walk(el: ElementNode): void {
-    if (el.tag === CODE_TAG) {
-      const source = dedent(textContent(el));
-      // Replace the children of the `<code>` element with a single highlighted node.
-      el.children = [highlighted(source, el.attrs.lang, el.pos)];
-      return;
-    }
-    if (RAW_TAGS.has(el.tag)) return;
-    // Tag is not `<code>` or a raw tag, so we continue walking through its children.
-    for (const child of el.children) if (child.type === "element") walk(child);
+  // `<code>` is a raw tag itself, so its own children (replaced here) are never walked into.
+  for (const el of elements(doc, RAW_TAGS)) {
+    if (el.tag !== CODE_TAG) continue;
+    const source = dedent(textContent(el));
+    el.children = [highlighted(source, el.attrs.lang, el.pos)];
   }
 
   function highlighted(source: string, lang: string | undefined, pos?: Position): Node {

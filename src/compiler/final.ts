@@ -1,5 +1,5 @@
 import { elements, type ElementNode, type Node } from "./ast.ts";
-import type { CompileContext } from "./context.ts";
+import { warn, type CompileContext } from "./context.ts";
 import { RAW_TAGS } from "../language/tags.ts";
 import { isChecked } from "../language/trust.ts";
 import { acceptedContent } from "./paper.ts";
@@ -113,4 +113,14 @@ const REVIEW_MARKS = ["status", "by", "verified-by", "verified-on", "against"];
 export function stripReviewMarks(doc: ElementNode, ctx: CompileContext): void {
   if (!ctx.final) return;
   for (const el of elements(doc)) for (const mark of REVIEW_MARKS) delete el.attrs[mark];
+}
+
+/**
+ * The `summarizeFinal` step: in a --final build, one warning with what the build left behind
+ * across the project (open comments and tasks, unverified blocks), so the author knows.
+ */
+export function summarizeFinal(stats: FinalStats[], final: boolean, project: CompileContext): void {
+  if (!final) return;
+  const msg = describeFinal(sumFinal(stats));
+  if (msg) warn(project, msg);
 }

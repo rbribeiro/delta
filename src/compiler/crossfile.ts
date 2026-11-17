@@ -1,5 +1,6 @@
 import { elements, type ElementNode } from "./ast.ts";
 import { OPAQUE, REF_TAGS } from "../language/tags.ts";
+import type { Parsed } from "./context.ts";
 
 /**
  * The project-wide id maps and the two annotators that make links work *across* output files.
@@ -19,7 +20,7 @@ import { OPAQUE, REF_TAGS } from "../language/tags.ts";
  * emitter snapshots straight from `globalById`.
  */
 export function buildIdMaps(
-  files: { doc: ElementNode; outName: string }[],
+  files: Pick<Parsed, "doc" | "outName">[],
   globalById: Map<string, ElementNode>,
   idToFile: Map<string, string>,
 ): void {
@@ -54,8 +55,17 @@ export function annotateCrossFileRefs(
   }
 }
 
-/** Records the references list's output on each resolved `<cite>` that lives in another file. */
-export function annotateCrossFileCites(doc: ElementNode, bibOut: string): void {
+/**
+ * Records the references list's output (`bibOut`) on each resolved `<cite>` of the file
+ * `outName`, when the list lives in another file. Nothing to do in the file that has it, or
+ * when there is no list.
+ */
+export function annotateCrossFileCites(
+  doc: ElementNode,
+  outName: string,
+  bibOut: string | undefined,
+): void {
+  if (!bibOut || bibOut === outName) return;
   for (const el of elements(doc)) {
     if (el.tag !== "cite") continue;
     if (el.attrs["data-cite-nums"] === undefined) continue; // unresolved: leave inert

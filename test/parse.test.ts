@@ -1,19 +1,19 @@
 import { describe, expect, it } from "./harness.ts";
 import { textContent, type ElementNode } from "../src/compiler/ast.ts";
 import { createContext, type Diagnostic } from "../src/compiler/context.ts";
-import { parse, parseSource } from "../src/compiler/parse.ts";
+import { parse, parsePreprocessed } from "../src/compiler/parse.ts";
 import { preprocess } from "../src/compiler/preprocess.ts";
 
 /** Parses `src` as already-preprocessed text. */
 function run(src: string) {
   const ctx = createContext("test.dlt");
-  return { doc: parse(src, ctx), ctx };
+  return { doc: parsePreprocessed(src, ctx), ctx };
 }
 
 /** Preprocesses and parses, as the compiler does: spans and positions are in `src`'s coordinates. */
 function runSource(src: string) {
   const ctx = createContext("test.dlt");
-  return { doc: parseSource(src, ctx), ctx };
+  return { doc: parse(src, ctx), ctx };
 }
 
 function firstElement(el: ElementNode | null, tag: string): ElementNode | undefined {
@@ -138,7 +138,7 @@ describe("parse: errors", () => {
   });
 });
 
-describe("parseSource: positions in the author's coordinates", () => {
+describe("parse: positions in the author's coordinates", () => {
   it("maps spans back through the escaping of math and raw tags", () => {
     const src = "<document><m>a<b</m><p>x</p></document>";
     const { doc, ctx } = runSource(src);

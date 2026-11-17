@@ -1,4 +1,4 @@
-import type { ElementNode } from "./ast.ts";
+import { elements, type ElementNode } from "./ast.ts";
 import { COUNTER_RESETS, ENVIRONMENTS, type EnvironmentSpec } from "../language/environments.ts";
 import { OPAQUE } from "../language/tags.ts";
 import { warn, type CompileContext } from "./context.ts";
@@ -72,16 +72,10 @@ export function numberDocument(
     ctx.registry.set(id, { tag: el.tag, num: el.attrs.num ?? "" });
   };
 
-  const visit = (el: ElementNode): void => {
-    for (const child of el.children) {
-      if (child.type !== "element") continue;
-      const spec = ENVIRONMENTS[child.tag];
-      if (spec) assign(child, spec);
-      register(child);
-      if (!OPAQUE.has(child.tag)) visit(child);
-    }
-  };
-
-  register(doc);
-  visit(doc);
+  // Document order, parents first; inside a comment, a task or an <old>, nothing is numbered.
+  for (const el of elements(doc, OPAQUE)) {
+    const spec = el === doc ? undefined : ENVIRONMENTS[el.tag];
+    if (spec) assign(el, spec);
+    register(el);
+  }
 }

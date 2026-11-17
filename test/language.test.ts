@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { describe, expect, it } from "./harness.ts";
 import { COUNTER_RESETS, ENVIRONMENTS } from "../src/language/environments.ts";
 import { STRINGS } from "../src/language/strings.ts";
@@ -9,6 +9,7 @@ import {
   HEADING_TAGS,
   PROOF_TAGS,
   RESULT_TAGS,
+  SYNTHESIZED_TAGS,
 } from "../src/language/tags.ts";
 import { TRUST, TRUST_OF } from "../src/language/trust.ts";
 import { PALETTE } from "../src/language/palette.ts";
@@ -62,5 +63,16 @@ describe("trust and palette", () => {
   it("has a base.css accent block for every palette name", () => {
     const base = readFileSync("src/styles/base.css", "utf8");
     for (const name of PALETTE) expect(base).toContain(`[data-accent="${name}"]`);
+  });
+});
+
+describe("tags the compiler synthesizes", () => {
+  const compiler = readdirSync("src/compiler")
+    .filter((f) => f.endsWith(".ts"))
+    .map((f) => readFileSync(`src/compiler/${f}`, "utf8"))
+    .join("\n");
+
+  it.each([...SYNTHESIZED_TAGS])("<%s> is still created by a compiler pass", (tag) => {
+    expect(compiler).toMatch(new RegExp(`(el|element)\\(\\s*"${tag}"|\\.tag = "${tag}"`));
   });
 });

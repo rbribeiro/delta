@@ -2,27 +2,32 @@ import { elements, type ElementNode, type Position } from "./ast.ts";
 import { error, type CompileContext } from "./context.ts";
 import { preprocessMapped } from "./preprocess.ts";
 import { parseXml } from "./xml.ts";
+import { lineIndex } from "./lines.ts";
 
 /**
- * Preprocesses and parses the author's text, recording it in `ctx.sources` under `ctx.file`
+ * The front end, and the pipeline's `parse` step: preprocesses and parses the author's text, recording it in `ctx.sources` under `ctx.file`
  * and giving every element its exact `src` span in that text (what `delta show` prints).
  */
-export function parseSource(source: string, ctx: CompileContext): ElementNode | null {
+export function parse(source: string, ctx: CompileContext): ElementNode | null {
   const { text, map, problems } = preprocessMapped(source);
   ctx.sources.set(ctx.file, source);
   // A forgotten `\$` is an error at the dollar itself, like a bare `<`.
   const posAt = locator(source, (at) => at, ctx.file);
   for (const p of problems) error(ctx, p.message, posAt(p.at));
-  return parse(text, ctx, map);
+  return parsePreprocessed(text, ctx, map);
 }
 
 /**
- * Parses the (preprocessed) source into an element tree, or returns null after reporting
+ * Parses already preprocessed text into an element tree, or returns null after reporting
  * every well-formedness error as a diagnostic. `map`, from `preprocessMapped`, turns offsets
  * in `source` into offsets in the author's text; every `src` span and every diagnostic is
  * reported in the author's coordinates. Without it, spans are offsets into `source` itself.
  */
-export function parse(source: string, ctx: CompileContext, map?: number[]): ElementNode | null {
+export function parsePreprocessed(
+  source: string,
+  ctx: CompileContext,
+  map?: number[],
+): ElementNode | null {
   const file = ctx.file;
   // The map has one entry per character of `source`; an exclusive end at EOF maps past the
   // author's last character.
@@ -56,18 +61,11 @@ function locator(
   orig: (at: number) => number,
   file: string,
 ): (at: number) => Position {
-  const newlines: number[] = [];
-  for (let i = text.indexOf("\n"); i !== -1; i = text.indexOf("\n", i + 1)) newlines.push(i);
+  const lines = lineIndex(text);
   return (at) => {
-    // How many newlines come before `at`: binary search, so a long file costs nothing.
-    let lo = 0;
-    let hi = newlines.length;
-    while (lo < hi) {
-      const mid = (lo + hi) >> 1;
-      if (newlines[mid] < at) lo = mid + 1;
-      else hi = mid;
-    }
-    const lineStart = lo === 0 ? 0 : orig(newlines[lo - 1]) + 1;
-    return { line: lo + 1, column: orig(at) - lineStart + 1, file };
+    const line = lines.lineOf(at);
+    // The column is counted in the author's text: map the newline ending the previous line.
+    const lineStart = line === 1 ? 0 : orig(lines.startOf(at) - 1) + 1;
+    return { line, column: orig(at) - lineStart + 1, file };
   };
 }

@@ -7,11 +7,22 @@ import { resolve } from "node:path";
 import type { ElementNode, Node, Position } from "./ast.ts";
 import type { ReviewMember } from "../language/islands.ts";
 
+/**
+ * Stable names for the kinds of problem a tool needs to recognise without reading the
+ * (English, rewordable) message. Add one when a consumer needs it.
+ *
+ *   unresolved-ref   a `<ref>` or `\ref` to an id that does not exist (lint reports these
+ *                    itself, as dangling references, so it skips the compiler's warning)
+ */
+export type DiagnosticCode = "unresolved-ref";
+
 export interface Diagnostic {
   severity: "error" | "warning";
   message: string;
   file: string;
   pos?: Position;
+  /** Set for the problems a tool recognises (DiagnosticCode); most have none. */
+  code?: DiagnosticCode;
 }
 
 /** What the numbering pass recorded for an `id`; read by references and pop-overs. */
@@ -40,6 +51,14 @@ export interface TocEntry {
 
 /** A pack's localized strings by language: `{ "en": { "plot.zoom": "Zoom" }, "pt": {…} }`. */
 export type PackStrings = Record<string, Record<string, string>>;
+
+/** One input file once it has a tree: what a project-wide pass receives, in input order. */
+export interface Parsed {
+  ctx: CompileContext;
+  doc: ElementNode;
+  /** Output basename, `chapter1.html`. */
+  outName: string;
+}
 
 /** One resolved package (a `<import>` pack or a `project.toml` package); inlined by emit. */
 export interface ImportEntry {
@@ -122,7 +141,7 @@ export interface ReviewData {
 
 export interface CompileContext {
   file: string;
-  /** file → its original text, for every file `parseSource` read (the master and its includes). */
+  /** file → its original text, for every file `parse` read (the master and its includes). */
   sources: Map<string, string>;
   /** Output basename for this file (e.g. "chapter1.html"), set by the pipeline runner for every build. */
   outName?: string;
@@ -202,12 +221,33 @@ export function addDep(ctx: CompileContext, p: string): void {
 
 // A position carries the file it was parsed from, so a node spliced in by <include> is
 // reported against its own file rather than the master document.
-export function error(ctx: CompileContext, message: string, pos?: Position): void {
-  ctx.diagnostics.push({ severity: "error", message, file: pos?.file ?? ctx.file, pos });
+export function error(
+  ctx: CompileContext,
+  message: string,
+  pos?: Position,
+  code?: DiagnosticCode,
+): void {
+  ctx.diagnostics.push(diagnostic("error", message, ctx, pos, code));
 }
 
-export function warn(ctx: CompileContext, message: string, pos?: Position): void {
-  ctx.diagnostics.push({ severity: "warning", message, file: pos?.file ?? ctx.file, pos });
+export function warn(
+  ctx: CompileContext,
+  message: string,
+  pos?: Position,
+  code?: DiagnosticCode,
+): void {
+  ctx.diagnostics.push(diagnostic("warning", message, ctx, pos, code));
+}
+
+function diagnostic(
+  severity: Diagnostic["severity"],
+  message: string,
+  ctx: CompileContext,
+  pos: Position | undefined,
+  code: DiagnosticCode | undefined,
+): Diagnostic {
+  // No `code` key at all when there is none, so a diagnostic reads (and serializes) as before.
+  return { severity, message, file: pos?.file ?? ctx.file, pos, ...(code ? { code } : {}) };
 }
 
 export function hasErrors(ctx: CompileContext): boolean {

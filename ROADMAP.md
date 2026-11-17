@@ -384,13 +384,13 @@ Compiler ↔ runtime contract
 - [x] WP-K2. A table of compiler-written attributes, kept honest by a test
 
 Compiler hygiene
-- [ ] WP-C1. Pipeline table: every step calls a function of its own name
-- [ ] WP-C2. One tree walker with named skip policies
-- [ ] WP-C3. Local tag sets and vocabularies back in `src/language/`
-- [ ] WP-C4. Same API and failure rule for one file and for a project
-- [ ] WP-C5. Diagnostics carry a code
-- [ ] WP-C6. `graph.ts`, `graph-report.ts`, `commands.ts` split along their seams; one `lineOf`
-- [ ] WP-C7. Pass tests use the production front end (`parseSource`)
+- [x] WP-C1. Pipeline table: every step calls a function of its own name
+- [x] WP-C2. One tree walker with named skip policies
+- [x] WP-C3. Local tag sets and vocabularies back in `src/language/`
+- [x] WP-C4. Same API and failure rule for one file and for a project
+- [x] WP-C5. Diagnostics carry a code
+- [x] WP-C6. `graph.ts`, `graph-report.ts`, `commands.ts` split along their seams; one `lineOf`
+- [x] WP-C7. Pass tests use the production front end (`parseSource`)
 
 ## M11 — Animations
 

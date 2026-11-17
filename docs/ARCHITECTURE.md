@@ -51,8 +51,9 @@ Delta's vocabulary is data both halves read: which tags are headings, results, b
 environments, aids, math, literal code, collaboration marks
 ([tags.ts](../src/language/tags.ts)); the numbering table
 ([environments.ts](../src/language/environments.ts)); the UI strings
-([strings.ts](../src/language/strings.ts)); the trust order
-([trust.ts](../src/language/trust.ts)); the accent palette names
+([strings.ts](../src/language/strings.ts)); the trust order and the compiler's own `stale`
+status ([trust.ts](../src/language/trust.ts)); the values the collaboration attributes
+accept ([collaboration.ts](../src/language/collaboration.ts)); the accent palette names
 ([palette.ts](../src/language/palette.ts)). Two files state the contract between the halves:
 the JSON islands emit ships and their shapes ([islands.ts](../src/language/islands.ts):
 `jsonIsland` and `readIsland` both take their types from it, so a field changed on one side
@@ -60,7 +61,9 @@ fails `tsc` on the other), and every attribute the compiler writes for the runti
 writer and reader ([contract.ts](../src/language/contract.ts), kept honest by
 [test/contract.test.ts](../test/contract.test.ts)). These files import nothing, so the runtime
 bundle can use them too. A pass that needs "the headings" imports the set from here, never from
-another pass, and the runtime derives its element lists from the same sets.
+another pass or a set of its own, and the runtime derives its element lists from the same
+sets. `tags.ts` also lists the tags the compiler synthesizes and an author never writes
+(`step-claim`, `hyp-*`, `pm-*`).
 [test/language.test.ts](../test/language.test.ts) checks that the lists agree with each other,
 with every language block and with `theorems.css`.
 
@@ -82,7 +85,11 @@ adding an environment is one row here, its tag in `RESULT_TAGS` or `BOX_TAGS`
 table, a list of phases, each a list of steps. A compilation is a list of `FileUnit`s that
 share one `Shared` state, run by `runPipeline`. **A single file is a project of one file**:
 `compileSource`, `compileFile` ([index.ts](../src/compiler/index.ts)) and `compileProject`
-([project.ts](../src/compiler/project.ts)) only build that list and call the runner.
+([project.ts](../src/compiler/project.ts)) only build that list and call the runner. They
+share the rest too: `--final` comes from `options.final`; an error anywhere, in any phase and
+in any file, means no output at all; and the review items are the project's list, each with
+its home output (`file`). `test/pipeline.test.ts` checks that a file and a project of that
+one file agree, on successful and on failing builds.
 
 A step is either `each` (runs on every file, in input order, before the next step starts on
 any file) or `all` (runs once, project-wide). Pass-major order is what lets a per-file step
@@ -101,8 +108,17 @@ rely on everything earlier steps did in *every* file. The step name is the funct
 literally, asserts that a single-file build and a project-of-one build produce identical
 HTML, and exercises the trace hook.
 
-Each step has a one-line `what`. A `(doc, ctx)` pass becomes a step through the `perFile`
-adapter; a step that needs project state receives `shared` as a third argument.
+Each step has a one-line `what`, and its name is the function it calls. A step's body only
+adapts arguments and stores a result; a condition, a loop or a sequence of calls belongs in
+that function. Three shapes cover every step:
+
+| Shape | Example |
+|---|---|
+| a `(doc, ctx)` pass, per file | `each: perFile(resolveCollab)` |
+| a pass that needs project state, per file | `each: perFile((doc, ctx, s) => renderMath(doc, ctx, s.idToFile))` |
+| a project-wide pass over every parsed file, its result kept in `shared` | `all: (files, s) => { s.graph = buildGraph(parsed(files), s.registry); }` |
+
+The project-wide passes take `Parsed[]` (a file's `ctx`, `doc` and `outName`; context.ts).
 
 **The trace hook.** `CompileOptions.trace` is called after every file of an `each` step
 (with `file`) and after every step, with the *live* `files` and `shared`. It costs nothing
@@ -182,16 +198,19 @@ its public `length` / `pos` / `seek()`.
 src/
   cli.ts                       the executable: runs `main(process.argv)` from commands.ts
   commands.ts                  every `delta` command: parseArgs, resolveInputs, compileInputs (stopAfter), print/write
+  watch.ts                     `--watch`: rebuild when a dependency changes
   verify.ts                    `delta verify`: checks, then signs a proof in place (setAttributes)
   review-report.ts             `delta review` text/JSON formatting (pure)
-  graph-report.ts              outline/show/uses/graph/lint as text or JSON, plus frontier/overclaimed (pure)
+  graph-analysis.ts            what the graph commands work out: frontier, overclaimed, lint findings (pure)
+  graph-report.ts              outline/show/uses/graph/lint as text or JSON (pure)
   agent-guide.ts               the text `delta agent-guide` prints
   scaffold.ts, install.ts      `delta create`, `delta install`
   language/                    the vocabulary, pure data, imported by compiler AND runtime
     tags.ts                    tag families (HEADING_LEVEL, RESULT_TAGS, BOX_TAGS, RAW_TAGS, OPAQUE, …)
     environments.ts            the numbering data table (ENVIRONMENTS, COUNTER_RESETS)
     strings.ts                 i18n table (en, pt, …) + lang resolvers
-    trust.ts                   the trust order (TRUST, TRUST_OF, trustRank, weaker)
+    trust.ts                   the trust order (TRUST, TRUST_OF, trustRank, weaker) and STALE_STATUS
+    collaboration.ts           comment/todo status, priority and member kind values
     palette.ts                 the accent palette names (box colors, team members)
     islands.ts                 the JSON islands (#delta-i18n, #delta-toc, #delta-review): ids and payload types
     contract.ts                every attribute the compiler writes for the runtime, its writer and its reader
@@ -219,7 +238,9 @@ src/
     bibliography.ts            load .ref papers; number <cite>; fill the (first) <bibliography>
     numbering.ts               assigns num attrs, fills the registry; NumberingState
     crossfile.ts               buildIdMaps (globalById/idToFile); cross-file href annotations
-    graph.ts                   the proof graph: nodes, edges, trust propagation, cycles; annotateHypotheses, markStale
+    graph.ts                   the proof graph: nodes, edges, trust propagation, cycles (buildGraph)
+    graph-marks.ts             what the graph writes into the tree: annotateHypotheses, markStale
+    lines.ts                   line numbers by offset (lineIndex, lineOf), for every report
     graph-hash.ts              the hash a verification is pinned to (what counts as changing a proof)
     proof-links.ts             linkRemoteProofs: where a result's proof is ("Proof in Section 2.3"), or that it is pending
     proofmap.ts                <proof-map> → a laid-out SVG of the graph (layered layout, at compile time)

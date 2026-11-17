@@ -29,7 +29,7 @@ export function resolveReferences(doc: ElementNode, ctx: CompileContext): void {
 
     const entry = ctx.registry.get(targetId);
     if (!entry) {
-      warn(ctx, `Unresolved reference ${targetId}`, el.pos);
+      warn(ctx, `Unresolved reference ${targetId}`, el.pos, "unresolved-ref");
       continue;
     }
     el.attrs["data-target-num"] = entry.num;

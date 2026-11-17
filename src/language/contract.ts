@@ -197,7 +197,7 @@ export const COMPILER_ATTRIBUTES: readonly CompilerAttribute[] = [
   {
     name: "status",
     on: "a proof whose verification no longer holds",
-    writers: ["graph.ts"],
+    writers: ["graph-marks.ts"],
     readers: ["runtime/status.ts"],
     means: '"stale", replacing the author\'s verified: the stamp shows struck through',
   },

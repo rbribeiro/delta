@@ -10,6 +10,7 @@ import {
   type ImportEntry,
   type PackStrings,
 } from "./context.ts";
+import type { ProjectConfig } from "./config.ts";
 import { EXTERNAL_REF } from "./theme.ts";
 import { isRemote, readUserFile } from "./files.ts";
 import { BUILTIN_PACKS } from "../generated/assets.ts";
@@ -51,7 +52,14 @@ interface PackManifest {
  * @param doc the document node to scan for `<import>` children
  * @param ctx the compile context, used for warnings and to stash the resolved imports
  */
-export function resolveImports(doc: ElementNode, ctx: CompileContext): void {
+export function resolveImports(
+  doc: ElementNode,
+  ctx: CompileContext,
+  projectImports: readonly ImportEntry[] = [],
+): void {
+  // The project's packages (resolvePackages) come first, so a file's own <import> of the
+  // same pack dedups against them.
+  ctx.imports.push(...projectImports);
   const imports = doc.children.filter(
     (c): c is ElementNode => c.type === "element" && c.tag === "import",
   );
@@ -71,6 +79,17 @@ export function resolveImports(doc: ElementNode, ctx: CompileContext): void {
     }
     resolvePack(src, baseDir, ctx, seen, node.pos);
   }
+}
+
+/**
+ * The `resolvePackages` step: `project.toml` `packages`, resolved once into the project's own
+ * imports, relative to the toml's folder. `resolveImports` then puts them in every file.
+ */
+export function resolvePackages(config: ProjectConfig | undefined, project: CompileContext): void {
+  if (!config?.packages?.length) return;
+  const base = config.root ?? dirname(config.inputs[0] ?? config.outDir);
+  const seen = new Set<string>();
+  for (const spec of config.packages) resolvePack(spec, base, project, seen);
 }
 
 /**

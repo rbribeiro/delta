@@ -1,5 +1,5 @@
-import type { ElementNode } from "./ast.ts";
-import type { CompileContext } from "./context.ts";
+import { nearest, walk, type ElementNode } from "./ast.ts";
+import type { CompileContext, Parsed } from "./context.ts";
 import type { ProofGraph } from "./graph.ts";
 import { HEADING_TAGS, OPAQUE, RAW_TAGS } from "../language/tags.ts";
 
@@ -18,7 +18,7 @@ import { HEADING_TAGS, OPAQUE, RAW_TAGS } from "../language/tags.ts";
  * the graph, which knows every result's proofs across the project.
  */
 export function linkRemoteProofs(
-  files: { doc: ElementNode; ctx: CompileContext; outName: string }[],
+  files: Parsed[],
   graph: ProofGraph,
   idToFile: Map<string, string>,
   final: boolean,
@@ -26,13 +26,10 @@ export function linkRemoteProofs(
   // The heading each proof and each result sits under, and the file it is in.
   const where = new Map<ElementNode, { heading?: ElementNode; file: (typeof files)[number] }>();
   for (const file of files) {
-    const visit = (el: ElementNode, heading: ElementNode | undefined): void => {
-      if (RAW_TAGS.has(el.tag) || OPAQUE.has(el.tag)) return;
-      where.set(el, { heading, file });
-      const inner = HEADING_TAGS.has(el.tag) ? el : heading;
-      for (const c of el.children) if (c.type === "element") visit(c, inner);
-    };
-    visit(file.doc, undefined);
+    walk(file.doc, (el, ancestors) => {
+      if (RAW_TAGS.has(el.tag) || OPAQUE.has(el.tag)) return false;
+      where.set(el, { heading: nearest(ancestors, (a) => HEADING_TAGS.has(a.tag)), file });
+    });
   }
 
   for (const node of graph.nodes.values()) {

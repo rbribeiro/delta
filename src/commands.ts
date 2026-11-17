@@ -1,4 +1,4 @@
-import { type FSWatcher, existsSync, mkdirSync, readdirSync, watch, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { parseArgs, type ParseArgsConfig } from "node:util";
@@ -12,12 +12,12 @@ import { installPackages } from "./install.ts";
 import { filterReview, formatReviewText, reviewJson } from "./review-report.ts";
 import { verify } from "./verify.ts";
 import { AGENT_GUIDE } from "./agent-guide.ts";
+import { watchAndRebuild } from "./watch.ts";
 import {
   frontierJson,
   frontierText,
   graphJson,
   graphText,
-  lintFindings,
   lintText,
   outlineJson,
   outlineText,
@@ -26,8 +26,8 @@ import {
   showText,
   usesJson,
   usesText,
-  type Rel,
 } from "./graph-report.ts";
+import { lintFindings, type Rel } from "./graph-analysis.ts";
 
 /**
  * The `delta` commands. `main(argv)` runs one and returns its exit code; src/cli.ts is the
@@ -268,66 +268,13 @@ function buildMain(args: string[]): number {
     return result;
   };
   if (values.watch) {
-    watchAndRebuild(() => build().deps);
+    watchAndRebuild(
+      () => build().deps,
+      (line) => io.err(line),
+    );
     return 0;
   }
   return hasError(build().diagnostics) ? 1 : 0;
-}
-
-/**
- * Builds once, then watches every dependency and rebuilds on change. Keeps running
- * through compile errors so the author can fix and see it recover. Watches the
- * directories containing the deps and filters events to the dep basenames, which is
- * robust to editors' atomic save-as-rename and means writing the output file (not a
- * source dep) never triggers a rebuild loop.
- *
- * The watchers stay open across builds, so a save that lands while a build runs is
- * queued and triggers the next one. They are recreated only when the dep set changed
- * (an `<include>` added or removed, a figure renamed).
- */
-function watchAndRebuild(build: () => string[]): void {
-  let watchers: FSWatcher[] = [];
-  let watched = "";
-  let timer: NodeJS.Timeout | undefined;
-
-  const trigger = (): void => {
-    clearTimeout(timer);
-    timer = setTimeout(rebuild, 80); // debounce the burst editors emit per save
-  };
-
-  const watchDeps = (deps: string[]): void => {
-    const key = [...deps].sort().join("\n");
-    if (key === watched) return;
-    watched = key;
-    for (const w of watchers) w.close();
-    watchers = [];
-
-    const byDir = new Map<string, Set<string>>();
-    for (const f of deps) {
-      const dir = dirname(f);
-      let names = byDir.get(dir);
-      if (!names) byDir.set(dir, (names = new Set()));
-      names.add(basename(f));
-    }
-    for (const [dir, names] of byDir) {
-      try {
-        watchers.push(
-          watch(dir, (_event, filename) => {
-            if (filename && names.has(filename)) trigger();
-          }),
-        );
-      } catch {
-        // a missing/inaccessible directory just isn't watched
-      }
-    }
-    io.err(`watching ${deps.length} files… (Ctrl-C to stop)\n`);
-  };
-
-  function rebuild(): void {
-    watchDeps(build());
-  }
-
-  rebuild(); // initial build + watch
 }
 
 // -- review ---------------------------------------------------------------------------

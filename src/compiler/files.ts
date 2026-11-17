@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { addDep, type CompileContext } from "./context.ts";
+import { addDep, error, type CompileContext } from "./context.ts";
 
 /**
  * Helpers for the passes that read the author's *other* files: includes, the `.ref`
@@ -34,5 +34,18 @@ export function withFile<T>(ctx: CompileContext, abs: string, fn: () => T): T {
     return fn();
   } finally {
     ctx.file = prev;
+  }
+}
+
+/**
+ * The `readSource` step: reads the file `ctx.file` names into `source` (and records it for
+ * --watch), unless the caller already handed over the text. A read that fails is an error.
+ */
+export function readSource(file: { ctx: CompileContext; source?: string }): void {
+  if (file.source !== undefined) return;
+  try {
+    file.source = readUserFile(file.ctx, file.ctx.file);
+  } catch (e) {
+    error(file.ctx, e instanceof Error ? e.message : String(e));
   }
 }
