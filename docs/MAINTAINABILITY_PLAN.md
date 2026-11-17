@@ -20,9 +20,9 @@ Decisions taken by the maintainer on 2026-11-16:
 4. **Standard packs are TypeScript, enforced**: the same strict `tsconfig.json` as core, no
    `.js` sources in `packs/`. Local and npm packs stay free-form classic scripts.
 
-**Status (2026-11-16).** Phases 0–3 are implemented: safety nets (WP-S1…S5), standard packs
-(WP-P1…P4), the runtime (WP-R1…R6) and the compiler ↔ runtime contract (WP-K1, K2). Phase 4,
-compiler hygiene (WP-C1…C7), is not started. The student packs can now be ported (§3.6). Progress is tracked in milestone M10 of
+**Status (2026-11-17).** Every work package is implemented: safety nets (WP-S1…S5), standard
+packs (WP-P1…P4), the runtime (WP-R1…R6), the compiler ↔ runtime contract (WP-K1, K2) and
+compiler hygiene (WP-C1…C7). What remains is the student pack ports (§3.6). The student packs can now be ported (§3.6). Progress is tracked in milestone M10 of
 [ROADMAP.md](../ROADMAP.md), one checkbox per WP; check an item off in the PR that lands it.
 Line numbers refer to branch `refactor/mantainability` at commit `54df109` (2026-11-16);
 re-locate by symbol name if the code has moved.
